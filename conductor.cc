@@ -97,14 +97,13 @@ Conductor::~Conductor() {
 }
 
 void Conductor::SwitchToPeerList(const Peers& peers) {
-	printf("%s nb:%d\n", __FUNCTION__, peers.size());
-	LOG(INFO) << __FUNCTION__;
+	LOG(INFO) << __FUNCTION__ << " nbPeers" << peers.size();
 
 	for (Peers::const_iterator iter = peers.begin(); iter != peers.end(); ++iter) 
 	{
 		if (iter->second != GetPeerName())
 		{
-			printf("Conductor::%s %d %s\n", __FUNCTION__,  iter->first, iter->second.c_str());
+			LOG(INFO) << __FUNCTION__ << " " << iter->first << " " << iter->second ;
 			this->ConnectToPeer(iter->first);
 			break;
 		}
@@ -182,7 +181,6 @@ void Conductor::OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
 //
 
 void Conductor::OnSignedIn() {
-	printf("Conductor::%s\n", __FUNCTION__);  	
 	LOG(INFO) << __FUNCTION__;
 }
 
@@ -192,13 +190,12 @@ void Conductor::OnDisconnected() {
 }
 
 void Conductor::OnPeerConnected(int id, const std::string& name) {
-	printf("Conductor::%s %s\n", __FUNCTION__, name.c_str());  	
-	LOG(INFO) << __FUNCTION__;
+	LOG(INFO) << __FUNCTION__ << " " << name;
 	this->SwitchToPeerList(client_->peers());
 }
 
 void Conductor::OnPeerDisconnected(int id) {
-	LOG(INFO) << __FUNCTION__;
+	LOG(INFO) << __FUNCTION__ << " " << id;
 	if (id == peer_id_) {
 		LOG(INFO) << "Our peer disconnected";
 		this->PostMessage(PEER_CONNECTION_CLOSED, NULL);
@@ -286,7 +283,7 @@ void Conductor::OnServerConnectionFailure() {
 }
 
 void Conductor::StartLogin(const std::string& server, int port) {
-	printf("Conductor::%s %s isconnected:%d\n", __FUNCTION__, GetPeerName().c_str(), client_->is_connected());  
+	LOG(LS_INFO) << "Peername:" <<  GetPeerName();
 	if (client_->is_connected())
 		return;
 	client_->Connect(server, port, GetPeerName());
@@ -298,7 +295,7 @@ void Conductor::DisconnectFromServer() {
 }
 
 void Conductor::ConnectToPeer(int peer_id) {
-	printf("Conductor::%s %d\n", __FUNCTION__, peer_id);  	
+	LOG(LS_INFO) << "Capturer:" <<  peer_id;
 	ASSERT(peer_id_ == -1);
 	ASSERT(peer_id != -1);
 
@@ -332,7 +329,7 @@ cricket::VideoCapturer* Conductor::OpenVideoCaptureDevice() {
 		capturer = dev_manager->CreateVideoCapturer(*dev_it);
 		if (capturer != NULL)
 		{
-			std::cout << "Capturer:" << capturer->GetId() << std::endl;
+			LOG(LS_INFO) << "Capturer:" << capturer->GetId() ;
 			if (devid_ != capturer->GetId())
 			{
 				capturer = NULL;

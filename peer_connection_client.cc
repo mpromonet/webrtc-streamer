@@ -90,8 +90,7 @@ void PeerConnectionClient::Connect(const std::string& server, int port,
   ASSERT(!client_name.empty());
 
   if (state_ != NOT_CONNECTED) {
-    LOG(WARNING)
-        << "The client must not be connected before you can call Connect()";
+    LOG(WARNING) << "The client must not be connected before you can call Connect()";
     callback_->OnServerConnectionFailure();
     return;
   }
@@ -466,7 +465,7 @@ bool PeerConnectionClient::ParseServerResponse(const std::string& response,
 }
 
 void PeerConnectionClient::OnClose(rtc::AsyncSocket* socket, int err) {
-  LOG(INFO) << __FUNCTION__;
+  LOG(LS_SENSITIVE) << __FUNCTION__;
 
   socket->Close();
 

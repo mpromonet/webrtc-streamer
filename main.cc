@@ -61,7 +61,7 @@ void answer(struct mg_connection *conn, int id, const std::string& body)
 	os << body;
 	
 	std::string msg(os.str());
-	std::cout << "send peer:"<<  id << " " << body	<< std::endl;
+	LOG(INFO) << "send peer:"<<  id << " " << body	<< std::endl;
 	mg_write(conn, msg.c_str(), msg.size());
 }
 
@@ -76,9 +76,10 @@ void post(const std::string& body)
 int handle_signin(struct mg_connection *conn) 
 {
 	std::string name(conn->query_string);
-	std::cout << name	<< std::endl;
+	LOG(INFO) << __FUNCTION__ << " " << name << std::endl;
 	int peerid = id++;
 	peer newpeer(name);
+	
 	std::ostringstream os;
 	os << newpeer.m_name << "," << peerid << "," <<  newpeer.m_connected << "\r\n";
 
@@ -100,6 +101,8 @@ int handle_signout(struct mg_connection *conn)
 {
 	char peer_id[64];
 	mg_get_var(conn, "peer_id", peer_id, sizeof(peer_id));
+	LOG(INFO) << __FUNCTION__ << " " << peer_id;
+	
 	int peerid = atoi(peer_id);
 	std::map<int,peer>::iterator it = map.find(peerid);
 	if (it != map.end())
@@ -135,7 +138,7 @@ int handle_wait(struct mg_connection *conn)
 			answer(conn, std::get<0>(*it), body);
 			
 			msgList.erase(it);
-			std::cout << "nb message "<<  msgList.size()	<< std::endl;
+			LOG(INFO) << __FUNCTION__ << " nb pending message " << msgList.size();
 			break;
 		}
 	}
@@ -239,17 +242,20 @@ int main(int argc, char* argv[]) {
 	const char* port     = "8080";
 	const char* device   = "/dev/video0";
 	const char* stunport = "3478";
+	int logLevel = rtc::LERROR; 
 	
 	int c = 0;     
-	while ((c = getopt (argc, argv, "hP:")) != -1)
+	while ((c = getopt (argc, argv, "hP:v::")) != -1)
 	{
 		switch (c)
 		{
+			case 'v': logLevel--; if (optarg) logLevel-=strlen(optarg); break;
 			case 'P': port = optarg; break;
 			case 'h':
 			default:
-				std::cout << argv[0] << " [-P http port] [device]" << std::endl;
-				std::cout << "\t -P port  : HTTP port (default "<< port << ")" << std::endl;
+				std::cout << argv[0] << " [-P http port] [device]"                    << std::endl;
+				std::cout << "\t -v[v[v]] : verbosity"                                << std::endl;
+				std::cout << "\t -P port  : HTTP port (default "<< port << ")"        << std::endl;
 				std::cout << "\t device   : capture device (default "<< device << ")" << std::endl;
 				exit(0);
 		}
@@ -259,7 +265,11 @@ int main(int argc, char* argv[]) {
 		device = argv[optind];
 	}	
 
-	rtc::LogMessage::LogContext(rtc::LS_SENSITIVE);
+	rtc::LogMessage::LogToDebug(logLevel);
+	rtc::LogMessage::LogTimestamps();
+	rtc::LogMessage::LogThreads();
+	std::cout << "Logger level:" <<  rtc::LogMessage::GetMinLogSeverity() << std::endl; 
+	
 	rtc::Thread* thread = rtc::Thread::Current();
 	rtc::InitializeSSL();
 	
