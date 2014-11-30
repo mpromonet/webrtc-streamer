@@ -3,10 +3,6 @@
 <title>PeerConnection server test page</title>
 <script>
     var request = null;
-    var localName;
-    var myId = -1;
-    var otherPeers = {};
-    var messageCounter = 0;
     var pc;    
     var pcConfig = {"iceServers": []};
     var pcOptions = { optional: [{DtlsSrtpKeyAgreement: false} ] };
@@ -21,18 +17,7 @@
         try {
 	    trace("createPeerConnection  config: " + JSON.stringify(pcConfig) + "option:"+  JSON.stringify(pcOptions));
             pc = new RTCPeerConnection(pcConfig, pcOptions);
-            pc.onicecandidate = function(event) {
-                if (event.candidate) {
-                    var candidate = {
-                        sdpMLineIndex: event.candidate.sdpMLineIndex,
-                        sdpMid: event.candidate.sdpMid,
-                        candidate: event.candidate.candidate
-                    };
-		    sendAnswer(JSON.stringify(candidate));
-                } else {
-                  trace("End of candidates.");
-                }
-            };
+            pc.onicecandidate = onIceCandidate;
             pc.onaddstream = onRemoteStreamAdded;
             pc.onremovestream = onRemoteStreamRemoved;
             trace("Created RTCPeerConnnection with config: " + JSON.stringify(pcConfig) + "option:"+  JSON.stringify(pcOptions) );
@@ -43,16 +28,28 @@
 	return pc;
     }
     
+    function onIceCandidate(event) {
+	if (event.candidate) {
+	    var candidate = {
+		sdpMLineIndex: event.candidate.sdpMLineIndex,
+		sdpMid: event.candidate.sdpMid,
+		candidate: event.candidate.candidate
+	    };
+	    sendAnswer(JSON.stringify(candidate));
+	} else {
+	    trace("End of candidates.");
+	}
+    }
 
     function onRemoteStreamAdded(event) {
-      trace("-----Remote stream added:" +  JSON.stringify(event));
-      var remoteVideoElement = document.getElementById('remote-video');
-      remoteVideoElement.src = URL.createObjectURL(event.stream);
-      remoteVideoElement.play();
+        trace("Remote stream added:" +  JSON.stringify(event));
+        var remoteVideoElement = document.getElementById('remote-video');
+        remoteVideoElement.src = URL.createObjectURL(event.stream);
+        remoteVideoElement.play();
     }
     
     function onRemoteStreamRemoved(event) {
-        trace("-----Remote stream removed."+event);
+        trace("Remote stream removed."+event);
         var remoteVideoElement = document.getElementById('remote-video');
         remoteVideoElement.src = '';
     }
@@ -63,70 +60,65 @@
     }
 
     function sendAnswer(data) {
-      try {
-          var r = new XMLHttpRequest();
-          r.open("POST","/answer", true);
-          r.setRequestHeader("Content-Type", "text/plain");
-          r.send(data);
-          console.log(peer_id," Send ", data);
-          r = null;
-      } catch (e) {
+        try {
+            var r = new XMLHttpRequest();
+            r.open("POST","/answer", true);
+            r.setRequestHeader("Content-Type", "text/plain");
+            r.send(data);
+            console.log(peer_id," Send ", data);
+            r = null;
+        } catch (e) {
           trace("send to peer error: " + e.description);
-      }
+        }
     }
 
 
     function connect() {
-		document.getElementById("connect").disabled = true;
-		document.getElementById("disconnect").disabled = false;
+	document.getElementById("connect").disabled = true;
+	document.getElementById("disconnect").disabled = false;
 	    
-		try {            
-			pc = createPeerConnection();
+	try {            
+		pc = createPeerConnection();
 
-			request = new XMLHttpRequest();
-			request.open("GET", "/offer" , false);
-			request.send();
+		request = new XMLHttpRequest();
+		request.open("GET", "/offer" , false);
+		request.send();
 
-			if (request.status === 200) {
-				trace("offer: " + request.responseText);
-				var dataJson = JSON.parse(request.responseText);
-				pc.setRemoteDescription(new RTCSessionDescription(dataJson), 
-					function () { 
-						trace('setRemoteDescription: success'); 
-						pc.createAnswer(function(sessionDescription) {
-							trace("Create answer:" + JSON.stringify(sessionDescription));
-							pc.setLocalDescription(sessionDescription);
-							var data = JSON.stringify(sessionDescription);
-							sendAnswer(data);
-						}, function(error) { 
-							trace("Create answer error:" + error);
-						}, mediaConstraints); 			
-					} ,
-					function onRemoteSdpError(event) { trace('setRemoteDescription: error:'+event);}
-				);    
-			}	  
+		if (request.status === 200) {
+			trace("offer: " + request.responseText);
+			var dataJson = JSON.parse(request.responseText);
+			pc.setRemoteDescription(new RTCSessionDescription(dataJson), function () { 
+				trace('setRemoteDescription: success'); 
+				pc.createAnswer(function(sessionDescription) {
+					trace("Create answer:" + JSON.stringify(sessionDescription));
+					pc.setLocalDescription(sessionDescription);
+					sendAnswer(JSON.stringify(sessionDescription));
+				}, function(error) { 
+					trace("Create answer error:" + error);
+				}, mediaConstraints); 			
+			} , function onRemoteSdpError(event) { trace('setRemoteDescription: error:'+event);} );    
+		}	  			
 			
-			
-			request.open("GET", "/candidate" , false);
-			request.send();
-			if (request.status === 200) {
-				trace("candidate: " + request.responseText);
-				var dataJson = JSON.parse(request.responseText);
-				for (var i=0; i<dataJson.length; i++)
-				{
-					var elt = dataJson[i];
-					var candidate = new RTCIceCandidate({sdpMLineIndex: elt.sdpMLineIndex, candidate: elt.candidate});
-					trace("Adding ICE candiate :" + JSON.stringify(candidate) );
-					pc.addIceCandidate(candidate,
-						function() { trace ("addIceCandidate OK"); },
-						function(error ) {trace ("addIceCandidate error:" + error); }
-					);
-				}
+		request.open("GET", "/candidate" , false);
+		request.send();
+		if (request.status === 200) {
+			trace("candidate: " + request.responseText);
+			var dataJson = JSON.parse(request.responseText);
+			for (var i=0; i<dataJson.length; i++)
+			{
+				var elt = dataJson[i];
+				var candidate = new RTCIceCandidate({sdpMLineIndex: elt.sdpMLineIndex, candidate: elt.candidate});
+				trace("Adding ICE candiate :" + JSON.stringify(candidate) );
+				pc.addIceCandidate(candidate,
+					function() { trace ("addIceCandidate OK"); },
+					function(error ) {trace ("addIceCandidate error:" + error); }
+				);
 			}
+		}
 			
-		} catch (e) {
-		  trace("error: " + e.description);
-		}	    
+	} catch (e) {
+		trace("error: " + e.description);
+	}	    
     }
     
     function disconnect() {
@@ -134,6 +126,7 @@
             request.abort();
             request = null;
         }        
+	pc.close();
             
         document.getElementById("connect").disabled = false;
         document.getElementById("disconnect").disabled = true;
