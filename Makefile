@@ -105,7 +105,7 @@ mongoose/mongoose.c:
 	git submodule init
 	git submodule update
 	
-$(TARGET): main.cc conductor.cc peer_connection_client.cc mongoose/mongoose.c 
+$(TARGET): main.cc webrtc.cpp mongoose/mongoose.c 
 	$(CC) -o $@ $(CFLAGS) $^ $(LDFLAGS)	
 
 clean:

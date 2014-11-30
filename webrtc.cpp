@@ -1,29 +1,11 @@
-/*
- * libjingle
- * Copyright 2012, Google Inc.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- *  1. Redistributions of source code must retain the above copyright notice,
- *     this list of conditions and the following disclaimer.
- *  2. Redistributions in binary form must reproduce the above copyright notice,
- *     this list of conditions and the following disclaimer in the documentation
- *     and/or other materials provided with the distribution.
- *  3. The name of the author may not be used to endorse or promote products
- *     derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
- * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
- * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
- * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
- * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
- * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+/* ---------------------------------------------------------------------------
+** This software is in the public domain, furnished "as is", without technical
+** support, and with no warranty, express or implied, as to its usefulness for
+** any purpose.
+**
+** webrtc.cpp
+** 
+** -------------------------------------------------------------------------*/
 
 #include <iostream>
 
@@ -36,7 +18,7 @@
 #include "webrtc/base/json.h"
 #include "webrtc/base/logging.h"
 
-#include "conductor.h"
+#include "webrtc.h"
 
 const char kAudioLabel[] = "audio_label";
 const char kVideoLabel[] = "video_label";
@@ -54,13 +36,6 @@ std::string GetPeerConnectionString()
 { 
 	std::string url("stun:127.0.0.1:3478");
 	return url; 
-}
-
-std::string GetPeerName() {
-	std::string ret("user");
-	ret += '@';
-	ret += GetComputerName();
-	return ret;
 }
 
 // Names used for a IceCandidate JSON object.
@@ -87,45 +62,28 @@ class DummySetSessionDescriptionObserver : public webrtc::SetSessionDescriptionO
 		~DummySetSessionDescriptionObserver() {}
 };
 
-Conductor::Conductor(PeerConnectionClient* client, const std::string & devid)
-  : peer_id_(-1), client_(client), devid_(devid) {
-	client_->RegisterObserver(this);
+Conductor::Conductor(const std::string & devid) : devid_(devid) 
+{
 }
 
-Conductor::~Conductor() {
+Conductor::~Conductor() 
+{
 	ASSERT(peer_connection_.get() == NULL);
 }
 
-void Conductor::SwitchToPeerList(const Peers& peers) {
-	LOG(INFO) << __FUNCTION__ << " nbPeers" << peers.size();
-
-	for (Peers::const_iterator iter = peers.begin(); iter != peers.end(); ++iter) 
-	{
-		if (iter->second != GetPeerName())
-		{
-			LOG(INFO) << __FUNCTION__ << " " << iter->first << " " << iter->second ;
-			this->ConnectToPeer(iter->first);
-			break;
-		}
-	}
-}
-
-bool Conductor::connection_active() const {
+bool Conductor::connection_active() const 
+{
 	return peer_connection_.get() != NULL;
 }
 
-void Conductor::Close() {
-	client_->SignOut();
-	DeletePeerConnection();
-}
-
-bool Conductor::InitializePeerConnection() {
+bool Conductor::InitializePeerConnection() 
+{
 	ASSERT(peer_connection_factory_.get() == NULL);
 	ASSERT(peer_connection_.get() == NULL);
 
 	peer_connection_factory_  = webrtc::CreatePeerConnectionFactory();
 	if (!peer_connection_factory_.get()) {
-		this->MessageBox("Error", "Failed to initialize PeerConnectionFactory", true);
+		LOG(LERROR) << __FUNCTION__ << "Failed to initialize PeerConnectionFactory";
 		DeletePeerConnection();
 		return false;
 	}
@@ -140,7 +98,7 @@ bool Conductor::InitializePeerConnection() {
 							    NULL,
 							    this);
 	if (!peer_connection_.get()) {
-		this->MessageBox("Error", "CreatePeerConnection failed", true);
+		LOG(LERROR) << __FUNCTION__ << "CreatePeerConnection failed";
 		DeletePeerConnection();
 	}
 	AddStreams();
@@ -152,7 +110,6 @@ void Conductor::DeletePeerConnection() {
 	active_streams_.clear();
 	local_renderer_.reset();
 	peer_connection_factory_ = NULL;
-	peer_id_ = -1;
 }
 
 
@@ -160,7 +117,8 @@ void Conductor::DeletePeerConnection() {
 // PeerConnectionObserver implementation.
 //
 
-void Conductor::OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
+void Conductor::OnIceCandidate(const webrtc::IceCandidateInterface* candidate) 
+{
 	LOG(INFO) << __FUNCTION__ << " " << candidate->sdp_mline_index();
 	Json::StyledWriter writer;
 	Json::Value jmessage;
@@ -172,56 +130,16 @@ void Conductor::OnIceCandidate(const webrtc::IceCandidateInterface* candidate) {
 		LOG(LS_ERROR) << "Failed to serialize candidate";
 		return;
 	}
+	
+	LOG(INFO) << sdp;	
 	jmessage[kCandidateSdpName] = sdp;
-	SendMessage(writer.write(jmessage));
+	iceCandidateList_.append(jmessage);
 }
 
-//
-// PeerConnectionClientObserver implementation.
-//
-
-void Conductor::OnSignedIn() {
-	LOG(INFO) << __FUNCTION__;
-}
-
-void Conductor::OnDisconnected() {
-	LOG(INFO) << __FUNCTION__;
-	DeletePeerConnection();
-}
-
-void Conductor::OnPeerConnected(int id, const std::string& name) {
-	LOG(INFO) << __FUNCTION__ << " " << name;
-	this->SwitchToPeerList(client_->peers());
-}
-
-void Conductor::OnPeerDisconnected(int id) {
-	LOG(INFO) << __FUNCTION__ << " " << id;
-	if (id == peer_id_) {
-		LOG(INFO) << "Our peer disconnected";
-		this->PostMessage(PEER_CONNECTION_CLOSED, NULL);
-	} else {
-		this->SwitchToPeerList(client_->peers());
-	}
-}
-
-void Conductor::OnMessageFromPeer(int peer_id, const std::string& message) {
-	ASSERT(peer_id_ == peer_id || peer_id_ == -1);
-	ASSERT(!message.empty());
-
-	if (!peer_connection_.get()) {
-		ASSERT(peer_id_ == -1);
-		peer_id_ = peer_id;
-
-		if (!InitializePeerConnection()) {
-			LOG(LS_ERROR) << "Failed to initialize our PeerConnection instance";
-			client_->SignOut();
-			return;
-		}
-	} else if (peer_id != peer_id_) {
-		ASSERT(peer_id_ != -1);
-		LOG(WARNING) << "Received a message from unknown peer while already in a conversation with a different peer.";
-		return;
-	}
+void Conductor::setAnswer(const std::string& message)
+{
+	LOG(INFO) << message;	
+	
 	Json::Reader reader;
 	Json::Value jmessage;
 	if (!reader.parse(message, jmessage)) {
@@ -269,50 +187,27 @@ void Conductor::OnMessageFromPeer(int peer_id, const std::string& message) {
 			return;
 		}
 		LOG(INFO) << " Received candidate :" << message;
+		
 		return;
 	}
 }
 
-void Conductor::OnMessageSent(int err) {
-	// Process the next pending message if any.
-	this->PostMessage(SEND_MESSAGE_TO_PEER, NULL);
-}
-
-void Conductor::OnServerConnectionFailure() {
-	this->MessageBox("Error", "Failed to connect", true);
-}
-
-void Conductor::StartLogin(const std::string& server, int port) {
-	LOG(LS_INFO) << "Peername:" <<  GetPeerName();
-	if (client_->is_connected())
-		return;
-	client_->Connect(server, port, GetPeerName());
-}
-
-void Conductor::DisconnectFromServer() {
-	if (client_->is_connected())
-		client_->SignOut();
-}
-
-void Conductor::ConnectToPeer(int peer_id) {
-	LOG(LS_INFO) << "Capturer:" <<  peer_id;
-	ASSERT(peer_id_ == -1);
-	ASSERT(peer_id != -1);
-
+void Conductor::CreateOffer() 
+{
 	if (peer_connection_.get()) {
-		this->MessageBox("Error", "We only support connecting to one peer at a time", true);
+		LOG(LERROR) << "We only support connecting to one peer at a time";
 		return;
 	}
 
 	if (InitializePeerConnection()) {
-		peer_id_ = peer_id;
 		peer_connection_->CreateOffer(this, NULL);
 	} else {
-		this->MessageBox("Error", "Failed to initialize PeerConnection", true);
+		LOG(LERROR) << "Error" << "Failed to initialize PeerConnection";
 	}
 }
 
-cricket::VideoCapturer* Conductor::OpenVideoCaptureDevice() {
+cricket::VideoCapturer* Conductor::OpenVideoCaptureDevice() 
+{
 	rtc::scoped_ptr<cricket::DeviceManagerInterface> dev_manager(cricket::DeviceManagerFactory::Create());
 	if (!dev_manager->Init()) {
 		LOG(LS_ERROR) << "Can't create device manager";
@@ -339,7 +234,8 @@ cricket::VideoCapturer* Conductor::OpenVideoCaptureDevice() {
 	return capturer;
 }
 
-void Conductor::AddStreams() {
+void Conductor::AddStreams() 
+{
 	if (active_streams_.find(kStreamLabel) != active_streams_.end())
 		return;  // Already added.
 
@@ -359,52 +255,8 @@ void Conductor::AddStreams() {
 	active_streams_.insert(MediaStreamPair(stream->label(), stream));
 }
 
-void Conductor::PostMessage(int msg_id, void* data) {
-	switch (msg_id) {
-		case PEER_CONNECTION_CLOSED:
-			LOG(INFO) << "PEER_CONNECTION_CLOSED";
-			DeletePeerConnection();
-
-			ASSERT(active_streams_.empty());
-			if (client_->is_connected()) {
-				this->SwitchToPeerList(client_->peers());
-			}
-		break;
-
-		case SEND_MESSAGE_TO_PEER: {
-			LOG(INFO) << "SEND_MESSAGE_TO_PEER";
-			std::string* msg = reinterpret_cast<std::string*>(data);
-			if (msg) {
-				// For convenience, we always run the message through the queue.
-				// This way we can be sure that messages are sent to the server
-				// in the same order they were signaled without much hassle.
-				pending_messages_.push_back(msg);
-			}
-
-			if (!pending_messages_.empty() && !client_->IsSendingMessage()) {
-				msg = pending_messages_.front();
-				pending_messages_.pop_front();
-
-				if (!client_->SendToPeer(peer_id_, *msg) && peer_id_ != -1) {
-					LOG(LS_ERROR) << "SendToPeer failed";
-					DisconnectFromServer();
-				}
-				delete msg;
-			}			
-
-			if (!peer_connection_.get())
-			peer_id_ = -1;
-
-			break;
-		}
-
-		default:
-		ASSERT(false);
-		break;
-	}
-}
-
-void Conductor::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
+void Conductor::OnSuccess(webrtc::SessionDescriptionInterface* desc) 
+{
 	peer_connection_->SetLocalDescription(DummySetSessionDescriptionObserver::Create(), desc);
 	Json::StyledWriter writer;
 	Json::Value jmessage;
@@ -412,14 +264,11 @@ void Conductor::OnSuccess(webrtc::SessionDescriptionInterface* desc) {
 	std::string sdp;
 	desc->ToString(&sdp);
 	jmessage[kSessionDescriptionSdpName] = sdp;
-	SendMessage(writer.write(jmessage));
+	offer_ = writer.write(jmessage);
+	LOG(INFO) << offer_;
 }
 
-void Conductor::OnFailure(const std::string& error) {
+void Conductor::OnFailure(const std::string& error) 
+{
 	LOG(LERROR) << error;
-}
-
-void Conductor::SendMessage(const std::string& json_object) {
-	std::string* msg = new std::string(json_object);
-	this->PostMessage(SEND_MESSAGE_TO_PEER, msg);
 }

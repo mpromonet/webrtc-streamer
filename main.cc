@@ -22,8 +22,7 @@
 
 #include "mongoose.h"
 
-#include "conductor.h"
-#include "peer_connection_client.h"
+#include "webrtc.h"
 
 
 typedef int (*callback)(struct mg_connection *conn);
@@ -36,153 +35,37 @@ struct url_handler
 	callback_notify handle_notify;
 };
 
-static int id = 1;
-struct peer
-{
-	peer(const std::string& name) : m_name(name),m_connected(1) {};
-	std::string m_name;
-	int m_connected;
-};
-
-std::map<int,peer> map;
-std::list< std::tuple<int,int,std::string> > msgList;
-
-void answer(struct mg_connection *conn, int id, const std::string& body)
-{
-	std::ostringstream os;
-	
-	os << "HTTP/1.1 200 OK\r\n";
-	
-	os << "Cache-Control: no-cache\r\n";
-	os << "Content-Type: text/plain\r\n";
-	os << "Content-Length: " << body.size() << "\r\n";
-	if (id != 0) os << "Pragma: " << id << "\r\n";
-	os << "\r\n";
-	os << body;
-	
-	std::string msg(os.str());
-	LOG(INFO) << "send peer:"<<  id << " " << body	<< std::endl;
-	mg_write(conn, msg.c_str(), msg.size());
-}
-
-void post(const std::string& body)
-{
-	for (std::map<int,peer>::iterator it = map.begin() ; it!= map.end(); ++it)
-	{
-		msgList.push_back(std::tuple<int,int,std::string>(it->first,it->first,body));
-	}
-}
-
-int handle_signin(struct mg_connection *conn) 
-{
-	std::string name(conn->query_string);
-	LOG(INFO) << __FUNCTION__ << " " << name << std::endl;
-	int peerid = id++;
-	peer newpeer(name);
-	
-	std::ostringstream os;
-	os << newpeer.m_name << "," << peerid << "," <<  newpeer.m_connected << "\r\n";
-
-	for (std::map<int,peer>::iterator it = map.begin() ; it!= map.end(); ++it)
-	{
-		os << it->second.m_name << "," << it->first << "," <<  it->second.m_connected << "\r\n";
-	}
-	
-	std::string body(os.str());
-	answer(conn, peerid, body);
-	
-	map.insert(std::pair<int,peer>(peerid,newpeer));
-	post(body);
-	
-	return MG_TRUE;
-}
-
-int handle_signout(struct mg_connection *conn) 
-{
-	char peer_id[64];
-	mg_get_var(conn, "peer_id", peer_id, sizeof(peer_id));
-	LOG(INFO) << __FUNCTION__ << " " << peer_id;
-	
-	int peerid = atoi(peer_id);
-	std::map<int,peer>::iterator it = map.find(peerid);
-	if (it != map.end())
-	{
-		it->second.m_connected = 0;
-		
-		std::ostringstream os;
-		os << it->second.m_name << "," << it->first << "," <<  it->second.m_connected << "\r\n";
-		std::string body(os.str());
-		answer(conn, peerid, body);				
-		
-		map.erase(it);		
-		post(body);
-	}
-	
-	return MG_TRUE;
-}
-
-int handle_wait(struct mg_connection *conn) 
-{
-	char peer_id[64];
-	mg_get_var(conn, "peer_id", peer_id, sizeof(peer_id));
-	int peerid = atoi(peer_id);
-		
-	std::ostringstream os;
-	std::list< std::tuple<int,int,std::string> >::iterator it = msgList.begin();
-	for ( ; it != msgList.end(); ++it)
-	{
-		if (std::get<1>(*it) == peerid)
-		{
-			os << std::get<2>(*it) << "\r\n";
-			std::string body(os.str());
-			answer(conn, std::get<0>(*it), body);
-			
-			msgList.erase(it);
-			LOG(INFO) << __FUNCTION__ << " nb pending message " << msgList.size();
-			break;
-		}
-	}
-	
-	return MG_TRUE;
-}
-
-int handle_message(struct mg_connection *conn) 
-{
-	char peer_id[64];
-	mg_get_var(conn, "peer_id", peer_id, sizeof(peer_id));
-	char to[64];
-	mg_get_var(conn, "to", to, sizeof(to));
-	std::cout << "handle_message "<<  peer_id << "=>" << to	<< std::endl;
-		
-	msgList.push_back(std::tuple<int,int,std::string>(atoi(peer_id), atoi(to), std::string(conn->content,conn->content_len)));
-	return MG_TRUE;
-}
-
-int handle_dump(struct mg_connection *conn) 
+int handle_offer(struct mg_connection *conn) 
 {	
-	std::ostringstream os;
-	for (std::map<int,peer>::iterator it = map.begin() ; it!= map.end(); ++it)
-	{
-		os << it->first << "," << it->second.m_name << "," << it->second.m_connected << "\n";
-	}		
-	
-	std::list< std::tuple<int,int,std::string> >::iterator it = msgList.begin();
-	for ( ; it != msgList.end(); ++it)
-	{
-		os << std::get<0>(*it) << "=>" << std::get<1>(*it) << " " << std::get<2>(*it) << "\n";
-	}
-	std::string msg(os.str());
+	Conductor* conductor =(Conductor*)conn->server_param;	
+	std::string msg(conductor->getOffer());
+	mg_send_data(conn, msg.c_str(), msg.size());
+	return MG_TRUE;
+}
+
+int handle_answer(struct mg_connection *conn) 
+{	
+	Conductor* conductor =(Conductor*)conn->server_param;	
+	std::string answer(conn->content,conn->content_len);
+	conductor->setAnswer(answer);
+	return MG_TRUE;
+}
+
+int handle_candidate(struct mg_connection *conn) 
+{	
+	Conductor* conductor =(Conductor*)conn->server_param;	
+	Json::Value list(conductor->getIceCandidateList());
+	Json::StyledWriter writer;
+	std::string msg(writer.write(list));
 	mg_send_data(conn, msg.c_str(), msg.size());
 	return MG_TRUE;
 }
 
 url_handler urls[] = {
-	{ "/sign_in" , handle_signin  , NULL, NULL },
-	{ "/sign_out", handle_signout , NULL, NULL },
-	{ "/message" , handle_message , NULL, NULL },
-	{ "/wait"    , handle_wait    , NULL, NULL },
-	{ "/dump"    , handle_dump    , NULL, NULL },
-	{ NULL       , NULL           , NULL, NULL },
+	{ "/offer"    , handle_offer    , NULL, NULL },
+	{ "/answer"   , handle_answer   , NULL, NULL },
+	{ "/candidate", handle_candidate, NULL, NULL },
+	{ NULL        , NULL            , NULL, NULL },
 };
 
 const url_handler* find_url(const char* uri)
@@ -274,12 +157,11 @@ int main(int argc, char* argv[]) {
 	rtc::InitializeSSL();
 	
 	// webrtc server
-	PeerConnectionClient client;
-	rtc::scoped_refptr<Conductor> conductor(new rtc::RefCountedObject<Conductor>(&client,device));
-	conductor->StartLogin("127.0.0.1", atoi(port));	
+	rtc::scoped_refptr<Conductor> conductor(new rtc::RefCountedObject<Conductor>(device));
+	conductor->CreateOffer();	
 
 	// http server
-	struct mg_server *server = mg_create_server(NULL, ev_handler);
+	struct mg_server *server = mg_create_server(conductor.get(), ev_handler);
 	mg_set_option(server, "listening_port", port);
 	std::string currentPath(get_current_dir_name());
 	mg_set_option(server, "document_root", currentPath.c_str());
@@ -302,8 +184,6 @@ int main(int argc, char* argv[]) {
 	{
 		 mg_poll_server(server, 10);
 	}
-
-	conductor->Close();
 	
 	rtc::CleanupSSL();
 	return 0;
