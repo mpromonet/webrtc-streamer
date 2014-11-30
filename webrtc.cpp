@@ -108,7 +108,6 @@ bool Conductor::InitializePeerConnection()
 void Conductor::DeletePeerConnection() {
 	peer_connection_ = NULL;
 	active_streams_.clear();
-	local_renderer_.reset();
 	peer_connection_factory_ = NULL;
 }
 
@@ -148,8 +147,8 @@ void Conductor::setAnswer(const std::string& message)
 	}
 	std::string type;
 	std::string json_object;
-
 	GetStringFromJsonObject(jmessage, kSessionDescriptionTypeName, &type);
+	
 	if (!type.empty()) {
 		std::string sdp;
 		if (!GetStringFromJsonObject(jmessage, kSessionDescriptionSdpName, &sdp)) {
@@ -166,7 +165,6 @@ void Conductor::setAnswer(const std::string& message)
 		if (session_description->type() == webrtc::SessionDescriptionInterface::kOffer) {
 			peer_connection_->CreateAnswer(this, NULL);
 		}
-		return;
 	} else {
 		std::string sdp_mid;
 		int sdp_mlineindex = 0;
@@ -187,8 +185,6 @@ void Conductor::setAnswer(const std::string& message)
 			return;
 		}
 		LOG(INFO) << " Received candidate :" << message;
-		
-		return;
 	}
 }
 
@@ -242,12 +238,10 @@ void Conductor::AddStreams()
 	rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(peer_connection_factory_->CreateAudioTrack(kAudioLabel, peer_connection_factory_->CreateAudioSource(NULL)));
 	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(peer_connection_factory_->CreateVideoTrack(kVideoLabel, peer_connection_factory_->CreateVideoSource(OpenVideoCaptureDevice(), NULL)));
 
-	local_renderer_.reset(new VideoRenderer(video_track));
-
 	rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(kStreamLabel);
-
 	stream->AddTrack(audio_track);
 	stream->AddTrack(video_track);
+	
 	if (!peer_connection_->AddStream(stream)) {
 		LOG(LS_ERROR) << "Adding stream to PeerConnection failed";
 	}
@@ -257,6 +251,7 @@ void Conductor::AddStreams()
 
 void Conductor::OnSuccess(webrtc::SessionDescriptionInterface* desc) 
 {
+	LOG(INFO) << __FUNCTION__;
 	peer_connection_->SetLocalDescription(DummySetSessionDescriptionObserver::Create(), desc);
 	Json::StyledWriter writer;
 	Json::Value jmessage;

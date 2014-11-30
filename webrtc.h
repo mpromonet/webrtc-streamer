@@ -53,30 +53,10 @@ class Conductor : public webrtc::PeerConnectionObserver,
   virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc);
   virtual void OnFailure(const std::string& error);
 
- protected:
-	 
-  class VideoRenderer : public webrtc::VideoRendererInterface {
-   public:
-    VideoRenderer(webrtc::VideoTrackInterface* track_to_render) : width_(0), height_(0), rendered_track_(track_to_render) { rendered_track_->AddRenderer(this); }
-    virtual ~VideoRenderer() { rendered_track_->RemoveRenderer(this); }
-
-    // VideoRendererInterface implementation
-    virtual void SetSize(int width, int height) { width_= width ;  height_= height; };
-    virtual void RenderFrame(const cricket::VideoFrame* frame) {};
-
-    int width() const {  return width_;  }
-    int height() const {   return height_;  }
-
-   protected: 
-    int width_;
-    int height_;
-    rtc::scoped_refptr<webrtc::VideoTrackInterface> rendered_track_;
-  }; 
- 
+ protected: 
   rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
   rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory_;
   std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >  active_streams_;
-  rtc::scoped_ptr<VideoRenderer> local_renderer_;
   std::string devid_;
   std::string offer_;
   Json::Value iceCandidateList_;
