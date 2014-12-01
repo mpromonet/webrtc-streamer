@@ -61,11 +61,20 @@ int handle_candidate(struct mg_connection *conn)
 	return MG_TRUE;
 }
 
+int handle_addicecandidate(struct mg_connection *conn) 
+{	
+	Conductor* conductor =(Conductor*)conn->server_param;	
+	std::string answer(conn->content,conn->content_len);
+	conductor->addIceCandidate(answer);
+	return MG_TRUE;
+}
+
 url_handler urls[] = {
-	{ "/offer"    , handle_offer    , NULL, NULL },
-	{ "/answer"   , handle_answer   , NULL, NULL },
-	{ "/candidate", handle_candidate, NULL, NULL },
-	{ NULL        , NULL            , NULL, NULL },
+	{ "/offer"          , handle_offer          , NULL, NULL },
+	{ "/answer"         , handle_answer         , NULL, NULL },
+	{ "/candidate"      , handle_candidate      , NULL, NULL },
+	{ "/addicecandidate", handle_addicecandidate, NULL, NULL },
+	{ NULL              , NULL                  , NULL, NULL },
 };
 
 const url_handler* find_url(const char* uri)
@@ -124,7 +133,7 @@ static int ev_handler(struct mg_connection *conn, enum mg_event ev)
 int main(int argc, char* argv[]) {
 	const char* port     = "8080";
 	const char* device   = "/dev/video0";
-	const char* stunport = "3478";
+	const char* stunurl  = "127.0.0.1:3478";
 	int logLevel = rtc::LERROR; 
 	
 	int c = 0;     
@@ -157,11 +166,10 @@ int main(int argc, char* argv[]) {
 	rtc::InitializeSSL();
 	
 	// webrtc server
-	rtc::scoped_refptr<Conductor> conductor(new rtc::RefCountedObject<Conductor>(device));
-	conductor->CreateOffer();	
+	Conductor conductor(device, stunurl);
 
 	// http server
-	struct mg_server *server = mg_create_server(conductor.get(), ev_handler);
+	struct mg_server *server = mg_create_server(&conductor, ev_handler);
 	mg_set_option(server, "listening_port", port);
 	std::string currentPath(get_current_dir_name());
 	mg_set_option(server, "document_root", currentPath.c_str());
@@ -169,8 +177,7 @@ int main(int argc, char* argv[]) {
 	
 	// STUN server
 	rtc::SocketAddress server_addr;
-	server_addr.SetIP("0.0.0.0");
-	server_addr.SetPort(atoi(stunport));
+	server_addr.FromString(stunurl);
 	cricket::StunServer* stunserver = NULL;
 	rtc::AsyncUDPSocket* server_socket = rtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
 	if (server_socket) 

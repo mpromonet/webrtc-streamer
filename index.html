@@ -35,7 +35,7 @@
 		sdpMid: event.candidate.sdpMid,
 		candidate: event.candidate.candidate
 	    };
-	    sendAnswer(JSON.stringify(candidate));
+	    send("/addicecandidate",JSON.stringify(candidate));
 	} else {
 	    trace("End of candidates.");
 	}
@@ -59,10 +59,10 @@
         elem.innerHTML += txt + "<br>";
     }
 
-    function sendAnswer(data) {
+    function send(method,data) {
         try {
             var r = new XMLHttpRequest();
-            r.open("POST","/answer", true);
+            r.open("POST",method, true);
             r.setRequestHeader("Content-Type", "text/plain");
             r.send(data);
             console.log(peer_id," Send ", data);
@@ -92,7 +92,7 @@
 				pc.createAnswer(function(sessionDescription) {
 					trace("Create answer:" + JSON.stringify(sessionDescription));
 					pc.setLocalDescription(sessionDescription);
-					sendAnswer(JSON.stringify(sessionDescription));
+					send("/answer",JSON.stringify(sessionDescription));
 				}, function(error) { 
 					trace("Create answer error:" + error);
 				}, mediaConstraints); 			
