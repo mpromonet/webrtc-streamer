@@ -33,9 +33,9 @@ std::pair<std::map<std::string, callback>::iterator,bool> m_urlmap ## fct = m_ur
 int fct(struct mg_connection *arg) \
 /* */
 
-URL_CALLBACK("/addicecandidate", handle_offer, conn)
+URL_CALLBACK("/offer", handle_offer, conn)
 {	
-	Conductor* conductor =(Conductor*)conn->server_param;
+	PeerConnectionManager* conductor =(PeerConnectionManager*)conn->server_param;
 	std::string peerid;	
 	std::string msg(conductor->getOffer(peerid));
 	mg_send_header(conn, "peerid", peerid.c_str());
@@ -45,16 +45,23 @@ URL_CALLBACK("/addicecandidate", handle_offer, conn)
 
 URL_CALLBACK("/answer", handle_answer, conn)
 {	
-	Conductor* conductor =(Conductor*)conn->server_param;	
+	PeerConnectionManager* conductor =(PeerConnectionManager*)conn->server_param;	
 	std::string answer(conn->content,conn->content_len);
-	conductor->setAnswer(mg_get_header(conn, "peerid"), answer);
+	std::string peerid;
+	const char * peeridheader = mg_get_header(conn, "peerid");
+	if (peeridheader) peerid = peeridheader;
+	conductor->setAnswer(peerid, answer);
+	mg_send_header(conn, "peerid", peerid.c_str());
 	return MG_TRUE;
 }
 
 URL_CALLBACK("/candidate", handle_candidate, conn)
 {	
-	Conductor* conductor =(Conductor*)conn->server_param;	
-	Json::Value list(conductor->getIceCandidateList());
+	PeerConnectionManager* conductor =(PeerConnectionManager*)conn->server_param;	
+	std::string peerid;
+	const char * peeridheader = mg_get_header(conn, "peerid");
+	if (peeridheader) peerid = peeridheader;
+	Json::Value list(conductor->getIceCandidateList(peerid));
 	Json::StyledWriter writer;
 	std::string msg(writer.write(list));
 	mg_send_data(conn, msg.c_str(), msg.size());
@@ -63,9 +70,13 @@ URL_CALLBACK("/candidate", handle_candidate, conn)
 
 URL_CALLBACK("/addicecandidate", handle_addicecandidate, conn)
 {	
-	Conductor* conductor =(Conductor*)conn->server_param;	
+	PeerConnectionManager* conductor =(PeerConnectionManager*)conn->server_param;	
 	std::string answer(conn->content,conn->content_len);
-	conductor->addIceCandidate(mg_get_header(conn, "peerid"), answer);
+	std::string peerid;
+	const char * peeridheader = mg_get_header(conn, "peerid");
+	if (peeridheader) peerid = peeridheader;
+	conductor->addIceCandidate(peerid, answer);
+	mg_send_header(conn, "peerid", peerid.c_str());
 	return MG_TRUE;
 }
 
@@ -134,7 +145,7 @@ int main(int argc, char* argv[]) {
 	rtc::InitializeSSL();
 	
 	// webrtc server
-	Conductor conductor(device, stunurl);
+	PeerConnectionManager conductor(device, stunurl);
 
 	// http server
 	struct mg_server *server = mg_create_server(&conductor, ev_handler);

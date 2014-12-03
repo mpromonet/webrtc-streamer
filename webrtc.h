@@ -19,60 +19,52 @@
 #include "webrtc/base/json.h"
 
 
-class DummyCreateSessionDescriptionObserver : public webrtc::CreateSessionDescriptionObserver {
+class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver {
 	public:
-		static DummyCreateSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc) {  
-			return  new rtc::RefCountedObject<DummyCreateSessionDescriptionObserver>(pc);  
+		static SetSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc, const std::string& type) {
+			return  new rtc::RefCountedObject<SetSessionDescriptionObserver>(pc, type);  
 		}
-		virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc);
+		virtual void OnSuccess(){
+			LOG(LERROR) << __PRETTY_FUNCTION__ << " type:" << m_type;	
+		}
 		virtual void OnFailure(const std::string& error) {
-			LOG(LERROR) << __FUNCTION__ << " " << error;
+			LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
 		}
 	protected:
-		DummyCreateSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc) : m_pc(pc) {};
-			
-	private:
-		webrtc::PeerConnectionInterface* m_pc;
-};
-
-class DummySetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver {
-	public:
-		static DummySetSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc, const std::string& type) {
-			return  new rtc::RefCountedObject<DummySetSessionDescriptionObserver>(pc, type);  
-		}
-		virtual void OnSuccess();
-		virtual void OnFailure(const std::string& error) {
-			LOG(LERROR) << __FUNCTION__ << " " << error;
-		}
-	protected:
-		DummySetSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc, const std::string& type) : m_pc(pc), m_type(type) {};
+		SetSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc, const std::string& type) : m_pc(pc), m_type(type) {};
 			
 	private:
 		webrtc::PeerConnectionInterface* m_pc;
 		std::string m_type;
 };
 
-class Conductor : public webrtc::PeerConnectionObserver {
+class CreateSessionDescriptionObserver : public webrtc::CreateSessionDescriptionObserver {
 	public:
-		Conductor(const std::string & devid, const std::string & stunurl);
-		~Conductor();
-
-		void CreateOffer();
-		const std::string getOffer();
-		const Json::Value & getIceCandidateList() {return iceCandidateList_;};
-		void setAnswer(const std::string&);
-		void addIceCandidate(const std::string&);
-
-
+		static CreateSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc) {  
+			return  new rtc::RefCountedObject<CreateSessionDescriptionObserver>(pc);  
+		}
+		virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc) {
+			LOG(LERROR) << __PRETTY_FUNCTION__ << " type:" << desc->type();
+			m_pc->SetLocalDescription(SetSessionDescriptionObserver::Create(m_pc, desc->type()), desc);
+		}
+		virtual void OnFailure(const std::string& error) {
+			LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
+		}
 	protected:
-		rtc::scoped_refptr<webrtc::PeerConnectionInterface> CreatePeerConnection();
-		void DeletePeerConnection();
-		void AddStreams(webrtc::PeerConnectionInterface* peer_connection);
-		cricket::VideoCapturer* OpenVideoCaptureDevice();
+		CreateSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc) : m_pc(pc) {};
+			
+	private:
+		webrtc::PeerConnectionInterface* m_pc;
+};
 
-		//
-		// PeerConnectionObserver implementation.
-		//
+class PeerConnectionObserver : public webrtc::PeerConnectionObserver {
+	public:
+		static PeerConnectionObserver* Create() {
+			return  new PeerConnectionObserver();  
+		}
+		void setPeerConnection(webrtc::PeerConnectionInterface* pc) { m_pc = pc; };
+		Json::Value getIceCandidateList() { return iceCandidateList_; };
+		
 		virtual void OnStateChange(webrtc::PeerConnectionObserver::StateType state_changed) {}
 		virtual void OnAddStream(webrtc::MediaStreamInterface* stream) {}
 		virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) {}
@@ -80,11 +72,36 @@ class Conductor : public webrtc::PeerConnectionObserver {
 		virtual void OnRenegotiationNeeded() {}
 		virtual void OnIceChange() {}
 		virtual void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
+			
+	protected:
+		PeerConnectionObserver() : m_pc(NULL) {};
+			
+	private:
+		webrtc::PeerConnectionInterface* m_pc;
+		Json::Value iceCandidateList_;
+};
+
+class PeerConnectionManager {
+	public:
+		PeerConnectionManager(const std::string & devid, const std::string & stunurl);
+		~PeerConnectionManager();
+
+		const std::string getOffer(std::string &peerid);
+		const Json::Value getIceCandidateList(const std::string &peerid);
+		void setAnswer(const std::string &peerid, const std::string&);
+		void addIceCandidate(const std::string &peerid, const std::string&);
+
+
+	protected:
+		std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionObserver* > CreatePeerConnection();
+		void DeletePeerConnection();
+		void AddStreams(webrtc::PeerConnectionInterface* peer_connection);
+		cricket::VideoCapturer* OpenVideoCaptureDevice();
 
 	protected: 
-		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection_;
 		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory_;
 		std::map<std::string, rtc::scoped_refptr<webrtc::PeerConnectionInterface> >  peer_connection_map_;
+		std::map<std::string, PeerConnectionObserver* >  peer_connectionobs_map_;
 		std::string devid_;
 		std::string stunurl_;
 		Json::Value iceCandidateList_;

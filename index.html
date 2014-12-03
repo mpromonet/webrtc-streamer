@@ -35,7 +35,7 @@
 		sdpMid: event.candidate.sdpMid,
 		candidate: event.candidate.candidate
 	    };
-	    send("/addicecandidate",JSON.stringify(candidate));
+	    send("/addicecandidate",pc.peerid,JSON.stringify(candidate));
 	} else {
 	    trace("End of candidates.");
 	}
@@ -59,16 +59,16 @@
         elem.innerHTML += txt + "<br>";
     }
 
-    function send(method,data) {
+    function send(method,peerid,data) {
         try {
             var r = new XMLHttpRequest();
             r.open("POST",method, true);
             r.setRequestHeader("Content-Type", "text/plain");
+	    r.setRequestHeader("peerid", peerid);
             r.send(data);
-            console.log(peer_id," Send ", data);
             r = null;
         } catch (e) {
-          trace("send to peer error: " + e.description);
+          trace("send to peer:" + peerid + " error: " + e.description);
         }
     }
 
@@ -81,18 +81,19 @@
 		pc = createPeerConnection();
 
 		request = new XMLHttpRequest();
+		
 		request.open("GET", "/offer" , false);
 		request.send();
-
 		if (request.status === 200) {
-			trace("offer: " + request.responseText);
+			trace("peerid: " + request.getResponseHeader("peerid") + " offer: " + request.responseText);
+			pc.peerid = request.getResponseHeader("peerid");
 			var dataJson = JSON.parse(request.responseText);
 			pc.setRemoteDescription(new RTCSessionDescription(dataJson), function () { 
-				trace('setRemoteDescription: success'); 
+				trace('setRemoteDescription: success ' + pc.peerid); 
 				pc.createAnswer(function(sessionDescription) {
 					trace("Create answer:" + JSON.stringify(sessionDescription));
 					pc.setLocalDescription(sessionDescription);
-					send("/answer",JSON.stringify(sessionDescription));
+					send("/answer",pc.peerid,JSON.stringify(sessionDescription));
 				}, function(error) { 
 					trace("Create answer error:" + error);
 				}, mediaConstraints); 			
@@ -100,6 +101,7 @@
 		}	  			
 			
 		request.open("GET", "/candidate" , false);
+		request.setRequestHeader("peerid", pc.peerid);
 		request.send();
 		if (request.status === 200) {
 			trace("candidate: " + request.responseText);
@@ -117,7 +119,7 @@
 		}
 			
 	} catch (e) {
-		trace("error: " + e.description);
+		trace("connect error: " + e.description);
 	}	    
     }
     
