@@ -24,34 +24,34 @@
 
 #include "webrtc.h"
 
-
 typedef int (*callback)(struct mg_connection *conn);
-typedef int (*callback_notify)(struct mg_connection *conn, char* buffer, ssize_t size);
-struct url_handler
-{
-	const char* uri;
-	callback handle_req;
-	callback handle_close;
-	callback_notify handle_notify;
-};
+std::map<std::string, callback> m_urlmap;
 
-int handle_offer(struct mg_connection *conn) 
+#define URL_CALLBACK(uri, fct, arg) \
+int fct(struct mg_connection *arg); \
+std::pair<std::map<std::string, callback>::iterator,bool> m_urlmap ## fct = m_urlmap.insert(std::pair<std::string, callback>(uri,fct)); \
+int fct(struct mg_connection *arg) \
+/* */
+
+URL_CALLBACK("/addicecandidate", handle_offer, conn)
 {	
-	Conductor* conductor =(Conductor*)conn->server_param;	
-	std::string msg(conductor->getOffer());
+	Conductor* conductor =(Conductor*)conn->server_param;
+	std::string peerid;	
+	std::string msg(conductor->getOffer(peerid));
+	mg_send_header(conn, "peerid", peerid.c_str());
 	mg_send_data(conn, msg.c_str(), msg.size());
 	return MG_TRUE;
 }
 
-int handle_answer(struct mg_connection *conn) 
+URL_CALLBACK("/answer", handle_answer, conn)
 {	
 	Conductor* conductor =(Conductor*)conn->server_param;	
 	std::string answer(conn->content,conn->content_len);
-	conductor->setAnswer(answer);
+	conductor->setAnswer(mg_get_header(conn, "peerid"), answer);
 	return MG_TRUE;
 }
 
-int handle_candidate(struct mg_connection *conn) 
+URL_CALLBACK("/candidate", handle_candidate, conn)
 {	
 	Conductor* conductor =(Conductor*)conn->server_param;	
 	Json::Value list(conductor->getIceCandidateList());
@@ -61,39 +61,13 @@ int handle_candidate(struct mg_connection *conn)
 	return MG_TRUE;
 }
 
-int handle_addicecandidate(struct mg_connection *conn) 
+URL_CALLBACK("/addicecandidate", handle_addicecandidate, conn)
 {	
 	Conductor* conductor =(Conductor*)conn->server_param;	
 	std::string answer(conn->content,conn->content_len);
-	conductor->addIceCandidate(answer);
+	conductor->addIceCandidate(mg_get_header(conn, "peerid"), answer);
 	return MG_TRUE;
 }
-
-url_handler urls[] = {
-	{ "/offer"          , handle_offer          , NULL, NULL },
-	{ "/answer"         , handle_answer         , NULL, NULL },
-	{ "/candidate"      , handle_candidate      , NULL, NULL },
-	{ "/addicecandidate", handle_addicecandidate, NULL, NULL },
-	{ NULL              , NULL                  , NULL, NULL },
-};
-
-const url_handler* find_url(const char* uri)
-{
-	const url_handler* url = NULL;
-	if (uri != NULL)
-	{
-		for (int i=0; urls[i].uri ; ++i)
-		{			
-			if (strcmp(urls[i].uri, uri) == 0)
-			{
-				url = &urls[i];
-				break;
-			}
-		}
-	}
-	return url;
-}
-
 
 /* ---------------------------------------------------------------------------
 **  mongoose callback
@@ -106,19 +80,13 @@ static int ev_handler(struct mg_connection *conn, enum mg_event ev)
 		case MG_AUTH: ret = MG_TRUE; break;
 		case MG_REQUEST: 
 		{
-			const url_handler* url = find_url(conn->uri);
-			if (url && url->handle_req)
+			if (conn->uri)
 			{
-				ret = url->handle_req(conn);
-			}
-		}
-		break;
-		case MG_CLOSE:
-		{
-			const url_handler* url = find_url(conn->uri);
-			if (url && url->handle_close)
-			{
-				ret = url->handle_close(conn);
+				std::map<std::string, callback>::iterator it = m_urlmap.find(conn->uri);
+				if (it != m_urlmap.end())
+				{
+					ret = it->second(conn);
+				}
 			}
 		}
 		break;
@@ -156,7 +124,7 @@ int main(int argc, char* argv[]) {
 	{
 		device = argv[optind];
 	}	
-
+	
 	rtc::LogMessage::LogToDebug(logLevel);
 	rtc::LogMessage::LogTimestamps();
 	rtc::LogMessage::LogThreads();
