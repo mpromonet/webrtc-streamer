@@ -145,30 +145,19 @@ cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice()
 {
 	cricket::VideoCapturer* capturer = NULL;
 	std::vector<cricket::Device> devs;
+	cricket::Device device;
 	rtc::scoped_ptr<cricket::DeviceManagerInterface> dev_manager(cricket::DeviceManagerFactory::Create());
 	if (!dev_manager->Init()) 
 	{
 		LOG(LS_ERROR) << "Can't create device manager";
 	}		
-	else if (!dev_manager->GetVideoCaptureDevices(&devs)) 
+	else if (!dev_manager->GetVideoCaptureDevice(devid_, &device)) 
 	{
-		LOG(LS_ERROR) << "Can't enumerate video devices";
+		LOG(LS_ERROR) << "Can't enumerate get device name:" << devid_;
 	}
 	else
 	{
-		std::vector<cricket::Device>::iterator dev_it = devs.begin();
-		for (; dev_it != devs.end() && (capturer == NULL); ++dev_it) 
-		{
-			capturer = dev_manager->CreateVideoCapturer(*dev_it);
-			if (capturer != NULL)
-			{
-				LOG(WARNING) << "Capturer:" << capturer->GetId() ;
-				if (devid_ != capturer->GetId())
-				{
-					capturer = NULL;
-				}
-			}
-		}
+		capturer = dev_manager->CreateVideoCapturer(device);
 	}
 	return capturer;
 }
