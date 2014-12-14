@@ -26,13 +26,13 @@
 typedef int (*callback)(struct mg_connection *conn);
 std::map<std::string, callback> m_urlmap;
 
-#define URL_CALLBACK(uri, fct, arg) \
-int fct(struct mg_connection *arg); \
-std::pair<std::map<std::string, callback>::iterator,bool> m_urlmap ## fct = m_urlmap.insert(std::pair<std::string, callback>(uri,fct)); \
-int fct(struct mg_connection *arg) \
+#define URL_CALLBACK(uri, arg) \
+int handle_##uri (struct mg_connection *arg); \
+std::pair<std::map<std::string, callback>::iterator,bool> m_urlmap ## uri = m_urlmap.insert(std::pair<std::string, callback>("/"#uri,handle_##uri)); \
+int handle_##uri(struct mg_connection *arg) \
 /* */
 
-URL_CALLBACK("/offer", handle_offer, conn)
+URL_CALLBACK(offer, conn)
 {	
 	PeerConnectionManager* conductor =(PeerConnectionManager*)conn->server_param;
 	std::string peerid;	
@@ -42,7 +42,7 @@ URL_CALLBACK("/offer", handle_offer, conn)
 	return MG_TRUE;
 }
 
-URL_CALLBACK("/answer", handle_answer, conn)
+URL_CALLBACK(answer, conn)
 {	
 	PeerConnectionManager* conductor =(PeerConnectionManager*)conn->server_param;	
 	std::string answer(conn->content,conn->content_len);
@@ -54,7 +54,7 @@ URL_CALLBACK("/answer", handle_answer, conn)
 	return MG_TRUE;
 }
 
-URL_CALLBACK("/candidate", handle_candidate, conn)
+URL_CALLBACK(candidate, conn)
 {	
 	PeerConnectionManager* conductor =(PeerConnectionManager*)conn->server_param;	
 	std::string peerid;
@@ -67,7 +67,7 @@ URL_CALLBACK("/candidate", handle_candidate, conn)
 	return MG_TRUE;
 }
 
-URL_CALLBACK("/addicecandidate", handle_addicecandidate, conn)
+URL_CALLBACK(addicecandidate, conn)
 {	
 	PeerConnectionManager* conductor =(PeerConnectionManager*)conn->server_param;	
 	std::string answer(conn->content,conn->content_len);
