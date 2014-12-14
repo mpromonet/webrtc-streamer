@@ -8,23 +8,10 @@ WEBRTCROOT=../src
 WEBRTCBUILD=Release
 WEBRTCLIBPATH=$(WEBRTCROOT)/out/$(WEBRTCBUILD)
 
-CFLAGS += \
-    -DLOGGING=1 \
-    -DFEATURE_ENABLE_SSL -DFEATURE_ENABLE_PSTN -DHAVE_SCTP -DHAVE_SRTP \
-    -DHAVE_WEBRTC_VIDEO -DHAVE_WEBRTC_VOICE \
-    -D_FILE_OFFSET_BITS=64 \
-    -DENABLE_REMOTING=1 -DENABLE_WEBRTC=1 \
-    -DENABLE_CONFIGURATION_POLICY -DENABLE_NOTIFICATIONS -DUSE_UDEV \
-    -DDONT_EMBED_BUILD_METADATA \
-    -DLINUX -DWEBRTC_LINUX -DPOSIX -DWEBRTC_POSIX \
-    -DDISABLE_DYNAMIC_CAST -D_REENTRANT -DUSE_NSS=1 -DDYNAMIC_ANNOTATIONS_ENABLED=0
-
+CFLAGS += -DWEBRTC_POSIX 
 CFLAGS += -fstack-protector --param=ssp-buffer-size=4 -Werror -pthread \
-    -fno-strict-aliasing -Wno-unused-parameter \
-    -Wno-missing-field-initializers -fvisibility=hidden -pipe \
-    -Wno-char-subscripts -Wno-format \
-    -Wno-unused-result -fno-ident -fdata-sections \
-    -ffunction-sections -funwind-tables -fno-rtti
+    -fno-strict-aliasing -fvisibility=hidden -pipe \
+    -fno-ident -fdata-sections -ffunction-sections -funwind-tables 
     
 CFLAGS += -I $(WEBRTCROOT) -I $(WEBRTCROOT)/chromium/src/third_party/jsoncpp/source/include
 LDFLAGS +=\
@@ -52,6 +39,7 @@ LDFLAGS +=\
 	$(WEBRTCLIBPATH)/obj/webrtc/modules/libvideo_render_module.a \
 	$(WEBRTCLIBPATH)/obj/webrtc/modules/libwebrtc_utility.a \
 	$(WEBRTCLIBPATH)/obj/webrtc/modules/libaudio_coding_module.a \
+	$(WEBRTCLIBPATH)/obj/webrtc/modules/libaudio_decoder_interface.a \
 	$(WEBRTCLIBPATH)/obj/webrtc/modules/libCNG.a \
 	$(WEBRTCLIBPATH)/obj/webrtc/modules/libG711.a \
 	$(WEBRTCLIBPATH)/obj/webrtc/modules/libG722.a \
@@ -89,14 +77,13 @@ LDFLAGS +=\
 	$(WEBRTCLIBPATH)/obj/chromium/src/third_party/openmax_dl/dl/libopenmax_dl.a \
 	$(WEBRTCLIBPATH)/obj/chromium/src/third_party/opus/libopus.a \
 	$(WEBRTCLIBPATH)/obj/chromium/src/third_party/libvpx/libvpx.a \
-	$(WEBRTCLIBPATH)/obj/chromium/src/third_party/libvpx/libvpx_asm_offsets_vp8.a \
 	$(WEBRTCLIBPATH)/obj/chromium/src/third_party/libvpx/libvpx_intrinsics_mmx.a \
 	$(WEBRTCLIBPATH)/obj/chromium/src/third_party/libvpx/libvpx_intrinsics_sse2.a \
 	$(WEBRTCLIBPATH)/obj/chromium/src/third_party/libvpx/libvpx_intrinsics_ssse3.a \
 	$(WEBRTCLIBPATH)/obj/chromium/src/third_party/libvpx/libvpx_intrinsics_sse4_1.a \
 	$(WEBRTCLIBPATH)/obj/chromium/src/third_party/protobuf/libprotobuf_lite.a \
 	$(WEBRTCLIBPATH)/obj/chromium/src/third_party/libsrtp/libsrtp.a -Wl,--end-group  \
-	-lX11 -lXext -lexpat -ldl -lrt -lnss3 -lnssutil3 -lplc4 -lnspr4 -lm
+	-lX11 -lXext -lexpat -ldl -lnss3 -lnssutil3 -lplc4 -lnspr4 
 
    
 all: $(TARGET)
