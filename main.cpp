@@ -13,7 +13,6 @@
 #include <iostream>
 #include <sstream>
 #include <map>
-#include <tuple>
 #include <list>
 
 #include "webrtc/base/ssladapter.h"
