@@ -5,12 +5,16 @@ TARGET = webrtc-server
 # mongoose
 CFLAGS += -I mongoose
 
+# live555
+CFLAGS += -I /usr/include/liveMedia  -I /usr/include/groupsock -I /usr/include/UsageEnvironment -I /usr/include/BasicUsageEnvironment/
+LDFLAGS += -lliveMedia -lgroupsock -lUsageEnvironment -lBasicUsageEnvironment
+
 # webrtc
 WEBRTCROOT=..
 WEBRTCBUILD=Release
 WEBRTCLIBPATH=$(WEBRTCROOT)/src/out/$(WEBRTCBUILD)
 
-CFLAGS += -DWEBRTC_POSIX 
+CFLAGS += -DWEBRTC_POSIX -fno-rtti
 CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/chromium/src/third_party/jsoncpp/source/include
 LDFLAGS += -lX11 -lXext -lexpat -ldl -lnss3 -lnssutil3 -lplc4 -lnspr4 
 

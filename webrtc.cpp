@@ -8,7 +8,6 @@
 ** -------------------------------------------------------------------------*/
 
 #include <iostream>
-
 #include <utility>
 
 #include "talk/app/webrtc/videosourceinterface.h"
@@ -19,6 +18,7 @@
 #include "webrtc/base/logging.h"
 
 #include "webrtc.h"
+#include "rtspvideocapturer.h"
 
 const char kAudioLabel[] = "audio_label";
 const char kVideoLabel[] = "video_label";
@@ -141,30 +141,52 @@ void PeerConnectionManager::addIceCandidate(const std::string &peerid, const std
 	}	
 }
 
+class VideoCapturerListener : public sigslot::has_slots<> {
+public:
+	VideoCapturerListener(cricket::VideoCapturer* capturer)
+	{
+		capturer->SignalFrameCaptured.connect(this, &VideoCapturerListener::OnFrameCaptured);
+	}
+
+	void OnFrameCaptured(cricket::VideoCapturer* capturer, const cricket::CapturedFrame* frame) 
+	{
+		LOG(LS_ERROR) << "OnFrameCaptured";
+	}
+};
+						    
 cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice() 
 {
 	cricket::VideoCapturer* capturer = NULL;
-	std::vector<cricket::Device> devs;
-	cricket::Device device;
-	rtc::scoped_ptr<cricket::DeviceManagerInterface> dev_manager(cricket::DeviceManagerFactory::Create());
-	if (!dev_manager->Init()) 
+	if (devid_.find("rtsp://") == 0)
 	{
-		LOG(LS_ERROR) << "Can't create device manager";
-	}		
-	else if (!dev_manager->GetVideoCaptureDevice(devid_, &device)) 
-	{
-		LOG(LS_ERROR) << "Can't enumerate get device name:" << devid_;
+		capturer = new RTSPVideoCapturer(devid_);
 	}
 	else
 	{
-		capturer = dev_manager->CreateVideoCapturer(device);
+		std::vector<cricket::Device> devs;
+		cricket::Device device;
+		rtc::scoped_ptr<cricket::DeviceManagerInterface> dev_manager(cricket::DeviceManagerFactory::Create());
+		if (!dev_manager->Init()) 
+		{
+			LOG(LS_ERROR) << "Can't create device manager";
+		}		
+		else if (!dev_manager->GetVideoCaptureDevice(devid_, &device)) 
+		{
+			LOG(LS_ERROR) << "Can't enumerate get device name:" << devid_;
+		}
+		else
+		{
+			capturer = dev_manager->CreateVideoCapturer(device);
+		}
 	}
 	return capturer;
 }
 
 void PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_connection) 
 {
-	rtc::scoped_refptr<webrtc::VideoSourceInterface> source = peer_connection_factory_->CreateVideoSource(OpenVideoCaptureDevice(), NULL);
+	cricket::VideoCapturer* capturer = OpenVideoCaptureDevice();
+	VideoCapturerListener listener(capturer);
+	rtc::scoped_refptr<webrtc::VideoSourceInterface> source = peer_connection_factory_->CreateVideoSource(capturer, NULL);
 	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(peer_connection_factory_->CreateVideoTrack(kVideoLabel, source));
 	rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(kStreamLabel);
 	if (!stream.get())
