@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -W -pthread -g 
+CFLAGS = -W -pthread -g -std=gnu++0x
 TARGET = webrtc-server
 
 # mongoose

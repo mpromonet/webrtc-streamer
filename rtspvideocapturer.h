@@ -31,53 +31,6 @@ class Callback
 		virtual bool notifyData(unsigned char* buffer, ssize_t size) = 0;
 };
 
-class DummySink: public MediaSink {
-public:
-	static DummySink* createNew(UsageEnvironment& env, Callback* callback) { return new DummySink(env, callback); }
-
-private:
-	DummySink(UsageEnvironment& env, Callback* callback) : MediaSink(env), m_callback(callback) 
-	{
-		m_buffer[0] = 0;
-		m_buffer[1] = 0;
-		m_buffer[2] = 0;
-		m_buffer[3] = 1;
-	}
-
-	static void afterGettingFrame(void* clientData, unsigned frameSize,
-				unsigned numTruncatedBytes,
-				struct timeval presentationTime,
-				unsigned durationInMicroseconds)
-	{
-		DummySink* sink = (DummySink*)clientData;
-		sink->afterGettingFrame(frameSize, numTruncatedBytes, presentationTime, durationInMicroseconds);
-	}
-	void afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
-			 struct timeval presentationTime, unsigned durationInMicroseconds)
-	{
-		this->envir() << "NOTIFY size:" << frameSize << "\n";
-		m_callback->notify(m_buffer, frameSize+4);
-		this->continuePlaying();
-	}
-
-private:
-	virtual Boolean continuePlaying()
-	{
-		Boolean ret = False;
-		if (fSource != NULL)
-		{
-			fSource->getNextFrame(m_buffer+4, sizeof(m_buffer)-4,
-					afterGettingFrame, this,
-					onSourceClosure, this);
-			ret = True;
-		}
-		return ret;	
-	}
-
-private:
-	u_int8_t  m_buffer[1024*1024];
-	Callback* m_callback; 	
-};
 
 #define RTSP_CALLBACK(uri, resultCode, resultString) \
 static void continueAfter ## uri ## Stub(RTSPClient* rtspClient, int resultCode, char* resultString) { static_cast<RTSPConnection*>(rtspClient)->continueAfter ## uri(resultCode, resultString); } \
@@ -85,6 +38,55 @@ void continueAfter ## uri (int resultCode, char* resultString) \
 /**/
 class RTSPConnection : public RTSPClient
 {
+	class SessionSink: public MediaSink 
+	{
+		public:
+			static SessionSink* createNew(UsageEnvironment& env, Callback* callback) { return new SessionSink(env, callback); }
+
+		private:
+			SessionSink(UsageEnvironment& env, Callback* callback) : MediaSink(env), m_callback(callback) 
+			{
+				m_buffer[0] = 0;
+				m_buffer[1] = 0;
+				m_buffer[2] = 0;
+				m_buffer[3] = 1;
+			}
+
+			static void afterGettingFrame(void* clientData, unsigned frameSize,
+						unsigned numTruncatedBytes,
+						struct timeval presentationTime,
+						unsigned durationInMicroseconds)
+			{
+				static_cast<SessionSink*>(clientData)->afterGettingFrame(frameSize, numTruncatedBytes, presentationTime, durationInMicroseconds);
+			}
+			
+			void afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
+					 struct timeval presentationTime, unsigned durationInMicroseconds)
+			{
+				this->envir() << "NOTIFY size:" << frameSize << "\n";
+				m_callback->notifyData(m_buffer, frameSize+4);
+				this->continuePlaying();
+			}
+
+		private:
+			virtual Boolean continuePlaying()
+			{
+				Boolean ret = False;
+				if (fSource != NULL)
+				{
+					fSource->getNextFrame(m_buffer+4, sizeof(m_buffer)-4,
+							afterGettingFrame, this,
+							onSourceClosure, this);
+					ret = True;
+				}
+				return ret;	
+			}
+
+		private:
+			u_int8_t  m_buffer[1024*1024];
+			Callback* m_callback; 	
+	};
+	
 	public:
 		RTSPConnection(Callback* callback, char const* rtspURL, int verbosityLevel = 255) 
 						: m_callback(callback)
@@ -149,7 +151,7 @@ class RTSPConnection : public RTSPClient
 			}
 			else
 			{				
-				m_subSession->sink = DummySink::createNew(*m_env, m_callback);
+				m_subSession->sink = SessionSink::createNew(*m_env, m_callback);
 				if (m_subSession->sink == NULL) 
 				{
 					*m_env << "Failed to create a data sink for " << m_subSession->mediumName() << "/" << m_subSession->codecName() << " subsession: " << m_env->getResultMsg() << "\n";
@@ -159,6 +161,7 @@ class RTSPConnection : public RTSPClient
 					*m_env << "Created a data sink for the \"" << m_subSession << "\" subsession\n";
 					m_subSession->sink->startPlaying(*(m_subSession->readSource()), NULL, NULL);
 				}
+				m_callback->notifySession(m_subSession->mediumName(), m_subSession->codecName());
 			}
 			delete[] resultString;
 			this->setupNextSubsession();  
@@ -172,6 +175,7 @@ class RTSPConnection : public RTSPClient
 			}
 			else
 			{
+				*m_env << "PLAY OK " << resultString << "\n";
 			}
 			delete[] resultString;
 		}
@@ -187,6 +191,8 @@ class RTSPConnection : public RTSPClient
 			static_cast<RTSPConnection*>(client)->mainloop();
 			pthread_exit(NULL);
 		}
+		
+		void stop() { m_stop = 1; };
 		
 	protected:
 		UsageEnvironment* m_env;
@@ -247,6 +253,9 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public Callback
 	}
   
 	virtual void Stop() {
+		m_connection.stop();
+		void * status = NULL;
+		pthread_join(m_thid, &status);
 		SetCaptureFormat(NULL);
 		SetCaptureState(cricket::CS_STOPPED);
 	}

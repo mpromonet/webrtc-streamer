@@ -46,7 +46,7 @@ PeerConnectionManager::~PeerConnectionManager()
 	peer_connection_factory_ = NULL;
 }
 
-std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionObserver* > PeerConnectionManager::CreatePeerConnection() 
+std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionManager::PeerConnectionObserver* > PeerConnectionManager::CreatePeerConnection() 
 {
 	webrtc::PeerConnectionInterface::IceServers servers;
 	webrtc::PeerConnectionInterface::IceServer server;
@@ -261,7 +261,7 @@ const Json::Value PeerConnectionManager::getIceCandidateList(const std::string &
 	return value;
 }
 
-void PeerConnectionObserver::OnIceCandidate(const webrtc::IceCandidateInterface* candidate) 
+void PeerConnectionManager::PeerConnectionObserver::OnIceCandidate(const webrtc::IceCandidateInterface* candidate) 
 {
 	LOG(LS_ERROR) << __FUNCTION__ << " " << candidate->sdp_mline_index();
 	Json::StyledWriter writer;

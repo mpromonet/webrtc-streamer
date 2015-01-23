@@ -19,69 +19,69 @@
 #include "webrtc/base/json.h"
 
 
-class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver {
-	public:
-		static SetSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc, const std::string& type) {
-			return  new rtc::RefCountedObject<SetSessionDescriptionObserver>(pc, type);  
-		}
-		virtual void OnSuccess(){
-			LOG(LERROR) << __PRETTY_FUNCTION__ << " type:" << m_type;	
-		}
-		virtual void OnFailure(const std::string& error) {
-			LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
-		}
-	protected:
-		SetSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc, const std::string& type) : m_pc(pc), m_type(type) {};
-			
-	private:
-		webrtc::PeerConnectionInterface* m_pc;
-		std::string m_type;
-};
-
-class CreateSessionDescriptionObserver : public webrtc::CreateSessionDescriptionObserver {
-	public:
-		static CreateSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc) {  
-			return  new rtc::RefCountedObject<CreateSessionDescriptionObserver>(pc);  
-		}
-		virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc) {
-			LOG(LERROR) << __PRETTY_FUNCTION__ << " type:" << desc->type();
-			m_pc->SetLocalDescription(SetSessionDescriptionObserver::Create(m_pc, desc->type()), desc);
-		}
-		virtual void OnFailure(const std::string& error) {
-			LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
-		}
-	protected:
-		CreateSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc) : m_pc(pc) {};
-			
-	private:
-		webrtc::PeerConnectionInterface* m_pc;
-};
-
-class PeerConnectionObserver : public webrtc::PeerConnectionObserver {
-	public:
-		static PeerConnectionObserver* Create() {
-			return  new PeerConnectionObserver();  
-		}
-		void setPeerConnection(webrtc::PeerConnectionInterface* pc) { m_pc = pc; };
-		Json::Value getIceCandidateList() { return iceCandidateList_; };
-		
-		virtual void OnStateChange(webrtc::PeerConnectionObserver::StateType state_changed) {}
-		virtual void OnAddStream(webrtc::MediaStreamInterface* stream) {}
-		virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) {}
-		virtual void OnDataChannel(webrtc::DataChannelInterface* channel) {}
-		virtual void OnRenegotiationNeeded() {}
-		virtual void OnIceChange() {}
-		virtual void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
-			
-	protected:
-		PeerConnectionObserver() : m_pc(NULL) {};
-			
-	private:
-		webrtc::PeerConnectionInterface* m_pc;
-		Json::Value iceCandidateList_;
-};
-
 class PeerConnectionManager {
+	class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver {
+		public:
+			static SetSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc, const std::string& type) {
+				return  new rtc::RefCountedObject<SetSessionDescriptionObserver>(pc, type);  
+			}
+			virtual void OnSuccess(){
+				LOG(LERROR) << __PRETTY_FUNCTION__ << " type:" << m_type;	
+			}
+			virtual void OnFailure(const std::string& error) {
+				LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
+			}
+		protected:
+			SetSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc, const std::string& type) : m_pc(pc), m_type(type) {};
+				
+		private:
+			webrtc::PeerConnectionInterface* m_pc;
+			std::string m_type;
+	};
+
+	class CreateSessionDescriptionObserver : public webrtc::CreateSessionDescriptionObserver {
+		public:
+			static CreateSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc) {  
+				return  new rtc::RefCountedObject<CreateSessionDescriptionObserver>(pc);  
+			}
+			virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc) {
+				LOG(LERROR) << __PRETTY_FUNCTION__ << " type:" << desc->type();
+				m_pc->SetLocalDescription(SetSessionDescriptionObserver::Create(m_pc, desc->type()), desc);
+			}
+			virtual void OnFailure(const std::string& error) {
+				LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
+			}
+		protected:
+			CreateSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc) : m_pc(pc) {};
+				
+		private:
+			webrtc::PeerConnectionInterface* m_pc;
+	};
+
+	class PeerConnectionObserver : public webrtc::PeerConnectionObserver {
+		public:
+			static PeerConnectionObserver* Create() {
+				return  new PeerConnectionObserver();  
+			}
+			void setPeerConnection(webrtc::PeerConnectionInterface* pc) { m_pc = pc; };
+			Json::Value getIceCandidateList() { return iceCandidateList_; };
+			
+			virtual void OnStateChange(webrtc::PeerConnectionObserver::StateType state_changed) {}
+			virtual void OnAddStream(webrtc::MediaStreamInterface* stream) {}
+			virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) {}
+			virtual void OnDataChannel(webrtc::DataChannelInterface* channel) {}
+			virtual void OnRenegotiationNeeded() {}
+			virtual void OnIceChange() {}
+			virtual void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
+				
+		protected:
+			PeerConnectionObserver() : m_pc(NULL) {};
+				
+		private:
+			webrtc::PeerConnectionInterface* m_pc;
+			Json::Value iceCandidateList_;
+	};
+
 	public:
 		PeerConnectionManager(const std::string & devid, const std::string & stunurl);
 		~PeerConnectionManager();
@@ -93,7 +93,7 @@ class PeerConnectionManager {
 
 
 	protected:
-		std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionObserver* > CreatePeerConnection();
+		std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionManager::PeerConnectionObserver* > CreatePeerConnection();
 		void DeletePeerConnection();
 		void AddStreams(webrtc::PeerConnectionInterface* peer_connection);
 		cricket::VideoCapturer* OpenVideoCaptureDevice();

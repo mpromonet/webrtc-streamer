@@ -110,7 +110,7 @@ static int ev_handler(struct mg_connection *conn, enum mg_event ev)
 ** -------------------------------------------------------------------------*/
 int main(int argc, char* argv[]) {
 	const char* port     = "8080";
-	const char* device   = "/dev/video0";
+	const char* device   = "YuvFramesGenerator";
 	const char* stunurl  = "127.0.0.1:3478";
 	int logLevel = rtc::LERROR; 
 	
