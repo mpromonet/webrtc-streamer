@@ -185,21 +185,28 @@ cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice()
 void PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_connection) 
 {
 	cricket::VideoCapturer* capturer = OpenVideoCaptureDevice();
-	VideoCapturerListener listener(capturer);
-	rtc::scoped_refptr<webrtc::VideoSourceInterface> source = peer_connection_factory_->CreateVideoSource(capturer, NULL);
-	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(peer_connection_factory_->CreateVideoTrack(kVideoLabel, source));
-	rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(kStreamLabel);
-	if (!stream.get())
+	if (!capturer)
 	{
-		LOG(LS_ERROR) << "Cannot create stream";
+		LOG(LS_ERROR) << "Cannot create capturer " << devid_;
 	}
 	else
 	{
-		stream->AddTrack(video_track);
-	
-		if (!peer_connection->AddStream(stream)) 
+		VideoCapturerListener listener(capturer);
+		rtc::scoped_refptr<webrtc::VideoSourceInterface> source = peer_connection_factory_->CreateVideoSource(capturer, NULL);
+		rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(peer_connection_factory_->CreateVideoTrack(kVideoLabel, source));
+		rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(kStreamLabel);
+		if (!stream.get())
 		{
-			LOG(LS_ERROR) << "Adding stream to PeerConnection failed";
+			LOG(LS_ERROR) << "Cannot create stream";
+		}
+		else
+		{
+			stream->AddTrack(video_track);
+		
+			if (!peer_connection->AddStream(stream)) 
+			{
+				LOG(LS_ERROR) << "Adding stream to PeerConnection failed";
+			}
 		}
 	}
 }
