@@ -232,6 +232,13 @@ const std::string PeerConnectionManager::getOffer(std::string &peerid)
 		peer_connectionobs_map_.insert(std::pair<std::string, PeerConnectionObserver* >(peerid, peer_connection.second));	
 		
 		peer_connection.first->CreateOffer(CreateSessionDescriptionObserver::Create(peer_connection.first), NULL);
+		
+		// waiting for offer
+		int count=10;
+		while ( (peer_connection.first->local_description() == NULL) && (--count > 0) )
+		{
+			rtc::Thread::Current()->ProcessMessages(10);
+		}
 				
 		const webrtc::SessionDescriptionInterface* desc = peer_connection.first->local_description();
 		if (desc)

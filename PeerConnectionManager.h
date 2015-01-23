@@ -22,13 +22,18 @@
 class PeerConnectionManager {
 	class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver {
 		public:
-			static SetSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc, const std::string& type) {
+			static SetSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc, const std::string& type) 
+			{
 				return  new rtc::RefCountedObject<SetSessionDescriptionObserver>(pc, type);  
 			}
-			virtual void OnSuccess(){
-				LOG(LERROR) << __PRETTY_FUNCTION__ << " type:" << m_type;	
+			virtual void OnSuccess()
+			{
+				std::string sdp;
+				m_pc->local_description()->ToString(&sdp);				
+				LOG(LERROR) << __PRETTY_FUNCTION__ << " type:" << m_type << " " << sdp;	
 			}
-			virtual void OnFailure(const std::string& error) {
+			virtual void OnFailure(const std::string& error) 
+			{
 				LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
 			}
 		protected:
@@ -41,10 +46,12 @@ class PeerConnectionManager {
 
 	class CreateSessionDescriptionObserver : public webrtc::CreateSessionDescriptionObserver {
 		public:
-			static CreateSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc) {  
+			static CreateSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc) 
+			{  
 				return  new rtc::RefCountedObject<CreateSessionDescriptionObserver>(pc);  
 			}
-			virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc) {
+			virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc) 
+			{
 				LOG(LERROR) << __PRETTY_FUNCTION__ << " type:" << desc->type();
 				m_pc->SetLocalDescription(SetSessionDescriptionObserver::Create(m_pc, desc->type()), desc);
 			}
