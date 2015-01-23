@@ -3,12 +3,12 @@
 ** support, and with no warranty, express or implied, as to its usefulness for
 ** any purpose.
 **
-** webrtc.h
+** PeerConnectionManager.h
 ** 
 ** -------------------------------------------------------------------------*/
 
-#ifndef WEBRTC_H_
-#define WEBRTC_H_
+#ifndef PEERCONNECTIONMANAGER_H_
+#define PEERCONNECTIONMANAGER_H_
 
 #include <string>
 
@@ -107,4 +107,4 @@ class PeerConnectionManager {
 		Json::Value iceCandidateList_;
 };
 
-#endif  // PEERCONNECTION_SAMPLES_CLIENT_CONDUCTOR_H_
+#endif  

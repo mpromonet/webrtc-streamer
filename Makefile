@@ -27,7 +27,7 @@ mongoose/mongoose.c:
 	git submodule init
 	git submodule update
 	
-$(TARGET): main.cpp webrtc.cpp mongoose/mongoose.c libWebRTC.a
+$(TARGET): main.cpp PeerConnectionManager.cpp mongoose/mongoose.c libWebRTC.a
 	$(CC) -o $@ $(CFLAGS) $^ $(LDFLAGS)	
 
 clean:

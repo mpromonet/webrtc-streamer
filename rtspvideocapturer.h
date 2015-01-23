@@ -205,74 +205,74 @@ class RTSPConnection : public RTSPClient
 
 class RTSPVideoCapturer : public cricket::VideoCapturer, public Callback
 {
- public:
-	RTSPVideoCapturer(const std::string & uri) : m_connection(this,uri.c_str())
-	{
+	public:
+		RTSPVideoCapturer(const std::string & uri) : m_connection(this,uri.c_str())
+		{
 #ifdef HAVE_WEBRTC_VIDEO
-		set_frame_factory(new cricket::WebRtcVideoFrameFactory());
+			set_frame_factory(new cricket::WebRtcVideoFrameFactory());
 #endif		
-	}
-  
-	virtual ~RTSPVideoCapturer() 
-	{
-	}
-	
-	virtual bool notifySession(const char* media, const char* codec)
-	{
-		std::vector<cricket::VideoFormat> formats;
-		formats.push_back(cricket::VideoFormat(720, 576, cricket::VideoFormat::FpsToInterval(25), cricket::FOURCC_H264));
-		SetSupportedFormats(formats);
-	}
-	
-	virtual bool notifyData(unsigned char* buffer, ssize_t size) 
-	{
-		if (!IsRunning() || !GetCaptureFormat()) {
-			return false;
+			std::vector<cricket::VideoFormat> formats;
+			formats.push_back(cricket::VideoFormat(720, 576, cricket::VideoFormat::FpsToInterval(25), cricket::FOURCC_H264));
+			SetSupportedFormats(formats);
+		}
+	  
+		virtual ~RTSPVideoCapturer() 
+		{
+		}
+		
+		virtual bool notifySession(const char* media, const char* codec)
+		{
+		}
+		
+		virtual bool notifyData(unsigned char* buffer, ssize_t size) 
+		{
+			if (!IsRunning() || !GetCaptureFormat()) {
+				return false;
+			}
+
+			cricket::CapturedFrame frame;
+			frame.width = GetCaptureFormat()->width;
+			frame.height = GetCaptureFormat()->height;
+			frame.fourcc = GetCaptureFormat()->fourcc;
+			frame.data_size = size;
+
+			rtc::scoped_ptr<char[]> data(new char[size]);
+			frame.data = data.get();
+			memcpy(frame.data, buffer, size);
+
+			SignalFrameCaptured(this, &frame);
+			return true;
 		}
 
-		cricket::CapturedFrame frame;
-		frame.width = GetCaptureFormat()->width;
-		frame.height = GetCaptureFormat()->height;
-		frame.fourcc = GetCaptureFormat()->fourcc;
-		frame.data_size = size;
-
-		rtc::scoped_ptr<char[]> data(new char[size]);
-		frame.data = data.get();
-		memcpy(frame.data, buffer, size);
-
-		SignalFrameCaptured(this, &frame);
-		return true;
-	}
-
-	virtual cricket::CaptureState Start(const cricket::VideoFormat& format) 
-	{
-		SetCaptureFormat(&format);
-		SetCaptureState(cricket::CS_RUNNING);
-		pthread_create(&m_thid, NULL, RTSPConnection::MainLoop, &m_connection);
-		return cricket::CS_RUNNING;
-	}
-  
-	virtual void Stop() {
-		m_connection.stop();
-		void * status = NULL;
-		pthread_join(m_thid, &status);
-		SetCaptureFormat(NULL);
-		SetCaptureState(cricket::CS_STOPPED);
-	}
-  
-	virtual bool GetPreferredFourccs(std::vector<uint32>* fourccs) 
-	{
-		fourccs->push_back(cricket::FOURCC_H264);
-		return true;
-	}
-  
-	virtual bool IsScreencast() const { return false; };
-	virtual bool IsRunning() { return this->capture_state() == cricket::CS_RUNNING; }
-  
- private:
-	RTSPConnection m_connection;
-	pthread_t m_thid;
-	
+		virtual cricket::CaptureState Start(const cricket::VideoFormat& format) 
+		{
+			SetCaptureFormat(&format);
+			SetCaptureState(cricket::CS_RUNNING);
+			pthread_create(&m_thid, NULL, RTSPConnection::MainLoop, &m_connection);
+			return cricket::CS_RUNNING;
+		}
+	  
+		virtual void Stop() {
+			m_connection.stop();
+			void * status = NULL;
+			pthread_join(m_thid, &status);
+			SetCaptureFormat(NULL);
+			SetCaptureState(cricket::CS_STOPPED);
+		}
+	  
+		virtual bool GetPreferredFourccs(std::vector<uint32>* fourccs) 
+		{
+			fourccs->push_back(cricket::FOURCC_H264);
+			return true;
+		}
+	  
+		virtual bool IsScreencast() const { return false; };
+		virtual bool IsRunning() { return this->capture_state() == cricket::CS_RUNNING; }
+	  
+	private:
+		RTSPConnection m_connection;
+		pthread_t m_thid;
+		
 };
 
 #endif 

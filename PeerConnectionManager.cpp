@@ -3,7 +3,7 @@
 ** support, and with no warranty, express or implied, as to its usefulness for
 ** any purpose.
 **
-** webrtc.cpp
+** PeerConnectionManager.cpp
 ** 
 ** -------------------------------------------------------------------------*/
 
@@ -17,7 +17,7 @@
 #include "webrtc/base/json.h"
 #include "webrtc/base/logging.h"
 
-#include "webrtc.h"
+#include "PeerConnectionManager.h"
 #include "rtspvideocapturer.h"
 
 const char kAudioLabel[] = "audio_label";

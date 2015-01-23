@@ -21,7 +21,7 @@
 
 #include "mongoose.h"
 
-#include "webrtc.h"
+#include "PeerConnectionManager.h"
 
 typedef int (*callback)(struct mg_connection *conn);
 std::map<std::string, callback> m_urlmap;
