@@ -1,0 +1,12 @@
+before_install: 
+- sudo apt-get update
+- sudo apt-get install git
+- git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+- export PATH=$PATH:$(pwd)/depot_tools
+- fetch webrtc
+- ninja -C out/Release
+language: cpp
+compiler:
+- gcc
+script: 
+- make WEBRTCROOT=.
