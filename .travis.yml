@@ -3,8 +3,8 @@ before_install:
 - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 - export PATH=$PATH:$(pwd)/depot_tools
 - fetch --nohooks webrtc
-- ls -ltr src
-- ./src/build/install-build-deps.sh
+- ls -ltr chromium/src/build
+- chromium/src/build/install-build-deps.sh
 - gclient runhooks
 - ninja -C src/out/Release
 language: cpp
