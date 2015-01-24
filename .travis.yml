@@ -2,7 +2,7 @@ before_install:
 - sudo apt-get update
 - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 - export PATH=$PATH:$(pwd)/depot_tools
-- fetch webrtc --nohooks 
+- fetch --nohooks webrtc
 - build/install-build-deps.sh
 - gclient runhooks
 - ninja -C out/Release
