@@ -35,10 +35,14 @@ int handle_##uri(struct mg_connection *arg) \
 URL_CALLBACK(offer, conn)
 {	
 	PeerConnectionManager* conductor =(PeerConnectionManager*)conn->server_param;
-	std::string peerid;	
-	std::string msg(conductor->getOffer(peerid));
-	mg_send_header(conn, "peerid", peerid.c_str());
-	mg_send_data(conn, msg.c_str(), msg.size());
+	char buffer[1024];
+	if (mg_get_var(conn, "url", buffer, sizeof(buffer)) > 0)
+	{
+		std::string peerid;	
+		std::string msg(conductor->getOffer(peerid,buffer));
+		mg_send_header(conn, "peerid", peerid.c_str());
+		mg_send_data(conn, msg.c_str(), msg.size());
+	}
 	return MG_TRUE;
 }
 
@@ -110,7 +114,6 @@ static int ev_handler(struct mg_connection *conn, enum mg_event ev)
 ** -------------------------------------------------------------------------*/
 int main(int argc, char* argv[]) {
 	const char* port     = "8080";
-	const char* device   = "YuvFramesGenerator";
 	const char* stunurl  = "127.0.0.1:3478";
 	int logLevel = rtc::LERROR; 
 	
@@ -123,17 +126,12 @@ int main(int argc, char* argv[]) {
 			case 'P': port = optarg; break;
 			case 'h':
 			default:
-				std::cout << argv[0] << " [-P http port] [device]"                    << std::endl;
+				std::cout << argv[0] << " [-P http port]"                    << std::endl;
 				std::cout << "\t -v[v[v]] : verbosity"                                << std::endl;
 				std::cout << "\t -P port  : HTTP port (default "<< port << ")"        << std::endl;
-				std::cout << "\t device   : capture device (default "<< device << ")" << std::endl;
 				exit(0);
 		}
 	}
-	if (optind<argc)
-	{
-		device = argv[optind];
-	}	
 	
 	rtc::LogMessage::LogToDebug(logLevel);
 	rtc::LogMessage::LogTimestamps();
@@ -144,7 +142,7 @@ int main(int argc, char* argv[]) {
 	rtc::InitializeSSL();
 	
 	// webrtc server
-	PeerConnectionManager conductor(device, stunurl);
+	PeerConnectionManager conductor(stunurl);
 
 	// http server
 	struct mg_server *server = mg_create_server(&conductor, ev_handler);

@@ -74,6 +74,8 @@
 
 
     function connect() {
+	var list = document.getElementById("urls");
+	var url = list.options[list.selectedIndex].value;
 	document.getElementById("connect").disabled = true;
 	document.getElementById("disconnect").disabled = false;
 	    
@@ -82,7 +84,7 @@
 
 		request = new XMLHttpRequest();
 		
-		request.open("GET", "/offer" , false);
+		request.open("GET", "/offer?url=" + encodeURIComponent(url) , false);
 		request.send();
 		if (request.status === 200) {
 			trace("peerid: " + request.getResponseHeader("peerid") + " offer: " + request.responseText);
@@ -134,19 +136,6 @@
         document.getElementById("disconnect").disabled = true;
     }    
     window.onbeforeunload = disconnect;
-        
-    function toggleMe(obj) {
-        var id = obj.id.replace("toggle", "msg");
-        var t = document.getElementById(id);
-        if (obj.innerText == "+") {
-            obj.innerText = "-";
-            t.style.display = "block";
-        } else {
-            obj.innerText = "+";
-            t.style.display = "none";
-        }
-    }
-        
     
 </script>
 </head>
@@ -156,8 +145,14 @@
             <video id="remote-video" width="50%" height="50%"></video>
         </div>
     </div>
-    <button id="connect" onclick="connect();">Connect</button>
-    <button disabled="true" id="disconnect" onclick="disconnect();">Disconnect</button>
+    <select id="urls">
+      <option selected="selected">YuvFramesGenerator</option>
+      <option>/dev/video0</option>
+      <option>/dev/video1</option>
+      <option>rtsp://192.168.0.17:8554/unicast</option>
+    </select>    
+    <button id="connect"    onclick="connect();">Connect</button>
+    <button id="disconnect" onclick="disconnect();" disabled="true">Disconnect</button>
     <br>
     <button onclick="document.getElementById('debug').innerHTML='';">Clear log</button>
     <pre id="debug"></pre>

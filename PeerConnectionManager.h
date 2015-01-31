@@ -90,26 +90,25 @@ class PeerConnectionManager {
 	};
 
 	public:
-		PeerConnectionManager(const std::string & devid, const std::string & stunurl);
+		PeerConnectionManager(const std::string & stunurl);
 		~PeerConnectionManager();
 
-		const std::string getOffer(std::string &peerid);
+		const std::string getOffer(std::string &peerid, const std::string & url);
 		const Json::Value getIceCandidateList(const std::string &peerid);
 		void setAnswer(const std::string &peerid, const std::string&);
 		void addIceCandidate(const std::string &peerid, const std::string&);
 
 
 	protected:
-		std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionManager::PeerConnectionObserver* > CreatePeerConnection();
+		std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionManager::PeerConnectionObserver* > CreatePeerConnection(const std::string & url);
 		void DeletePeerConnection();
-		void AddStreams(webrtc::PeerConnectionInterface* peer_connection);
-		cricket::VideoCapturer* OpenVideoCaptureDevice();
+		void AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url);
+		cricket::VideoCapturer* OpenVideoCaptureDevice(const std::string & url);
 
 	protected: 
 		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory_;
 		std::map<std::string, rtc::scoped_refptr<webrtc::PeerConnectionInterface> >  peer_connection_map_;
 		std::map<std::string, PeerConnectionObserver* >  peer_connectionobs_map_;
-		std::string devid_;
 		std::string stunurl_;
 		Json::Value iceCandidateList_;
 };
