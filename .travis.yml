@@ -2,7 +2,7 @@ before_install:
 - sudo apt-get update
 - sudo apt-get install git curl
 - curl https://src.chromium.org/svn/trunk/src/build/install-build-deps.sh -o install-build-deps.sh
-- sudo /bin/bash ./install-build-deps.sh
+- sudo /bin/bash ./install-build-deps.sh --no-prompt
 - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 - export PATH=$PATH:$(pwd)/depot_tools
 - fetch --no-history webrtc
