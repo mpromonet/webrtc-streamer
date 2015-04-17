@@ -1,4 +1,5 @@
-CC = g++
+CC = $(CROSS)g++
+AR = $(CROSS)ar
 CFLAGS = -W -pthread -g -std=gnu++0x
 TARGET = webrtc-server
 
@@ -10,7 +11,7 @@ CFLAGS += -I /usr/include/liveMedia  -I /usr/include/groupsock -I /usr/include/U
 LDFLAGS += -lliveMedia -lgroupsock -lUsageEnvironment -lBasicUsageEnvironment
 
 # webrtc
-WEBRTCROOT=..
+WEBRTCROOT=../webrtc
 WEBRTCBUILD=Release
 WEBRTCLIBPATH=$(WEBRTCROOT)/src/out/$(WEBRTCBUILD)
 
@@ -21,7 +22,7 @@ LDFLAGS += -lX11 -lXext -lexpat -ldl -lnss3 -lnssutil3 -lplc4 -lnspr4
 all: $(TARGET)
 
 libWebRTC.a:
-	ar -rcT libWebRTC.a $(shell find $(WEBRTCLIBPATH) -name '*.a')
+	$(AR) -rcT libWebRTC.a $(shell find $(WEBRTCLIBPATH) -name '*.a')
 
 mongoose/mongoose.c: 
 	git submodule init
