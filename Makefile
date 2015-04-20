@@ -13,7 +13,7 @@ LDFLAGS += -lliveMedia -lgroupsock -lUsageEnvironment -lBasicUsageEnvironment
 # webrtc
 WEBRTCROOT=../webrtc
 WEBRTCBUILD=Release
-WEBRTCLIBPATH=$(WEBRTCROOT)/src/out/$(WEBRTCBUILD)
+WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
 
 CFLAGS += -DWEBRTC_POSIX -fno-rtti
 CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/chromium/src/third_party/jsoncpp/source/include
