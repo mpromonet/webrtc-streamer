@@ -86,8 +86,8 @@ void PeerConnectionManager::setAnswer(const std::string &peerid, const std::stri
 	}
 	std::string type;
 	std::string sdp;
-	if (  !GetStringFromJsonObject(jmessage, kSessionDescriptionTypeName, &type)
-	   || !GetStringFromJsonObject(jmessage, kSessionDescriptionSdpName, &sdp)) {
+	if (  !rtc::GetStringFromJsonObject(jmessage, kSessionDescriptionTypeName, &type)
+	   || !rtc::GetStringFromJsonObject(jmessage, kSessionDescriptionSdpName, &sdp)) {
 		LOG(WARNING) << "Can't parse received message.";
 		return;
 	}
@@ -119,9 +119,9 @@ void PeerConnectionManager::addIceCandidate(const std::string &peerid, const std
 	std::string sdp_mid;
 	int sdp_mlineindex = 0;
 	std::string sdp;
-	if (  !GetStringFromJsonObject(jmessage, kCandidateSdpMidName, &sdp_mid) 
-	   || !GetIntFromJsonObject(jmessage, kCandidateSdpMlineIndexName, &sdp_mlineindex) 
-	   || !GetStringFromJsonObject(jmessage, kCandidateSdpName, &sdp)) {
+	if (  !rtc::GetStringFromJsonObject(jmessage, kCandidateSdpMidName, &sdp_mid) 
+	   || !rtc::GetIntFromJsonObject(jmessage, kCandidateSdpMlineIndexName, &sdp_mlineindex) 
+	   || !rtc::GetStringFromJsonObject(jmessage, kCandidateSdpName, &sdp)) {
 		LOG(WARNING) << "Can't parse received message.";
 		return;
 	}
