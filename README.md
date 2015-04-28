@@ -20,7 +20,6 @@ Usage
 	./webrtc-server [-P http port] [device]
 		 -v[v[v]] : verbosity
 		 -P port  : HTTP port (default 8080)
-		 device   : capture device (default /dev/video0)
 
 Limitation
 ----------
