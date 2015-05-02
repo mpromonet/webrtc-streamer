@@ -21,14 +21,14 @@ LDFLAGS += -lX11 -lXext -lexpat -ldl -lnss3 -lnssutil3 -lplc4 -lnspr4
 
 all: $(TARGET)
 
-libWebRTC.a:
-	$(AR) -rcT libWebRTC.a $(shell find $(WEBRTCLIBPATH) -name '*.a')
+libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a:
+	$(AR) -rcT $@ $(shell find $(WEBRTCLIBPATH) -name '*.a')
 
 mongoose/mongoose.c: 
 	git submodule init
 	git submodule update
 	
-$(TARGET): main.cpp PeerConnectionManager.cpp mongoose/mongoose.c libWebRTC.a
+$(TARGET): main.cpp PeerConnectionManager.cpp mongoose/mongoose.c libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
 	$(CC) -o $@ $(CFLAGS) $^ $(LDFLAGS)	
 
 clean:
