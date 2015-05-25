@@ -18,7 +18,9 @@
 #include "webrtc/base/logging.h"
 
 #include "PeerConnectionManager.h"
+#ifdef HAVE_LIVE555
 #include "rtspvideocapturer.h"
+#endif
 
 const char kAudioLabel[] = "audio_label";
 const char kVideoLabel[] = "video_label";
@@ -159,7 +161,9 @@ cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std:
 	cricket::VideoCapturer* capturer = NULL;
 	if (url.find("rtsp://") == 0)
 	{
+#ifdef HAVE_LIVE555
 		capturer = new RTSPVideoCapturer(url);
+#endif
 	}
 	else
 	{

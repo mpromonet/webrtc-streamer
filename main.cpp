@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	
-	rtc::LogMessage::LogToDebug(logLevel);
+	rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)logLevel);
 	rtc::LogMessage::LogTimestamps();
 	rtc::LogMessage::LogThreads();
 	std::cout << "Logger level:" <<  rtc::LogMessage::GetMinLogSeverity() << std::endl; 

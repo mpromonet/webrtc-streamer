@@ -1,4 +1,4 @@
-CC = $(CROSS)g++
+CC = $(CROSS)g++ $(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
 AR = $(CROSS)ar
 CFLAGS = -W -pthread -g -std=gnu++0x
 TARGET = webrtc-server
@@ -7,8 +7,11 @@ TARGET = webrtc-server
 CFLAGS += -I mongoose
 
 # live555
-CFLAGS += -I /usr/include/liveMedia  -I /usr/include/groupsock -I /usr/include/UsageEnvironment -I /usr/include/BasicUsageEnvironment/
-LDFLAGS += -lliveMedia -lgroupsock -lUsageEnvironment -lBasicUsageEnvironment
+ifneq ($(wildcard /usr/include/liveMedia/liveMedia.hh),)
+	CFLAGS += -DHAVE_LIVE555
+	CFLAGS += -I /usr/include/liveMedia  -I /usr/include/groupsock -I /usr/include/UsageEnvironment -I /usr/include/BasicUsageEnvironment/
+	LDFLAGS += -lliveMedia -lgroupsock -lUsageEnvironment -lBasicUsageEnvironment
+endif
 
 # webrtc
 WEBRTCROOT=../webrtc
@@ -17,7 +20,7 @@ WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
 
 CFLAGS += -DWEBRTC_POSIX -fno-rtti
 CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/chromium/src/third_party/jsoncpp/source/include
-LDFLAGS += -lX11 -lXext -lexpat -ldl -lnss3 -lnssutil3 -lplc4 -lnspr4 
+LDFLAGS += -lX11 -lXext -lexpat -ldl -lnss3 -lnssutil3 -lplc4 -lnspr4 -lrt
 
 all: $(TARGET)
 
