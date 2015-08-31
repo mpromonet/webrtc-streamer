@@ -93,7 +93,7 @@ void PeerConnectionManager::setAnswer(const std::string &peerid, const std::stri
 		LOG(WARNING) << "Can't parse received message.";
 		return;
 	}
-	webrtc::SessionDescriptionInterface* session_description(webrtc::CreateSessionDescription(type, sdp));
+	webrtc::SessionDescriptionInterface* session_description(webrtc::CreateSessionDescription(type, sdp, NULL));
 	if (!session_description) {
 		LOG(WARNING) << "Can't parse received session description message.";
 		return;
@@ -127,7 +127,7 @@ void PeerConnectionManager::addIceCandidate(const std::string &peerid, const std
 		LOG(WARNING) << "Can't parse received message.";
 		return;
 	}
-	rtc::scoped_ptr<webrtc::IceCandidateInterface> candidate(webrtc::CreateIceCandidate(sdp_mid, sdp_mlineindex, sdp));
+	rtc::scoped_ptr<webrtc::IceCandidateInterface> candidate(webrtc::CreateIceCandidate(sdp_mid, sdp_mlineindex, sdp, NULL));
 	if (!candidate.get()) {
 		LOG(WARNING) << "Can't parse received candidate message.";
 		return;
