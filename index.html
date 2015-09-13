@@ -74,8 +74,7 @@
 
 
     function connect() {
-	var list = document.getElementById("urls");
-	var url = list.options[list.selectedIndex].value;
+	var url = document.getElementById("url").value;
 	document.getElementById("connect").disabled = true;
 	document.getElementById("disconnect").disabled = false;
 	    
@@ -129,14 +128,16 @@
         if (request) {
             request.abort();
             request = null;
-        }        
-	pc.close();
+        }  
+	if (pc)
+	{
+		pc.close();
+	}
             
         document.getElementById("connect").disabled = false;
         document.getElementById("disconnect").disabled = true;
     }    
     window.onbeforeunload = disconnect;
-    
 </script>
 </head>
 <body>
@@ -145,12 +146,15 @@
             <video id="remote-video" width="50%" height="50%"></video>
         </div>
     </div>
-    <select id="urls">
-      <option selected="selected">YuvFramesGenerator</option>
-      <option>/dev/video0</option>
-      <option>/dev/video1</option>
-      <option>rtsp://192.168.0.17:8554/unicast</option>
-    </select>    
+    <div>
+      <select id="urlList" onchange="this.nextElementSibling.value=this.value">
+          <option selected="selected">YuvFramesGenerator</option>
+          <option>/dev/video0</option>
+          <option>/dev/video1</option>
+          <option>rtsp://pi2.local:8554/unicast</option>
+      </select>
+      <input type="text" id="url" value="YuvFramesGenerator"/>
+    </div>        
     <button id="connect"    onclick="connect();">Connect</button>
     <button id="disconnect" onclick="disconnect();" disabled="true">Disconnect</button>
     <br>
