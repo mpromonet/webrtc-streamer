@@ -13,14 +13,11 @@ Dependencies
  
 Build
 ------- 
-	make WEBRTCROOT=<path to WebRTC>
+	make WEBRTCROOT=<path to WebRTC> WEBRTCBUILD=<Release or Debug>
 	
 Usage
 -----
-	./webrtc-server [-P http port] [device]
+	./webrtc-server [-v[v]] [-P http port]
 		 -v[v[v]] : verbosity
 		 -P port  : HTTP port (default 8080)
 
-Limitation
-----------
-Each peer connection open the capture device, so video4Linux device serve only one peer.
