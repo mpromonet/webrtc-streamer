@@ -24,8 +24,9 @@ LDFLAGS += -lX11 -lXext -lexpat -ldl -lnss3 -lnssutil3 -lplc4 -lnspr4 -lrt
 
 all: $(TARGET)
 
-libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a:
-	$(AR) -rcT $@ $(shell find $(WEBRTCLIBPATH) -name '*.a')
+WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH) -name '*.a')
+libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
+	$(AR) -rcT $@ $^
 
 mongoose/mongoose.c: 
 	git submodule init
