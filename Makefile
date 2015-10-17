@@ -1,7 +1,6 @@
 CC = $(CROSS)g++ $(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
 AR = $(CROSS)ar
 CFLAGS = -W -pthread -g -std=gnu++0x
-TARGET = webrtc-server
 
 # mongoose
 CFLAGS += -I mongoose
@@ -22,6 +21,7 @@ CFLAGS += -DWEBRTC_POSIX -fno-rtti
 CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/chromium/src/third_party/jsoncpp/source/include
 LDFLAGS += -lX11 -lXext -lexpat -ldl -lnss3 -lnssutil3 -lplc4 -lnspr4 -lrt
 
+TARGET = webrtc-server_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD)
 all: $(TARGET)
 
 WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH) -name '*.a')
@@ -36,4 +36,4 @@ $(TARGET): main.cpp PeerConnectionManager.cpp mongoose/mongoose.c libWebRTC_$(GY
 	$(CC) -o $@ $(CFLAGS) $^ $(LDFLAGS)	
 
 clean:
-	rm -f *.o *.a $(TARGET)
+	rm -f *.o libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a $(TARGET)

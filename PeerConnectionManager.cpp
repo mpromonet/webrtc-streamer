@@ -35,12 +35,8 @@ const char kCandidateSdpName[] = "candidate";
 const char kSessionDescriptionTypeName[] = "type";
 const char kSessionDescriptionSdpName[] = "sdp";
 
-PeerConnectionManager::PeerConnectionManager(const std::string & stunurl) : stunurl_(stunurl)
+PeerConnectionManager::PeerConnectionManager(const std::string & stunurl) : peer_connection_factory_(NULL), stunurl_(stunurl)
 {
-	peer_connection_factory_  = webrtc::CreatePeerConnectionFactory();
-	if (!peer_connection_factory_.get()) {
-		LOG(LERROR) << __FUNCTION__ << "Failed to initialize PeerConnectionFactory";
-	}	
 }
 
 PeerConnectionManager::~PeerConnectionManager() 
@@ -48,11 +44,46 @@ PeerConnectionManager::~PeerConnectionManager()
 	peer_connection_factory_ = NULL;
 }
 
+
+const Json::Value PeerConnectionManager::getDeviceList()
+{
+	Json::Value value;
+	
+	std::vector<cricket::Device> devs;
+	rtc::scoped_ptr<cricket::DeviceManagerInterface> dev_manager(cricket::DeviceManagerFactory::Create());
+	if (!dev_manager->Init()) 
+	{
+		LOG(LS_ERROR) << "Can't create device manager";
+	}		
+	else if (!dev_manager->GetVideoCaptureDevices(&devs)) 
+	{
+		LOG(LS_ERROR) << "Can't enumerate video devices";
+	}
+	else
+	{
+		for (std::vector<cricket::Device>::iterator it = devs.begin() ; it != devs.end(); ++it) 
+		{
+			cricket::Device& device = *it;
+			value.append(device.name);
+		}
+	}
+	
+	return value;
+}  
+  
+bool PeerConnectionManager::InitializePeerConnection()
+{
+	peer_connection_factory_  = webrtc::CreatePeerConnectionFactory(rtc::Thread::Current(), rtc::Thread::Current(), NULL, NULL, NULL);
+	return (peer_connection_factory_.get() != NULL);
+}
+
 std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionManager::PeerConnectionObserver* > PeerConnectionManager::CreatePeerConnection(const std::string & url) 
 {
 	webrtc::PeerConnectionInterface::IceServers servers;
 	webrtc::PeerConnectionInterface::IceServer server;
 	server.uri = "stun:" + stunurl_;
+	server.username = "";
+	server.password = "";
 	servers.push_back(server);
 	PeerConnectionObserver* obs = PeerConnectionObserver::Create();
 	rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection = peer_connection_factory_->CreatePeerConnection(servers,
@@ -176,7 +207,7 @@ cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std:
 		}		
 		else if (!dev_manager->GetVideoCaptureDevice(url, &device)) 
 		{
-			LOG(LS_ERROR) << "Can't enumerate get device name:" << url;
+			LOG(LS_ERROR) << "Can't get device name:" << url;
 		}
 		else
 		{
@@ -220,7 +251,7 @@ const std::string PeerConnectionManager::getOffer(std::string &peerid, const std
 	std::string offer;
 	LOG(INFO) << __FUNCTION__;
 	
-	std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionObserver* > peer_connection = CreatePeerConnection(url);
+	std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionObserver* > peer_connection = this->CreatePeerConnection(url);
 	if (!peer_connection.first) 
 	{
 		LOG(LERROR) << "Failed to initialize PeerConnection";
