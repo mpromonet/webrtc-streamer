@@ -83,7 +83,6 @@ class HttpServerRequestHandler : public sigslot::has_slots<>
 				t-> request.hasHeader("peerid", &peerid);				
 				m_webRtcServer->setAnswer(peerid, body);
 				
-				t->response.addHeader("peerid",peerid);						
 				t->response.set_success();			
 			}
 			else if (path == "/getIceCandidate")
@@ -186,7 +185,7 @@ int main(int argc, char* argv[]) {
 			}		
 
 			// mainloop
-			while(thread->ProcessMessages(100));
+			while(thread->ProcessMessages(10));
 		}
 	}
 	
