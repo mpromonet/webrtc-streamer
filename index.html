@@ -30,12 +30,7 @@
     
     function onIceCandidate(event) {
         if (event.candidate) {
-            var candidate = {
-                sdpMLineIndex: event.candidate.sdpMLineIndex,
-                sdpMid: event.candidate.sdpMid,
-                candidate: event.candidate.candidate
-            };
-            send("/addicecandidate",pc.peerid,JSON.stringify(candidate));
+            send("/addicecandidate",pc.peerid,JSON.stringify(event.candidate));
         } else {
             trace("End of candidates.");
         }
