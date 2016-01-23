@@ -164,24 +164,30 @@ int main(int argc, char* argv[]) {
 		rtc::HttpListenServer httpServer;
 		rtc::SocketAddress http_addr;
 		http_addr.FromString(port);
-		httpServer.Listen(http_addr);
-
-		// connect httpserver to a request handler
-		HttpServerRequestHandler http(&httpServer, &webRtcServer);
-		
-		// STUN server
-		rtc::SocketAddress server_addr;
-		server_addr.FromString(stunurl);
-		rtc::scoped_ptr<cricket::StunServer> stunserver;
-		rtc::AsyncUDPSocket* server_socket = rtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
-		if (server_socket) 
+		int ret = httpServer.Listen(http_addr);
+		if (ret != 0)
 		{
-			stunserver.reset(new cricket::StunServer(server_socket));
-			std::cout << "STUN Listening at " << server_addr.ToString() << std::endl;
-		}		
+			std::cout << "Cannot Initialize start HTTP server " << strerror(ret) << std::endl; 
+		}
+		else
+		{
+			// connect httpserver to a request handler
+			HttpServerRequestHandler http(&httpServer, &webRtcServer);
+			
+			// STUN server
+			rtc::SocketAddress server_addr;
+			server_addr.FromString(stunurl);
+			rtc::scoped_ptr<cricket::StunServer> stunserver;
+			rtc::AsyncUDPSocket* server_socket = rtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
+			if (server_socket) 
+			{
+				stunserver.reset(new cricket::StunServer(server_socket));
+				std::cout << "STUN Listening at " << server_addr.ToString() << std::endl;
+			}		
 
-		// mainloop
-		while(thread->ProcessMessages(100));
+			// mainloop
+			while(thread->ProcessMessages(100));
+		}
 	}
 	
 	rtc::CleanupSSL();
