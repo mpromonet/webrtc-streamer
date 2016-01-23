@@ -123,23 +123,23 @@ class HttpServerRequestHandler : public sigslot::has_slots<>
 ** -------------------------------------------------------------------------*/
 int main(int argc, char* argv[]) {
 	const char* port     = "0.0.0.0:8000";
-	const char* stunurl  = "0.0.0.0:3478";
+	const char* stunurl  = "127.0.0.1:3478";
 	int logLevel = rtc::LERROR; 
 	
 	int c = 0;     
-	while ((c = getopt (argc, argv, "hS:P:v::")) != -1)
+	while ((c = getopt (argc, argv, "hS:H:v::")) != -1)
 	{
 		switch (c)
 		{
 			case 'v': logLevel--; if (optarg) logLevel-=strlen(optarg); break;
-			case 'P': port = optarg; break;
+			case 'H': port = optarg; break;
 			case 'S': stunurl = optarg; break;
 			case 'h':
 			default:
 				std::cout << argv[0] << " [-P http port] [-S stun address] -[v[v]]"                             << std::endl;
 				std::cout << "\t -v[v[v]]         : verbosity"                                                  << std::endl;
-				std::cout << "\t -P port          : HTTP port (default "               << port    << ")"        << std::endl;
-				std::cout << "\t -S stun_address  : STUN listenning address (default " << stunurl << ")"        << std::endl;
+				std::cout << "\t -H [hostname:]port : HTTP server binding (default "   << port    << ")"        << std::endl;
+				std::cout << "\t -S stun_address    : STUN listenning address (default " << stunurl << ")"        << std::endl;
 				exit(0);
 		}
 	}
@@ -168,6 +168,17 @@ int main(int argc, char* argv[]) {
 
 		// connect httpserver to a request handler
 		HttpServerRequestHandler http(&httpServer, &webRtcServer);
+		
+		// STUN server
+		rtc::SocketAddress server_addr;
+		server_addr.FromString(stunurl);
+		rtc::scoped_ptr<cricket::StunServer> stunserver;
+		rtc::AsyncUDPSocket* server_socket = rtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
+		if (server_socket) 
+		{
+			stunserver.reset(new cricket::StunServer(server_socket));
+			std::cout << "STUN Listening at " << server_addr.ToString() << std::endl;
+		}		
 
 		// mainloop
 		while(thread->ProcessMessages(100));
