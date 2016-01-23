@@ -68,6 +68,7 @@ class HttpServerRequestHandler : public sigslot::has_slots<>
 			{
 				std::string url;
 				t-> request.hasHeader("url", &url);
+				url = rtc::s_url_decode(url);
 				std::string peerid;					
 				std::string answer(m_webRtcServer->getOffer(peerid,url));
 				std::cout << peerid << ":" << answer << std::endl;
