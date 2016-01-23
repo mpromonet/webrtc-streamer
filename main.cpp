@@ -15,116 +15,114 @@
 #include <map>
 #include <list>
 
+#include "PeerConnectionManager.h"
+
 #include "webrtc/base/ssladapter.h"
 #include "webrtc/base/thread.h"
 #include "webrtc/p2p/base/stunserver.h"
-
-#include "mongoose.h"
-
-#include "PeerConnectionManager.h"
-
-typedef int (*callback)(struct mg_connection *conn);
-std::map<std::string, callback> m_urlmap;
-
-#define URL_CALLBACK(uri, arg) \
-int handle_##uri (struct mg_connection *arg); \
-std::pair<std::map<std::string, callback>::iterator,bool> m_urlmap ## uri = m_urlmap.insert(std::pair<std::string, callback>("/"#uri,handle_##uri)); \
-int handle_##uri(struct mg_connection *arg) \
-/* */
-
-URL_CALLBACK(getDeviceList, conn)
-{	
-	PeerConnectionManager* webRtcServer =(PeerConnectionManager*)conn->server_param;	
-	Json::Value list(webRtcServer->getDeviceList());
-	Json::StyledWriter writer;
-	std::string msg(writer.write(list));
-	mg_send_data(conn, msg.c_str(), msg.size());
-	return MG_TRUE;
-}
-
-URL_CALLBACK(offer, conn)
-{	
-	PeerConnectionManager* webRtcServer =(PeerConnectionManager*)conn->server_param;
-	char buffer[1024];
-	if (mg_get_var(conn, "url", buffer, sizeof(buffer)) > 0)
-	{
-		std::string peerid;	
-		std::string msg(webRtcServer->getOffer(peerid,buffer));
-		mg_send_header(conn, "peerid", peerid.c_str());
-		mg_send_data(conn, msg.c_str(), msg.size());
-	}
-	return MG_TRUE;
-}
-
-URL_CALLBACK(answer, conn)
-{	
-	PeerConnectionManager* webRtcServer =(PeerConnectionManager*)conn->server_param;	
-	std::string answer(conn->content,conn->content_len);
-	std::string peerid;
-	const char * peeridheader = mg_get_header(conn, "peerid");
-	if (peeridheader) peerid = peeridheader;
-	webRtcServer->setAnswer(peerid, answer);
-	mg_send_header(conn, "peerid", peerid.c_str());
-	return MG_TRUE;
-}
-
-URL_CALLBACK(candidate, conn)
-{	
-	PeerConnectionManager* webRtcServer =(PeerConnectionManager*)conn->server_param;	
-	std::string peerid;
-	const char * peeridheader = mg_get_header(conn, "peerid");
-	if (peeridheader) peerid = peeridheader;
-	Json::Value list(webRtcServer->getIceCandidateList(peerid));
-	Json::StyledWriter writer;
-	std::string msg(writer.write(list));
-	mg_send_data(conn, msg.c_str(), msg.size());
-	return MG_TRUE;
-}
-
-URL_CALLBACK(addicecandidate, conn)
-{	
-	PeerConnectionManager* webRtcServer =(PeerConnectionManager*)conn->server_param;	
-	std::string answer(conn->content,conn->content_len);
-	std::string peerid;
-	const char * peeridheader = mg_get_header(conn, "peerid");
-	if (peeridheader) peerid = peeridheader;
-	webRtcServer->addIceCandidate(peerid, answer);
-	mg_send_header(conn, "peerid", peerid.c_str());
-	return MG_TRUE;
-}
+#include "webrtc/base/httpserver.h"
+#include "webrtc/base/pathutils.h"
 
 /* ---------------------------------------------------------------------------
-**  mongoose callback
+**  http callback
 ** -------------------------------------------------------------------------*/
-static int ev_handler(struct mg_connection *conn, enum mg_event ev) 
+class HttpServerRequestHandler : public sigslot::has_slots<> 
 {
-	int ret = MG_FALSE;
-	switch (ev) 
-	{
-		case MG_AUTH: ret = MG_TRUE; break;
-		case MG_REQUEST: 
+	public:
+		HttpServerRequestHandler(rtc::HttpServer* server, PeerConnectionManager* webRtcServer) : m_server(server), m_webRtcServer(webRtcServer)
 		{
-			if (conn->uri)
-			{
-				std::map<std::string, callback>::iterator it = m_urlmap.find(conn->uri);
-				if (it != m_urlmap.end())
-				{
-					ret = it->second(conn);
-				}
-			}
+			m_server->SignalHttpRequest.connect(this, &HttpServerRequestHandler::OnRequest);
 		}
-		break;
-		default: break;
-	} 
-	return ret;
-}
+
+		void OnRequest(rtc::HttpServer*, rtc::HttpServerTransaction* t) 
+		{
+			std::string host;
+			std::string path;
+			t-> request.getRelativeUri(&host, &path);
+			std::cout << "===>" <<  path << std::endl;
+			
+			rtc::HttpAttributeList attributes;
+			rtc::HttpParseAttributes(t-> request.path.c_str(), t-> request.path.size(), attributes);
+
+			rtc::scoped_ptr<rtc::StreamInterface>& stream(t-> request.document);
+			size_t size = 0;
+			stream->GetSize(&size);
+			stream->Rewind();
+			char buffer[size];
+			size_t readsize = 0;
+			rtc::StreamResult res = stream->ReadAll(&buffer, size, &readsize, NULL);
+			std::cout << "res:" << res << std::endl;
+			std::string body(buffer, readsize);			
+			std::cout << "readsize:" << readsize << std::endl;
+			std::cout << "body:" << body << std::endl;
+			
+			std::string answer;			
+			if (path == "/getDeviceList")
+			{
+				std::string answer(Json::StyledWriter().write(m_webRtcServer->getDeviceList()));
+				
+				rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
+				t->response.set_success("text/plain", mem);			
+			}
+			else if (path == "/offer")
+			{
+				std::string url;
+				t-> request.hasHeader("url", &url);
+				std::string peerid;					
+				std::string answer(m_webRtcServer->getOffer(peerid,url));
+				std::cout << peerid << ":" << answer << std::endl;
+				
+				rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
+				t->response.addHeader("peerid",peerid);	
+				t->response.set_success("text/plain", mem);			
+			}
+			else if (path == "/answer")
+			{
+				std::string peerid;	
+				t-> request.hasHeader("peerid", &peerid);				
+				m_webRtcServer->setAnswer(peerid, body);
+				
+				t->response.addHeader("peerid",peerid);						
+				t->response.set_success();			
+			}
+			else if (path == "/getIceCandidate")
+			{
+				std::string peerid;	
+				t-> request.hasHeader("peerid", &peerid);				
+				
+				std::string answer(Json::StyledWriter().write(m_webRtcServer->getIceCandidateList(peerid)));					
+				rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
+				t->response.set_success("text/plain", mem);			
+			}
+			else if (path == "/addIceCandidate")
+			{
+				std::string peerid;	
+				t-> request.hasHeader("peerid", &peerid);				
+				m_webRtcServer->addIceCandidate(peerid, body);	
+				
+				t->response.set_success();			
+			}
+			else
+			{
+				rtc::Pathname pathname("index.html");
+				rtc::FileStream* fs(rtc::Filesystem::OpenFile(pathname, "rb"));
+				t->response.set_success("text/html", fs);			
+			}
+			t->response.setHeader(rtc::HH_CONNECTION,"Close");
+			m_server->Respond(t);
+		}
+		
+	protected:
+		rtc::HttpServer*       m_server;
+		PeerConnectionManager* m_webRtcServer;
+};
 
 /* ---------------------------------------------------------------------------
 **  main
 ** -------------------------------------------------------------------------*/
 int main(int argc, char* argv[]) {
-	const char* port     = "8080";
-	const char* stunurl  = "127.0.0.1:3478";
+	const char* port     = "0.0.0.0:8000";
+	const char* stunurl  = "0.0.0.0:3478";
 	int logLevel = rtc::LERROR; 
 	
 	int c = 0;     
@@ -160,30 +158,18 @@ int main(int argc, char* argv[]) {
 		std::cout << "Cannot Initialize WebRTC server" << std::endl; 
 	}
 	else
-	{	
+	{
 		// http server
-		struct mg_server *server = mg_create_server(&webRtcServer, ev_handler);
-		mg_set_option(server, "listening_port", port);
-		std::string currentPath(get_current_dir_name());
-		mg_set_option(server, "document_root", currentPath.c_str());
-		std::cout << "Started on port:" << mg_get_option(server, "listening_port") << " webroot:" << mg_get_option(server, "document_root") << std::endl; 
-		
-		// STUN server
-		rtc::SocketAddress server_addr;
-		server_addr.FromString(stunurl);
-		cricket::StunServer* stunserver = NULL;
-		rtc::AsyncUDPSocket* server_socket = rtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
-		if (server_socket) 
-		{
-			stunserver = new cricket::StunServer(server_socket);
-			std::cout << "STUN Listening at " << server_addr.ToString() << std::endl;
-		}
-	  
+		rtc::HttpListenServer httpServer;
+		rtc::SocketAddress http_addr;
+		http_addr.FromString(port);
+		httpServer.Listen(http_addr);
+
+		// connect httpserver to a request handler
+		HttpServerRequestHandler http(&httpServer, &webRtcServer);
+
 		// mainloop
-		while(thread->ProcessMessages(10))
-		{
-			 mg_poll_server(server, 10);
-		}
+		while(thread->ProcessMessages(100));
 	}
 	
 	rtc::CleanupSSL();

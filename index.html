@@ -15,7 +15,7 @@
     
     function createPeerConnection() {
         try {
-			trace("createPeerConnection  config: " + JSON.stringify(pcConfig) + "option:"+  JSON.stringify(pcOptions));
+            trace("createPeerConnection  config: " + JSON.stringify(pcConfig) + "option:"+  JSON.stringify(pcOptions));
             pc = new RTCPeerConnection(pcConfig, pcOptions);
             pc.onicecandidate = onIceCandidate;
             pc.onaddstream = onRemoteStreamAdded;
@@ -25,20 +25,20 @@
         catch (e) {
             trace("Failed to create PeerConnection with " + connectionId + ", exception: " + e.message);
         }
-		return pc;
-	}
+        return pc;
+    }
     
     function onIceCandidate(event) {
-		if (event.candidate) {
-			var candidate = {
-			sdpMLineIndex: event.candidate.sdpMLineIndex,
-			sdpMid: event.candidate.sdpMid,
-			candidate: event.candidate.candidate
-			};
-			send("/addicecandidate",pc.peerid,JSON.stringify(candidate));
-		} else {
-			trace("End of candidates.");
-		}
+        if (event.candidate) {
+            var candidate = {
+                sdpMLineIndex: event.candidate.sdpMLineIndex,
+                sdpMid: event.candidate.sdpMid,
+                candidate: event.candidate.candidate
+            };
+            send("/addicecandidate",pc.peerid,JSON.stringify(candidate));
+        } else {
+            trace("End of candidates.");
+        }
     }
 
     function onRemoteStreamAdded(event) {
@@ -63,7 +63,7 @@
             var r = new XMLHttpRequest();
             r.open("POST",method, true);
             r.setRequestHeader("Content-Type", "text/plain");
-			r.setRequestHeader("peerid", peerid);
+            r.setRequestHeader("peerid", peerid);
             r.send(data);
             r = null;
         } catch (e) {
@@ -72,68 +72,69 @@
     }
 
     function onReceiveOffer(request) {
-		trace("peerid: " + request.getResponseHeader("peerid") + " offer: " + request.responseText);
-		pc.peerid = request.getResponseHeader("peerid");
-		var dataJson = JSON.parse(request.responseText);
-		pc.setRemoteDescription(new RTCSessionDescription(dataJson), 
-			function () { 
-				trace('setRemoteDescription: success ' + pc.peerid); 
-				pc.createAnswer(function(sessionDescription) {
-					trace("Create answer:" + JSON.stringify(sessionDescription));
-					pc.setLocalDescription(sessionDescription);
-					send("/answer",pc.peerid,JSON.stringify(sessionDescription));
-				}, function(error) { 
-					trace("Create answer error:" + error);
-				}, mediaConstraints); 			
-			} , 
-			function onRemoteSdpError(event) { 
-				trace('setRemoteDescription: error:'+event);
-			}
-		);    
-		
-		request.open("GET", "/candidate" , false);
-		request.setRequestHeader("peerid", pc.peerid);
-		request.send();
-		if (request.status === 200) {
-			onReceiveCandidate(request);
-		}		
+        trace("peerid: " + request.getResponseHeader("peerid") + " offer: " + request.responseText);
+        pc.peerid = request.getResponseHeader("peerid");
+        var dataJson = JSON.parse(request.responseText);
+        pc.setRemoteDescription(new RTCSessionDescription(dataJson), 
+            function () { 
+                trace('setRemoteDescription: success ' + pc.peerid); 
+                pc.createAnswer(function(sessionDescription) {
+                    trace("Create answer:" + JSON.stringify(sessionDescription));
+                    pc.setLocalDescription(sessionDescription);
+                    send("/answer",pc.peerid,JSON.stringify(sessionDescription));
+                }, function(error) { 
+                    trace("Create answer error:" + error);
+                }, mediaConstraints); 			
+            } , 
+            function onRemoteSdpError(event) { 
+                trace('setRemoteDescription: error:'+event);
+            }
+        );    
+        
+        request.open("GET", "/candidate" , false);
+        request.setRequestHeader("peerid", pc.peerid);
+        request.send();
+        if (request.status === 200) {
+            onReceiveCandidate(request);
+        }		
     }
 
     function onReceiveCandidate(request) {
-		trace("candidate: " + request.responseText);
-		var dataJson = JSON.parse(request.responseText);
-		for (var i=0; i<dataJson.length; i++)
-		{
-			var elt = dataJson[i];
-			var candidate = new RTCIceCandidate({sdpMLineIndex: elt.sdpMLineIndex, candidate: elt.candidate});
-			
-			trace("Adding ICE candiate :" + JSON.stringify(candidate) );
-			pc.addIceCandidate(candidate,
-				function() { trace ("addIceCandidate OK"); },
-				function(error ) {trace ("addIceCandidate error:" + error); }
-			);
-		}
+        trace("candidate: " + request.responseText);
+        var dataJson = JSON.parse(request.responseText);
+        for (var i=0; i<dataJson.length; i++)
+        {
+            var elt = dataJson[i];
+            var candidate = new RTCIceCandidate({sdpMLineIndex: elt.sdpMLineIndex, candidate: elt.candidate});
+            
+            trace("Adding ICE candiate :" + JSON.stringify(candidate) );
+            pc.addIceCandidate(candidate,
+                function() { trace ("addIceCandidate OK"); },
+                function(error ) {trace ("addIceCandidate error:" + error); }
+            );
+        }
     }
 
     function connect() {
-		var url = document.getElementById("url").value;
-		document.getElementById("connect").disabled = true;
-		document.getElementById("disconnect").disabled = false;
-			
-		try {            
-			pc = createPeerConnection();
+        var url = document.getElementById("url").value;
+        document.getElementById("connect").disabled = true;
+        document.getElementById("disconnect").disabled = false;
+            
+        try {            
+            pc = createPeerConnection();
 
-			request = new XMLHttpRequest();
-			
-			request.open("GET", "/offer?url=" + encodeURIComponent(url) , false);
-			request.send();
-			if (request.status === 200) {
-				onReceiveOffer(request);
-			}	  							
-			
-		} catch (e) {
-			trace("connect error: " + e.description);
-		}	    
+            request = new XMLHttpRequest();
+            
+            request.open("GET", "/offer", false);
+            request.setRequestHeader("url", encodeURIComponent(url) );
+            request.send();
+            if (request.status === 200) {
+                onReceiveOffer(request);
+            }	  							
+            
+        } catch (e) {
+            trace("connect error: " + e.description);
+        }	    
     }
     
     function disconnect() {
@@ -141,31 +142,31 @@
             request.abort();
             request = null;
         }  
-		if (pc)
-		{
-			pc.close();
-		}
+        if (pc)
+        {
+            pc.close();
+        }
             
         document.getElementById("connect").disabled = false;
         document.getElementById("disconnect").disabled = true;
     }    
     
-	function init() {
-		var request = new XMLHttpRequest();
-		request.open("GET", "/getDeviceList" , false);
-		request.send();    
-		if (request.status === 200) {
-			var deviceList = eval( "{" + request.responseText + "}" );
-			var urllist = document.getElementById("urlList");
-			for (var dev in deviceList)
-			{
-				var option = document.createElement("option");
-				option.text = deviceList[dev];
-				trace("device: " + option.text);
-				urllist.add(option);
-			}
-		}
-	}
+    function init() {
+        var request = new XMLHttpRequest();
+        request.open("GET", "/getDeviceList" , false);
+        request.send();    
+        if (request.status === 200) {
+            var deviceList = eval( "{" + request.responseText + "}" );
+            var urllist = document.getElementById("urlList");
+            for (var dev in deviceList)
+            {
+                var option = document.createElement("option");
+                option.text = deviceList[dev];
+                trace("device: " + option.text);
+                urllist.add(option);
+            }
+        }
+    }
     window.onload = init;
     window.onbeforeunload = disconnect;
     

@@ -2,9 +2,6 @@ CC = $(CROSS)g++ $(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
 AR = $(CROSS)ar
 CFLAGS = -W -pthread -g -std=gnu++0x
 
-# mongoose
-CFLAGS += -I mongoose
-
 # live555
 ifneq ($(wildcard /usr/include/liveMedia/liveMedia.hh),)
 	CFLAGS += -DHAVE_LIVE555
@@ -28,11 +25,7 @@ WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH) -name '*.a')
 libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 	$(AR) -rcT $@ $^
 
-mongoose/mongoose.c: 
-	git submodule init
-	git submodule update
-	
-$(TARGET): main.cpp PeerConnectionManager.cpp mongoose/mongoose.c libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
+$(TARGET): main.cpp PeerConnectionManager.cpp libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
 	$(CC) -o $@ $(CFLAGS) $^ $(LDFLAGS)	
 
 clean:

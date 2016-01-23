@@ -79,14 +79,15 @@ bool PeerConnectionManager::InitializePeerConnection()
 
 std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionManager::PeerConnectionObserver* > PeerConnectionManager::CreatePeerConnection(const std::string & url) 
 {
-	webrtc::PeerConnectionInterface::IceServers servers;
+	webrtc::PeerConnectionInterface::RTCConfiguration config;
 	webrtc::PeerConnectionInterface::IceServer server;
 	server.uri = "stun:" + stunurl_;
 	server.username = "";
 	server.password = "";
-	servers.push_back(server);
+	config.servers.push_back(server);
+
 	PeerConnectionObserver* obs = PeerConnectionObserver::Create();
-	rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection = peer_connection_factory_->CreatePeerConnection(servers,
+	rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection = peer_connection_factory_->CreatePeerConnection(config,
 							    NULL,
 							    NULL,
 							    NULL,

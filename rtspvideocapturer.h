@@ -260,7 +260,7 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public Callback
 			SetCaptureState(cricket::CS_STOPPED);
 		}
 	  
-		virtual bool GetPreferredFourccs(std::vector<uint32>* fourccs) 
+		virtual bool GetPreferredFourccs(std::vector<unsigned int>* fourccs) 
 		{
 			fourccs->push_back(cricket::FOURCC_H264);
 			return true;
