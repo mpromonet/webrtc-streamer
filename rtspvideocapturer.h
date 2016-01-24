@@ -90,7 +90,11 @@ class RTSPConnection : public RTSPClient
 	public:
 		RTSPConnection(Callback* callback, char const* rtspURL, int verbosityLevel = 255) 
 						: m_callback(callback)
-						, RTSPClient(*BasicUsageEnvironment::createNew(*BasicTaskScheduler::createNew()), rtspURL, verbosityLevel, NULL, 0, -1)
+						, RTSPClient(*BasicUsageEnvironment::createNew(*BasicTaskScheduler::createNew()), rtspURL, verbosityLevel, NULL, 0
+#if LIVEMEDIA_LIBRARY_VERSION_INT > 1371168000 
+							,-1
+#endif
+							)
 						, m_env(&this->envir())
 						, m_stop(0)
 		{
