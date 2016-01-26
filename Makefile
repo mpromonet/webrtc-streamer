@@ -1,6 +1,6 @@
 CC = $(CROSS)g++ $(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
 AR = $(CROSS)ar
-CFLAGS = -W -pthread -g -std=gnu++0x
+CFLAGS = -W -pthread -g -std=c++11
 
 # live555
 ifneq ($(wildcard $(SYSROOT)/usr/include/liveMedia/liveMedia.hh),)
