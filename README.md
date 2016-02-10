@@ -16,8 +16,8 @@ Build
 	
 Usage
 -----
-	./webrtc-server [-v[v]] [-P http port]
+	./webrtc-server [-v[v]] [-P HTTP binding] [-S STUN binding]
 		 -v[v[v]] : verbosity
-		 -H [hostname:]port  : HTTP binding (default 0.0.0.0:8080)
-		 -S [hostname:]port  : STUN binding (default 127.0.0.1:3478)
+		 -H hostname:port  : HTTP binding (default 0.0.0.0:8000)
+		 -S hostname:port  : STUN binding (default 127.0.0.1:3478)
 
