@@ -86,7 +86,7 @@
             }
         );    
         
-        request.open("GET", "/candidate" , false);
+        request.open("GET", "/getIceCandidate" , false);
         request.setRequestHeader("peerid", pc.peerid);
         request.send();
         if (request.status === 200) {
