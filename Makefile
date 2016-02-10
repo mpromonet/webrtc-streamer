@@ -10,8 +10,8 @@ ifneq ($(wildcard $(SYSROOT)/usr/include/liveMedia/liveMedia.hh),)
 endif
 
 # webrtc
-WEBRTCROOT=../webrtc
-WEBRTCBUILD=Release
+WEBRTCROOT?=../webrtc
+WEBRTCBUILD?=Release
 WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
 
 CFLAGS += -DWEBRTC_POSIX -fno-rtti
