@@ -82,7 +82,7 @@
                 }, mediaConstraints); 			
             } , 
             function onRemoteSdpError(event) { 
-                trace('setRemoteDescription: error:'+event);
+                trace('setRemoteDescription: error:'+event.message);
             }
         );    
         
@@ -99,13 +99,12 @@
         var dataJson = JSON.parse(request.responseText);
         for (var i=0; i<dataJson.length; i++)
         {
-            var elt = dataJson[i];
-            var candidate = new RTCIceCandidate({sdpMLineIndex: elt.sdpMLineIndex, candidate: elt.candidate});
+            var candidate = new RTCIceCandidate(dataJson[i]);
             
             trace("Adding ICE candiate :" + JSON.stringify(candidate) );
             pc.addIceCandidate(candidate,
                 function() { trace ("addIceCandidate OK"); },
-                function(error ) {trace ("addIceCandidate error:" + error); }
+                function(error) {trace ("addIceCandidate error:" + error); }
             );
         }
     }

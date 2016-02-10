@@ -122,7 +122,7 @@ class HttpServerRequestHandler : public sigslot::has_slots<>
 ** -------------------------------------------------------------------------*/
 int main(int argc, char* argv[]) {
 	const char* port     = "0.0.0.0:8000";
-	const char* stunurl  = "127.0.0.1:3478";
+	const char* stunurl  = "0.0.0.0:3478";
 	int logLevel = rtc::LERROR; 
 	
 	int c = 0;     
@@ -172,6 +172,7 @@ int main(int argc, char* argv[]) {
 		{
 			// connect httpserver to a request handler
 			HttpServerRequestHandler http(&httpServer, &webRtcServer);
+			std::cout << "HTTP Listening at " << http_addr.ToString() << std::endl;
 			
 			// STUN server
 			rtc::SocketAddress server_addr;
