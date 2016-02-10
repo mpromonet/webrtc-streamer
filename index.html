@@ -5,7 +5,7 @@
     var request = null;
     var pc;    
     var pcConfig = {"iceServers": []};
-    var pcOptions = { optional: [{DtlsSrtpKeyAgreement: false} ] };
+    var pcOptions = { optional: [{DtlsSrtpKeyAgreement: true} ] };
     var mediaConstraints = {'mandatory': {'OfferToReceiveVideo': true }};
     
     RTCPeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
@@ -78,11 +78,12 @@
                     pc.setLocalDescription(sessionDescription);
                     send("/answer",pc.peerid,JSON.stringify(sessionDescription));
                 }, function(error) { 
-                    trace("Create answer error:" + error);
+                    trace("Create answer error:" + JSON.stringify(error));
                 }, mediaConstraints); 			
             } , 
-            function onRemoteSdpError(event) { 
-                trace('setRemoteDescription: error:'+event.message);
+            function(error) { 
+		trace('setRemoteDescription: error:'+JSON.stringify(error)); 
+		alert('setRemoteDescription: error:'+JSON.stringify(error)); 
             }
         );    
         
@@ -104,7 +105,7 @@
             trace("Adding ICE candiate :" + JSON.stringify(candidate) );
             pc.addIceCandidate(candidate,
                 function() { trace ("addIceCandidate OK"); },
-                function(error) {trace ("addIceCandidate error:" + error); }
+                function(error) { trace ("addIceCandidate error:" + JSON.stringify(error)); }
             );
         }
     }
