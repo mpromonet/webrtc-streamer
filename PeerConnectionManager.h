@@ -12,8 +12,10 @@
 
 #include <string>
 
-#include "talk/app/webrtc/mediastreaminterface.h"
-#include "talk/app/webrtc/peerconnectioninterface.h"
+#include "webrtc/api/videosourceinterface.h"
+#include "webrtc/api/mediastreaminterface.h"
+#include "webrtc/api/peerconnection.h"
+
 #include "webrtc/base/scoped_ptr.h"
 #include "webrtc/base/logging.h"
 #include "webrtc/base/json.h"
@@ -73,13 +75,15 @@ class PeerConnectionManager {
 			void setPeerConnection(webrtc::PeerConnectionInterface* pc) { m_pc = pc; };
 			Json::Value getIceCandidateList() { return iceCandidateList_; };
 			
-			virtual void OnStateChange(webrtc::PeerConnectionObserver::StateType state_changed) {}
 			virtual void OnAddStream(webrtc::MediaStreamInterface* stream) {}
 			virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) {}
 			virtual void OnDataChannel(webrtc::DataChannelInterface* channel) {}
 			virtual void OnRenegotiationNeeded() {}
-			virtual void OnIceChange() {}
+
 			virtual void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
+                        virtual void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState) {}
+                        virtual void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState) {}
+                        virtual void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState) {}
 				
 		protected:
 			PeerConnectionObserver() : m_pc(NULL) {};

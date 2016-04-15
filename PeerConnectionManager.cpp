@@ -10,14 +10,12 @@
 #include <iostream>
 #include <utility>
 
-#include "talk/app/webrtc/videosourceinterface.h"
-#include "talk/media/devices/devicemanager.h"
-#include "talk/media/base/videocapturer.h"
-#include "webrtc/base/common.h"
-#include "webrtc/base/json.h"
-#include "webrtc/base/logging.h"
+
+#include "webrtc/media/devices/devicemanager.h"
+#include "webrtc/media/base/videocapturer.h"
 
 #include "PeerConnectionManager.h"
+
 #ifdef HAVE_LIVE555
 #include "rtspvideocapturer.h"
 #endif
