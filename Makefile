@@ -1,6 +1,6 @@
 CC = $(CROSS)g++ $(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
 AR = $(CROSS)ar
-CFLAGS = -W -pthread -g -std=c++11
+CFLAGS = -W -pthread -g -std=c++11 -Iinc
 
 # live555
 ifneq ($(wildcard $(SYSROOT)/usr/include/liveMedia/liveMedia.hh),)
@@ -25,7 +25,7 @@ WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH) -name '*.a')
 libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 	$(AR) -rcT $@ $^
 
-$(TARGET): main.cpp PeerConnectionManager.cpp libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
+$(TARGET): src/main.cpp src/PeerConnectionManager.cpp libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
 	$(CC) -o $@ $(CFLAGS) $^ $(LDFLAGS)	
 
 clean:
