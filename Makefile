@@ -25,7 +25,7 @@ WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH) -name '*.a')
 libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 	$(AR) -rcT $@ $^
 
-$(TARGET): src/main.cpp src/PeerConnectionManager.cpp libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
+$(TARGET): $(wildcard src/*.cpp) libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
 	$(CC) -o $@ $(CFLAGS) $^ $(LDFLAGS)	
 
 clean:
