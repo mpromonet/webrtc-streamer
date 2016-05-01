@@ -2,7 +2,6 @@
 <head>
 <title>PeerConnection server test page</title>
 <script>
-    var request = null;
     var pc;    
     var pcConfig = {"iceServers": []};
     var pcOptions = { optional: [{DtlsSrtpKeyAgreement: true} ] };
@@ -13,6 +12,34 @@
     RTCIceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
     URL = window.webkitURL || window.URL;
     
+    function trace(txt) {
+        console.log(txt);
+    }
+
+    function send(method,peerid,data,onSuccess,onFailure) {
+        try {
+            var r = new XMLHttpRequest();
+            r.open("POST",method, true);
+            r.setRequestHeader("Content-Type", "text/plain");
+            r.setRequestHeader("peerid", peerid);
+			r.onreadystatechange = function() {
+				if (this.readyState == 4) {
+					if ( (this.status == 200) && onSuccess ) {
+						onSuccess(this);
+					}
+					else if (onFailure) {
+						onFailure(this);
+					}
+				}			
+			}
+            r.send(data);
+            r = null;
+        } catch (e) {
+          trace("send to peer:" + peerid + " error: " + e.description);
+        }
+    }
+
+	// ---------
     function createPeerConnection() {
         try {
             trace("createPeerConnection  config: " + JSON.stringify(pcConfig) + "option:"+  JSON.stringify(pcOptions));
@@ -48,53 +75,33 @@
         var remoteVideoElement = document.getElementById('remote-video');
         remoteVideoElement.src = '';
     }
-        
-    function trace(txt) {
-        console.log(txt);
-    }
-
-    function send(method,peerid,data) {
-        try {
-            var r = new XMLHttpRequest();
-            r.open("POST",method, true);
-            r.setRequestHeader("Content-Type", "text/plain");
-            r.setRequestHeader("peerid", peerid);
-            r.send(data);
-            r = null;
-        } catch (e) {
-          trace("send to peer:" + peerid + " error: " + e.description);
-        }
-    }
+	
+	// ---------	        	
+    function setRemoteDescriptionSuccess() {
+			trace('setRemoteDescription: success ' + pc.peerid); 
+			pc.createAnswer(function(sessionDescription) {
+				trace("Create answer:" + JSON.stringify(sessionDescription));
+				pc.setLocalDescription(sessionDescription);
+				send("/answer",pc.peerid,JSON.stringify(sessionDescription));				
+			}, function(error) { 
+				alert("Create answer error:" + JSON.stringify(error));
+			}, mediaConstraints); 			
+						
+			send("/getIceCandidate", pc.peerid, null, onReceiveCandidate);
+	}
+	
+    function setRemoteDescriptionFailure(error) {
+		alert('setRemoteDescription: error:'+JSON.stringify(error)); 
+	}
 
     function onReceiveOffer(request) {
         trace("peerid: " + request.getResponseHeader("peerid") + " offer: " + request.responseText);
         pc.peerid = request.getResponseHeader("peerid");
         var dataJson = JSON.parse(request.responseText);
-        pc.setRemoteDescription(new RTCSessionDescription(dataJson), 
-            function () { 
-                trace('setRemoteDescription: success ' + pc.peerid); 
-                pc.createAnswer(function(sessionDescription) {
-                    trace("Create answer:" + JSON.stringify(sessionDescription));
-                    pc.setLocalDescription(sessionDescription);
-                    send("/answer",pc.peerid,JSON.stringify(sessionDescription));
-                }, function(error) { 
-                    trace("Create answer error:" + JSON.stringify(error));
-                }, mediaConstraints); 			
-            } , 
-            function(error) { 
-		trace('setRemoteDescription: error:'+JSON.stringify(error)); 
-		alert('setRemoteDescription: error:'+JSON.stringify(error)); 
-            }
-        );    
-        
-        request.open("GET", "/getIceCandidate" , false);
-        request.setRequestHeader("peerid", pc.peerid);
-        request.send();
-        if (request.status === 200) {
-            onReceiveCandidate(request);
-        }		
+        pc.setRemoteDescription(new RTCSessionDescription(dataJson), setRemoteDescriptionSuccess, setRemoteDescriptionFailure);        
     }
 
+	// ---------
     function onReceiveCandidate(request) {
         trace("candidate: " + request.responseText);
         var dataJson = JSON.parse(request.responseText);
@@ -102,7 +109,7 @@
         {
             var candidate = new RTCIceCandidate(dataJson[i]);
             
-            trace("Adding ICE candiate :" + JSON.stringify(candidate) );
+            trace("Adding ICE candidate :" + JSON.stringify(candidate) );
             pc.addIceCandidate(candidate,
                 function() { trace ("addIceCandidate OK"); },
                 function(error) { trace ("addIceCandidate error:" + JSON.stringify(error)); }
@@ -110,47 +117,32 @@
         }
     }
 
+	// ---------
     function connect() {
         var url = document.getElementById("url").value;
-        document.getElementById("connect").disabled = true;
-        document.getElementById("disconnect").disabled = false;
             
+		document.getElementById("connect").disabled = true;
+		document.getElementById("disconnect").disabled = false;
+			
         try {            
             pc = createPeerConnection();
-
-            request = new XMLHttpRequest();
-            
-            request.open("GET", "/offer", false);
-            request.setRequestHeader("url", encodeURIComponent(url) );
-            request.send();
-            if (request.status === 200) {
-                onReceiveOffer(request);
-            }	  							
-            
+			send("/offer", null, url, onReceiveOffer, disconnect);
         } catch (e) {
-            trace("connect error: " + e.description);
+			disconnect();
+            alert("connect error: " + e);
         }	    
     }
     
-    function disconnect() {
-        if (request) {
-            request.abort();
-            request = null;
-        }  
-        if (pc)
-        {
+    function disconnect() {		
+        if (pc) {
             pc.close();
         }
             
         document.getElementById("connect").disabled = false;
         document.getElementById("disconnect").disabled = true;
     }    
-    
-    function init() {
-        var request = new XMLHttpRequest();
-        request.open("GET", "/getDeviceList" , false);
-        request.send();    
-        if (request.status === 200) {
+	
+	function onGetDeviceList(request) {
             var deviceList = eval( "{" + request.responseText + "}" );
             var urllist = document.getElementById("urlList");
             for (var dev in deviceList)
@@ -160,8 +152,12 @@
                 trace("device: " + option.text);
                 urllist.add(option);
             }
-        }
+	}
+
+    function init() {
+		send("/getDeviceList", null, null, onGetDeviceList);
     }
+	
     window.onload = init;
     window.onbeforeunload = disconnect;
     

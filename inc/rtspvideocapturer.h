@@ -14,8 +14,6 @@
 #include <vector>
 
 #include "webrtc/media/base/videocapturer.h"
-//#include "talk/media/base/videocommon.h"
-//#include "talk/media/base/videoframe.h"
 #include "webrtc/base/timeutils.h"
 #ifdef HAVE_WEBRTC_VIDEO
 #include "talk/media/webrtc/webrtcvideoframefactory.h"

@@ -78,7 +78,9 @@ class PeerConnectionManager {
 			virtual void OnAddStream(webrtc::MediaStreamInterface* stream) {}
 			virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) {}
 			virtual void OnDataChannel(webrtc::DataChannelInterface* channel) {}
-			virtual void OnRenegotiationNeeded() {}
+			virtual void OnRenegotiationNeeded() {
+				LOG(LERROR) << __PRETTY_FUNCTION__;
+			}
 
 			virtual void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
                         virtual void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState) {}
@@ -108,7 +110,7 @@ class PeerConnectionManager {
 	protected:
 		std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionManager::PeerConnectionObserver* > CreatePeerConnection(const std::string & url);
 		void DeletePeerConnection();
-		void AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url);
+		bool AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url);
 		cricket::VideoCapturer* OpenVideoCaptureDevice(const std::string & url);
 
 	protected: 

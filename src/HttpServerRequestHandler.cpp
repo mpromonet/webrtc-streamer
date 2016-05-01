@@ -21,7 +21,7 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 	std::string host;
 	std::string path;
 	t-> request.getRelativeUri(&host, &path);
-	std::cout << "===>" <<  path << std::endl;
+	std::cout << "===> HTTP request " <<  path << std::endl;
 	
 	rtc::HttpAttributeList attributes;
 	rtc::HttpParseAttributes(t-> request.path.c_str(), t-> request.path.size(), attributes);
@@ -35,10 +35,8 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 	rtc::StreamResult res = stream->ReadAll(&buffer, size, &readsize, NULL);
 	std::cout << "res:" << res << std::endl;
 	std::string body(buffer, readsize);			
-	std::cout << "readsize:" << readsize << std::endl;
 	std::cout << "body:" << body << std::endl;
 	
-	std::string answer;			
 	if (path == "/getDeviceList")
 	{
 		std::string answer(Json::StyledWriter().write(m_webRtcServer->getDeviceList()));
@@ -48,16 +46,16 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 	}
 	else if (path == "/offer")
 	{
-		std::string url;
-		t-> request.hasHeader("url", &url);
-		url = rtc::s_url_decode(url);
 		std::string peerid;					
-		std::string answer(m_webRtcServer->getOffer(peerid,url));
+		std::string answer(m_webRtcServer->getOffer(peerid,body));
 		std::cout << peerid << ":" << answer << std::endl;
 		
-		rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
-		t->response.addHeader("peerid",peerid);	
-		t->response.set_success("text/plain", mem);			
+		if (answer.empty() == false)
+		{
+			rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
+			t->response.addHeader("peerid",peerid);	
+			t->response.set_success("text/plain", mem);			
+		}
 	}
 	else if (path == "/answer")
 	{
@@ -70,7 +68,7 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 	else if (path == "/getIceCandidate")
 	{
 		std::string peerid;	
-		t-> request.hasHeader("peerid", &peerid);				
+		t->request.hasHeader("peerid", &peerid);				
 		
 		std::string answer(Json::StyledWriter().write(m_webRtcServer->getIceCandidateList(peerid)));					
 		rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
@@ -87,8 +85,11 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 	else
 	{
 		rtc::Pathname pathname("index.html");
-		rtc::FileStream* fs(rtc::Filesystem::OpenFile(pathname, "rb"));
-		t->response.set_success("text/html", fs);			
+		rtc::FileStream* fs = rtc::Filesystem::OpenFile(pathname, "rb");
+		if (fs)
+		{
+			t->response.set_success("text/html", fs);			
+		}
 	}
 	t->response.setHeader(rtc::HH_CONNECTION,"Close");
 	m_server->Respond(t);

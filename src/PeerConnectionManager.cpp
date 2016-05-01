@@ -97,13 +97,17 @@ std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionMan
 	else 
 	{
 		obs->setPeerConnection(peer_connection);
-		this->AddStreams(peer_connection, url);
+		if (!this->AddStreams(peer_connection, url))
+		{
+			peer_connection.release();
+		}
 	}
 	return std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionObserver* >(peer_connection, obs);
 }
 
 void PeerConnectionManager::DeletePeerConnection() 
 {
+	LOG(INFO) << __FUNCTION__;	
 }
 
 void PeerConnectionManager::setAnswer(const std::string &peerid, const std::string& message)
@@ -216,8 +220,9 @@ cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std:
 	return capturer;
 }
 
-void PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url) 
+bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url) 
 {
+	bool ret = false;
 	cricket::VideoCapturer* capturer = OpenVideoCaptureDevice(url);
 	if (!capturer)
 	{
@@ -235,14 +240,21 @@ void PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 		}
 		else
 		{
-			stream->AddTrack(video_track);
-		
-			if (!peer_connection->AddStream(stream)) 
+			if (!stream->AddTrack(video_track))
+			{
+				LOG(LS_ERROR) << "Adding Track to PeerConnection failed";
+			}		
+			else if (!peer_connection->AddStream(stream)) 
 			{
 				LOG(LS_ERROR) << "Adding stream to PeerConnection failed";
 			}
+			else
+			{
+				ret = true;
+			}
 		}
 	}
+	return ret;
 }
 
 const std::string PeerConnectionManager::getOffer(std::string &peerid, const std::string & url) 
@@ -311,12 +323,8 @@ const Json::Value PeerConnectionManager::getIceCandidateList(const std::string &
 
 void PeerConnectionManager::PeerConnectionObserver::OnIceCandidate(const webrtc::IceCandidateInterface* candidate) 
 {
-	LOG(LS_ERROR) << __FUNCTION__ << " " << candidate->sdp_mline_index();
-	Json::StyledWriter writer;
-	Json::Value jmessage;
-
-	jmessage[kCandidateSdpMidName] = candidate->sdp_mid();
-	jmessage[kCandidateSdpMlineIndexName] = candidate->sdp_mline_index();
+	LOG(INFO) << __FUNCTION__ << " " << candidate->sdp_mline_index();
+	
 	std::string sdp;
 	if (!candidate->ToString(&sdp)) 
 	{
@@ -325,6 +333,10 @@ void PeerConnectionManager::PeerConnectionObserver::OnIceCandidate(const webrtc:
 	else
 	{	
 		LOG(INFO) << sdp;	
+		
+		Json::Value jmessage;
+		jmessage[kCandidateSdpMidName] = candidate->sdp_mid();
+		jmessage[kCandidateSdpMlineIndexName] = candidate->sdp_mline_index();
 		jmessage[kCandidateSdpName] = sdp;
 		iceCandidateList_.append(jmessage);
 	}
