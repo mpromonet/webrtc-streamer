@@ -26,7 +26,7 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 	rtc::HttpAttributeList attributes;
 	rtc::HttpParseAttributes(t-> request.path.c_str(), t-> request.path.size(), attributes);
 
-	rtc::scoped_ptr<rtc::StreamInterface>& stream(t-> request.document);
+	std::unique_ptr<rtc::StreamInterface> & stream(t-> request.document);
 	size_t size = 0;
 	stream->GetSize(&size);
 	stream->Rewind();

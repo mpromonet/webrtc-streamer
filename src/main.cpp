@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
 			// STUN server
 			rtc::SocketAddress server_addr;
 			server_addr.FromString(stunurl);
-			rtc::scoped_ptr<cricket::StunServer> stunserver;
+			std::unique_ptr<cricket::StunServer> stunserver;
 			rtc::AsyncUDPSocket* server_socket = rtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
 			if (server_socket) 
 			{

@@ -112,7 +112,7 @@ class YuvVideoCapturer : public cricket::VideoCapturer, public rtc::Thread
 		cricket::CapturedFrame captured_frame_;
 		int frame_index_;
 		rtc::Thread* start_thread_;
-		rtc::scoped_ptr<rtc::AsyncInvoker> async_invoker_;
+		std::unique_ptr<rtc::AsyncInvoker> async_invoker_;
 };
 
 #endif  

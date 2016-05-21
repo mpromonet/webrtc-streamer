@@ -233,7 +233,7 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public Callback, public
 			frame.fourcc = GetCaptureFormat()->fourcc;
 			frame.data_size = size;
 
-			rtc::scoped_ptr<char[]> data(new char[size]);
+			std::unique_ptr<char[]> data(new char[size]);
 			frame.data = data.get();
 			memcpy(frame.data, buffer, size);
 

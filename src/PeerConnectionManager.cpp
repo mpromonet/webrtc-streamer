@@ -167,7 +167,7 @@ void PeerConnectionManager::addIceCandidate(const std::string &peerid, const std
 		LOG(WARNING) << "Can't parse received message.";
 		return;
 	}
-	rtc::scoped_ptr<webrtc::IceCandidateInterface> candidate(webrtc::CreateIceCandidate(sdp_mid, sdp_mlineindex, sdp, NULL));
+	std::unique_ptr<webrtc::IceCandidateInterface> candidate(webrtc::CreateIceCandidate(sdp_mid, sdp_mlineindex, sdp, NULL));
 	if (!candidate.get()) 
 	{
 		LOG(WARNING) << "Can't parse received candidate message.";
