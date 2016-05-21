@@ -11,14 +11,18 @@
 #include <utility>
 
 
-#include "webrtc/media/devices/devicemanager.h"
-#include "webrtc/media/base/videocapturer.h"
+#include "webrtc/modules/video_capture/video_capture_factory.h"
+#include "webrtc/media/engine/webrtcvideocapturerfactory.h"
+
+#include "webrtc/media/base/fakevideocapturer.h"
 
 #include "PeerConnectionManager.h"
 
 #ifdef HAVE_LIVE555
 #include "rtspvideocapturer.h"
 #endif
+#include "yuvvideocapturer.h"
+
 
 const char kAudioLabel[] = "audio_label";
 const char kVideoLabel[] = "video_label";
@@ -46,32 +50,29 @@ PeerConnectionManager::~PeerConnectionManager()
 const Json::Value PeerConnectionManager::getDeviceList()
 {
 	Json::Value value;
-	
-	std::vector<cricket::Device> devs;
-	rtc::scoped_ptr<cricket::DeviceManagerInterface> dev_manager(cricket::DeviceManagerFactory::Create());
-	if (!dev_manager->Init()) 
+		
+	std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo(0));
+	if (info) 
 	{
-		LOG(LS_ERROR) << "Can't create device manager";
-	}		
-	else if (!dev_manager->GetVideoCaptureDevices(&devs)) 
-	{
-		LOG(LS_ERROR) << "Can't enumerate video devices";
-	}
-	else
-	{
-		for (std::vector<cricket::Device>::iterator it = devs.begin() ; it != devs.end(); ++it) 
+		int num_devices = info->NumberOfDevices();
+		for (int i = 0; i < num_devices; ++i) 
 		{
-			cricket::Device& device = *it;
-			value.append(device.name);
+			const uint32_t kSize = 256;
+			char name[kSize] = {0};
+			char id[kSize] = {0};
+			if (info->GetDeviceName(i, name, kSize, id, kSize) != -1) 
+			{
+				value.append(name);
+			}
 		}
 	}
-	
+		
 	return value;
 }  
   
 bool PeerConnectionManager::InitializePeerConnection()
 {
-	peer_connection_factory_  = webrtc::CreatePeerConnectionFactory(rtc::Thread::Current(), rtc::Thread::Current(), NULL, NULL, NULL);
+	peer_connection_factory_  = webrtc::CreatePeerConnectionFactory();
 	return (peer_connection_factory_.get() != NULL);
 }
 
@@ -116,19 +117,22 @@ void PeerConnectionManager::setAnswer(const std::string &peerid, const std::stri
 	
 	Json::Reader reader;
 	Json::Value  jmessage;
-	if (!reader.parse(message, jmessage)) {
+	if (!reader.parse(message, jmessage)) 
+	{
 		LOG(WARNING) << "Received unknown message. " << message;
 		return;
 	}
 	std::string type;
 	std::string sdp;
 	if (  !rtc::GetStringFromJsonObject(jmessage, kSessionDescriptionTypeName, &type)
-	   || !rtc::GetStringFromJsonObject(jmessage, kSessionDescriptionSdpName, &sdp)) {
+	   || !rtc::GetStringFromJsonObject(jmessage, kSessionDescriptionSdpName, &sdp)) 
+	{
 		LOG(WARNING) << "Can't parse received message.";
 		return;
 	}
 	webrtc::SessionDescriptionInterface* session_description(webrtc::CreateSessionDescription(type, sdp, NULL));
-	if (!session_description) {
+	if (!session_description) 
+	{
 		LOG(WARNING) << "Can't parse received session description message.";
 		return;
 	}
@@ -147,7 +151,8 @@ void PeerConnectionManager::addIceCandidate(const std::string &peerid, const std
 	
 	Json::Reader reader;
 	Json::Value  jmessage;
-	if (!reader.parse(message, jmessage)) {
+	if (!reader.parse(message, jmessage)) 
+	{
 		LOG(WARNING) << "Received unknown message. " << message;
 		return;
 	}
@@ -157,12 +162,14 @@ void PeerConnectionManager::addIceCandidate(const std::string &peerid, const std
 	std::string sdp;
 	if (  !rtc::GetStringFromJsonObject(jmessage, kCandidateSdpMidName, &sdp_mid) 
 	   || !rtc::GetIntFromJsonObject(jmessage, kCandidateSdpMlineIndexName, &sdp_mlineindex) 
-	   || !rtc::GetStringFromJsonObject(jmessage, kCandidateSdpName, &sdp)) {
+	   || !rtc::GetStringFromJsonObject(jmessage, kCandidateSdpName, &sdp)) 
+	{
 		LOG(WARNING) << "Can't parse received message.";
 		return;
 	}
 	rtc::scoped_ptr<webrtc::IceCandidateInterface> candidate(webrtc::CreateIceCandidate(sdp_mid, sdp_mlineindex, sdp, NULL));
-	if (!candidate.get()) {
+	if (!candidate.get()) 
+	{
 		LOG(WARNING) << "Can't parse received candidate message.";
 		return;
 	}
@@ -170,28 +177,17 @@ void PeerConnectionManager::addIceCandidate(const std::string &peerid, const std
 	if (it != peer_connection_map_.end())
 	{
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc = it->second;
-		if (!pc->AddIceCandidate(candidate.get())) {
+		if (!pc->AddIceCandidate(candidate.get())) 
+		{
 			LOG(WARNING) << "Failed to apply the received candidate";
 			return;
 		}		
 	}	
 }
-
-class VideoCapturerListener : public sigslot::has_slots<> {
-public:
-	VideoCapturerListener(cricket::VideoCapturer* capturer)
-	{
-		capturer->SignalFrameCaptured.connect(this, &VideoCapturerListener::OnFrameCaptured);
-	}
-
-	void OnFrameCaptured(cricket::VideoCapturer* capturer, const cricket::CapturedFrame* frame) 
-	{
-		LOG(LS_ERROR) << "OnFrameCaptured";
-	}
-};
-						    
+					    
 cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std::string & url) 
 {
+	LOG(LS_ERROR) << "url:" << url;	
 	cricket::VideoCapturer* capturer = NULL;
 	if (url.find("rtsp://") == 0)
 	{
@@ -199,22 +195,34 @@ cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std:
 		capturer = new RTSPVideoCapturer(url);
 #endif
 	}
+	else if (url == "YuvFramesGenerator")
+	{
+		capturer = new YuvVideoCapturer();
+	}
+	else if (url == "FakeVideoCapturer")
+	{
+		capturer = new cricket::FakeVideoCapturer();
+	}	
 	else
 	{
-		std::vector<cricket::Device> devs;
-		cricket::Device device;
-		rtc::scoped_ptr<cricket::DeviceManagerInterface> dev_manager(cricket::DeviceManagerFactory::Create());
-		if (!dev_manager->Init()) 
+		std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo(0));
+		if (info) 
 		{
-			LOG(LS_ERROR) << "Can't create device manager";
-		}		
-		else if (!dev_manager->GetVideoCaptureDevice(url, &device)) 
-		{
-			LOG(LS_ERROR) << "Can't get device name:" << url;
-		}
-		else
-		{
-			capturer = dev_manager->CreateVideoCapturer(device);
+			int num_devices = info->NumberOfDevices();
+			for (int i = 0; i < num_devices; ++i) 
+			{
+				const uint32_t kSize = 256;
+				char name[kSize] = {0};
+				char id[kSize] = {0};
+				if (info->GetDeviceName(i, name, kSize, id, kSize) != -1) 
+				{
+					if (url == name)
+					{
+						cricket::WebRtcVideoDeviceCapturerFactory factory;
+						capturer = factory.Create(cricket::Device(name, 0));
+					}
+				}
+			}
 		}
 	}
 	return capturer;
@@ -230,8 +238,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 	}
 	else
 	{
-		VideoCapturerListener listener(capturer);
-		rtc::scoped_refptr<webrtc::VideoSourceInterface> source = peer_connection_factory_->CreateVideoSource(capturer, NULL);
+		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> source = peer_connection_factory_->CreateVideoSource(capturer, NULL);
 		rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(peer_connection_factory_->CreateVideoTrack(kVideoLabel, source));
 		rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(kStreamLabel);
 		if (!stream.get())
@@ -289,10 +296,11 @@ const std::string PeerConnectionManager::getOffer(std::string &peerid, const std
 		const webrtc::SessionDescriptionInterface* desc = peer_connection.first->local_description();
 		if (desc)
 		{
-			Json::Value jmessage;
-			jmessage[kSessionDescriptionTypeName] = desc->type();
 			std::string sdp;
 			desc->ToString(&sdp);
+			
+			Json::Value jmessage;
+			jmessage[kSessionDescriptionTypeName] = desc->type();
 			jmessage[kSessionDescriptionSdpName] = sdp;
 			
 			Json::StyledWriter writer;

@@ -15,9 +15,7 @@
 
 #include "webrtc/media/base/videocapturer.h"
 #include "webrtc/base/timeutils.h"
-#ifdef HAVE_WEBRTC_VIDEO
-#include "talk/media/webrtc/webrtcvideoframefactory.h"
-#endif
+
 
 #include "liveMedia.hh"
 #include "BasicUsageEnvironment.hh"
@@ -77,6 +75,7 @@ class RTSPConnection : public RTSPClient
 							onSourceClosure, this);
 					ret = True;
 				}
+				LOG(INFO) << "===========================continuePlaying==========" << ret;
 				return ret;	
 			}
 
@@ -177,7 +176,7 @@ class RTSPConnection : public RTSPClient
 			}
 			else
 			{
-				*m_env << "PLAY OK " << resultString << "\n";
+				*m_env << "PLAY OK " << "\n";
 			}
 			delete[] resultString;
 		}
@@ -187,13 +186,7 @@ class RTSPConnection : public RTSPClient
 			this->sendDescribeCommand(continueAfterDESCRIBEStub); 
 			m_env->taskScheduler().doEventLoop(&m_stop);
 		}
-		
-		static void* MainLoop(void* client)
-		{
-			static_cast<RTSPConnection*>(client)->mainloop();
-			pthread_exit(NULL);
-		}
-		
+				
 		void stop() { m_stop = 1; };
 		
 	protected:
@@ -205,14 +198,13 @@ class RTSPConnection : public RTSPClient
 		char m_stop;
 };
 
-class RTSPVideoCapturer : public cricket::VideoCapturer, public Callback
+class RTSPVideoCapturer : public cricket::VideoCapturer, public Callback, public rtc::Thread
 {
 	public:
 		RTSPVideoCapturer(const std::string & uri) : m_connection(this,uri.c_str())
 		{
-#ifdef HAVE_WEBRTC_VIDEO
-			set_frame_factory(new cricket::WebRtcVideoFrameFactory());
-#endif		
+			LOG(INFO) << "===========================RTSPVideoCapturer" << uri ;
+			
 			std::vector<cricket::VideoFormat> formats;
 			formats.push_back(cricket::VideoFormat(720, 576, cricket::VideoFormat::FpsToInterval(25), cricket::FOURCC_H264));
 			SetSupportedFormats(formats);
@@ -224,11 +216,14 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public Callback
 		
 		virtual bool notifySession(const char* media, const char* codec)
 		{
+			LOG(INFO) << "===========================notifySession" << media << "/" << codec;
 		}
 		
 		virtual bool notifyData(unsigned char* buffer, ssize_t size) 
 		{
-			if (!IsRunning() || !GetCaptureFormat()) {
+			std::cout << "===========================notifyData" << size << std::endl;
+			if (!IsRunning() || !GetCaptureFormat()) 
+			{
 				return false;
 			}
 
@@ -250,16 +245,21 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public Callback
 		{
 			SetCaptureFormat(&format);
 			SetCaptureState(cricket::CS_RUNNING);
-			pthread_create(&m_thid, NULL, RTSPConnection::MainLoop, &m_connection);
+			rtc::Thread::Start();
 			return cricket::CS_RUNNING;
 		}
 	  
-		virtual void Stop() {
+		virtual void Stop() 
+		{
 			m_connection.stop();
-			void * status = NULL;
-			pthread_join(m_thid, &status);
+			rtc::Thread::Stop();
 			SetCaptureFormat(NULL);
 			SetCaptureState(cricket::CS_STOPPED);
+		}
+		
+		void Run()
+		{	
+			m_connection.mainloop();
 		}
 	  
 		virtual bool GetPreferredFourccs(std::vector<unsigned int>* fourccs) 
@@ -273,7 +273,6 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public Callback
 	  
 	private:
 		RTSPConnection m_connection;
-		pthread_t m_thid;
 		
 };
 

@@ -12,8 +12,6 @@
 
 #include <string>
 
-#include "webrtc/api/videosourceinterface.h"
-#include "webrtc/api/mediastreaminterface.h"
 #include "webrtc/api/peerconnection.h"
 
 #include "webrtc/base/scoped_ptr.h"
