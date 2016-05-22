@@ -1,6 +1,6 @@
 CC = $(CROSS)g++ $(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
 AR = $(CROSS)ar
-CFLAGS = -W -pthread -g -std=c++11 -Iinc 
+CFLAGS = -W -pthread -g -std=c++11 -Iinc
 LDFLAGS = -pthread 
 
 # live555
@@ -15,10 +15,10 @@ WEBRTCROOT?=../webrtc
 WEBRTCBUILD?=Release
 WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
 
-CFLAGS += -DWEBRTC_POSIX -fno-rtti 
+CFLAGS += -DWEBRTC_POSIX -fno-rtti -D_GLIBCXX_USE_CXX11_ABI=0
 CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/chromium/src/third_party/jsoncpp/source/include
 ifeq ($(WEBRTCBUILD),Debug)
-	CFLAGS += -D_GLIBCXX_USE_CXX11_ABI=0 -D_GLIBCXX_DEBUG
+	CFLAGS += -D_GLIBCXX_DEBUG=1
 endif
 LDFLAGS += -lX11 -ldl -lrt
 

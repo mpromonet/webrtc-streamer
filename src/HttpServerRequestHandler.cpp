@@ -23,9 +23,6 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 	t-> request.getRelativeUri(&host, &path);
 	std::cout << "===> HTTP request " <<  path << std::endl;
 	
-	rtc::HttpAttributeList attributes;
-	rtc::HttpParseAttributes(t-> request.path.c_str(), t-> request.path.size(), attributes);
-
 	std::unique_ptr<rtc::StreamInterface> & stream(t-> request.document);
 	size_t size = 0;
 	stream->GetSize(&size);
