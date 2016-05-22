@@ -1,6 +1,7 @@
 CC = $(CROSS)g++ $(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
 AR = $(CROSS)ar
-CFLAGS = -W -pthread -g -std=c++11 -Iinc
+CFLAGS = -W -pthread -g -std=c++11 -Iinc 
+LDFLAGS = -pthread 
 
 # live555
 ifneq ($(wildcard $(SYSROOT)/usr/include/liveMedia/liveMedia.hh),)
@@ -14,8 +15,11 @@ WEBRTCROOT?=../webrtc
 WEBRTCBUILD?=Release
 WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
 
-CFLAGS += -DWEBRTC_POSIX -fno-rtti
+CFLAGS += -DWEBRTC_POSIX -fno-rtti 
 CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/chromium/src/third_party/jsoncpp/source/include
+ifeq ($(WEBRTCBUILD),Debug)
+	CFLAGS += -D_GLIBCXX_USE_CXX11_ABI=0 -D_GLIBCXX_DEBUG
+endif
 LDFLAGS += -lX11 -ldl -lrt
 
 TARGET = webrtc-server_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD)
@@ -25,8 +29,14 @@ WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH) -name '*.a')
 libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 	$(AR) -rcT $@ $^
 
-$(TARGET): $(wildcard src/*.cpp) libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
-	$(CC) -o $@ $(CFLAGS) $^ $(LDFLAGS)	
+
+
+src/%.o: src/%.cpp
+	$(CC) -o $@ -c $^ $(CFLAGS) 
+
+FILES = $(wildcard src/*.cpp)
+$(TARGET): $(subst .cpp,.o,$(FILES)) libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
+	$(CC) -o $@ $^ $(LDFLAGS) 
 
 clean:
-	rm -f *.o libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a $(TARGET)
+	rm -f src/*.o libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a $(TARGET)
