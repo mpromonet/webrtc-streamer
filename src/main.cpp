@@ -21,24 +21,30 @@
 ** -------------------------------------------------------------------------*/
 int main(int argc, char* argv[]) 
 {
-	const char* port     = "0.0.0.0:8000";
-	const char* stunurl  = "127.0.0.1:3478";
-	int logLevel = rtc::LERROR; 
+	const char* port          = "0.0.0.0:8000";
+	const char* localstunurl  = "127.0.0.1:3478";
+	const char* stunurl       = "stun.l.google.com:19302";
+	int logLevel              = rtc::LERROR; 
 	
 	int c = 0;     
-	while ((c = getopt (argc, argv, "hS:H:v::")) != -1)
+	while ((c = getopt (argc, argv, "hH:v::" "S:s::")) != -1)
 	{
 		switch (c)
 		{
 			case 'v': logLevel--; if (optarg) logLevel-=strlen(optarg); break;
 			case 'H': port = optarg; break;
-			case 'S': stunurl = optarg; break;
+			
+			case 'S': localstunurl = optarg; stunurl = localstunurl; break;
+			case 's': localstunurl = NULL; if (optarg) stunurl = optarg; break;
+			
 			case 'h':
 			default:
-				std::cout << argv[0] << " [-P http port] [-S stun address] -[v[v]]"                             << std::endl;
+				std::cout << argv[0] << " [-H http port] [-S embeded stun address] -[v[v]]"                             << std::endl;
+				std::cout << argv[0] << " [-H http port] [-s externel stun address] -[v[v]]"                            << std::endl;
 				std::cout << "\t -v[v[v]]         : verbosity"                                                  << std::endl;
 				std::cout << "\t -H [hostname:]port : HTTP server binding (default "   << port    << ")"        << std::endl;
-				std::cout << "\t -S stun_address    : STUN listenning address (default " << stunurl << ")"        << std::endl;
+				std::cout << "\t -S stun_address    : start embedeed STUN server bind to address (default " << localstunurl << ")"        << std::endl;
+				std::cout << "\t -s[stun_address]   : use an external STUN server (default " << stunurl << ")"        << std::endl;
 				exit(0);
 		}
 	}
@@ -74,16 +80,19 @@ int main(int argc, char* argv[])
 			HttpServerRequestHandler http(&httpServer, &webRtcServer);
 			std::cout << "HTTP Listening at " << http_addr.ToString() << std::endl;
 			
-			// STUN server
-			rtc::SocketAddress server_addr;
-			server_addr.FromString(stunurl);
-			std::unique_ptr<cricket::StunServer> stunserver;
-			rtc::AsyncUDPSocket* server_socket = rtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
-			if (server_socket) 
+			if (localstunurl != NULL)
 			{
-				stunserver.reset(new cricket::StunServer(server_socket));
-				std::cout << "STUN Listening at " << server_addr.ToString() << std::endl;
-			}		
+				// STUN server
+				rtc::SocketAddress server_addr;
+				server_addr.FromString(localstunurl);
+				std::unique_ptr<cricket::StunServer> stunserver;
+				rtc::AsyncUDPSocket* server_socket = rtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
+				if (server_socket) 
+				{
+					stunserver.reset(new cricket::StunServer(server_socket));
+					std::cout << "STUN Listening at " << server_addr.ToString() << std::endl;
+				}	
+			}			
 
 			// mainloop
 			while(thread->ProcessMessages(10));

@@ -25,9 +25,11 @@ Build
 	
 Usage
 -----
-	./webrtc-server [-v[v]] [-P HTTP binding] [-S STUN binding]
+	./webrtc-server [-v[v]] [-H HTTP binding] [-S STUN binding]
 		 -v[v[v]] : verbosity
 		 -H hostname:port  : HTTP binding (default 0.0.0.0:8000)
-		 -S hostname:port  : STUN binding (default 127.0.0.1:3478)
+		 -S hostname:port  : use embeded STUN server (default 127.0.0.1:3478)
+                 -s[stun_address]  : use an external STUN server (default stun.l.google.com:19302)
 
-	Next connect to the interface using a Web browser with the URL of the HTTP server.
+
+Next connect to the interface using a Web browser with the URL of the HTTP server.
