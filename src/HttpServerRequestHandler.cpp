@@ -20,16 +20,15 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 {
 	std::string host;
 	std::string path;
-	t-> request.getRelativeUri(&host, &path);
+	t->request.getRelativeUri(&host, &path);
 	std::cout << "===> HTTP request " <<  path << std::endl;
 	
-	std::unique_ptr<rtc::StreamInterface> & stream(t-> request.document);
 	size_t size = 0;
-	stream->GetSize(&size);
-	stream->Rewind();
+	t->request.document->GetSize(&size);
+	t->request.document->Rewind();
 	char buffer[size];
 	size_t readsize = 0;
-	rtc::StreamResult res = stream->ReadAll(&buffer, size, &readsize, NULL);
+	rtc::StreamResult res = t->request.document->ReadAll(&buffer, size, &readsize, NULL);
 	std::cout << "res:" << res << std::endl;
 	std::string body(buffer, readsize);			
 	std::cout << "body:" << body << std::endl;
