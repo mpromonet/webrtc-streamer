@@ -14,7 +14,7 @@ endif
 WEBRTCROOT?=../webrtc
 WEBRTCBUILD?=Release
 WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
-ifneq ($(wildcard $(WEBRTCROOT)/webrtc/media/base/yuvframegenerator.h),)
+ifneq ($(wildcard $(WEBRTCROOT)/src/webrtc/media/base/yuvframegenerator.h),)
 	CFLAGS += -DHAVE_YUVFRAMEGENERATOR
 endif
 
