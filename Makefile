@@ -23,12 +23,12 @@ CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/chromium/src/third_party/jso
 ifeq ($(WEBRTCBUILD),Debug)
 	CFLAGS += -D_GLIBCXX_DEBUG=1
 endif
-LDFLAGS += -lX11 -ldl -lrt
+LDFLAGS += -lX11 -ldl -lrt  
 
 TARGET = webrtc-server_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD)
 all: $(TARGET)
 
-WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH) -name '*.a')
+WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH) -name '*.a') $(shell find $(WEBRTCLIBPATH)/obj -name '*.o')
 libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 	$(AR) -rcT $@ $^
 
@@ -39,7 +39,7 @@ src/%.o: src/%.cpp
 
 FILES = $(wildcard src/*.cpp)
 $(TARGET): $(subst .cpp,.o,$(FILES)) libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
-	$(CC) -o $@ $^ $(LDFLAGS) 
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 clean:
 	rm -f src/*.o libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a $(TARGET)
