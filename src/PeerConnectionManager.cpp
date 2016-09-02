@@ -14,8 +14,6 @@
 #include "webrtc/modules/video_capture/video_capture_factory.h"
 #include "webrtc/media/engine/webrtcvideocapturerfactory.h"
 
-#include "webrtc/media/base/fakevideocapturer.h"
-
 #include "PeerConnectionManager.h"
 
 #ifdef HAVE_LIVE555
@@ -203,10 +201,6 @@ cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std:
 		capturer = new YuvVideoCapturer();
 #endif
 	}
-	else if (url == "FakeVideoCapturer")
-	{
-		capturer = new cricket::FakeVideoCapturer();
-	}	
 	else
 	{
 		std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo(0));
