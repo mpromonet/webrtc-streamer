@@ -12,7 +12,7 @@ endif
 
 # webrtc
 WEBRTCROOT?=../webrtc
-WEBRTCBUILD?=Release
+WEBRTCBUILD?=Default
 WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
 ifneq ($(wildcard $(WEBRTCROOT)/src/webrtc/media/base/yuvframegenerator.h),)
 	CFLAGS += -DHAVE_YUVFRAMEGENERATOR
@@ -20,7 +20,9 @@ endif
 
 CFLAGS += -DWEBRTC_POSIX -fno-rtti -D_GLIBCXX_USE_CXX11_ABI=0
 CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/chromium/src/third_party/jsoncpp/source/include
-ifeq ($(WEBRTCBUILD),Debug)
+#detect
+TESTDEBUG=$(shell nm $(WEBRTCLIBPATH)/obj/webrtc/media/rtc_media/videocapturer.o | c++filt | grep std::__debug::vector >/dev/null && echo debug)
+ifeq ($(TESTDEBUG),debug)
 	CFLAGS += -D_GLIBCXX_DEBUG=1
 endif
 LDFLAGS += -lX11 -ldl -lrt  
@@ -28,7 +30,7 @@ LDFLAGS += -lX11 -ldl -lrt
 TARGET = webrtc-server_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD)
 all: $(TARGET)
 
-WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH) -name '*.a') $(shell find $(WEBRTCLIBPATH)/obj -name '*.o')
+WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH)/obj -name '*.o' ! -name '*_unittest*.o')
 libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 	$(AR) -rcT $@ $^
 
