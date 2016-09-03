@@ -12,7 +12,7 @@ endif
 
 # webrtc
 WEBRTCROOT?=../webrtc
-WEBRTCBUILD?=Default
+WEBRTCBUILD?=Release
 WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
 ifneq ($(wildcard $(WEBRTCROOT)/src/webrtc/media/base/yuvframegenerator.h),)
 	CFLAGS += -DHAVE_YUVFRAMEGENERATOR
@@ -21,7 +21,7 @@ endif
 CFLAGS += -DWEBRTC_POSIX -fno-rtti -D_GLIBCXX_USE_CXX11_ABI=0
 CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/chromium/src/third_party/jsoncpp/source/include
 #detect
-TESTDEBUG=$(shell nm $(WEBRTCLIBPATH)/obj/webrtc/media/rtc_media/videocapturer.o | c++filt | grep std::__debug::vector >/dev/null && echo debug)
+TESTDEBUG=$(shell nm $(wildcard $(WEBRTCLIBPATH)/obj/webrtc/media/rtc_media/videocapturer.o $(WEBRTCLIBPATH)/obj/webrtc/media/librtc_media.a) | c++filt | grep std::__debug::vector >/dev/null && echo debug)
 ifeq ($(TESTDEBUG),debug)
 	CFLAGS += -D_GLIBCXX_DEBUG=1
 endif
