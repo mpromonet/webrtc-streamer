@@ -73,15 +73,25 @@ class PeerConnectionManager {
 			Json::Value getIceCandidateList() { return iceCandidateList_; };
 			
 			virtual void OnAddStream(webrtc::MediaStreamInterface* stream) {}
-			virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) {}
+			virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) {
+				LOG(LERROR) << __PRETTY_FUNCTION__;
+			}
 			virtual void OnDataChannel(webrtc::DataChannelInterface* channel) {}
 			virtual void OnRenegotiationNeeded() {
 				LOG(LERROR) << __PRETTY_FUNCTION__;
 			}
 
 			virtual void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
-                        virtual void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState) {}
-                        virtual void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState) {}
+                        virtual void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState state) {}
+                        virtual void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState state) {
+				LOG(LERROR) << __PRETTY_FUNCTION__ << " " << state;
+				if ( (state == webrtc::PeerConnectionInterface::kIceConnectionFailed)
+				   ||(state == webrtc::PeerConnectionInterface::kIceConnectionDisconnected)
+				   ||(state == webrtc::PeerConnectionInterface::kIceConnectionClosed) )
+				{
+					iceCandidateList_.clear();
+				}
+			}
                         virtual void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState) {}
 				
 		protected:
@@ -106,7 +116,6 @@ class PeerConnectionManager {
 
 	protected:
 		std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionManager::PeerConnectionObserver* > CreatePeerConnection(const std::string & url);
-		void DeletePeerConnection();
 		bool AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url);
 		cricket::VideoCapturer* OpenVideoCaptureDevice(const std::string & url);
 
@@ -115,7 +124,6 @@ class PeerConnectionManager {
 		std::map<std::string, rtc::scoped_refptr<webrtc::PeerConnectionInterface> >  peer_connection_map_;
 		std::map<std::string, PeerConnectionObserver* >  peer_connectionobs_map_;
 		std::string stunurl_;
-		Json::Value iceCandidateList_;
 };
 
 #endif  

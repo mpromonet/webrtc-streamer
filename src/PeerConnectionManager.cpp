@@ -106,11 +106,6 @@ std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionMan
 	return std::pair<rtc::scoped_refptr<webrtc::PeerConnectionInterface>, PeerConnectionObserver* >(peer_connection, obs);
 }
 
-void PeerConnectionManager::DeletePeerConnection() 
-{
-	LOG(INFO) << __FUNCTION__;	
-}
-
 void PeerConnectionManager::setAnswer(const std::string &peerid, const std::string& message)
 {
 	LOG(INFO) << message;	
