@@ -30,7 +30,7 @@ LDFLAGS += -lX11 -ldl -lrt
 TARGET = webrtc-server_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD)
 all: $(TARGET)
 
-WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH)/obj -name '*.o' ! -name '*_unittest*.o')
+WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH)/obj -name '*.o' ! -name '*_unittest*.o' ! -name '*_main.o')
 libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 	$(AR) -rcT $@ $^
 
