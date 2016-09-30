@@ -19,9 +19,6 @@
 #ifdef HAVE_LIVE555
 #include "rtspvideocapturer.h"
 #endif
-#ifdef HAVE_YUVFRAMEGENERATOR
-#include "yuvvideocapturer.h"
-#endif
 
 
 const char kAudioLabel[] = "audio_label";
@@ -188,12 +185,6 @@ cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std:
 	{
 #ifdef HAVE_LIVE555
 		capturer = new RTSPVideoCapturer(url);
-#endif
-	}
-	else if (url == "YuvFramesGenerator")
-	{
-#ifdef HAVE_YUVFRAMEGENERATOR
-		capturer = new YuvVideoCapturer();
 #endif
 	}
 	else

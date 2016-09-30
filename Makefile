@@ -14,9 +14,6 @@ endif
 WEBRTCROOT?=../webrtc
 WEBRTCBUILD?=Release
 WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
-ifneq ($(wildcard $(WEBRTCROOT)/src/webrtc/media/base/yuvframegenerator.h),)
-	CFLAGS += -DHAVE_YUVFRAMEGENERATOR
-endif
 
 CFLAGS += -DWEBRTC_POSIX -fno-rtti -D_GLIBCXX_USE_CXX11_ABI=0
 CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/chromium/src/third_party/jsoncpp/source/include
