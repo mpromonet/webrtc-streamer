@@ -3,7 +3,7 @@
 <title>PeerConnection server test page</title>
 <script>
 	var pc;    
-	var pcConfig = {"iceServers": []};
+	var pcConfig = {"iceServers": [] };
 	var pcOptions = { optional: [{DtlsSrtpKeyAgreement: true} ] };
 	var mediaConstraints = {'mandatory': {'OfferToReceiveVideo': true }};
 	
@@ -42,7 +42,7 @@
 	// ---------
 	function createPeerConnection() {
 		try {
-			trace("createPeerConnection  config: " + JSON.stringify(pcConfig) + "option:"+  JSON.stringify(pcOptions));
+			trace("createPeerConnection  config: " + JSON.stringify(pcConfig) + " option:"+  JSON.stringify(pcOptions));
 			pc = new RTCPeerConnection(pcConfig, pcOptions);
 			pc.onicecandidate = onIceCandidate;
 			pc.ontrack = onTrack;
@@ -137,6 +137,8 @@
 				trace ("Failure close peer connection:" + e);
 			}
 			pc = null;
+			var remoteVideoElement = document.getElementById('remote-video');
+			remoteVideoElement.src = null;
 		}
 			
 		document.getElementById("connect").disabled = false;
@@ -144,24 +146,24 @@
 	}    
 	
 	function onGetDeviceList(request) {
-			var deviceList = eval( "{" + request.responseText + "}" );
-			var urllist = document.getElementById("urlList");
-			for (var dev in deviceList)
-			{
-				var option = document.createElement("option");
-				option.text = deviceList[dev];
-				trace("device: " + option.text);
-				urllist.add(option);
-			}
-			var url = document.getElementById("url");
-			if (urllist.length > 0)
-			{
-				url.value=urllist[0].value;
-			}
-			else
-			{
-				url.value="";
-			}
+		var deviceList = eval( "{" + request.responseText + "}" );
+		var urllist = document.getElementById("urlList");
+		for (var dev in deviceList)
+		{
+			var option = document.createElement("option");
+			option.text = deviceList[dev];
+			trace("device: " + option.text);
+			urllist.add(option);
+		}
+		var url = document.getElementById("url");
+		if (urllist.length > 0)
+		{
+			url.value=urllist[0].value;
+		}
+		else
+		{
+			url.value="";
+		}
 	}
 
 	function init() {
