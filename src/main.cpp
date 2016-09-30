@@ -49,6 +49,7 @@ int main(int argc, char* argv[])
 		}
 	}
 	
+	
 	rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)logLevel);
 	rtc::LogMessage::LogTimestamps();
 	rtc::LogMessage::LogThreads();
@@ -56,7 +57,7 @@ int main(int argc, char* argv[])
 	
 	rtc::Thread* thread = rtc::Thread::Current();
 	rtc::InitializeSSL();
-	
+
 	// webrtc server
 	PeerConnectionManager webRtcServer(stunurl);
 	if (!webRtcServer.InitializePeerConnection())
@@ -79,13 +80,13 @@ int main(int argc, char* argv[])
 			// connect httpserver to a request handler
 			HttpServerRequestHandler http(&httpServer, &webRtcServer);
 			std::cout << "HTTP Listening at " << http_addr.ToString() << std::endl;
-			
+
+			// start STUN server if needed
+			std::unique_ptr<cricket::StunServer> stunserver;
 			if (localstunurl != NULL)
 			{
-				// STUN server
 				rtc::SocketAddress server_addr;
 				server_addr.FromString(localstunurl);
-				std::unique_ptr<cricket::StunServer> stunserver;
 				rtc::AsyncUDPSocket* server_socket = rtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
 				if (server_socket) 
 				{
@@ -95,7 +96,7 @@ int main(int argc, char* argv[])
 			}			
 
 			// mainloop
-			while(thread->ProcessMessages(10));
+			thread->Run();
 		}
 	}
 	
