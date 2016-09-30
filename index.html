@@ -45,7 +45,7 @@
 			trace("createPeerConnection  config: " + JSON.stringify(pcConfig) + "option:"+  JSON.stringify(pcOptions));
 			pc = new RTCPeerConnection(pcConfig, pcOptions);
 			pc.onicecandidate = onIceCandidate;
-			pc.onaddstream = onRemoteStreamAdded;
+			pc.ontrack = onTrack;
 			trace("Created RTCPeerConnnection with config: " + JSON.stringify(pcConfig) + "option:"+  JSON.stringify(pcOptions) );
 		} 
 		catch (e) {
@@ -62,10 +62,10 @@
 		}
 	}
 
-	function onRemoteStreamAdded(event) {
+	function onTrack(event) {
 		trace("Remote stream added:" +  JSON.stringify(event));
 		var remoteVideoElement = document.getElementById('remote-video');
-		remoteVideoElement.src = URL.createObjectURL(event.stream);
+		remoteVideoElement.src = URL.createObjectURL(event.streams[0]);
 		remoteVideoElement.play();
 		this.URL = remoteVideoElement.src;
 	}
@@ -160,18 +160,18 @@
 </script>
 </head>
 <body>
+	<div>
+		<select id="urlList" onchange="this.nextElementSibling.value=this.value">
+		</select>
+		<input type="text" id="url"/>
+		<button id="connect"    onclick="connect();">Connect</button>
+		<button id="disconnect" onclick="disconnect();" disabled="true">Disconnect</button>
+	</div>        
+	<br>
 	<div id="container">
 		<div id="remote">
 			<video id="remote-video" width="50%" height="50%"></video>
 		</div>
 	</div>
-	<div>
-	  <select id="urlList" onchange="this.nextElementSibling.value=this.value">
-	  </select>
-	  <input type="text" id="url"/>
-	</div>        
-	<button id="connect"    onclick="connect();">Connect</button>
-	<button id="disconnect" onclick="disconnect();" disabled="true">Disconnect</button>
-	<br>
 </body>
 </html>
