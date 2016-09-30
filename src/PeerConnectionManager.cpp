@@ -286,6 +286,7 @@ const std::string PeerConnectionManager::getOffer(std::string &peerid, const std
 			rtc::Thread::Current()->ProcessMessages(10);
 		}
 				
+		// answer with the created offer
 		const webrtc::SessionDescriptionInterface* desc = peer_connection.first->local_description();
 		if (desc)
 		{
@@ -320,6 +321,19 @@ const Json::Value PeerConnectionManager::getIceCandidateList(const std::string &
 		}
 	}
 	return value;
+}
+
+void PeerConnectionManager::hangUp(const std::string &peerid)
+{
+	LOG(INFO) << __FUNCTION__ << " " << peerid;
+	std::map<std::string, rtc::scoped_refptr<webrtc::PeerConnectionInterface> >::iterator it = peer_connection_map_.find(peerid);
+	if (it != peer_connection_map_.end())
+	{
+		LOG(INFO) << __FUNCTION__ << " Close PeerConnection";
+		it->second->Close();
+		peer_connection_map_.erase(it);
+	}
+	peer_connectionobs_map_.erase(peerid);
 }
 
 void PeerConnectionManager::PeerConnectionObserver::OnIceCandidate(const webrtc::IceCandidateInterface* candidate) 

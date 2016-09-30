@@ -61,6 +61,14 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 		
 		t->response.set_success();			
 	}
+	else if (path == "/hangup")
+	{
+		std::string peerid;	
+		t-> request.hasHeader("peerid", &peerid);				
+		m_webRtcServer->hangUp(peerid);
+		
+		t->response.set_success();			
+	}
 	else if (path == "/getIceCandidate")
 	{
 		std::string peerid;	

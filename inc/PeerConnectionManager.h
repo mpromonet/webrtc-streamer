@@ -73,9 +73,7 @@ class PeerConnectionManager {
 			Json::Value getIceCandidateList() { return iceCandidateList_; };
 			
 			virtual void OnAddStream(webrtc::MediaStreamInterface* stream) {}
-			virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) {
-				LOG(LERROR) << __PRETTY_FUNCTION__;
-			}
+			virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) {}
 			virtual void OnDataChannel(webrtc::DataChannelInterface* channel) {}
 			virtual void OnRenegotiationNeeded() {
 				LOG(LERROR) << __PRETTY_FUNCTION__;
@@ -112,6 +110,7 @@ class PeerConnectionManager {
 		void setAnswer(const std::string &peerid, const std::string&);
 		void addIceCandidate(const std::string &peerid, const std::string&);
 		const Json::Value getDeviceList();
+		void hangUp(const std::string &peerid);
 
 
 	protected:
