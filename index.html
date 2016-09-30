@@ -130,7 +130,12 @@
 	function disconnect() {		
 		if (pc) {
 			send("/hangup", pc.peerid);
-			pc.close();
+			try {
+				pc.close();
+			}
+			catch (e) {
+				trace ("Failure close peer connection:" + e);
+			}
 			pc = null;
 		}
 			
@@ -147,6 +152,15 @@
 				option.text = deviceList[dev];
 				trace("device: " + option.text);
 				urllist.add(option);
+			}
+			var url = document.getElementById("url");
+			if (urllist.length > 0)
+			{
+				url.value=urllist[0].value;
+			}
+			else
+			{
+				url.value="";
 			}
 	}
 
