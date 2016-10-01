@@ -226,36 +226,58 @@ cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std:
 bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url) 
 {
 	bool ret = false;
-	cricket::VideoCapturer* capturer = OpenVideoCaptureDevice(url);
-	if (!capturer)
+	std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(url);
+	if (it == stream_map_.end())
 	{
-		LOG(LS_ERROR) << "Cannot create capturer " << url;
-	}
-	else
-	{
-		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> source = peer_connection_factory_->CreateVideoSource(capturer, NULL);
-		rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(peer_connection_factory_->CreateVideoTrack(kVideoLabel, source));
-		rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(kStreamLabel);
-		if (!stream.get())
+		// need to create the strem
+		cricket::VideoCapturer* capturer = OpenVideoCaptureDevice(url);
+		if (!capturer)
 		{
-			LOG(LS_ERROR) << "Cannot create stream";
+			LOG(LS_ERROR) << "Cannot create capturer " << url;
 		}
 		else
 		{
-			if (!stream->AddTrack(video_track))
+			rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> source = peer_connection_factory_->CreateVideoSource(capturer, NULL);
+			rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(peer_connection_factory_->CreateVideoTrack(kVideoLabel, source));
+			rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(kStreamLabel);
+			if (!stream.get())
 			{
-				LOG(LS_ERROR) << "Adding Track to PeerConnection failed";
-			}		
-			else if (!peer_connection->AddStream(stream)) 
-			{
-				LOG(LS_ERROR) << "Adding stream to PeerConnection failed";
+				LOG(LS_ERROR) << "Cannot create stream";
 			}
 			else
 			{
-				ret = true;
+				if (!stream->AddTrack(video_track))
+				{
+					LOG(LS_ERROR) << "Adding VideoTrack to MediaStream failed";
+				}
+				else
+				{
+					LOG(INFO) << "Adding Stream to map";
+					stream_map_[url] = stream;
+				}
 			}
 		}
+		
 	}
+	
+	
+	it = stream_map_.find(url);
+	if (it != stream_map_.end())
+	{
+		if (!peer_connection->AddStream(it->second)) 
+		{
+			LOG(LS_ERROR) << "Adding stream to PeerConnection failed";
+		}
+		else
+		{
+			ret = true;
+		}
+	}
+	else
+	{
+		LOG(LS_ERROR) << "Cannot find stream";
+	}
+	
 	return ret;
 }
 
