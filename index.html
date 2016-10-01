@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>PeerConnection server test page</title>
+<title>WebRTC Streamer</title>
 <script>
 	var pc;    
 	var pcConfig = {"iceServers": [] };
@@ -16,7 +16,11 @@
 		console.log(txt);
 	}
 
+	// ------------------------------------------
+	// AJAX helper
+	// ------------------------------------------	
 	function send(method,peerid,data,onSuccess,onFailure) {
+		trace("HTTP call "+ method);
 		try {
 			var r = new XMLHttpRequest();
 			r.open("POST",method, true);
@@ -35,11 +39,13 @@
 			r.send(data);
 			r = null;
 		} catch (e) {
-		  trace("send to peer:" + peerid + " error: " + e.description);
+			trace("send to peer:" + peerid + " error: " + e.description);
 		}
 	}
 
-	// ---------
+	// ------------------------------------------
+	// RTCPeerConnection and its callbacks
+	// ------------------------------------------
 	function createPeerConnection() {
 		try {
 			trace("createPeerConnection  config: " + JSON.stringify(pcConfig) + " option:"+  JSON.stringify(pcOptions));
@@ -67,21 +73,25 @@
 		var remoteVideoElement = document.getElementById('remote-video');
 		remoteVideoElement.src = URL.createObjectURL(event.streams[0]);
 		remoteVideoElement.play();
-		this.URL = remoteVideoElement.src;
 	}
 		
-	// ---------	        	
+	// ------------------------------------------
+	// RTCPeerConnection.setRemoteDescription and its callbacks
+	// ------------------------------------------	
 	function setRemoteDescriptionSuccess() {
-			trace('setRemoteDescription: success ' + pc.peerid); 
-			pc.createAnswer(function(sessionDescription) {
-				trace("Create answer:" + JSON.stringify(sessionDescription));
-				pc.setLocalDescription(sessionDescription);
-				send("/answer",pc.peerid,JSON.stringify(sessionDescription));				
-			}, function(error) { 
-				alert("Create answer error:" + JSON.stringify(error));
-			}, mediaConstraints); 			
-						
-			send("/getIceCandidate", pc.peerid, null, onReceiveCandidate);
+		trace('setRemoteDescription: success ' + pc.peerid); 
+		pc.createAnswer(function(sessionDescription) {
+			trace("Create answer:" + JSON.stringify(sessionDescription));
+			pc.setLocalDescription(sessionDescription);
+			send("/answer",pc.peerid,JSON.stringify(sessionDescription), onReceiceAnswer);				
+		}, function(error) { 
+			alert("Create answer error:" + JSON.stringify(error));
+		}, mediaConstraints); 								
+	}
+	
+	function onReceiceAnswer()
+	{
+		send("/getIceCandidate", pc.peerid, null, onReceiveCandidate);
 	}
 	
 	function setRemoteDescriptionFailure(error) {
@@ -95,7 +105,6 @@
 		pc.setRemoteDescription(new RTCSessionDescription(dataJson), setRemoteDescriptionSuccess, setRemoteDescriptionFailure);        
 	}
 
-	// ---------
 	function onReceiveCandidate(request) {
 		trace("candidate: " + request.responseText);
 		var dataJson = JSON.parse(request.responseText);
@@ -111,7 +120,9 @@
 		}
 	}
 
-	// ---------
+	// ------------------------------------------
+	// Connect button callback
+	// ------------------------------------------	
 	function connect() {
 		var url = document.getElementById("url").value;
 			
@@ -127,6 +138,9 @@
 		}	    
 	}
 	
+	// ------------------------------------------
+	// Disconnect button callback
+	// ------------------------------------------	
 	function disconnect() {		
 		if (pc) {
 			send("/hangup", pc.peerid);
@@ -138,13 +152,16 @@
 			}
 			pc = null;
 			var remoteVideoElement = document.getElementById('remote-video');
-			remoteVideoElement.src = null;
+			remoteVideoElement.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 		}
 			
 		document.getElementById("connect").disabled = false;
 		document.getElementById("disconnect").disabled = true;
 	}    
 	
+	// ------------------------------------------
+	// init device list and callback
+	// ------------------------------------------	
 	function onGetDeviceList(request) {
 		var deviceList = eval( "{" + request.responseText + "}" );
 		var urllist = document.getElementById("urlList");
