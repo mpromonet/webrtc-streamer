@@ -128,8 +128,8 @@ Environment::~Environment()
 
 RTSPConnection::SessionSink::SessionSink(UsageEnvironment& env, Callback* callback) 
 	: MediaSink(env)
-	, m_buffer(NULL)
 	, m_bufferSize(0)
+	, m_buffer(NULL)
 	, m_callback(callback) 
 	, m_markerSize(0)
 {

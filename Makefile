@@ -1,6 +1,6 @@
 CC = $(CROSS)g++ $(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
 AR = $(CROSS)ar
-CFLAGS = -W -pthread -g -std=c++11 -Iinc
+CFLAGS = -Wall -pthread -g -std=c++11 -Iinc
 LDFLAGS = -pthread 
 
 # live555
