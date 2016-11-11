@@ -137,7 +137,7 @@ void PeerConnectionManager::setAnswer(const std::string &peerid, const std::stri
 				if (it != peer_connectionobs_map_.end())
 				{
 					rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it->second->getPeerConnection();
-					peerConnection->SetRemoteDescription(SetSessionDescriptionObserver::Create(peerConnection, session_description->type()), session_description);
+					peerConnection->SetRemoteDescription(SetSessionDescriptionObserver::Create(peerConnection), session_description);
 				}
 			}
 		}

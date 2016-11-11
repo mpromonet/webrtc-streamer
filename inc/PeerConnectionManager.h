@@ -21,26 +21,33 @@
 class PeerConnectionManager {
 	class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver {
 		public:
-			static SetSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc, const std::string& type) 
+			static SetSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc) 
 			{
-				return  new rtc::RefCountedObject<SetSessionDescriptionObserver>(pc, type);  
+				return  new rtc::RefCountedObject<SetSessionDescriptionObserver>(pc);  
 			}
 			virtual void OnSuccess()
 			{
 				std::string sdp;
-				m_pc->local_description()->ToString(&sdp);				
-				LOG(LERROR) << __PRETTY_FUNCTION__ << " type:" << m_type << " " << sdp;	
+				if (m_pc->local_description())
+				{
+					m_pc->local_description()->ToString(&sdp);				
+					LOG(INFO) << __PRETTY_FUNCTION__ << " Local SDP:" << sdp;	
+				}
+				if (m_pc->remote_description())
+				{
+					m_pc->remote_description()->ToString(&sdp);				
+					LOG(INFO) << __PRETTY_FUNCTION__ << " Remote SDP:" << sdp;	
+				}
 			}
 			virtual void OnFailure(const std::string& error) 
 			{
 				LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
 			}
 		protected:
-			SetSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc, const std::string& type) : m_pc(pc), m_type(type) {};
+			SetSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc) : m_pc(pc) {};
 				
 		private:
 			webrtc::PeerConnectionInterface* m_pc;
-			std::string m_type;
 	};
 
 	class CreateSessionDescriptionObserver : public webrtc::CreateSessionDescriptionObserver {
@@ -52,7 +59,7 @@ class PeerConnectionManager {
 			virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc) 
 			{
 				LOG(LERROR) << __PRETTY_FUNCTION__ << " type:" << desc->type();
-				m_pc->SetLocalDescription(SetSessionDescriptionObserver::Create(m_pc, desc->type()), desc);
+				m_pc->SetLocalDescription(SetSessionDescriptionObserver::Create(m_pc), desc);
 			}
 			virtual void OnFailure(const std::string& error) {
 				LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
