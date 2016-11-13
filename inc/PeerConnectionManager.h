@@ -58,7 +58,9 @@ class PeerConnectionManager {
 			}
 			virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc) 
 			{
-				LOG(LERROR) << __PRETTY_FUNCTION__ << " type:" << desc->type();
+				std::string sdp;
+				desc->ToString(&sdp);
+				LOG(INFO) << __PRETTY_FUNCTION__ << " type:" << desc->type() << " sdp:" << sdp;
 				m_pc->SetLocalDescription(SetSessionDescriptionObserver::Create(m_pc), desc);
 			}
 			virtual void OnFailure(const std::string& error) {
@@ -77,17 +79,17 @@ class PeerConnectionManager {
 			void setPeerConnection(rtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc) { m_pc = pc; };
 			Json::Value getIceCandidateList() { return iceCandidateList_; };
 			
-			virtual void OnAddStream(webrtc::MediaStreamInterface* stream)    {}
+			virtual void OnAddStream(webrtc::MediaStreamInterface* stream)    {
+				LOG(INFO) << __PRETTY_FUNCTION__;
+			}
 			virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) {}
 			virtual void OnDataChannel(webrtc::DataChannelInterface* channel) {}
-			virtual void OnRenegotiationNeeded() {
-				LOG(LERROR) << __PRETTY_FUNCTION__;
-			}
+			virtual void OnRenegotiationNeeded()                              {}
 
 			virtual void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
                         virtual void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState state) {}
                         virtual void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState state) {
-				LOG(LERROR) << __PRETTY_FUNCTION__ << " " << state;
+				LOG(INFO) << __PRETTY_FUNCTION__ << " " << state;
 				if ( (state == webrtc::PeerConnectionInterface::kIceConnectionFailed)
 				   ||(state == webrtc::PeerConnectionInterface::kIceConnectionDisconnected)
 				   ||(state == webrtc::PeerConnectionInterface::kIceConnectionClosed) )
@@ -98,7 +100,7 @@ class PeerConnectionManager {
                         virtual void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState) {}
 				
 			virtual ~PeerConnectionObserver() { 
-				LOG(LERROR) << __PRETTY_FUNCTION__;
+				LOG(INFO) << __PRETTY_FUNCTION__;
 				m_pc->Close(); 
 			}
 			
@@ -123,10 +125,11 @@ class PeerConnectionManager {
 		void addIceCandidate(const std::string &peerid, const std::string&);
 		const Json::Value getDeviceList();
 		void hangUp(const std::string &peerid);
+		const std::string call(std::string &peerid, const std::string & url, const std::string& message);
 
 
 	protected:
-		PeerConnectionObserver* CreatePeerConnection(const std::string & url);
+		PeerConnectionObserver* CreatePeerConnection();
 		bool AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url);
 		cricket::VideoCapturer* OpenVideoCaptureDevice(const std::string & url);
 

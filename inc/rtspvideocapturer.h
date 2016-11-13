@@ -321,13 +321,8 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 		virtual bool onData(unsigned char* buffer, ssize_t size) 
 		{			
 			std::cout << "===========================onData" << size << std::endl;
-			if (!IsRunning()) 
-			{
-				return false;
-			}
 			
-			
-			if (!GetCaptureFormat()) 
+			//if (!GetCaptureFormat()) 
 			{
 				rtc::Optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(buffer, size);
 				if (!sps)

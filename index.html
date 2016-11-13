@@ -59,7 +59,7 @@
 		}
 		return pc;
 	}
-	
+		
 	function onIceCandidate(event) {
 		if (event.candidate) {
 			send("/addicecandidate",pc.peerid,JSON.stringify(event.candidate));
@@ -76,47 +76,59 @@
 	}
 		
 	// ------------------------------------------
-	// RTCPeerConnection.setRemoteDescription and its callbacks
-	// ------------------------------------------	
-	function setRemoteDescriptionSuccess() {
-		trace('setRemoteDescription: success ' + pc.peerid); 
-		pc.createAnswer(function(sessionDescription) {
-			trace("Create answer:" + JSON.stringify(sessionDescription));
-			pc.setLocalDescription(sessionDescription);
-			send("/answer",pc.peerid,JSON.stringify(sessionDescription), onReceiceAnswer);				
-		}, function(error) { 
-			alert("Create answer error:" + JSON.stringify(error));
-		}, mediaConstraints); 								
-	}
-	
+	// AJAX callbacks
+	// ------------------------------------------		
 	function onReceiceAnswer()
 	{
 		send("/getIceCandidate", pc.peerid, null, onReceiveCandidate);
-	}
-	
-	function setRemoteDescriptionFailure(error) {
-		alert('setRemoteDescription: error:'+JSON.stringify(error)); 
 	}
 
 	function onReceiveOffer(request) {
 		trace("peerid: " + request.getResponseHeader("peerid") + " offer: " + request.responseText);
 		pc.peerid = request.getResponseHeader("peerid");
 		var dataJson = JSON.parse(request.responseText);
-		pc.setRemoteDescription(new RTCSessionDescription(dataJson), setRemoteDescriptionSuccess, setRemoteDescriptionFailure);        
+		pc.setRemoteDescription(new RTCSessionDescription(dataJson)).then(function() {
+			trace('setRemoteDescription: success ' + pc.peerid); 
+			pc.createAnswer(mediaConstraints).then(function(sessionDescription) {
+				trace("Create answer:" + JSON.stringify(sessionDescription));
+				
+				pc.setLocalDescription(sessionDescription).then(function() {
+					send("/answer",pc.peerid,JSON.stringify(sessionDescription), onReceiceAnswer);				
+				});
+				
+			}).catch(function(error) { 
+				alert("Create answer error:" + JSON.stringify(error));
+			}); 								
+		}).catch(function(error) { 
+			alert('setRemoteDescription: error:'+JSON.stringify(error)) 
+		});        
 	}
+	
+	function onReceiveCall(request) {
+		trace("peerid: " + request.getResponseHeader("peerid") + " offer: " + request.responseText);
+		pc.peerid = request.getResponseHeader("peerid");
+		var dataJson = JSON.parse(request.responseText);
+		pc.setRemoteDescription(new RTCSessionDescription(dataJson)).then(function() { 
+			send("/getIceCandidate", pc.peerid, null, onReceiveCandidate);
+		}).catch(function(error) { 
+			trace ("setRemoteDescription error:" + JSON.stringify(error)); 
+		});
+	}	
 
 	function onReceiveCandidate(request) {
 		trace("candidate: " + request.responseText);
 		var dataJson = JSON.parse(request.responseText);
-		for (var i=0; i<dataJson.length; i++)
+		if (dataJson)
 		{
-			var candidate = new RTCIceCandidate(dataJson[i]);
-			
-			trace("Adding ICE candidate :" + JSON.stringify(candidate) );
-			pc.addIceCandidate(candidate,
-				function() { trace ("addIceCandidate OK"); },
-				function(error) { trace ("addIceCandidate error:" + JSON.stringify(error)); }
-			);
+			for (var i=0; i<dataJson.length; i++)
+			{
+				var candidate = new RTCIceCandidate(dataJson[i]);
+				
+				trace("Adding ICE candidate :" + JSON.stringify(candidate) );
+				pc.addIceCandidate(candidate)
+					.then(function() { trace ("addIceCandidate OK"); })
+					.catch(function(error) { trace ("addIceCandidate error:" + JSON.stringify(error)); });
+			}
 		}
 	}
 
@@ -128,10 +140,37 @@
 			
 		document.getElementById("connect").disabled = true;
 		document.getElementById("disconnect").disabled = false;
+		
+		var UseCall = document.getElementById("useCall").checked;
 			
 		try {            
 			pc = createPeerConnection();
-			send("/offer", null, url, onReceiveOffer, disconnect);
+			
+			if (UseCall)
+			{
+				// create a dummy stream with an empty canvas
+				var canvas = document.getElementById("dummy");
+				var context = canvas.getContext("2d");
+				var stream = canvas.captureStream(1);
+				pc.addStream(stream);	
+				
+				// create Offer
+				pc.createOffer(mediaConstraints).then(function(sessionDescription) {
+					trace("Create offer:" + JSON.stringify(sessionDescription));
+					
+					pc.setLocalDescription(sessionDescription).then(function() {
+						send("/call",url ,JSON.stringify(sessionDescription), onReceiveCall);				
+					});
+					
+				}).catch(function(error) { 
+					alert("Create offer error:" + JSON.stringify(error));
+				}); 															
+			}
+			else
+			{
+				send("/offer", null, url, onReceiveOffer, disconnect);
+			}
+
 		} catch (e) {
 			disconnect();
 			alert("connect error: " + e);
@@ -199,11 +238,15 @@
 		<input type="text" id="url"/>
 		<button id="connect"    onclick="connect();">Connect</button>
 		<button id="disconnect" onclick="disconnect();" disabled="true">Disconnect</button>
+		<input type="checkbox" id="useCall" unchecked>Use Call Instead of getOffer/setAnswer</input>
 	</div>        
 	<br>
 	<div id="container">
 		<div id="remote">
 			<video id="remote-video" width="50%" height="50%"></video>
+		</div>
+		<div>
+			<canvas id="dummy"/>
 		</div>
 	</div>
 </body>

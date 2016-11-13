@@ -32,6 +32,9 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 	std::cout << "res:" << res << std::endl;
 	std::string body(buffer, readsize);			
 	std::cout << "body:" << body << std::endl;
+
+	std::string peerid;	
+	t-> request.hasHeader("peerid", &peerid);				
 	
 	if (path == "/getDeviceList")
 	{
@@ -42,7 +45,6 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 	}
 	else if (path == "/offer")
 	{
-		std::string peerid;					
 		std::string answer(m_webRtcServer->getOffer(peerid,body));
 		std::cout << peerid << ":" << answer << std::endl;
 		
@@ -55,35 +57,39 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 	}
 	else if (path == "/answer")
 	{
-		std::string peerid;	
-		t-> request.hasHeader("peerid", &peerid);				
-		m_webRtcServer->setAnswer(peerid, body);
-		
+		m_webRtcServer->setAnswer(peerid, body);		
 		t->response.set_success();			
+	}
+	else if (path == "/call")
+	{
+		std::string url(peerid);	
+		
+		std::string answer(m_webRtcServer->call(peerid,url,body));
+		std::cout << peerid << ":" << answer << std::endl;
+		
+		if (answer.empty() == false)
+		{
+			rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
+			t->response.addHeader("peerid",peerid);	
+			t->response.set_success("text/plain", mem);			
+		}
 	}
 	else if (path == "/hangup")
 	{
-		std::string peerid;	
-		t-> request.hasHeader("peerid", &peerid);				
 		m_webRtcServer->hangUp(peerid);
-		
 		t->response.set_success();			
 	}
 	else if (path == "/getIceCandidate")
-	{
-		std::string peerid;	
-		t->request.hasHeader("peerid", &peerid);				
+	{		
+		std::string answer(Json::StyledWriter().write(m_webRtcServer->getIceCandidateList(peerid)));	
+		std::cout << peerid << ":" << answer << std::endl;
 		
-		std::string answer(Json::StyledWriter().write(m_webRtcServer->getIceCandidateList(peerid)));					
 		rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
 		t->response.set_success("text/plain", mem);			
 	}
 	else if (path == "/addIceCandidate")
 	{
-		std::string peerid;	
-		t-> request.hasHeader("peerid", &peerid);				
-		m_webRtcServer->addIceCandidate(peerid, body);	
-		
+		m_webRtcServer->addIceCandidate(peerid, body);			
 		t->response.set_success();			
 	}
 	else

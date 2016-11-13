@@ -5,7 +5,7 @@ LDFLAGS = -pthread
 
 # live555
 ifneq ($(wildcard $(SYSROOT)/usr/include/liveMedia/liveMedia.hh),)
-	CFLAGS += -DHAVE_LIVE555
+#	CFLAGS += -DHAVE_LIVE555
 	CFLAGS += -I $(SYSROOT)/usr/include/liveMedia  -I $(SYSROOT)/usr/include/groupsock -I $(SYSROOT)/usr/include/UsageEnvironment -I $(SYSROOT)/usr/include/BasicUsageEnvironment/
 	LDFLAGS += -lliveMedia -lgroupsock -lUsageEnvironment -lBasicUsageEnvironment
 endif
@@ -27,7 +27,9 @@ LDFLAGS += -lX11 -ldl -lrt
 TARGET = webrtc-server_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD)
 all: $(TARGET)
 
-WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH)/obj -name '*.o' ! -name '*_unittest*.o' ! -name '*_main.o')
+WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH)/obj/base -name '*.o')
+WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/webrtc -name '*.o' ! -path '*test*')
+WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/third_party -name '*.o')
 libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 	$(AR) -rcT $@ $^
 
