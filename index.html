@@ -3,9 +3,13 @@
 <title>WebRTC Streamer</title>
 <script>
 	var pc;    
-	var pcConfig = {"iceServers": [] };
-	var pcOptions = { optional: [{DtlsSrtpKeyAgreement: true} ] };
-	var mediaConstraints = {'mandatory': {'OfferToReceiveVideo': true }};
+	var pcConfig = {'iceServers': [] };
+	var pcOptions = { 'optional': [{'DtlsSrtpKeyAgreement': true} ] };
+	var mediaConstraints = {
+		'mandatory': {'OfferToReceiveVideo': true },
+		'offerToReceiveVideo': true    
+	};
+
 	
 	RTCPeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
 	RTCSessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
@@ -148,12 +152,6 @@
 			
 			if (UseCall)
 			{
-				// create a dummy stream with an empty canvas
-				var canvas = document.getElementById("dummy");
-				var context = canvas.getContext("2d");
-				var stream = canvas.captureStream(1);
-				pc.addStream(stream);	
-				
 				// create Offer
 				pc.createOffer(mediaConstraints).then(function(sessionDescription) {
 					trace("Create offer:" + JSON.stringify(sessionDescription));
@@ -244,9 +242,6 @@
 	<div id="container">
 		<div id="remote">
 			<video id="remote-video" width="50%" height="50%"></video>
-		</div>
-		<div>
-			<canvas id="dummy"/>
 		</div>
 	</div>
 </body>
