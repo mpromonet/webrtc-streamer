@@ -6,8 +6,9 @@ It embeds a HTTP server in order to serve a simple HTML page and to communicate 
 The WebRTC signaling is implemented throught HTTP requests:
 
  - /offer  : ask to create a call offer and get it
- - /answer : send answer to the call
- - /hangup : close the call
+ - /answer : send answer to a call offer
+ - /call   : send offer and get answer
+ - /hangup : close a call
 
  - /addIceCandidate : add a candidate
  - /getIceCandidate : get the list of candidates
