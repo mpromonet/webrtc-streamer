@@ -43,23 +43,6 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 		rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
 		t->response.set_success("text/plain", mem);			
 	}
-	else if (path == "/offer")
-	{
-		std::string answer(m_webRtcServer->getOffer(peerid,body));
-		std::cout << peerid << ":" << answer << std::endl;
-		
-		if (answer.empty() == false)
-		{
-			rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
-			t->response.addHeader("peerid",peerid);	
-			t->response.set_success("text/plain", mem);			
-		}
-	}
-	else if (path == "/answer")
-	{
-		m_webRtcServer->setAnswer(peerid, body);		
-		t->response.set_success();			
-	}
 	else if (path == "/call")
 	{
 		std::string url(peerid);	

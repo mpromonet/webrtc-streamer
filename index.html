@@ -82,32 +82,6 @@
 	// ------------------------------------------
 	// AJAX callbacks
 	// ------------------------------------------		
-	function onReceiceAnswer()
-	{
-		send("/getIceCandidate", pc.peerid, null, onReceiveCandidate);
-	}
-
-	function onReceiveOffer(request) {
-		trace("peerid: " + request.getResponseHeader("peerid") + " offer: " + request.responseText);
-		pc.peerid = request.getResponseHeader("peerid");
-		var dataJson = JSON.parse(request.responseText);
-		pc.setRemoteDescription(new RTCSessionDescription(dataJson)).then(function() {
-			trace('setRemoteDescription: success ' + pc.peerid); 
-			pc.createAnswer(mediaConstraints).then(function(sessionDescription) {
-				trace("Create answer:" + JSON.stringify(sessionDescription));
-				
-				pc.setLocalDescription(sessionDescription).then(function() {
-					send("/answer",pc.peerid,JSON.stringify(sessionDescription), onReceiceAnswer);				
-				});
-				
-			}).catch(function(error) { 
-				alert("Create answer error:" + JSON.stringify(error));
-			}); 								
-		}).catch(function(error) { 
-			alert('setRemoteDescription: error:'+JSON.stringify(error)) 
-		});        
-	}
-	
 	function onReceiveCall(request) {
 		trace("peerid: " + request.getResponseHeader("peerid") + " offer: " + request.responseText);
 		pc.peerid = request.getResponseHeader("peerid");
@@ -150,24 +124,17 @@
 		try {            
 			pc = createPeerConnection();
 			
-			if (UseCall)
-			{
-				// create Offer
-				pc.createOffer(mediaConstraints).then(function(sessionDescription) {
-					trace("Create offer:" + JSON.stringify(sessionDescription));
-					
-					pc.setLocalDescription(sessionDescription).then(function() {
-						send("/call",url ,JSON.stringify(sessionDescription), onReceiveCall);				
-					});
-					
-				}).catch(function(error) { 
-					alert("Create offer error:" + JSON.stringify(error));
-				}); 															
-			}
-			else
-			{
-				send("/offer", null, url, onReceiveOffer, disconnect);
-			}
+			// create Offer
+			pc.createOffer(mediaConstraints).then(function(sessionDescription) {
+				trace("Create offer:" + JSON.stringify(sessionDescription));
+				
+				pc.setLocalDescription(sessionDescription).then(function() {
+					send("/call",url ,JSON.stringify(sessionDescription), onReceiveCall);				
+				});
+				
+			}).catch(function(error) { 
+				alert("Create offer error:" + JSON.stringify(error));
+			}); 															
 
 		} catch (e) {
 			disconnect();
@@ -236,7 +203,6 @@
 		<input type="text" id="url"/>
 		<button id="connect"    onclick="connect();">Connect</button>
 		<button id="disconnect" onclick="disconnect();" disabled="true">Disconnect</button>
-		<input type="checkbox" id="useCall" unchecked>Use Call Instead of getOffer/setAnswer</input>
 	</div>        
 	<br>
 	<div id="container">

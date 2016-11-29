@@ -5,8 +5,6 @@ This is a try to stream V4L2 capture device through WebRTC.
 It embeds a HTTP server in order to serve a simple HTML page and to communicate with it using AJAX interface.
 The WebRTC signaling is implemented throught HTTP requests:
 
- - /offer  : ask to create a call offer and get it
- - /answer : send answer to a call offer
  - /call   : send offer and get answer
  - /hangup : close a call
 

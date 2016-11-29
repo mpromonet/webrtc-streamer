@@ -119,9 +119,7 @@ class PeerConnectionManager {
 		~PeerConnectionManager();
 
 		bool InitializePeerConnection();
-		const std::string getOffer(std::string &peerid, const std::string & url);
 		const Json::Value getIceCandidateList(const std::string &peerid);
-		void setAnswer(const std::string &peerid, const std::string&);
 		void addIceCandidate(const std::string &peerid, const std::string&);
 		const Json::Value getDeviceList();
 		void hangUp(const std::string &peerid);

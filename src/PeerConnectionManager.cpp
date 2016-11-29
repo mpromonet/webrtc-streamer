@@ -102,47 +102,6 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 	return obs;
 }
 
-void PeerConnectionManager::setAnswer(const std::string &peerid, const std::string& message)
-{
-	LOG(INFO) << message;	
-	
-	Json::Reader reader;
-	Json::Value  jmessage;
-	if (!reader.parse(message, jmessage)) 
-	{
-		LOG(WARNING) << "Received unknown message. " << message;
-	}
-	else
-	{
-		std::string type;
-		std::string sdp;
-		if (  !rtc::GetStringFromJsonObject(jmessage, kSessionDescriptionTypeName, &type)
-		   || !rtc::GetStringFromJsonObject(jmessage, kSessionDescriptionSdpName, &sdp)) 
-		{
-			LOG(WARNING) << "Can't parse received message.";
-		}
-		else
-		{
-			webrtc::SessionDescriptionInterface* session_description(webrtc::CreateSessionDescription(type, sdp, NULL));
-			if (!session_description) 
-			{
-				LOG(WARNING) << "Can't parse received session description message.";
-			}
-			else
-			{
-				LOG(LERROR) << "From peerid:" << peerid << " received session description :" << session_description->type();
-				
-				std::map<std::string, PeerConnectionObserver* >::iterator  it = peer_connectionobs_map_.find(peerid);
-				if (it != peer_connectionobs_map_.end())
-				{
-					rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it->second->getPeerConnection();
-					peerConnection->SetRemoteDescription(SetSessionDescriptionObserver::Create(peerConnection), session_description);
-				}
-			}
-		}
-	}
-}
-
 void PeerConnectionManager::addIceCandidate(const std::string &peerid, const std::string& message)
 {
 	LOG(INFO) << message;	
@@ -279,62 +238,6 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 	}
 	
 	return ret;
-}
-
-const std::string PeerConnectionManager::getOffer(std::string &peerid, const std::string & url) 
-{
-	std::string offer;
-	LOG(INFO) << __FUNCTION__;
-	
-	PeerConnectionObserver* peerConnectionObserver = this->CreatePeerConnection();
-	if (!peerConnectionObserver) 
-	{
-		LOG(LERROR) << "Failed to initialize PeerConnection";
-	}
-	else
-	{		
-		if (!this->AddStreams(peerConnectionObserver->getPeerConnection(), url))
-		{ 
-			LOG(WARNING) << "Can't add stream";
-		}		
-		
-		std::ostringstream os;
-		os << rand();
-		peerid = os.str();		
-		
-		// register peerid
-		peer_connectionobs_map_.insert(std::pair<std::string, PeerConnectionObserver* >(peerid, peerConnectionObserver));	
-		
-		// ask to create offer
-		peerConnectionObserver->getPeerConnection()->CreateOffer(CreateSessionDescriptionObserver::Create(peerConnectionObserver->getPeerConnection()), NULL);
-		
-		// waiting for offer
-		int count=10;
-		while ( (peerConnectionObserver->getPeerConnection()->local_description() == NULL) && (--count > 0) )
-		{
-			rtc::Thread::Current()->ProcessMessages(10);
-		}
-				
-		// answer with the created offer
-		const webrtc::SessionDescriptionInterface* desc = peerConnectionObserver->getPeerConnection()->local_description();
-		if (desc)
-		{
-			std::string sdp;
-			desc->ToString(&sdp);
-			
-			Json::Value jmessage;
-			jmessage[kSessionDescriptionTypeName] = desc->type();
-			jmessage[kSessionDescriptionSdpName] = sdp;
-			
-			Json::StyledWriter writer;
-			offer = writer.write(jmessage);
-		}
-		else
-		{
-			LOG(LERROR) << "Failed to create offer";
-		}
-	}
-	return offer;
 }
 
 const std::string PeerConnectionManager::call(std::string &peerid, const std::string& url, const std::string& message) 
