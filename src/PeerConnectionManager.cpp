@@ -49,7 +49,7 @@ const Json::Value PeerConnectionManager::getDeviceList()
 {
 	Json::Value value;
 		
-	std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo(0));
+	std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo());
 	if (info) 
 	{
 		int num_devices = info->NumberOfDevices();
@@ -158,7 +158,7 @@ cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std:
 	}
 	else
 	{
-		std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo(0));
+		std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo());
 		if (info) 
 		{
 			int num_devices = info->NumberOfDevices();
