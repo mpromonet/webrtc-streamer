@@ -368,8 +368,8 @@ void PeerConnectionManager::hangUp(const std::string &peerid)
 	if (it != peer_connectionobs_map_.end())
 	{
 		LOG(INFO) << " Close PeerConnection";
-		peer_connectionobs_map_.erase(it);
 		delete it->second;
+		peer_connectionobs_map_.erase(it);
 	}
 }
 
