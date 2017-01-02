@@ -120,10 +120,10 @@ class PeerConnectionManager {
 
 		bool InitializePeerConnection();
 		const Json::Value getIceCandidateList(const std::string &peerid);
-		void addIceCandidate(const std::string &peerid, const std::string&);
+		void addIceCandidate(const std::string &peerid, const Json::Value& jmessage);
 		const Json::Value getDeviceList();
 		void hangUp(const std::string &peerid);
-		const std::string call(std::string &peerid, const std::string & url, const std::string& message);
+		const Json::Value call(std::string &peerid, const Json::Value& jmessage);
 
 
 	protected:

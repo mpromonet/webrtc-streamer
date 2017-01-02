@@ -14,7 +14,6 @@
 	{
 		mediaConstraints = {'mandatory': {'OfferToReceiveVideo': true }}
 	}
-
 	
 	RTCPeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
 	RTCSessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
@@ -99,11 +98,9 @@
 		trace("peerid: " + request.getResponseHeader("peerid") + " offer: " + request.responseText);
 		pc.peerid = request.getResponseHeader("peerid");
 		var dataJson = JSON.parse(request.responseText);
-		pc.setRemoteDescription(new RTCSessionDescription(dataJson), function() { 
-			send("/getIceCandidate", pc.peerid, null, onReceiveCandidate);
-		}, function(error) { 
-			trace ("setRemoteDescription error:" + JSON.stringify(error)); 
-		});
+		pc.setRemoteDescription(new RTCSessionDescription(dataJson)
+			, function()      { send("/getIceCandidate", pc.peerid, null, onReceiveCandidate); }
+			, function(error) { trace ("setRemoteDescription error:" + JSON.stringify(error)); });
 	}	
 
 	function onReceiveCandidate(request) {
@@ -117,7 +114,7 @@
 				
 				trace("Adding ICE candidate :" + JSON.stringify(candidate) );
 				pc.addIceCandidate(candidate
-					, function() { trace ("addIceCandidate OK"); }
+					, function()      { trace ("addIceCandidate OK"); }
 					, function(error) { trace ("addIceCandidate error:" + JSON.stringify(error)); } );
 			}
 		}
@@ -139,8 +136,12 @@
 			pc.createOffer(function(sessionDescription) {
 				trace("Create offer:" + JSON.stringify(sessionDescription));
 				
+				// Create call body adding url to offer
+				var callJson = sessionDescription.toJSON();
+				callJson.url = url;
+				
 				pc.setLocalDescription(sessionDescription
-					, function() { send("/call",url ,JSON.stringify(sessionDescription), onReceiveCall); }
+					, function() { send("/call", null, JSON.stringify(callJson), onReceiveCall); }
 					, function() {} );
 				
 			}, function(error) { 
@@ -216,10 +217,8 @@
 		<button id="disconnect" onclick="disconnect();" disabled="true">Disconnect</button>
 	</div>        
 	<br>
-	<div id="container">
-		<div id="remote">
-			<video id="remote-video" width="50%" height="50%"></video>
-		</div>
+	<div id="remote">
+		<video id="remote-video" width="50%" height="50%"></video>
 	</div>
 </body>
 </html>
