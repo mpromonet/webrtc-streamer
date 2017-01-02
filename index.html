@@ -56,6 +56,7 @@
 			pc = new RTCPeerConnection(pcConfig, pcOptions);
 			pc.onicecandidate = onIceCandidate;
 			pc.ontrack = onTrack;
+			pc.onaddstream = onAddStream;
 			trace("Created RTCPeerConnnection with config: " + JSON.stringify(pcConfig) + "option:"+  JSON.stringify(pcOptions) );
 		} 
 		catch (e) {
@@ -70,6 +71,13 @@
 		} else {
 			trace("End of candidates.");
 		}
+	}
+
+	function onAddStream(event) {
+		trace("Remote stream added: " + JSON.stringify(event));
+		var remoteVideoElement = document.getElementById('remote-video');
+                remoteVideoElement.src = URL.createObjectURL(event.stream);
+                remoteVideoElement.play();
 	}
 
 	function onTrack(event) {
