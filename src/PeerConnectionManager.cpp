@@ -166,41 +166,43 @@ const Json::Value PeerConnectionManager::call(std::string &peerid, const Json::V
 		if (!this->AddStreams(peerConnection, url))
 		{
 			LOG(WARNING) << "Can't add stream";
-		}		
-		
-		// create answer
-		webrtc::FakeConstraints constraints;
-		constraints.AddMandatory(webrtc::MediaConstraintsInterface::kOfferToReceiveVideo, "false");
-		peerConnection->CreateAnswer(CreateSessionDescriptionObserver::Create(peerConnection), &constraints);								
-		
-		LOG(INFO) << "nbStreams local:" << peerConnection->local_streams()->count() << " remote:" << peerConnection->remote_streams()->count() 
-			<< " localDescription:" << peerConnection->local_description()
-			<< " remoteDescription:" << peerConnection->remote_description();
-		
-		// waiting for answer
-		int count=10;
-		while ( (peerConnection->local_description() == NULL) && (--count > 0) )
-		{
-			rtc::Thread::Current()->ProcessMessages(10);
-		}
-		
-		LOG(INFO) << "nbStreams local:" << peerConnection->local_streams()->count() << " remote:" << peerConnection->remote_streams()->count() 
-			<< " localDescription:" << peerConnection->local_description()
-			<< " remoteDescription:" << peerConnection->remote_description();
-		
-		// return the answer
-		const webrtc::SessionDescriptionInterface* desc = peerConnection->local_description();				
-		if (desc)
-		{
-			std::string sdp;
-			desc->ToString(&sdp);
-			
-			answer[kSessionDescriptionTypeName] = desc->type();
-			answer[kSessionDescriptionSdpName] = sdp;
 		}
 		else
-		{
-			LOG(LERROR) << "Failed to create answer";
+		{		
+			// create answer
+			webrtc::FakeConstraints constraints;
+			constraints.AddMandatory(webrtc::MediaConstraintsInterface::kOfferToReceiveVideo, "false");
+			peerConnection->CreateAnswer(CreateSessionDescriptionObserver::Create(peerConnection), &constraints);								
+			
+			LOG(INFO) << "nbStreams local:" << peerConnection->local_streams()->count() << " remote:" << peerConnection->remote_streams()->count() 
+				<< " localDescription:" << peerConnection->local_description()
+				<< " remoteDescription:" << peerConnection->remote_description();
+			
+			// waiting for answer
+			int count=10;
+			while ( (peerConnection->local_description() == NULL) && (--count > 0) )
+			{
+				rtc::Thread::Current()->ProcessMessages(10);
+			}
+			
+			LOG(INFO) << "nbStreams local:" << peerConnection->local_streams()->count() << " remote:" << peerConnection->remote_streams()->count() 
+				<< " localDescription:" << peerConnection->local_description()
+				<< " remoteDescription:" << peerConnection->remote_description();
+			
+			// return the answer
+			const webrtc::SessionDescriptionInterface* desc = peerConnection->local_description();				
+			if (desc)
+			{
+				std::string sdp;
+				desc->ToString(&sdp);
+				
+				answer[kSessionDescriptionTypeName] = desc->type();
+				answer[kSessionDescriptionSdpName] = sdp;
+			}
+			else
+			{
+				LOG(LERROR) << "Failed to create answer";
+			}
 		}
 				
 	}
@@ -290,7 +292,8 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 ** -------------------------------------------------------------------------*/
 cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std::string & url) 
 {
-	LOG(LS_ERROR) << "url:" << url;	
+	LOG(INFO) << "url:" << url;	
+	
 	cricket::VideoCapturer* capturer = NULL;
 	if (url.find("rtsp://") == 0)
 	{

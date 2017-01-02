@@ -41,8 +41,9 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 		
 		if (path == "/getDeviceList")
 		{
-			std::string answer(Json::StyledWriter().write(m_webRtcServer->getDeviceList()));
+			Json::Value jsonAnswer(m_webRtcServer->getDeviceList());
 			
+			std::string answer(Json::StyledWriter().write(jsonAnswer));			
 			rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
 			t->response.set_success("text/plain", mem);			
 		}
@@ -56,12 +57,12 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 				LOG(WARNING) << "Received unknown message:" << body;
 			}
 			else
-			{			
-				std::string answer(Json::StyledWriter().write(m_webRtcServer->call(peerid, jmessage)));
-				std::cout << peerid << ":" << answer << std::endl;
+			{
+				Json::Value jsonAnswer(m_webRtcServer->call(peerid, jmessage));
 				
-				if (answer.empty() == false)
+				if (jsonAnswer.isNull() == false)
 				{
+					std::string answer(Json::StyledWriter().write(jsonAnswer));
 					rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
 					t->response.addHeader("peerid",peerid);	
 					t->response.set_success("text/plain", mem);			
@@ -75,9 +76,9 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 		}
 		else if (path == "/getIceCandidate")
 		{		
-			std::string answer(Json::StyledWriter().write(m_webRtcServer->getIceCandidateList(peerid)));	
-			std::cout << peerid << ":" << answer << std::endl;
+			Json::Value jsonAnswer(m_webRtcServer->getIceCandidateList(peerid));
 			
+			std::string answer(Json::StyledWriter().write(jsonAnswer));				
 			rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
 			t->response.set_success("text/plain", mem);			
 		}
