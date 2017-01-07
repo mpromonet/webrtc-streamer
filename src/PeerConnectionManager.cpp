@@ -10,18 +10,15 @@
 #include <iostream>
 #include <utility>
 
-
 #include "webrtc/modules/video_capture/video_capture_factory.h"
 #include "webrtc/media/engine/webrtcvideocapturerfactory.h"
 #include "webrtc/api/test/fakeconstraints.h"
-
 
 #include "PeerConnectionManager.h"
 
 #ifdef HAVE_LIVE555
 #include "rtspvideocapturer.h"
 #endif
-
 
 const char kAudioLabel[] = "audio_label";
 const char kVideoLabel[] = "video_label";

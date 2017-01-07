@@ -2,17 +2,27 @@ CC = $(CROSS)g++ $(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
 AR = $(CROSS)ar
 CFLAGS = -Wall -pthread -g -std=c++11 -Iinc
 LDFLAGS = -pthread 
+WEBRTCROOT?=../webrtc
+WEBRTCBUILD?=Release
 
-# live555
+TARGET = webrtc-server_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD)
+all: $(TARGET)
+
+# live555helper
 ifneq ($(wildcard $(SYSROOT)/usr/include/liveMedia/liveMedia.hh),)
-#	CFLAGS += -DHAVE_LIVE555
-	CFLAGS += -I $(SYSROOT)/usr/include/liveMedia  -I $(SYSROOT)/usr/include/groupsock -I $(SYSROOT)/usr/include/UsageEnvironment -I $(SYSROOT)/usr/include/BasicUsageEnvironment/
-	LDFLAGS += -lliveMedia -lgroupsock -lUsageEnvironment -lBasicUsageEnvironment
+LIBS+=live555helper/live555helper.a
+live555helper/live555helper.a:
+	make -C live555helper
+
+CFLAGS += -DHAVE_LIVE555
+CFLAGS += -I live555helper/inc
+CFLAGS += -I $(SYSROOT)/usr/include/liveMedia  -I $(SYSROOT)/usr/include/groupsock -I $(SYSROOT)/usr/include/UsageEnvironment -I $(SYSROOT)/usr/include/BasicUsageEnvironment/
+
+LDFLAGS += live555helper/live555helper.a
+LDFLAGS += -l:libliveMedia.a -l:libgroupsock.a -l:libUsageEnvironment.a -l:libBasicUsageEnvironment.a -llog4cpp
 endif
 
 # webrtc
-WEBRTCROOT?=../webrtc
-WEBRTCBUILD?=Release
 WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
 
 CFLAGS += -DWEBRTC_POSIX -fno-rtti -D_GLIBCXX_USE_CXX11_ABI=0
@@ -24,12 +34,10 @@ ifeq ($(TESTDEBUG),debug)
 endif
 LDFLAGS += -lX11 -ldl -lrt  
 
-TARGET = webrtc-server_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD)
-all: $(TARGET)
-
 WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH)/obj/base -name '*.o')
 WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/webrtc -name '*.o' ! -path '*test*')
 WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/third_party -name '*.o')
+LIBS+=libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
 libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 	$(AR) -rcT $@ $^
 
@@ -39,7 +47,7 @@ src/%.o: src/%.cpp
 	$(CC) -o $@ -c $^ $(CFLAGS) 
 
 FILES = $(wildcard src/*.cpp)
-$(TARGET): $(subst .cpp,.o,$(FILES)) libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
+$(TARGET): $(subst .cpp,.o,$(FILES)) $(LIBS)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 clean:
