@@ -326,22 +326,22 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 		
 		virtual bool onData(unsigned char* buffer, ssize_t size) 
 		{			
-			LOG(INFO) << "===========================onData size:" << size << " GetCaptureFormat:" << GetCaptureFormat() << std::endl;
+			LOG(INFO) << "===========================onData size:" << size << " GetCaptureFormat:" << GetCaptureFormat();
 			
 			if (!m_decoder) 
 			{
 				webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[sizeof(marker)]);
-				if ( nalu_type == webrtc::H264::NaluType::kSps)
+				if (nalu_type == webrtc::H264::NaluType::kSps)
 				{
 					rtc::Optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(buffer+sizeof(marker)+webrtc::H264::kNaluTypeSize, size-sizeof(marker)-webrtc::H264::kNaluTypeSize);
 					
 					if (!sps)
 					{	
-						std::cout << "cannot parse sps" << std::endl;
+						LOG(LS_ERROR) << "cannot parse sps" << std::endl;
 					}
 					else
 					{	
-						std::cout << "set format " << sps->width << "x" << sps->height << std::endl;
+						LOG(INFO) << "set format " << sps->width << "x" << sps->height << std::endl;
 						cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(25), cricket::FOURCC_H264);
 						SetCaptureFormat(&videoFormat);
 						
@@ -355,21 +355,20 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 			}
 			if (!m_decoder) 
 			{
-				std::cout << "===========================onData no decoder" << std::endl;
+				LOG(LS_ERROR) << "===========================onData no decoder";
 				return false;
 			}
 			
 			if (!GetCaptureFormat()) 
 			{
-				std::cout << "===========================onData no capture format" << std::endl;
+				LOG(LS_ERROR) << "===========================onData no capture format";
 				return false;
 			}
 
 			webrtc::EncodedImage input_image(buffer, size, 2*size);
 			int res = m_decoder->Decode(input_image, false, NULL);
-			std::cout << "===========================onData no capture res:" << res << std::endl;
 						
-			return true;
+			return (res == 0);
 		}
 		
 		ssize_t onNewBuffer(unsigned char* buffer, ssize_t size)
@@ -385,7 +384,7 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 		
 		virtual int32_t Decoded(webrtc::VideoFrame& decodedImage)
 		{
-			std::cout << "===========================Decoded"  << std::endl;
+			LOG(INFO) << "===========================Decoded";
 			
 			this->OnFrame(decodedImage, decodedImage.height(), decodedImage.width());
 			return true;
