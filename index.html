@@ -126,9 +126,6 @@
 	function connect() {
 		var url = document.getElementById("url").value;
 			
-		document.getElementById("connect").disabled = true;
-		document.getElementById("disconnect").disabled = false;
-					
 		try {            
 			pc = createPeerConnection();
 			
@@ -170,16 +167,24 @@
 			var remoteVideoElement = document.getElementById('remote-video');
 			remoteVideoElement.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 		}
-			
-		document.getElementById("connect").disabled = false;
-		document.getElementById("disconnect").disabled = true;
 	}    
 	
 	// ------------------------------------------
 	// init device list and callback
 	// ------------------------------------------	
 	function onGetDeviceList(request) {
-		var deviceList = eval( "{" + request.responseText + "}" );
+		var deviceList = [];
+                var argurl = location.search.slice(1);
+                if (argurl)
+                {
+			deviceList.push( [argurl] );
+		}
+		var remoteDeviceList = JSON.parse(request.responseText);
+		if (remoteDeviceList)
+		{
+			deviceList.push.apply( deviceList, remoteDeviceList );
+		}
+
 		var urllist = document.getElementById("urlList");
 		for (var dev in deviceList)
 		{
@@ -213,12 +218,10 @@
 		<select id="urlList" onchange="this.nextElementSibling.value=this.value">
 		</select>
 		<input type="text" id="url"/>
-		<button id="connect"    onclick="connect();">Connect</button>
-		<button id="disconnect" onclick="disconnect();" disabled="true">Disconnect</button>
+		<button id="connect"    onclick="connect();"    >Connect</button>
+		<button id="disconnect" onclick="disconnect();" >Disconnect</button>
 	</div>        
 	<br>
-	<div id="remote">
-		<video id="remote-video" width="50%" height="50%"></video>
-	</div>
+	<video id="remote-video"></video>
 </body>
 </html>
