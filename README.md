@@ -14,7 +14,7 @@ The WebRTC signaling is implemented throught HTTP requests:
 An other HTTP API /getDeviceList give available sources.
 A video source could be :
  - V4L2 devices detected by WebRTC capture factory
- - RTSP url that give access to an H264 video stream
+ - RTSP url that give access to an H264 video stream (need live555)
 
 It is based on WebRTC Native Code Package [http://www.webrtc.org]
 
@@ -25,6 +25,7 @@ Domain Public
 Dependencies
 ------------
  - WebRTC 
+ - live555 for RTSP connection
  
 Build
 ------- 
