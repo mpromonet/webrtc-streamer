@@ -47,6 +47,14 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 			rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
 			t->response.set_success("text/plain", mem);			
 		}
+		else if (path == "/getIceServers")
+		{
+			Json::Value jsonAnswer(m_webRtcServer->getIceServers());
+			
+			std::string answer(Json::StyledWriter().write(jsonAnswer));			
+			rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
+			t->response.set_success("text/plain", mem);			
+		}
 		else if (path == "/call")
 		{
 			Json::Reader reader;
@@ -99,7 +107,20 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 		}
 		else
 		{
-			rtc::Pathname pathname("index.html");
+			// remove arguments
+			size_t pos = path.find("?");
+			if (pos != std::string::npos)
+			{
+				path.erase(pos);
+			}
+			// remove "/"
+			path = basename(path.c_str());
+			if (path.empty())
+			{
+				path = "index.html";
+			}
+			std::cout << "filename:" << path << std::endl;
+			rtc::Pathname pathname(path);
 			rtc::FileStream* fs = rtc::Filesystem::OpenFile(pathname, "rb");
 			if (fs)
 			{

@@ -76,6 +76,18 @@ const Json::Value PeerConnectionManager::getDeviceList()
 		
 	return value;
 }  
+
+/* ---------------------------------------------------------------------------
+**  return iceServers as JSON vector
+** -------------------------------------------------------------------------*/
+const Json::Value PeerConnectionManager::getIceServers()
+{
+	Json::Value value;
+	std::string stunurl("stun:");
+	stunurl += stunurl_;
+	value.append(stunurl);
+	return value;
+}
   
 /* ---------------------------------------------------------------------------
 **  add ICE candidate to a PeerConnection

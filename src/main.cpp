@@ -21,10 +21,10 @@
 ** -------------------------------------------------------------------------*/
 int main(int argc, char* argv[]) 
 {
-	const char* port          = "0.0.0.0:8000";
+	const char* port              = "0.0.0.0:8000";
 	const char* localstunurl  = "127.0.0.1:3478";
-	const char* stunurl       = "stun.l.google.com:19302";
-	int logLevel              = rtc::LERROR; 
+	const char* stunurl         = "stun.l.google.com:19302";
+	int logLevel                       = rtc::LERROR; 
 	
 	int c = 0;     
 	while ((c = getopt (argc, argv, "hH:v::" "S:s::")) != -1)

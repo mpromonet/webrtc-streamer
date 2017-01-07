@@ -124,6 +124,7 @@ class PeerConnectionManager {
 		const Json::Value getDeviceList();
 		void hangUp(const std::string &peerid);
 		const Json::Value call(std::string &peerid, const Json::Value& jmessage);
+		const Json::Value getIceServers();
 
 
 	protected:

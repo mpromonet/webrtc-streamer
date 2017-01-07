@@ -55,6 +55,7 @@
 	// RTCPeerConnection and its callbacks
 	// ------------------------------------------
 	function createPeerConnection() {
+		var pc = null;
 		try {
 			trace("createPeerConnection  config: " + JSON.stringify(pcConfig) + " option:"+  JSON.stringify(pcOptions));
 			pc = new RTCPeerConnection(pcConfig, pcOptions);
@@ -71,7 +72,7 @@
 		
 	function onIceCandidate(event) {
 		if (event.candidate) {
-			send("/addicecandidate",pc.peerid,JSON.stringify(event.candidate));
+			send("/addIceCandidate",pc.peerid,JSON.stringify(event.candidate));
 		} else {
 			trace("End of candidates.");
 		}
@@ -175,53 +176,40 @@
 	function onGetDeviceList(request) {
 		var deviceList = [];
                 var argurl = location.search.slice(1);
-                if (argurl)
-                {
+                if (argurl) {
 			deviceList.push( [argurl] );
 		}
 		var remoteDeviceList = JSON.parse(request.responseText);
-		if (remoteDeviceList)
-		{
+		if (remoteDeviceList) {
 			deviceList.push.apply( deviceList, remoteDeviceList );
 		}
 
 		var urllist = document.getElementById("urlList");
-		for (var dev in deviceList)
-		{
+		for (var dev in deviceList) {
 			var option = document.createElement("option");
 			option.text = deviceList[dev];
 			trace("device: " + option.text);
 			urllist.add(option);
 		}
 		var url = document.getElementById("url");
-		if (urllist.length > 0)
-		{
+		if (urllist.length > 0) {
 			url.value=urllist[0].value;
-		}
-		else
-		{
+		} else {
 			url.value="";
 		}
 	}
 
-	function init() {
-		send("/getDeviceList", null, null, onGetDeviceList);
-	}
-	
-	window.onload = init;
+	window.onload = function() { send("/getDeviceList", null, null, onGetDeviceList); } 
 	window.onbeforeunload = disconnect;
 	
 </script>
 </head>
 <body>
-	<div>
-		<select id="urlList" onchange="this.nextElementSibling.value=this.value">
-		</select>
-		<input type="text" id="url"/>
-		<button id="connect"    onclick="connect();"    >Connect</button>
-		<button id="disconnect" onclick="disconnect();" >Disconnect</button>
-	</div>        
+	<select id="urlList" onchange="this.nextElementSibling.value=this.value"></select>
+	<input type="text" id="url"/>
+	<button id="connect"    onclick="connect();"    >Connect</button>
+	<button id="disconnect" onclick="disconnect();" >Disconnect</button>
 	<br>
-	<video id="remote-video"></video>
+	<video id="remote-video" width="480px" height="360px"></video>
 </body>
 </html>
