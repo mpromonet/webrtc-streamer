@@ -13,6 +13,7 @@
 #include <string.h>
 #include <vector>
 
+#include "environment.h"
 #include "rtspconnectionclient.h"
 
 #include "webrtc/media/base/videocapturer.h"
@@ -24,6 +25,7 @@
 #include "webrtc/common_video/h264/h264_common.h"
 #include "webrtc/video_decoder.h"
 #include "webrtc/media/engine/internaldecoderfactory.h"
+#include "webrtc/modules/video_coding/h264_sprop_parameter_sets.h"
 
 
 uint8_t marker[] = { 0, 0, 0, 1};
@@ -34,25 +36,49 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 		RTSPVideoCapturer(const std::string & uri) : m_connection(m_env,this,uri.c_str())
 		{
 			LOG(INFO) << "===========================RTSPVideoCapturer" << uri ;
-			SetCaptureFormat(NULL);
 		}
 	  
 		virtual ~RTSPVideoCapturer() 
 		{
 		}
 		
-		virtual bool onNewSession(const char* media, const char* codec)
+		virtual bool onNewSession(const char* media, const char* codec, const char* sdp)
 		{
-			LOG(INFO) << "===========================onNewSession" << media << "/" << codec;
+			LOG(INFO) << "===========================onNewSession" << media << "/" << codec << " " << sdp;
 			bool success = false;
 			if ( (strcmp(media, "video") == 0) && (strcmp(codec, "H264") == 0) )
 			{
+				const char* pattern="sprop-parameter-sets=";
+				const char* sprop=strstr(sdp, pattern);
+				if (sprop)
+				{
+					std::string sdpstr(sprop+strlen(pattern));
+					size_t pos = sdpstr.find_first_of(" \r\n");
+					if (pos != std::string::npos)
+					{
+						sdpstr.erase(pos);
+					}
+					webrtc::H264SpropParameterSets sprops;
+					if (sprops.DecodeSprop(sdpstr))
+					{
+						std::vector<uint8_t> cfg;
+						cfg.insert(cfg.end(), marker, marker+sizeof(marker));
+						cfg.insert(cfg.end(), sprops.sps_nalu().begin(), sprops.sps_nalu().end());
+						cfg.insert(cfg.end(), marker, marker+sizeof(marker));
+						cfg.insert(cfg.end(), sprops.pps_nalu().begin(), sprops.pps_nalu().end());
+						onData(NULL, cfg.data(), cfg.size());
+					}
+					else
+					{
+						LOG(WARNING) << "Cannot decode SPS:" << sprop;
+					}
+				}
 				success = true;
 			}
 			return success;			
 		}
 		
-		virtual bool onData(unsigned char* buffer, ssize_t size) 
+		virtual bool onData(const char* id, unsigned char* buffer, ssize_t size) 
 		{			
 			LOG(INFO) << "===========================onData size:" << size << " GetCaptureFormat:" << GetCaptureFormat();
 			
