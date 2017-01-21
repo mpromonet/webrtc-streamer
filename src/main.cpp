@@ -21,18 +21,20 @@
 ** -------------------------------------------------------------------------*/
 int main(int argc, char* argv[]) 
 {
-	const char* port              = "0.0.0.0:8000";
+	const char* port          = "0.0.0.0:8000";
 	const char* localstunurl  = "127.0.0.1:3478";
-	const char* stunurl         = "stun.l.google.com:19302";
-	int logLevel                       = rtc::LERROR; 
+	const char* stunurl       = "stun.l.google.com:19302";
+	int logLevel              = rtc::LERROR; 
+	const char* webroot       = "./html";
 	
 	int c = 0;     
-	while ((c = getopt (argc, argv, "hH:v::" "S:s::")) != -1)
+	while ((c = getopt (argc, argv, "hH:v::w:" "S:s::")) != -1)
 	{
 		switch (c)
 		{
 			case 'v': logLevel--; if (optarg) logLevel-=strlen(optarg); break;
 			case 'H': port = optarg; break;
+			case 'w': webroot = optarg; break;
 			
 			case 'S': localstunurl = optarg; stunurl = localstunurl; break;
 			case 's': localstunurl = NULL; if (optarg) stunurl = optarg; break;
@@ -78,7 +80,7 @@ int main(int argc, char* argv[])
 		else
 		{
 			// connect httpserver to a request handler
-			HttpServerRequestHandler http(&httpServer, &webRtcServer);
+			HttpServerRequestHandler http(&httpServer, &webRtcServer, webroot);
 			std::cout << "HTTP Listening at " << http_addr.ToString() << std::endl;
 
 			// start STUN server if needed

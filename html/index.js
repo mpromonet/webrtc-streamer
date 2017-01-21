@@ -1,7 +1,3 @@
-<html>
-<head>
-<title>WebRTC Streamer</title>
-<script>
 	var pc;    
 	var pcConfig = {'iceServers': [] };
 	var pcOptions = { 'optional': [{'DtlsSrtpKeyAgreement': true} ] };
@@ -169,47 +165,3 @@
 			remoteVideoElement.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 		}
 	}    
-	
-	// ------------------------------------------
-	// init device list and callback
-	// ------------------------------------------	
-	function onGetDeviceList(request) {
-		var deviceList = [];
-                var argurl = location.search.slice(1);
-                if (argurl) {
-			deviceList.push( [argurl] );
-		}
-		var remoteDeviceList = JSON.parse(request.responseText);
-		if (remoteDeviceList) {
-			deviceList.push.apply( deviceList, remoteDeviceList );
-		}
-
-		var urllist = document.getElementById("urlList");
-		for (var dev in deviceList) {
-			var option = document.createElement("option");
-			option.text = deviceList[dev];
-			trace("device: " + option.text);
-			urllist.add(option);
-		}
-		var url = document.getElementById("url");
-		if (urllist.length > 0) {
-			url.value=urllist[0].value;
-		} else {
-			url.value="";
-		}
-	}
-
-	window.onload = function() { send("/getDeviceList", null, null, onGetDeviceList); } 
-	window.onbeforeunload = disconnect;
-	
-</script>
-</head>
-<body>
-	<select id="urlList" onchange="this.nextElementSibling.value=this.value"></select>
-	<input type="text" id="url"/>
-	<button id="connect"    onclick="connect();"    >Connect</button>
-	<button id="disconnect" onclick="disconnect();" >Disconnect</button>
-	<br>
-	<video id="remote-video" width="480px" height="360px"></video>
-</body>
-</html>

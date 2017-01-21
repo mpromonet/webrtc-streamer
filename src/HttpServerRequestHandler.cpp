@@ -119,6 +119,7 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 			{
 				path = "index.html";
 			}
+			path.insert(0, m_webroot);
 			std::cout << "filename:" << path << std::endl;
 			rtc::Pathname pathname(path);
 			rtc::FileStream* fs = rtc::Filesystem::OpenFile(pathname, "rb");
