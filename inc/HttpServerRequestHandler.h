@@ -21,7 +21,7 @@ class HttpServerRequestHandler : public sigslot::has_slots<>
 			: m_server(server), m_webRtcServer(webRtcServer), m_webroot(webroot)
 		{
 			// add a trailing '/'
-			if ((m_webroot.begin() != m_webroot.end()) && *m_webroot.end() != '/')
+			if ((m_webroot.rbegin() != m_webroot.rend()) && (*m_webroot.rbegin() != '/'))
 			{
 				m_webroot.push_back('/');
 			}
