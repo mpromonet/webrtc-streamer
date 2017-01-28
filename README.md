@@ -26,7 +26,17 @@ Dependencies
 ------------
  - WebRTC 
  - live555 for RTSP connection
- 
+
+Build WebRTC
+-------
+	mkdir ../webrtc
+	pushd ../webrtc
+	fetch webrtc
+	gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false' 
+	ninja -C out/Release
+	popd
+
+
 Build
 ------- 
 	make WEBRTCROOT=<path to WebRTC> WEBRTCBUILD=<Release or Debug>
@@ -37,11 +47,13 @@ where WEBRTCROOT and WEBRTCBUILD indicate how to point to WebRTC :
 
 Usage
 -----
-	./webrtc-streamer [-v[v]] [-H HTTP binding] [-S STUN binding]
-		 -v[v[v]] : verbosity
-		 -H hostname:port  : HTTP binding (default 0.0.0.0:8000)
-		 -S hostname:port  : use embeded STUN server (default 127.0.0.1:3478)
-		 -s[stun_address]  : use an external STUN server (default stun.l.google.com:19302)
+	./webrtc-server__Release [-H http port] [-S embeded stun address] -[v[v]]  [url1]...[urln]
+	./webrtc-server__Release [-H http port] [-s externel stun address] -[v[v]] [url1]...[urln]
+        	-v[v[v]]           : verbosity
+         	-H [hostname:]port : HTTP server binding (default 0.0.0.0:8000)
+         	-S stun_address    : start embeded STUN server bind to address (default 127.0.0.1:3478)
+         	-s[stun_address]   : use an external STUN server (default stun.l.google.com:19302)
+         	[url]              : url to register in the source list
 
 
 Next you can connect to the interface using a Web browser with the URL of the HTTP server.
