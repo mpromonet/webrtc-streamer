@@ -18,15 +18,18 @@
 		}
 
 		var urllist = document.getElementById("urlList");
+		var maxLength = 0;
 		for (var dev in deviceList) {
 			var option = document.createElement("option");
 			option.text = deviceList[dev];
 			trace("device: " + option.text);
+			maxLength = Math.max(maxLength, option.text.length);
 			urllist.add(option);
 		}
 		var url = document.getElementById("url");
 		if (urllist.length > 0) {
 			url.value=urllist[0].value;
+			url.size = maxLength;
 		} else {
 			url.value="";
 		}
