@@ -38,6 +38,7 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 
 		std::string peerid;	
 		t-> request.hasHeader("peerid", &peerid);				
+		t->response.addHeader("Access-Control-Allow-Origin","*");	
 		
 		if (path == "/getDeviceList")
 		{
