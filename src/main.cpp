@@ -41,16 +41,23 @@ int main(int argc, char* argv[])
 			
 			case 'h':
 			default:
-				std::cout << argv[0] << " [-H http port] [-S embeded stun address] -[v[v]]"                             << std::endl;
-				std::cout << argv[0] << " [-H http port] [-s externel stun address] -[v[v]]"                            << std::endl;
-				std::cout << "\t -v[v[v]]         : verbosity"                                                  << std::endl;
-				std::cout << "\t -H [hostname:]port : HTTP server binding (default "   << port    << ")"        << std::endl;
-				std::cout << "\t -S stun_address    : start embedeed STUN server bind to address (default " << localstunurl << ")"        << std::endl;
-				std::cout << "\t -s[stun_address]   : use an external STUN server (default " << stunurl << ")"        << std::endl;
+				std::cout << argv[0] << " [-H http port] [-S embeded stun address] -[v[v]]  [url1]...[urln]"                      << std::endl;
+				std::cout << argv[0] << " [-H http port] [-s externel stun address] -[v[v]] [url1]...[urln]"                      << std::endl;
+				std::cout << "\t -v[v[v]]           : verbosity"                                                                  << std::endl;
+				std::cout << "\t -H [hostname:]port : HTTP server binding (default "   << port    << ")"                          << std::endl;
+				std::cout << "\t -S stun_address    : start embeded STUN server bind to address (default " << localstunurl << ")" << std::endl;
+				std::cout << "\t -s[stun_address]   : use an external STUN server (default " << stunurl << ")"                    << std::endl;
+				std::cout << "\t [url]              : url to register in the source list"                                         << std::endl;
 				exit(0);
 		}
 	}
-	
+
+	std::list<std::string> urlList;
+	while (optind<argc)
+	{
+		urlList.push_back(argv[optind]);
+		optind++;
+	}	
 	
 	rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)logLevel);
 	rtc::LogMessage::LogTimestamps();
@@ -61,7 +68,7 @@ int main(int argc, char* argv[])
 	rtc::InitializeSSL();
 
 	// webrtc server
-	PeerConnectionManager webRtcServer(stunurl);
+	PeerConnectionManager webRtcServer(stunurl, urlList);
 	if (!webRtcServer.InitializePeerConnection())
 	{
 		std::cout << "Cannot Initialize WebRTC server" << std::endl; 

@@ -36,7 +36,10 @@ const char kSessionDescriptionSdpName[] = "sdp";
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionManager(const std::string & stunurl) : peer_connection_factory_(webrtc::CreatePeerConnectionFactory()), stunurl_(stunurl)
+PeerConnectionManager::PeerConnectionManager(const std::string & stunurl, const std::list<std::string> & urlList) 
+	: peer_connection_factory_(webrtc::CreatePeerConnectionFactory())
+	, stunurl_(stunurl)
+	, urlList_(urlList)
 {
 }
 
@@ -69,6 +72,11 @@ const Json::Value PeerConnectionManager::getDeviceList()
 				value.append(name);
 			}
 		}
+	}
+	
+	for (std::string url : urlList_)
+	{
+		value.append(url);
 	}
 		
 	return value;

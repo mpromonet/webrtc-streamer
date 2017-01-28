@@ -115,8 +115,8 @@ class PeerConnectionManager {
 	};
 
 	public:
-		PeerConnectionManager(const std::string & stunurl);
-		~PeerConnectionManager();
+		PeerConnectionManager(const std::string & stunurl, const std::list<std::string> & urlList);
+		virtual ~PeerConnectionManager();
 
 		bool InitializePeerConnection();
 		const Json::Value getIceCandidateList(const std::string &peerid);
@@ -133,10 +133,11 @@ class PeerConnectionManager {
 		cricket::VideoCapturer* OpenVideoCaptureDevice(const std::string & url);
 
 	protected: 
-		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory_;
-		std::map<std::string, PeerConnectionObserver* >  peer_connectionobs_map_;
+		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>                peer_connection_factory_;
+		std::map<std::string, PeerConnectionObserver* >                           peer_connectionobs_map_;
 		std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >  stream_map_;
-		std::string stunurl_;
+		std::string                                                               stunurl_;
+		const std::list<std::string>                                              urlList_;
 };
 
 #endif  
