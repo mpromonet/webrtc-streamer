@@ -1,8 +1,9 @@
 <html>
 <head>
 <title>WebRTC Streamer</title>
-<script src="index.js" ></script>
-<script>
+<script src="ajax.js" ></script>
+<script src="webrtcstreamer.js" ></script>
+<script>	
 	// ------------------------------------------
 	// init device list and callback
 	// ------------------------------------------	
@@ -22,7 +23,6 @@
 		for (var dev in deviceList) {
 			var option = document.createElement("option");
 			option.text = deviceList[dev];
-			trace("device: " + option.text);
 			maxLength = Math.max(maxLength, option.text.length);
 			urllist.add(option);
 		}
@@ -34,17 +34,18 @@
 			url.value="";
 		}
 	}
-
+	
+	var webRtcServer = new WebRtcStreamer("remote-video");
 	window.onload = function() { send("/getDeviceList", null, null, onGetDeviceList); } 
-	window.onbeforeunload = disconnect;
+	window.onbeforeunload = function() { webRtcServer.disconnect() };
 	
 </script>
 </head>
 <body>
 	<select id="urlList" onchange="this.nextElementSibling.value=this.value"></select>
 	<input type="text" id="url"/>
-	<button id="connect"    onclick="connect();"    >Connect</button>
-	<button id="disconnect" onclick="disconnect();" >Disconnect</button>
+	<button id="connect"    onclick="webRtcServer.connect(window.url.value);"    >Connect</button>
+	<button id="disconnect" onclick="webRtcServer.disconnect();" >Disconnect</button>
 	<br>
 	<video id="remote-video" width="480px" height="360px"></video>
 </body>
