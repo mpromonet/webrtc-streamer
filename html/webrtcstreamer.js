@@ -51,7 +51,7 @@ WebRtcStreamer.prototype.createPeerConnection = function() {
 // ------------------------------------------
 WebRtcStreamer.prototype.onIceCandidate = function (event) {
 	if (event.candidate) {
-		send("/addIceCandidate",this.pc.peerid,JSON.stringify(event.candidate));
+		send("/addIceCandidate",{peerid:this.pc.peerid},JSON.stringify(event.candidate));
 	} 
 	else {
 		trace("End of candidates.");
@@ -84,7 +84,7 @@ WebRtcStreamer.prototype.onReceiveCall = function(request) {
 	var streamer = this;
 	var dataJson = JSON.parse(request.responseText);
 	this.pc.setRemoteDescription(new RTCSessionDescription(dataJson)
-		, function()      { send("/getIceCandidate", peerId, null, streamer.onReceiveCandidate, null, streamer); }
+		, function()      { send("/getIceCandidate", {peerid:peerId}, null, streamer.onReceiveCandidate, null, streamer); }
 		, function(error) { trace ("setRemoteDescription error:" + JSON.stringify(error)); });
 }	
 
@@ -109,7 +109,9 @@ WebRtcStreamer.prototype.onReceiveCandidate = function(request) {
 // ------------------------------------------
 // Connect to WebRtc Stream
 // ------------------------------------------	
-WebRtcStreamer.prototype.connect = function(url) {		
+WebRtcStreamer.prototype.connect = function(url) {
+	this.disconnect();
+	
 	try {            
 		this.pc = this.createPeerConnection();
 		
@@ -141,7 +143,7 @@ WebRtcStreamer.prototype.connect = function(url) {
 // ------------------------------------------	
 WebRtcStreamer.prototype.disconnect = function() {		
 	if (this.pc) {
-		send("/hangup", this.pc.peerid);
+		send("/hangup", {peerid:this.pc.peerid});
 		try {
 			this.pc.close();
 		}

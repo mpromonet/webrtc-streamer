@@ -1,9 +1,35 @@
 <html>
 <head>
 <title>WebRTC Streamer</title>
+<style media="screen" type="text/css">
+ .select-editable {
+     position:relative;
+     border:solid grey 1px;
+     width:100%;
+     height:20px;
+ }
+ .select-editable select {
+     position:absolute;
+     border:none;
+     font-size:14px;
+     top:0px;
+     left:0px;
+     width:100%;
+ }
+ .select-editable input {
+     position:absolute;
+     border:none;
+     font-size:14px;
+     top:0px;
+     left:0px;
+     width:calc(100% - 14px);
+ }
+</style> 
 <script src="ajax.js" ></script>
 <script src="webrtcstreamer.js" ></script>
 <script>	
+	var webRtcServer = new WebRtcStreamer("remote-video");
+	
 	// ------------------------------------------
 	// init device list and callback
 	// ------------------------------------------	
@@ -19,34 +45,32 @@
 		}
 
 		var urllist = document.getElementById("urlList");
-		var maxLength = 0;
 		for (var dev in deviceList) {
 			var option = document.createElement("option");
 			option.text = deviceList[dev];
-			maxLength = Math.max(maxLength, option.text.length);
 			urllist.add(option);
 		}
 		var url = document.getElementById("url");
 		if (urllist.length > 0) {
 			url.value=urllist[0].value;
-			url.size = maxLength;
+			webRtcServer.connect(url.value);
 		} else {
 			url.value="";
 		}
 	}
 	
-	var webRtcServer = new WebRtcStreamer("remote-video");
 	window.onload = function() { send("/getDeviceList", null, null, onGetDeviceList); } 
 	window.onbeforeunload = function() { webRtcServer.disconnect() };
 	
 </script>
 </head>
 <body>
-	<select id="urlList" onchange="this.nextElementSibling.value=this.value"></select>
-	<input type="text" id="url"/>
-	<button id="connect"    onclick="webRtcServer.connect(window.url.value);"    >Connect</button>
-	<button id="disconnect" onclick="webRtcServer.disconnect();" >Disconnect</button>
+	<div class="select-editable">
+		<select id="urlList" onchange="this.nextElementSibling.value=this.value; webRtcServer.connect(this.value);"></select>
+		<input type="text" id="url" onkeypress="if (event.keyCode == 13) webRtcServer.connect(this.value)"/>
+	</div>
 	<br>
 	<video id="remote-video" width="480px" height="360px"></video>
+
 </body>
 </html>
