@@ -1,4 +1,4 @@
-webrtc-streamer
+Webrtc-streamer
 -------------
 
 This is a try to stream a video source through WebRTC.  
@@ -56,5 +56,12 @@ Usage
          	[url]              : url to register in the source list
 
 
-Next you can connect to the interface using a Web browser with the URL of the HTTP server.
+Example
+-----
+	webrtc-server__Release rtsp://217.17.220.110:554/axis-media/media.amp \
+				rtsp://85.255.175.244:554/h264 \
+				rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov
+
+
+![Screenshot](snapshot.png)
 
