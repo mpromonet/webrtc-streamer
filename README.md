@@ -18,15 +18,6 @@ A video source could be :
 
 It is based on WebRTC Native Code Package [http://www.webrtc.org]
 
-License
--------
-Domain Public
-
-Dependencies
-------------
- - WebRTC 
- - live555 for RTSP connection
-
 Build WebRTC
 -------
 	mkdir ../webrtc
