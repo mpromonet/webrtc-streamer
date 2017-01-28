@@ -133,10 +133,11 @@ void PeerConnectionManager::addIceCandidate(const std::string& peerid, const Jso
 /* ---------------------------------------------------------------------------
 **  auto-answer to a call  
 ** -------------------------------------------------------------------------*/
-const Json::Value PeerConnectionManager::call(std::string &peerid, const Json::Value& jmessage) 
+const Json::Value PeerConnectionManager::call(const Json::Value& jmessage) 
 {
-	Json::Value answer;
 	LOG(INFO) << __FUNCTION__;
+	Json::Value answer;
+	std::string peerid;
 	
 	PeerConnectionObserver* peerConnectionObserver = this->CreatePeerConnection();
 	if (!peerConnectionObserver) 
@@ -215,6 +216,7 @@ const Json::Value PeerConnectionManager::call(std::string &peerid, const Json::V
 				
 				answer[kSessionDescriptionTypeName] = desc->type();
 				answer[kSessionDescriptionSdpName] = sdp;
+				answer["peerid"] = peerid;
 			}
 			else
 			{

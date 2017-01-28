@@ -9,6 +9,7 @@ function trace(txt) {
 // Simple AJAX helper
 // ------------------------------------------	
 function send(method,headers,data,onSuccess,onFailure,scope) {
+	
 	trace("HTTP call "+ method);
 	try {
 		var r = new XMLHttpRequest();

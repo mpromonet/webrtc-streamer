@@ -8,8 +8,9 @@ URL = window.webkitURL || window.URL;
 // ------------------------------------------
 // Constructor
 // ------------------------------------------
-function WebRtcStreamer (videoElement) {
-	this.videoElement     = videoElement;
+function WebRtcStreamer (videoElement, srvurl) {
+	this.videoElement     = videoElement;	
+	this.srvurl           = srvurl || location.protocol+"//"+window.location.hostname+":"+window.location.port;
 	this.pc               = null;    
 	this.pcConfig         = {'iceServers': [] };
 	this.pcOptions        = { 'optional': [{'DtlsSrtpKeyAgreement': true} ] };
@@ -51,7 +52,7 @@ WebRtcStreamer.prototype.createPeerConnection = function() {
 // ------------------------------------------
 WebRtcStreamer.prototype.onIceCandidate = function (event) {
 	if (event.candidate) {
-		send("/addIceCandidate",{peerid:this.pc.peerid},JSON.stringify(event.candidate));
+		send(this.srvurl + "/addIceCandidate?peerid="+this.pc.peerid,null,JSON.stringify(event.candidate));
 	} 
 	else {
 		trace("End of candidates.");
@@ -78,13 +79,12 @@ WebRtcStreamer.prototype.onTrack = function(event) {
 // AJAX /call callback
 // ------------------------------------------		
 WebRtcStreamer.prototype.onReceiveCall = function(request) {
-	var peerId = request.getResponseHeader("peerid") ;
-	trace("peerid: " + peerId + " offer: " + request.responseText);
-	this.pc.peerid = peerId;
 	var streamer = this;
+	trace("offer: " + request.responseText);
 	var dataJson = JSON.parse(request.responseText);
+	this.pc.peerid = dataJson.peerid;
 	this.pc.setRemoteDescription(new RTCSessionDescription(dataJson)
-		, function()      { send("/getIceCandidate", {peerid:peerId}, null, streamer.onReceiveCandidate, null, streamer); }
+		, function()      { send  (streamer.srvurl + "/getIceCandidate?peerid="+dataJson.peerid, null, null, streamer.onReceiveCandidate, null, streamer); }
 		, function(error) { trace ("setRemoteDescription error:" + JSON.stringify(error)); });
 }	
 
@@ -125,7 +125,7 @@ WebRtcStreamer.prototype.connect = function(url) {
 			callJson.url = url;
 			
 			streamer.pc.setLocalDescription(sessionDescription
-				, function() { send("/call", null, JSON.stringify(callJson), streamer.onReceiveCall, null, streamer); }
+				, function() { send(streamer.srvurl + "/call", null, JSON.stringify(callJson), streamer.onReceiveCall, null, streamer); }
 				, function() {} );
 			
 		}, function(error) { 
@@ -143,7 +143,7 @@ WebRtcStreamer.prototype.connect = function(url) {
 // ------------------------------------------	
 WebRtcStreamer.prototype.disconnect = function() {		
 	if (this.pc) {
-		send("/hangup", {peerid:this.pc.peerid});
+		send(this.srvurl + "/hangup?peerid="+this.pc.peerid);
 		try {
 			this.pc.close();
 		}

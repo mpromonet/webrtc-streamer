@@ -10,6 +10,7 @@
 #include <iostream>
 
 #include "webrtc/base/pathutils.h"
+#include "webrtc/base/httpcommon-inl.h"
 
 #include "HttpServerRequestHandler.h"
 
@@ -18,11 +19,18 @@
 ** -------------------------------------------------------------------------*/
 void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransaction* t) 
 {
-	std::string host;
-	std::string path;
-	t->request.getRelativeUri(&host, &path);
-	std::cout << "===> HTTP request " <<  path << std::endl;
+	std::cout << "===> HTTP request " <<  t->request.path << std::endl;
+	
+	// parse URL
+	rtc::Url<char> url(t->request.path,"");	
+	std::cout << "===> HTTP request path:" <<  url.path() << std::endl;
+	std::string peerid;
+	url.get_attribute("peerid",&peerid);
+	std::cout << "===> HTTP request PEERID:" << peerid << std::endl;
 
+	// Allow CORS
+	t->response.addHeader("Access-Control-Allow-Origin","*");
+	
 	// read body
 	size_t size = 0;
 	t->request.document->GetSize(&size);
@@ -35,12 +43,8 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 	{
 		std::string body(buffer, readsize);			
 		std::cout << "body:" << body << std::endl;
-
-		std::string peerid;	
-		t-> request.hasHeader("peerid", &peerid);				
-		t->response.addHeader("Access-Control-Allow-Origin","*");	
-		
-		if (path == "/getDeviceList")
+			
+		if (url.path() == "/getDeviceList")
 		{
 			Json::Value jsonAnswer(m_webRtcServer->getDeviceList());
 			
@@ -48,7 +52,7 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 			rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
 			t->response.set_success("text/plain", mem);			
 		}
-		else if (path == "/getIceServers")
+		else if (url.path() == "/getIceServers")
 		{
 			Json::Value jsonAnswer(m_webRtcServer->getIceServers());
 			
@@ -56,7 +60,7 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 			rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
 			t->response.set_success("text/plain", mem);			
 		}
-		else if (path == "/call")
+		else if (url.path() == "/call")
 		{
 			Json::Reader reader;
 			Json::Value  jmessage;
@@ -67,23 +71,22 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 			}
 			else
 			{
-				Json::Value jsonAnswer(m_webRtcServer->call(peerid, jmessage));
+				Json::Value jsonAnswer(m_webRtcServer->call(jmessage));
 				
 				if (jsonAnswer.isNull() == false)
 				{
 					std::string answer(Json::StyledWriter().write(jsonAnswer));
 					rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
-					t->response.addHeader("peerid",peerid);	
 					t->response.set_success("text/plain", mem);			
 				}
 			}
 		}
-		else if (path == "/hangup")
+		else if (url.path() == "/hangup")
 		{
 			m_webRtcServer->hangUp(peerid);
 			t->response.set_success();			
 		}
-		else if (path == "/getIceCandidate")
+		else if (url.path() == "/getIceCandidate")
 		{		
 			Json::Value jsonAnswer(m_webRtcServer->getIceCandidateList(peerid));
 			
@@ -91,7 +94,7 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 			rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
 			t->response.set_success("text/plain", mem);			
 		}
-		else if (path == "/addIceCandidate")
+		else if (url.path() == "/addIceCandidate")
 		{
 			Json::Reader reader;
 			Json::Value  jmessage;
@@ -108,12 +111,7 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 		}
 		else
 		{
-			// remove arguments
-			size_t pos = path.find("?");
-			if (pos != std::string::npos)
-			{
-				path.erase(pos);
-			}
+			std::string path(url.path());
 			// remove "/"
 			path = basename(path.c_str());
 			if (path.empty())
