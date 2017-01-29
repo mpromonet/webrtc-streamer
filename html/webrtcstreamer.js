@@ -82,9 +82,9 @@ WebRtcStreamer.prototype.onReceiveCall = function(request) {
 	var streamer = this;
 	trace("offer: " + request.responseText);
 	var dataJson = JSON.parse(request.responseText);
-	this.pc.peerid = dataJson.peerid;
+	var peerid = this.pc.peerid;
 	this.pc.setRemoteDescription(new RTCSessionDescription(dataJson)
-		, function()      { send  (streamer.srvurl + "/getIceCandidate?peerid="+dataJson.peerid, null, null, streamer.onReceiveCandidate, null, streamer); }
+		, function()      { send  (streamer.srvurl + "/getIceCandidate?peerid="+peerid, null, null, streamer.onReceiveCandidate, null, streamer); }
 		, function(error) { trace ("setRemoteDescription error:" + JSON.stringify(error)); });
 }	
 
@@ -114,6 +114,8 @@ WebRtcStreamer.prototype.connect = function(url) {
 	
 	try {            
 		this.pc = this.createPeerConnection();
+		var peerid = Math.random()*65535;			
+		this.pc.peerid = peerid;
 		
 		var streamer = this;
 		// create Offer
@@ -125,7 +127,7 @@ WebRtcStreamer.prototype.connect = function(url) {
 			callJson.url = url;
 			
 			streamer.pc.setLocalDescription(sessionDescription
-				, function() { send(streamer.srvurl + "/call", null, JSON.stringify(callJson), streamer.onReceiveCall, null, streamer); }
+				, function() { send(streamer.srvurl + "/call?peerid="+ peerid, null, JSON.stringify(callJson), streamer.onReceiveCall, null, streamer); }
 				, function() {} );
 			
 		}, function(error) { 

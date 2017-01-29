@@ -15,6 +15,63 @@
 #include "HttpServerRequestHandler.h"
 
 /* ---------------------------------------------------------------------------
+**  Constructor
+** -------------------------------------------------------------------------*/
+HttpServerRequestHandler::HttpServerRequestHandler(rtc::HttpServer* server, PeerConnectionManager* webRtcServer, const char* webroot) 
+	: m_server(server), m_webRtcServer(webRtcServer), m_webroot(webroot)
+{
+	// add a trailing '/'
+	if ((m_webroot.rbegin() != m_webroot.rend()) && (*m_webroot.rbegin() != '/'))
+	{
+		m_webroot.push_back('/');
+	}
+	m_server->SignalHttpRequest.connect(this, &HttpServerRequestHandler::OnRequest);
+	
+	m_func["/getDeviceList"]   = std::bind(&HttpServerRequestHandler::getDeviceList  , this, std::placeholders::_1, std::placeholders::_2);
+	m_func["/getIceServers"]   = std::bind(&HttpServerRequestHandler::getIceServers  , this, std::placeholders::_1, std::placeholders::_2);
+	m_func["/call"]            = std::bind(&HttpServerRequestHandler::call           , this, std::placeholders::_1, std::placeholders::_2);
+	m_func["/hangup"]          = std::bind(&HttpServerRequestHandler::hangup         , this, std::placeholders::_1, std::placeholders::_2);
+	m_func["/getIceCandidate"] = std::bind(&HttpServerRequestHandler::getIceCandidate, this, std::placeholders::_1, std::placeholders::_2);
+	m_func["/addIceCandidate"] = std::bind(&HttpServerRequestHandler::addIceCandidate, this, std::placeholders::_1, std::placeholders::_2);
+}
+
+Json::Value HttpServerRequestHandler::getDeviceList(const rtc::Url<char>& url, const Json::Value & in) {
+	return m_webRtcServer->getDeviceList();
+}
+
+Json::Value HttpServerRequestHandler::getIceServers(const rtc::Url<char>& url, const Json::Value & in) {
+	return m_webRtcServer->getIceServers();
+}
+
+Json::Value HttpServerRequestHandler::call(const rtc::Url<char>& url, const Json::Value & in) {
+	std::string peerid;
+	url.get_attribute("peerid",&peerid);
+	return m_webRtcServer->call(peerid, in);
+}
+
+Json::Value HttpServerRequestHandler::hangup(const rtc::Url<char>& url, const Json::Value & in) {
+	std::string peerid;
+	url.get_attribute("peerid",&peerid);
+	m_webRtcServer->hangUp(peerid);
+	Json::Value answer(1);
+	return answer;
+}
+
+Json::Value HttpServerRequestHandler::getIceCandidate(const rtc::Url<char>& url, const Json::Value & in) {
+	std::string peerid;
+	url.get_attribute("peerid",&peerid);
+	return m_webRtcServer->getIceCandidateList(peerid);
+}
+
+Json::Value HttpServerRequestHandler::addIceCandidate(const rtc::Url<char>& url, const Json::Value & in) {
+	std::string peerid;
+	url.get_attribute("peerid",&peerid);
+	m_webRtcServer->addIceCandidate(peerid, in);
+	Json::Value answer(1);
+	return answer;
+}
+
+/* ---------------------------------------------------------------------------
 **  http callback
 ** -------------------------------------------------------------------------*/
 void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransaction* t) 
@@ -24,9 +81,6 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 	// parse URL
 	rtc::Url<char> url(t->request.path,"");	
 	std::cout << "===> HTTP request path:" <<  url.path() << std::endl;
-	std::string peerid;
-	url.get_attribute("peerid",&peerid);
-	std::cout << "===> HTTP request PEERID:" << peerid << std::endl;
 
 	// Allow CORS
 	t->response.addHeader("Access-Control-Allow-Origin","*");
@@ -41,73 +95,25 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 	
 	if (res == rtc::SR_SUCCESS)
 	{
-		std::string body(buffer, readsize);			
-		std::cout << "body:" << body << std::endl;
-			
-		if (url.path() == "/getDeviceList")
-		{
-			Json::Value jsonAnswer(m_webRtcServer->getDeviceList());
-			
-			std::string answer(Json::StyledWriter().write(jsonAnswer));			
-			rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
-			t->response.set_success("text/plain", mem);			
-		}
-		else if (url.path() == "/getIceServers")
-		{
-			Json::Value jsonAnswer(m_webRtcServer->getIceServers());
-			
-			std::string answer(Json::StyledWriter().write(jsonAnswer));			
-			rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
-			t->response.set_success("text/plain", mem);			
-		}
-		else if (url.path() == "/call")
+		std::map<std::string,httpFunction>::iterator it = m_func.find(url.path());
+		if (it != m_func.end())
 		{
 			Json::Reader reader;
 			Json::Value  jmessage;
+			std::string body(buffer, readsize);	
+			std::cout << "body:" << body << std::endl;
 			
 			if (!reader.parse(body, jmessage)) 
 			{
 				LOG(WARNING) << "Received unknown message:" << body;
 			}
-			else
+			Json::Value out(it->second(url, jmessage));
+			if (out.isNull() == false)
 			{
-				Json::Value jsonAnswer(m_webRtcServer->call(jmessage));
-				
-				if (jsonAnswer.isNull() == false)
-				{
-					std::string answer(Json::StyledWriter().write(jsonAnswer));
-					rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
-					t->response.set_success("text/plain", mem);			
-				}
-			}
-		}
-		else if (url.path() == "/hangup")
-		{
-			m_webRtcServer->hangUp(peerid);
-			t->response.set_success();			
-		}
-		else if (url.path() == "/getIceCandidate")
-		{		
-			Json::Value jsonAnswer(m_webRtcServer->getIceCandidateList(peerid));
-			
-			std::string answer(Json::StyledWriter().write(jsonAnswer));				
-			rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
-			t->response.set_success("text/plain", mem);			
-		}
-		else if (url.path() == "/addIceCandidate")
-		{
-			Json::Reader reader;
-			Json::Value  jmessage;
-			
-			if (!reader.parse(body, jmessage)) 
-			{
-				LOG(WARNING) << "Received unknown message:" << body;
-			}
-			else
-			{
-				m_webRtcServer->addIceCandidate(peerid, jmessage);			
-				t->response.set_success();			
-			}
+				std::string answer(Json::StyledWriter().write(out));
+				rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
+				t->response.set_success("text/plain", mem);			
+			}			
 		}
 		else
 		{

@@ -11,27 +11,29 @@
 
 #include "PeerConnectionManager.h"
 
+typedef std::function<Json::Value(const rtc::Url<char>& , const Json::Value &)> httpFunction;
+
 /* ---------------------------------------------------------------------------
 **  http callback
 ** -------------------------------------------------------------------------*/
 class HttpServerRequestHandler : public sigslot::has_slots<> 
 {
 	public:
-		HttpServerRequestHandler(rtc::HttpServer* server, PeerConnectionManager* webRtcServer, const char* webroot) 
-			: m_server(server), m_webRtcServer(webRtcServer), m_webroot(webroot)
-		{
-			// add a trailing '/'
-			if ((m_webroot.rbegin() != m_webroot.rend()) && (*m_webroot.rbegin() != '/'))
-			{
-				m_webroot.push_back('/');
-			}
-			m_server->SignalHttpRequest.connect(this, &HttpServerRequestHandler::OnRequest);
-		}
-
+		HttpServerRequestHandler(rtc::HttpServer* server, PeerConnectionManager* webRtcServer, const char* webroot); 
+	
 		void OnRequest(rtc::HttpServer*, rtc::HttpServerTransaction* t);
+	
+	protected:
+		Json::Value getDeviceList  (const rtc::Url<char>& url, const Json::Value & in);
+		Json::Value getIceServers  (const rtc::Url<char>& url, const Json::Value & in);
+		Json::Value call           (const rtc::Url<char>& url, const Json::Value & in);
+		Json::Value hangup         (const rtc::Url<char>& url, const Json::Value & in);
+		Json::Value getIceCandidate(const rtc::Url<char>& url, const Json::Value & in);
+		Json::Value addIceCandidate(const rtc::Url<char>& url, const Json::Value & in);
 		
 	protected:
 		rtc::HttpServer*       m_server;
 		PeerConnectionManager* m_webRtcServer;
 		std::string            m_webroot;
+		std::map<std::string,httpFunction> m_func;
 };

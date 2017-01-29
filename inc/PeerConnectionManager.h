@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "webrtc/api/peerconnection.h"
+#include "webrtc/api/peerconnectioninterface.h"
 
 #include "webrtc/base/logging.h"
 #include "webrtc/base/json.h"
@@ -123,8 +123,9 @@ class PeerConnectionManager {
 		void addIceCandidate(const std::string &peerid, const Json::Value& jmessage);
 		const Json::Value getDeviceList();
 		void hangUp(const std::string &peerid);
-		const Json::Value call(const Json::Value& jmessage);
+		const Json::Value call(const std::string &peerid, const Json::Value& jmessage);
 		const Json::Value getIceServers();
+		const Json::Value getPeerConnectionList();
 
 
 	protected:
