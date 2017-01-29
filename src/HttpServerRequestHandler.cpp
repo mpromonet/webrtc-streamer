@@ -27,12 +27,14 @@ HttpServerRequestHandler::HttpServerRequestHandler(rtc::HttpServer* server, Peer
 	}
 	m_server->SignalHttpRequest.connect(this, &HttpServerRequestHandler::OnRequest);
 	
-	m_func["/getDeviceList"]   = std::bind(&HttpServerRequestHandler::getDeviceList  , this, std::placeholders::_1, std::placeholders::_2);
-	m_func["/getIceServers"]   = std::bind(&HttpServerRequestHandler::getIceServers  , this, std::placeholders::_1, std::placeholders::_2);
-	m_func["/call"]            = std::bind(&HttpServerRequestHandler::call           , this, std::placeholders::_1, std::placeholders::_2);
-	m_func["/hangup"]          = std::bind(&HttpServerRequestHandler::hangup         , this, std::placeholders::_1, std::placeholders::_2);
-	m_func["/getIceCandidate"] = std::bind(&HttpServerRequestHandler::getIceCandidate, this, std::placeholders::_1, std::placeholders::_2);
-	m_func["/addIceCandidate"] = std::bind(&HttpServerRequestHandler::addIceCandidate, this, std::placeholders::_1, std::placeholders::_2);
+	m_func["/getDeviceList"]         = std::bind(&HttpServerRequestHandler::getDeviceList        , this, std::placeholders::_1, std::placeholders::_2);
+	m_func["/getIceServers"]         = std::bind(&HttpServerRequestHandler::getIceServers        , this, std::placeholders::_1, std::placeholders::_2);
+	m_func["/call"]                  = std::bind(&HttpServerRequestHandler::call                 , this, std::placeholders::_1, std::placeholders::_2);
+	m_func["/hangup"]                = std::bind(&HttpServerRequestHandler::hangup               , this, std::placeholders::_1, std::placeholders::_2);
+	m_func["/getIceCandidate"]       = std::bind(&HttpServerRequestHandler::getIceCandidate      , this, std::placeholders::_1, std::placeholders::_2);
+	m_func["/addIceCandidate"]       = std::bind(&HttpServerRequestHandler::addIceCandidate      , this, std::placeholders::_1, std::placeholders::_2);
+	m_func["/getPeerConnectionList"] = std::bind(&HttpServerRequestHandler::getPeerConnectionList, this, std::placeholders::_1, std::placeholders::_2);
+	m_func["/help"]                  = std::bind(&HttpServerRequestHandler::help                 , this, std::placeholders::_1, std::placeholders::_2);
 }
 
 Json::Value HttpServerRequestHandler::getDeviceList(const rtc::Url<char>& url, const Json::Value & in) {
@@ -71,13 +73,24 @@ Json::Value HttpServerRequestHandler::addIceCandidate(const rtc::Url<char>& url,
 	return answer;
 }
 
+Json::Value HttpServerRequestHandler::getPeerConnectionList(const rtc::Url<char>& url, const Json::Value & in) {
+	return m_webRtcServer->getPeerConnectionList();
+}
+
+Json::Value HttpServerRequestHandler::help(const rtc::Url<char>& url, const Json::Value & in) {
+	Json::Value answer;
+	for (auto it : m_func) 
+	{
+		answer.append(it.first);
+	}
+	return answer;
+}
+
 /* ---------------------------------------------------------------------------
 **  http callback
 ** -------------------------------------------------------------------------*/
 void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransaction* t) 
 {
-	std::cout << "===> HTTP request " <<  t->request.path << std::endl;
-	
 	// parse URL
 	rtc::Url<char> url(t->request.path,"");	
 	std::cout << "===> HTTP request path:" <<  url.path() << std::endl;
