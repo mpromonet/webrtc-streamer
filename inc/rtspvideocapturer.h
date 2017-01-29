@@ -33,13 +33,18 @@ uint8_t marker[] = { 0, 0, 0, 1};
 class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::Callback, public rtc::Thread, public webrtc::DecodedImageCallback
 {
 	public:
-		RTSPVideoCapturer(const std::string & uri) : m_connection(m_env,this,uri.c_str())
+		RTSPVideoCapturer(const std::string & uri) : m_connection(m_env,this,uri.c_str()), m_decoder(NULL)
 		{
 			LOG(INFO) << "===========================RTSPVideoCapturer" << uri ;
 		}
 	  
 		virtual ~RTSPVideoCapturer() 
 		{
+			LOG(INFO) << "===========================~RTSPVideoCapturer";
+			if (m_decoder) 
+			{
+				delete m_decoder;
+			}				
 		}
 		
 		virtual bool onNewSession(const char* media, const char* codec, const char* sdp)
