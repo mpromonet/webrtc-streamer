@@ -33,7 +33,7 @@ WebRtcStreamer.prototype.createPeerConnection = function() {
 		pc = new RTCPeerConnection(this.pcConfig, this.pcOptions);
 		var streamer = this;
 		pc.onicecandidate = function(evt) { streamer.onIceCandidate.call(streamer, evt) };
-		if (pc.ontrack) {
+		if (typeof pc.ontrack != "undefined") {
 			pc.ontrack        = function(evt) { streamer.onTrack.call(streamer,evt) };
 		} 
 		else {
