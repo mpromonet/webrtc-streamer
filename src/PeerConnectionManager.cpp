@@ -371,6 +371,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 		{
 			rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> source = peer_connection_factory_->CreateVideoSource(capturer, NULL);
 			rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(peer_connection_factory_->CreateVideoTrack(kVideoLabel, source));
+			rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(peer_connection_factory_->CreateAudioTrack(kAudioLabel, peer_connection_factory_->CreateAudioSource(NULL)));
 			rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(kStreamLabel);
 			if (!stream.get())
 			{
@@ -381,6 +382,10 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 				if (!stream->AddTrack(video_track))
 				{
 					LOG(LS_ERROR) << "Adding VideoTrack to MediaStream failed";
+				}
+				if (!stream->AddTrack(audio_track))
+				{
+					LOG(LS_ERROR) << "Adding AudioTrack to MediaStream failed";
 				}
 				else
 				{
