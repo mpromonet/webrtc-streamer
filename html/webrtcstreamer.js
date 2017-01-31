@@ -16,10 +16,10 @@ function WebRtcStreamer (videoElement, srvurl) {
 	this.pcOptions        = { 'optional': [{'DtlsSrtpKeyAgreement': true} ] };
 	this.mediaConstraints = {}
 	if (navigator.userAgent.indexOf("Firefox") > 0) {
-		this.mediaConstraints = {'offerToReceiveVideo': true };
+		this.mediaConstraints = {'offerToReceiveVideo': true, 'offerToReceiveAudio': true  };
 	}
 	else {
-		this.mediaConstraints = {'mandatory': {'OfferToReceiveVideo': true }}
+		this.mediaConstraints = {'mandatory': {'OfferToReceiveVideo': true, 'OfferToReceiveAudio': true }}
 	}
 }
  
