@@ -21,11 +21,19 @@
 ** -------------------------------------------------------------------------*/
 int main(int argc, char* argv[]) 
 {
-	const char* port          = "0.0.0.0:8000";
 	const char* localstunurl  = "127.0.0.1:3478";
 	const char* stunurl       = "stun.l.google.com:19302";
 	int logLevel              = rtc::LERROR; 
 	const char* webroot       = "./html";
+	
+	std::string defaultAddress("0.0.0.0:");
+	int defaultPort = 8000;
+	const char * port = getenv("PORT");
+	if (port) 
+	{
+		defaultPort = atoi(port);
+	} 
+	defaultAddress.append(std::to_string(defaultPort));
 	
 	int c = 0;     
 	while ((c = getopt (argc, argv, "hH:v::w:" "S:s::")) != -1)
@@ -33,7 +41,7 @@ int main(int argc, char* argv[])
 		switch (c)
 		{
 			case 'v': logLevel--; if (optarg) logLevel-=strlen(optarg); break;
-			case 'H': port = optarg; break;
+			case 'H': defaultAddress = optarg; break;
 			case 'w': webroot = optarg; break;
 			
 			case 'S': localstunurl = optarg; stunurl = localstunurl; break;
@@ -44,7 +52,8 @@ int main(int argc, char* argv[])
 				std::cout << argv[0] << " [-H http port] [-S embeded stun address] -[v[v]]  [url1]...[urln]"                      << std::endl;
 				std::cout << argv[0] << " [-H http port] [-s externel stun address] -[v[v]] [url1]...[urln]"                      << std::endl;
 				std::cout << "\t -v[v[v]]           : verbosity"                                                                  << std::endl;
-				std::cout << "\t -H [hostname:]port : HTTP server binding (default "   << port    << ")"                          << std::endl;
+				std::cout << "\t -H hostname:port   : HTTP server binding (default "   << defaultAddress    << ")"                << std::endl;
+				std::cout << "\t -w webroot         : path to get files"                                                                  << std::endl;
 				std::cout << "\t -S stun_address    : start embeded STUN server bind to address (default " << localstunurl << ")" << std::endl;
 				std::cout << "\t -s[stun_address]   : use an external STUN server (default " << stunurl << ")"                    << std::endl;
 				std::cout << "\t [url]              : url to register in the source list"                                         << std::endl;
