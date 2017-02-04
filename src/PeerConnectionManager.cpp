@@ -87,11 +87,18 @@ const Json::Value PeerConnectionManager::getDeviceList()
 ** -------------------------------------------------------------------------*/
 const Json::Value PeerConnectionManager::getIceServers()
 {
-	Json::Value value;
+	Json::Value url;
 	std::string stunurl("stun:");
 	stunurl += stunurl_;
-	value.append(stunurl);
-	return value;
+	url["url"] = stunurl;
+
+	Json::Value urls;
+	urls.append(url);
+
+	Json::Value iceServers;
+	iceServers["iceServers"] = urls;
+
+	return iceServers;
 }
   
 /* ---------------------------------------------------------------------------
