@@ -10,6 +10,7 @@ all: $(TARGET)
 
 # live555helper
 ifneq ($(wildcard $(SYSROOT)/usr/include/liveMedia/liveMedia.hh),)
+ifneq ($(wildcard $(SYSROOT)/usr/lib/libliveMedia.a),)
 LIBS+=live555helper/live555helper.a
 live555helper/live555helper.a:
 	make -C live555helper
@@ -19,7 +20,8 @@ CFLAGS += -I live555helper/inc
 CFLAGS += -I $(SYSROOT)/usr/include/liveMedia  -I $(SYSROOT)/usr/include/groupsock -I $(SYSROOT)/usr/include/UsageEnvironment -I $(SYSROOT)/usr/include/BasicUsageEnvironment/
 
 LDFLAGS += live555helper/live555helper.a
-LDFLAGS += -l:libliveMedia.a -l:libgroupsock.a -l:libUsageEnvironment.a -l:libBasicUsageEnvironment.a -llog4cpp
+LDFLAGS += -l:libliveMedia.a -l:libgroupsock.a -l:libUsageEnvironment.a -l:libBasicUsageEnvironment.a -l:liblog4cpp.a
+endif
 endif
 
 # webrtc
@@ -32,7 +34,7 @@ TESTDEBUG=$(shell nm $(wildcard $(WEBRTCLIBPATH)/obj/webrtc/media/rtc_media/vide
 ifeq ($(TESTDEBUG),debug)
 	CFLAGS += -D_GLIBCXX_DEBUG=1
 endif
-LDFLAGS += -lX11 -ldl -lrt  
+LDFLAGS += -lX11 -ldl -lrt
 
 WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH)/obj/base -name '*.o')
 WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/webrtc -name '*.o' ! -path '*test*')
