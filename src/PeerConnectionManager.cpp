@@ -140,18 +140,16 @@ void PeerConnectionManager::addIceCandidate(const std::string& peerid, const Jso
 /* ---------------------------------------------------------------------------
 **  auto-answer to a call  
 ** -------------------------------------------------------------------------*/
-const Json::Value PeerConnectionManager::call(const std::string & peerid, const Json::Value& jmessage) 
+const Json::Value PeerConnectionManager::call(const std::string & peerid, const std::string &url, const Json::Value& jmessage) 
 {
 	LOG(INFO) << __FUNCTION__;
 	Json::Value answer;
 	
-	std::string url; 
 	std::string type;
 	std::string sdp;
 
 	if (  !rtc::GetStringFromJsonObject(jmessage, kSessionDescriptionTypeName, &type)
-	   || !rtc::GetStringFromJsonObject(jmessage, kSessionDescriptionSdpName, &sdp)
-	   || !rtc::GetStringFromJsonObject(jmessage, "url", &url)) 
+	   || !rtc::GetStringFromJsonObject(jmessage, kSessionDescriptionSdpName, &sdp)) 
 	{
 		LOG(WARNING) << "Can't parse received message.";
 	}

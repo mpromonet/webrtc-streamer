@@ -39,7 +39,9 @@ HttpServerRequestHandler::HttpServerRequestHandler(rtc::HttpServer* server, Peer
 	m_func["/call"]                  = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
 		std::string peerid;
 		url.get_attribute("peerid",&peerid);
-		return m_webRtcServer->call(peerid, in);
+		std::string connecturl;
+		url.get_attribute("url",&connecturl);
+		return m_webRtcServer->call(peerid, connecturl, in);
 	};
 	
 	m_func["/hangup"]                = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 

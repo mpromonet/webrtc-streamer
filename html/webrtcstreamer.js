@@ -122,7 +122,7 @@ WebRtcStreamer.prototype.connect = function(url) {
 	
 	try {            
 		this.pc = this.createPeerConnection();
-		var peerid = Math.random()*65535;			
+		var peerid = Math.random();			
 		this.pc.peerid = peerid;
 		
 		var streamer = this;
@@ -130,12 +130,8 @@ WebRtcStreamer.prototype.connect = function(url) {
 		this.pc.createOffer(function(sessionDescription) {
 			trace("Create offer:" + JSON.stringify(sessionDescription));
 			
-			// Create call body adding url to offer
-			var callJson = sessionDescription.toJSON();
-			callJson.url = url;
-			
 			streamer.pc.setLocalDescription(sessionDescription
-				, function() { send(streamer.srvurl + "/call?peerid="+ peerid, null, JSON.stringify(callJson), streamer.onReceiveCall, null, streamer); }
+				, function() { send(streamer.srvurl + "/call?peerid="+ peerid+"&url="+url, null, JSON.stringify(sessionDescription), streamer.onReceiveCall, null, streamer); }
 				, function() {} );
 			
 		}, function(error) { 
