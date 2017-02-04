@@ -275,7 +275,14 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 	Json::Value value;
 	for (auto it : peer_connectionobs_map_) 
 	{
-		value.append(it.first);
+		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it.second->getPeerConnection();
+		
+		std::string sdp;
+		peerConnection->local_description()->ToString(&sdp);
+		
+		Json::Value pc;
+		pc[it.first] = sdp;
+		value.append(pc);
 	}
 	return value;
 }
