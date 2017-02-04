@@ -126,6 +126,7 @@ class PeerConnectionManager {
 		const Json::Value call(const std::string &peerid, const Json::Value& jmessage);
 		const Json::Value getIceServers();
 		const Json::Value getPeerConnectionList();
+		const Json::Value getStreamList();
 
 
 	protected:

@@ -67,6 +67,10 @@ HttpServerRequestHandler::HttpServerRequestHandler(rtc::HttpServer* server, Peer
 	m_func["/getPeerConnectionList"] = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
 		return m_webRtcServer->getPeerConnectionList();
 	};
+
+	m_func["/getStreamList"] = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+		return m_webRtcServer->getStreamList();
+	};
 	
 	m_func["/help"]                  = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
 		Json::Value answer;

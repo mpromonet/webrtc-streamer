@@ -273,7 +273,20 @@ const Json::Value PeerConnectionManager::getIceCandidateList(const std::string &
 const Json::Value PeerConnectionManager::getPeerConnectionList()
 {
 	Json::Value value;
-	for (std::pair<std::string, PeerConnectionObserver* > it : peer_connectionobs_map_) 
+	for (auto it : peer_connectionobs_map_) 
+	{
+		value.append(it.first);
+	}
+	return value;
+}
+
+/* ---------------------------------------------------------------------------
+**  get StreamList list 
+** -------------------------------------------------------------------------*/
+const Json::Value PeerConnectionManager::getStreamList()
+{
+	Json::Value value;
+	for (auto it : stream_map_) 
 	{
 		value.append(it.first);
 	}
