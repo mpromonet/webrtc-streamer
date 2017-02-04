@@ -12,8 +12,9 @@ function WebRtcStreamer (videoElement, srvurl) {
 	this.videoElement     = videoElement;	
 	this.srvurl           = srvurl || location.protocol+"//"+window.location.hostname+":"+window.location.port;
 	this.pc               = null;    
-	this.pcConfig         = {'iceServers': [] };
+
 	this.pcOptions        = { 'optional': [{'DtlsSrtpKeyAgreement': true} ] };
+
 	this.mediaConstraints = {}
 	if (navigator.userAgent.indexOf("Firefox") > 0) {
 		this.mediaConstraints = {'offerToReceiveVideo': true, 'offerToReceiveAudio': true  };
@@ -21,6 +22,13 @@ function WebRtcStreamer (videoElement, srvurl) {
 	else {
 		this.mediaConstraints = {'mandatory': {'OfferToReceiveVideo': true, 'OfferToReceiveAudio': true }}
 	}
+
+	// getIceServers
+	var iceServers = sendSync('/getIceServers');
+	if (iceServers) {
+		iceServers = JSON.parse(iceServers);
+	}
+	this.pcConfig         = iceServers || {'iceServers': [] };
 }
  
 // ------------------------------------------

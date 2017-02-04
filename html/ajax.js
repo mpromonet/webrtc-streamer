@@ -37,3 +37,13 @@ function send(method,headers,data,onSuccess,onFailure,scope) {
 	}
 }
 
+function sendSync(method) {
+	var answer = null;
+	var request = new XMLHttpRequest();
+	request.open('GET', method, false);  
+	request.send(null);
+	if (request.status === 200) {
+		answer = request.responseText;
+	}
+	return answer;
+}
