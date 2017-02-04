@@ -56,3 +56,5 @@ Example
 
 ![Screenshot](snapshot.png)
 
+[Live Demo](https://webrtc-streamer.herokuapp.com/)
+
