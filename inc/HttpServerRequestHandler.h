@@ -22,18 +22,7 @@ class HttpServerRequestHandler : public sigslot::has_slots<>
 		HttpServerRequestHandler(rtc::HttpServer* server, PeerConnectionManager* webRtcServer, const char* webroot); 
 	
 		void OnRequest(rtc::HttpServer*, rtc::HttpServerTransaction* t);
-	
-	protected:
-		Json::Value getDeviceList        (const rtc::Url<char>& url, const Json::Value & in);
-		Json::Value getIceServers        (const rtc::Url<char>& url, const Json::Value & in);
-		Json::Value call                 (const rtc::Url<char>& url, const Json::Value & in);
-		Json::Value hangup               (const rtc::Url<char>& url, const Json::Value & in);
-		Json::Value getIceCandidate      (const rtc::Url<char>& url, const Json::Value & in);
-		Json::Value addIceCandidate      (const rtc::Url<char>& url, const Json::Value & in);
-		Json::Value getPeerConnectionList(const rtc::Url<char>& url, const Json::Value & in);	
-	
-		Json::Value help                 (const rtc::Url<char>& url, const Json::Value & in);	
-		
+			
 	protected:
 		rtc::HttpServer*       m_server;
 		PeerConnectionManager* m_webRtcServer;

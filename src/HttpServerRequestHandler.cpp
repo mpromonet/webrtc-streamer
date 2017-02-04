@@ -21,69 +21,60 @@ HttpServerRequestHandler::HttpServerRequestHandler(rtc::HttpServer* server, Peer
 	: m_server(server), m_webRtcServer(webRtcServer), m_webroot(webroot)
 {
 	// add a trailing '/'
-	if ((m_webroot.rbegin() != m_webroot.rend()) && (*m_webroot.rbegin() != '/'))
-	{
+	if ((m_webroot.rbegin() != m_webroot.rend()) && (*m_webroot.rbegin() != '/')) {
 		m_webroot.push_back('/');
 	}
+	// connect signal to slot
 	m_server->SignalHttpRequest.connect(this, &HttpServerRequestHandler::OnRequest);
 	
-	m_func["/getDeviceList"]         = std::bind(&HttpServerRequestHandler::getDeviceList        , this, std::placeholders::_1, std::placeholders::_2);
-	m_func["/getIceServers"]         = std::bind(&HttpServerRequestHandler::getIceServers        , this, std::placeholders::_1, std::placeholders::_2);
-	m_func["/call"]                  = std::bind(&HttpServerRequestHandler::call                 , this, std::placeholders::_1, std::placeholders::_2);
-	m_func["/hangup"]                = std::bind(&HttpServerRequestHandler::hangup               , this, std::placeholders::_1, std::placeholders::_2);
-	m_func["/getIceCandidate"]       = std::bind(&HttpServerRequestHandler::getIceCandidate      , this, std::placeholders::_1, std::placeholders::_2);
-	m_func["/addIceCandidate"]       = std::bind(&HttpServerRequestHandler::addIceCandidate      , this, std::placeholders::_1, std::placeholders::_2);
-	m_func["/getPeerConnectionList"] = std::bind(&HttpServerRequestHandler::getPeerConnectionList, this, std::placeholders::_1, std::placeholders::_2);
-	m_func["/help"]                  = std::bind(&HttpServerRequestHandler::help                 , this, std::placeholders::_1, std::placeholders::_2);
-}
-
-Json::Value HttpServerRequestHandler::getDeviceList(const rtc::Url<char>& url, const Json::Value & in) {
-	return m_webRtcServer->getDeviceList();
-}
-
-Json::Value HttpServerRequestHandler::getIceServers(const rtc::Url<char>& url, const Json::Value & in) {
-	return m_webRtcServer->getIceServers();
-}
-
-Json::Value HttpServerRequestHandler::call(const rtc::Url<char>& url, const Json::Value & in) {
-	std::string peerid;
-	url.get_attribute("peerid",&peerid);
-	return m_webRtcServer->call(peerid, in);
-}
-
-Json::Value HttpServerRequestHandler::hangup(const rtc::Url<char>& url, const Json::Value & in) {
-	std::string peerid;
-	url.get_attribute("peerid",&peerid);
-	m_webRtcServer->hangUp(peerid);
-	Json::Value answer(1);
-	return answer;
-}
-
-Json::Value HttpServerRequestHandler::getIceCandidate(const rtc::Url<char>& url, const Json::Value & in) {
-	std::string peerid;
-	url.get_attribute("peerid",&peerid);
-	return m_webRtcServer->getIceCandidateList(peerid);
-}
-
-Json::Value HttpServerRequestHandler::addIceCandidate(const rtc::Url<char>& url, const Json::Value & in) {
-	std::string peerid;
-	url.get_attribute("peerid",&peerid);
-	m_webRtcServer->addIceCandidate(peerid, in);
-	Json::Value answer(1);
-	return answer;
-}
-
-Json::Value HttpServerRequestHandler::getPeerConnectionList(const rtc::Url<char>& url, const Json::Value & in) {
-	return m_webRtcServer->getPeerConnectionList();
-}
-
-Json::Value HttpServerRequestHandler::help(const rtc::Url<char>& url, const Json::Value & in) {
-	Json::Value answer;
-	for (auto it : m_func) 
-	{
-		answer.append(it.first);
-	}
-	return answer;
+	// http api callbacks
+	m_func["/getDeviceList"]         = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+		return m_webRtcServer->getDeviceList();
+	};
+	
+	m_func["/getIceServers"]         = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+		return m_webRtcServer->getIceServers();
+	};
+	
+	m_func["/call"]                  = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+		std::string peerid;
+		url.get_attribute("peerid",&peerid);
+		return m_webRtcServer->call(peerid, in);
+	};
+	
+	m_func["/hangup"]                = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+		std::string peerid;
+		url.get_attribute("peerid",&peerid);
+		m_webRtcServer->hangUp(peerid);
+		Json::Value answer(1);
+		return answer;
+	};
+	
+	m_func["/getIceCandidate"]       = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+		std::string peerid;
+		url.get_attribute("peerid",&peerid);
+		return m_webRtcServer->getIceCandidateList(peerid);
+	};
+	
+	m_func["/addIceCandidate"]       = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+		std::string peerid;
+		url.get_attribute("peerid",&peerid);
+		m_webRtcServer->addIceCandidate(peerid, in);
+		Json::Value answer(1);
+		return answer;
+	};
+	
+	m_func["/getPeerConnectionList"] = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+		return m_webRtcServer->getPeerConnectionList();
+	};
+	
+	m_func["/help"]                  = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+		Json::Value answer;
+		for (auto it : m_func) {
+			answer.append(it.first);
+		}
+		return answer;
+	};
 }
 
 /* ---------------------------------------------------------------------------
@@ -111,19 +102,25 @@ void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransa
 		std::map<std::string,httpFunction>::iterator it = m_func.find(url.path());
 		if (it != m_func.end())
 		{
-			Json::Reader reader;
-			Json::Value  jmessage;
 			std::string body(buffer, readsize);	
 			std::cout << "body:" << body << std::endl;
-			
+
+			// parse in
+			Json::Reader reader;
+			Json::Value  jmessage;			
 			if (!reader.parse(body, jmessage)) 
 			{
 				LOG(WARNING) << "Received unknown message:" << body;
 			}
+			// invoke API implementation
 			Json::Value out(it->second(url, jmessage));
+			
+			// fill out
 			if (out.isNull() == false)
 			{
 				std::string answer(Json::StyledWriter().write(out));
+				std::cout << "answer:" << answer << std::endl;
+				
 				rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
 				t->response.set_success("text/plain", mem);			
 			}			
