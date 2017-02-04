@@ -87,7 +87,8 @@ int main(int argc, char* argv[])
 		// http server
 		rtc::HttpListenServer httpServer;
 		rtc::SocketAddress http_addr;
-		http_addr.FromString(port);
+		http_addr.FromString(defaultAddress);
+		std::cout << "HTTP Listen at " << http_addr.ToString() << std::endl;
 		int ret = httpServer.Listen(http_addr);
 		if (ret != 0)
 		{
