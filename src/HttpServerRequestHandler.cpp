@@ -47,8 +47,7 @@ HttpServerRequestHandler::HttpServerRequestHandler(rtc::HttpServer* server, Peer
 	m_func["/hangup"]                = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
 		std::string peerid;
 		url.get_attribute("peerid",&peerid);
-		m_webRtcServer->hangUp(peerid);
-		Json::Value answer(1);
+		Json::Value answer(m_webRtcServer->hangUp(peerid));
 		return answer;
 	};
 	
@@ -72,6 +71,13 @@ HttpServerRequestHandler::HttpServerRequestHandler(rtc::HttpServer* server, Peer
 
 	m_func["/getStreamList"] = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
 		return m_webRtcServer->getStreamList();
+	};
+
+	m_func["/delStream"] = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+		std::string connecturl;
+		url.get_attribute("url",&connecturl);
+		Json::Value answer(m_webRtcServer->delStream(connecturl));
+		return answer;		
 	};
 	
 	m_func["/help"]                  = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 

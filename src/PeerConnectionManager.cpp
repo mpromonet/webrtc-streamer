@@ -22,7 +22,6 @@
 
 const char kAudioLabel[] = "audio_label";
 const char kVideoLabel[] = "video_label";
-const char kStreamLabel[] = "stream_label";
 
 // Names used for a IceCandidate JSON object.
 const char kCandidateSdpMidName[] = "sdpMid";
@@ -104,8 +103,9 @@ const Json::Value PeerConnectionManager::getIceServers()
 /* ---------------------------------------------------------------------------
 **  add ICE candidate to a PeerConnection
 ** -------------------------------------------------------------------------*/
-void PeerConnectionManager::addIceCandidate(const std::string& peerid, const Json::Value& jmessage)
+bool PeerConnectionManager::addIceCandidate(const std::string& peerid, const Json::Value& jmessage)
 {
+	bool result = false;
 	std::string sdp_mid;
 	int sdp_mlineindex = 0;
 	std::string sdp;
@@ -131,10 +131,15 @@ void PeerConnectionManager::addIceCandidate(const std::string& peerid, const Jso
 				if (!peerConnection->AddIceCandidate(candidate.get())) 
 				{
 					LOG(WARNING) << "Failed to apply the received candidate";
-				}		
+				}
+				else
+				{
+					result = true;
+				}
 			}	
 		}
 	}
+	return result;
 }
 
 /* ---------------------------------------------------------------------------
@@ -230,8 +235,9 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 /* ---------------------------------------------------------------------------
 **  hangup a call
 ** -------------------------------------------------------------------------*/
-void PeerConnectionManager::hangUp(const std::string &peerid)
+bool PeerConnectionManager::hangUp(const std::string &peerid)
 {
+	bool result = false;
 	LOG(INFO) << __FUNCTION__ << " " << peerid;
 	std::map<std::string, PeerConnectionObserver* >::iterator  it = peer_connectionobs_map_.find(peerid);
 	if (it != peer_connectionobs_map_.end())
@@ -239,7 +245,9 @@ void PeerConnectionManager::hangUp(const std::string &peerid)
 		LOG(INFO) << " Close PeerConnection";
 		delete it->second;
 		peer_connectionobs_map_.erase(it);
+		result = true;		
 	}
+	return result;
 }
 
 
@@ -278,8 +286,18 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 		std::string sdp;
 		peerConnection->local_description()->ToString(&sdp);
 		
+		rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
+		Json::Value streams;
+		for (int i = 0; i<localstreams->count(); i++)
+		{
+			streams.append(localstreams->at(i)->label());
+		}
+		Json::Value content;
+		content["sdp"] = sdp;
+		content["streams"] = streams;
+
 		Json::Value pc;
-		pc[it.first] = sdp;
+		pc[it.first] = content;
 		value.append(pc);
 	}
 	return value;
@@ -378,6 +396,22 @@ cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std:
 }
 
 /* ---------------------------------------------------------------------------
+**  Del a stream 
+** -------------------------------------------------------------------------*/
+bool PeerConnectionManager::delStream(const std::string & url) 
+{
+	bool result = false;
+	std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(url);
+	if (it != stream_map_.end())
+	{
+		it->second.release();
+		stream_map_.erase(it);
+		result = true;
+	}
+	return result;
+}
+		
+/* ---------------------------------------------------------------------------
 **  Add a stream to a PeerConnection
 ** -------------------------------------------------------------------------*/
 bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url) 
@@ -397,7 +431,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 			rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> source = peer_connection_factory_->CreateVideoSource(capturer, NULL);
 			rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(peer_connection_factory_->CreateVideoTrack(kVideoLabel, source));
 			rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(peer_connection_factory_->CreateAudioTrack(kAudioLabel, peer_connection_factory_->CreateAudioSource(NULL)));
-			rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(kStreamLabel);
+			rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(url);
 			if (!stream.get())
 			{
 				LOG(LS_ERROR) << "Cannot create stream";

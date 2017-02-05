@@ -119,14 +119,16 @@ class PeerConnectionManager {
 		virtual ~PeerConnectionManager();
 
 		bool InitializePeerConnection();
+	
 		const Json::Value getIceCandidateList(const std::string &peerid);
-		void addIceCandidate(const std::string &peerid, const Json::Value& jmessage);
+		bool              addIceCandidate(const std::string &peerid, const Json::Value& jmessage);
 		const Json::Value getDeviceList();
-		void hangUp(const std::string &peerid);
+		bool              hangUp(const std::string &peerid);
 		const Json::Value call(const std::string &peerid, const std::string &url, const Json::Value& jmessage);
 		const Json::Value getIceServers();
 		const Json::Value getPeerConnectionList();
 		const Json::Value getStreamList();
+		bool              delStream(const std::string & url);
 
 
 	protected:
