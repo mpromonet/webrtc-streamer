@@ -129,6 +129,8 @@ class PeerConnectionManager {
 		const Json::Value getPeerConnectionList();
 		const Json::Value getStreamList();
 		bool              delStream(const std::string & url);
+		const Json::Value createOffer(const std::string &peerid, const std::string & url);
+		void              setAnswer(const std::string &peerid, const Json::Value& jmessage);
 
 
 	protected:

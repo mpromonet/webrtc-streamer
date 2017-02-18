@@ -51,6 +51,21 @@ HttpServerRequestHandler::HttpServerRequestHandler(rtc::HttpServer* server, Peer
 		return answer;
 	};
 	
+	m_func["/createOffer"]           = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+		std::string peerid;
+		url.get_attribute("peerid",&peerid);
+		std::string connecturl;
+		url.get_attribute("url",&connecturl);
+		return m_webRtcServer->createOffer(peerid, connecturl);
+	};
+	m_func["/setAnswer"]             = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+		std::string peerid;
+		url.get_attribute("peerid",&peerid);
+		m_webRtcServer->setAnswer(peerid, in);
+		Json::Value answer(1);
+		return answer;
+	};
+	
 	m_func["/getIceCandidate"]       = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
 		std::string peerid;
 		url.get_attribute("peerid",&peerid);
