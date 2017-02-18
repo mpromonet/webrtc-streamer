@@ -312,6 +312,25 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 	return answer;
 }
 
+bool PeerConnectionManager::streamStillUsed(const std::string & url)
+{
+	bool stillUsed = false;
+	for (auto it: peer_connectionobs_map_) 
+	{
+		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it.second->getPeerConnection();		
+		rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
+		for (unsigned int i = 0; i<localstreams->count(); i++)
+		{			
+			if (localstreams->at(i)->label() == url)
+			{
+				stillUsed = true;
+				break;
+			}
+		}
+	}
+	return stillUsed;
+}
+
 /* ---------------------------------------------------------------------------
 **  hangup a call
 ** -------------------------------------------------------------------------*/
@@ -319,14 +338,36 @@ bool PeerConnectionManager::hangUp(const std::string &peerid)
 {
 	bool result = false;
 	LOG(INFO) << __FUNCTION__ << " " << peerid;
+	
 	std::map<std::string, PeerConnectionObserver* >::iterator  it = peer_connectionobs_map_.find(peerid);
 	if (it != peer_connectionobs_map_.end())
 	{
-		LOG(INFO) << " Close PeerConnection";
-		delete it->second;
+		LOG(LS_ERROR) << "Close PeerConnection";
+		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it->second->getPeerConnection();
 		peer_connectionobs_map_.erase(it);
-		result = true;		
+		
+		rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
+		Json::Value streams;
+		for (unsigned int i = 0; i<localstreams->count(); i++)
+		{
+			std::string url = localstreams->at(i)->label();
+			
+			bool stillUsed = this->streamStillUsed(url);
+			if (!stillUsed) 
+			{
+				LOG(LS_ERROR) << "Close PeerConnection no more used " << url;
+				std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(url);
+				if (it != stream_map_.end())
+				{
+					it->second.release();
+					stream_map_.erase(it);
+				}		
+			}			
+		}
+		
+		result = true;			
 	}
+	
 	return result;
 }
 
@@ -368,7 +409,7 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 		
 		rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
 		Json::Value streams;
-		for (int i = 0; i<localstreams->count(); i++)
+		for (unsigned int i = 0; i<localstreams->count(); i++)
 		{
 			streams.append(localstreams->at(i)->label());
 		}
