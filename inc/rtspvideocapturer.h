@@ -30,7 +30,7 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 		virtual ~RTSPVideoCapturer();
 
 		// overide RTSPConnection::Callback
-		virtual bool onNewSession(const char* media, const char* codec, const char* sdp);		
+		virtual bool onNewSession(const char* id, const char* media, const char* codec, const char* sdp);		
 		virtual bool onData(const char* id, unsigned char* buffer, ssize_t size); 
 		virtual ssize_t onNewBuffer(unsigned char* buffer, ssize_t size);
 		
@@ -48,10 +48,10 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 		virtual bool IsRunning() { return this->capture_state() == cricket::CS_RUNNING; }
 	  
 	private:
-		Environment    m_env;
-		RTSPConnection m_connection;
+		Environment                     m_env;
+		RTSPConnection                  m_connection;
 		cricket::InternalDecoderFactory m_factory;
-		webrtc::VideoDecoder* m_decoder;
+		webrtc::VideoDecoder*           m_decoder;
 };
 
 #endif 

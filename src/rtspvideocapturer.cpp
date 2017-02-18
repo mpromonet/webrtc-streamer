@@ -35,7 +35,7 @@ RTSPVideoCapturer::~RTSPVideoCapturer()
 	}				
 }
 		
-bool RTSPVideoCapturer::onNewSession(const char* media, const char* codec, const char* sdp)
+bool RTSPVideoCapturer::onNewSession(const char* id,const char* media, const char* codec, const char* sdp)
 {
 	LOG(INFO) << "RTSPVideoCapturer::onNewSession" << media << "/" << codec << " " << sdp;
 	bool success = false;
@@ -59,7 +59,7 @@ bool RTSPVideoCapturer::onNewSession(const char* media, const char* codec, const
 				cfg.insert(cfg.end(), sprops.sps_nalu().begin(), sprops.sps_nalu().end());
 				cfg.insert(cfg.end(), marker, marker+sizeof(marker));
 				cfg.insert(cfg.end(), sprops.pps_nalu().begin(), sprops.pps_nalu().end());
-				onData(NULL, cfg.data(), cfg.size());
+				onData(id, cfg.data(), cfg.size());
 			}
 			else
 			{
