@@ -14,6 +14,30 @@
 
 #include "HttpServerRequestHandler.h"
 
+char from_hex(char ch) {
+  return isdigit(ch) ? ch - '0' : tolower(ch) - 'a' + 10;
+}
+
+std::string url_decode(const std::string & str) {
+	std::string result;
+	for (auto it = str.begin(); it != str.end(); ++it) {
+		char c = *it;
+		if (c == '%') {
+			++it;
+			char c1 = from_hex(*it) << 4;
+			++it;
+			char c2 = from_hex(*it);
+			c = c1 | c2;
+			result.push_back(c);
+		} else if (c == '+') {
+			result.push_back(' ');
+		} else {		
+			result.push_back(c);
+		}
+	}
+	return result;
+}
+
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
@@ -41,6 +65,7 @@ HttpServerRequestHandler::HttpServerRequestHandler(rtc::HttpServer* server, Peer
 		url.get_attribute("peerid",&peerid);
 		std::string connecturl;
 		url.get_attribute("url",&connecturl);
+		connecturl = url_decode(connecturl);
 		return m_webRtcServer->call(peerid, connecturl, in);
 	};
 	
@@ -56,6 +81,7 @@ HttpServerRequestHandler::HttpServerRequestHandler(rtc::HttpServer* server, Peer
 		url.get_attribute("peerid",&peerid);
 		std::string connecturl;
 		url.get_attribute("url",&connecturl);
+		connecturl = url_decode(connecturl);
 		return m_webRtcServer->createOffer(peerid, connecturl);
 	};
 	m_func["/setAnswer"]             = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
