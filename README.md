@@ -18,12 +18,12 @@ A video source could be :
 
 It is based on WebRTC Native Code Package [http://www.webrtc.org]
 
-Build WebRTC
+Build WebRTC with H264 support
 -------
 	mkdir ../webrtc
 	pushd ../webrtc
 	fetch webrtc
-	gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false' 
+	gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" 
 	ninja -C out/Release
 	popd
 
