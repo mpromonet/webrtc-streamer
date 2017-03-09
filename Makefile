@@ -37,7 +37,7 @@ endif
 LDFLAGS += -lX11 -ldl -lrt
 
 WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH)/obj/base -name '*.o')
-WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/webrtc -name '*.o' ! -path '*test*')
+WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/webrtc -name '*.o')
 WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/third_party -name '*.o')
 LIBS+=libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
 libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)

@@ -507,7 +507,7 @@ cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std:
 					if (url == name)
 					{
 						cricket::WebRtcVideoDeviceCapturerFactory factory;
-						capturer = factory.Create(cricket::Device(name, 0));
+						capturer = factory.Create(cricket::Device(name, 0)).release();
 					}
 				}
 			}
