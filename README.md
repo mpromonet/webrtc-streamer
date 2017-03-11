@@ -58,9 +58,9 @@ Example
 
 [Live Demo](https://webrtc-streamer.herokuapp.com/)
 
-Include in an HTML page:
+Embed in a HTML page:
 ------------------------
-It is easy to show a WebRTC stream in an HTML page served by an external HTTP server.
+It is easy to embed a WebRTC stream in a HTML page served by an external HTTP server.
 A short sample using webrtc-streamer running locally on port 8000 :
 
     <html>
@@ -68,12 +68,12 @@ A short sample using webrtc-streamer running locally on port 8000 :
     <script src="ajax.js" ></script>
     <script src="webrtcstreamer.js" ></script>
     <script>        
-        var webRtcServer = new WebRtcStreamer("remote-video",location.protocol+"//"+window.location.hostname+":8000");
+        var webRtcServer = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000");
     </script>
     </head>
     <body onload='webRtcServer.connect("rtsp://pi2.local:8554/unicast")' onbeforeunload='webRtcServer.disconnect()'>
         <div>
-        <video id="remote-video" width="480px" height="360px"></video>
+        <video id="video" width="480px" height="360px"></video>
         </div>
     </body>
     </html>
