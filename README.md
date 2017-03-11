@@ -72,9 +72,7 @@ A short sample using webrtc-streamer running locally on port 8000 :
     </script>
     </head>
     <body onload='webRtcServer.connect("rtsp://pi2.local:8554/unicast")' onbeforeunload='webRtcServer.disconnect()'>
-        <div>
-        <video id="video" width="480px" height="360px"></video>
-        </div>
+        <video id="video" />
     </body>
     </html>
 
