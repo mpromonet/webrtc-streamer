@@ -12,7 +12,11 @@ all: $(TARGET)
 ifneq ($(wildcard $(SYSROOT)/usr/include/liveMedia/liveMedia.hh),)
 ifneq ($(wildcard $(SYSROOT)/usr/lib/libliveMedia.a),)
 LIBS+=live555helper/live555helper.a
-live555helper/live555helper.a:
+live555helper:
+	git submodule update --init live555helper
+
+live555helper/live555helper.a: live555helper
+	git submodule update live555helper
 	make -C live555helper
 
 CFLAGS += -DHAVE_LIVE555
@@ -49,7 +53,7 @@ src/%.o: src/%.cpp
 	$(CC) -o $@ -c $^ $(CFLAGS) 
 
 FILES = $(wildcard src/*.cpp)
-$(TARGET): $(subst .cpp,.o,$(FILES)) $(LIBS)
+$(TARGET): $(LIBS) $(subst .cpp,.o,$(FILES)) 
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 clean:
