@@ -12,10 +12,10 @@ all: $(TARGET)
 ifneq ($(wildcard $(SYSROOT)/usr/include/liveMedia/liveMedia.hh),)
 ifneq ($(wildcard $(SYSROOT)/usr/lib/libliveMedia.a),)
 LIBS+=live555helper/live555helper.a
-live555helper:
+live555helper/Makefile:
 	git submodule update --init live555helper
 
-live555helper/live555helper.a: live555helper
+live555helper/live555helper.a: live555helper/Makefile
 	git submodule update live555helper
 	make -C live555helper
 
@@ -28,6 +28,18 @@ LDFLAGS += -l:libliveMedia.a -l:libgroupsock.a -l:libUsageEnvironment.a -l:libBa
 endif
 endif
 
+# civetweb
+LIBS+=civetweb/libcivetweb.a
+civetweb/Makefile:
+	git submodule update --init civetweb
+
+civetweb/libcivetweb.a: civetweb/Makefile
+	make lib WITH_CPP=1 -C civetweb
+
+CFLAGS += -I civetweb/include
+LDFLAGS += -L civetweb -l civetweb
+
+
 # webrtc
 WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
 
@@ -38,7 +50,7 @@ TESTDEBUG=$(shell nm $(wildcard $(WEBRTCLIBPATH)/obj/webrtc/media/rtc_media/vide
 ifeq ($(TESTDEBUG),debug)
 	CFLAGS += -D_GLIBCXX_DEBUG=1
 endif
-LDFLAGS += -lX11 -ldl -lrt
+LDFLAGS += -ldl -lrt
 
 WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH)/obj/base -name '*.o')
 WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/webrtc -name '*.o')

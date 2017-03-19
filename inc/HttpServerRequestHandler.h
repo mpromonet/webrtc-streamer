@@ -7,25 +7,22 @@
 ** 
 ** -------------------------------------------------------------------------*/
 
-#include "webrtc/base/httpserver.h"
-
+#include "CivetServer.h"
 #include "PeerConnectionManager.h"
 
-typedef std::function<Json::Value(const rtc::Url<char>& , const Json::Value &)> httpFunction;
+typedef std::function<Json::Value(struct mg_connection *conn, const Json::Value &)> httpFunction;
 
 /* ---------------------------------------------------------------------------
 **  http callback
 ** -------------------------------------------------------------------------*/
-class HttpServerRequestHandler : public sigslot::has_slots<> 
+class HttpServerRequestHandler : public CivetServer
 {
 	public:
-		HttpServerRequestHandler(rtc::HttpServer* server, PeerConnectionManager* webRtcServer, const char* webroot); 
+		HttpServerRequestHandler(PeerConnectionManager* webRtcServer, const std::vector<std::string>& options); 
 	
-		void OnRequest(rtc::HttpServer*, rtc::HttpServerTransaction* t);
-			
+		httpFunction getFunction(const std::string& uri);
+				
 	protected:
-		rtc::HttpServer*       m_server;
 		PeerConnectionManager* m_webRtcServer;
-		std::string            m_webroot;
 		std::map<std::string,httpFunction> m_func;
 };

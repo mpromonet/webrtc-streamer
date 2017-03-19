@@ -9,195 +9,188 @@
 
 #include <iostream>
 
-#include "webrtc/base/pathutils.h"
-#include "webrtc/base/httpcommon-inl.h"
-
 #include "HttpServerRequestHandler.h"
 
-char from_hex(char ch) {
-  return isdigit(ch) ? ch - '0' : tolower(ch) - 'a' + 10;
-}
+class RequestHandler : public CivetHandler
+{
+  public:
+	bool handle(CivetServer *server, struct mg_connection *conn)
+	{
+		bool ret = false;
+		const struct mg_request_info *req_info = mg_get_request_info(conn);
+		
+		HttpServerRequestHandler* httpServer = (HttpServerRequestHandler*)server;
+		
+		httpFunction fct = httpServer->getFunction(req_info->request_uri);
+		if (fct != NULL)
+		{
+			Json::Value  jmessage;			
+			
+			// read input
+			long long tlen = req_info->content_length;
+			if (tlen > 0)
+			{
+				std::string body;	
+				long long nlen = 0;
+				char buf[1024];			
+				while (nlen < tlen) {
+					long long rlen = tlen - nlen;
+					if (rlen > sizeof(buf)) {
+						rlen = sizeof(buf);
+					}
+					rlen = mg_read(conn, buf, (size_t)rlen);
+					if (rlen <= 0) {
+						break;
+					}
+					body.append(buf, rlen);
+					
+					nlen += rlen;
+				}
+				std::cout << "body:" << body << std::endl;
 
-std::string url_decode(const std::string & str) {
-	std::string result;
-	for (auto it = str.begin(); it != str.end(); ++it) {
-		char c = *it;
-		if (c == '%') {
-			++it;
-			char c1 = from_hex(*it) << 4;
-			++it;
-			char c2 = from_hex(*it);
-			c = c1 | c2;
-			result.push_back(c);
-		} else if (c == '+') {
-			result.push_back(' ');
-		} else {		
-			result.push_back(c);
-		}
+				// parse in
+				Json::Reader reader;
+				if (!reader.parse(body, jmessage)) 
+				{
+					LOG(WARNING) << "Received unknown message:" << body;
+				}
+			}
+		
+			// invoke API implementation
+			Json::Value out(fct(conn, jmessage));
+			
+			// fill out
+			if (out.isNull() == false)
+			{
+				std::string answer(Json::StyledWriter().write(out));
+				std::cout << "answer:" << answer << std::endl;	
+
+				mg_printf(conn,"HTTP/1.1 200 OK\r\n");
+				mg_printf(conn,"Access-Control-Allow-Origin: *\r\n");
+				mg_printf(conn,"Content-Type: plain/text\r\n");
+				mg_printf(conn,"Content-Length: %zd\r\n", answer.size());
+				mg_printf(conn,"Connection: close\r\n");
+				mg_printf(conn,"\r\n");
+				mg_printf(conn,answer.c_str());	
+				
+				ret = true;
+			}			
+		}		
+		
+		return ret;
 	}
-	return result;
-}
+	bool handleGet(CivetServer *server, struct mg_connection *conn)
+	{
+		return handle(server, conn);
+	}
+	bool handlePost(CivetServer *server, struct mg_connection *conn)
+	{
+		return handle(server, conn);
+	}	
+};
 
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
-HttpServerRequestHandler::HttpServerRequestHandler(rtc::HttpServer* server, PeerConnectionManager* webRtcServer, const char* webroot) 
-	: m_server(server), m_webRtcServer(webRtcServer), m_webroot(webroot)
+HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtcServer, const std::vector<std::string>& options) 
+	: CivetServer(options), m_webRtcServer(webRtcServer)
 {
-	// add a trailing '/'
-	if ((m_webroot.rbegin() != m_webroot.rend()) && (*m_webroot.rbegin() != '/')) {
-		m_webroot.push_back('/');
-	}
-	// connect signal to slot
-	m_server->SignalHttpRequest.connect(this, &HttpServerRequestHandler::OnRequest);
-	
 	// http api callbacks
-	m_func["/getDeviceList"]         = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+	m_func["/getDeviceList"]         = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
 		return m_webRtcServer->getDeviceList();
 	};
 	
-	m_func["/getIceServers"]         = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+	m_func["/getIceServers"]         = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
 		return m_webRtcServer->getIceServers();
 	};
 	
-	m_func["/call"]                  = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+	m_func["/call"]                  = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 		
 		std::string peerid;
-		url.get_attribute("peerid",&peerid);
+		CivetServer::getParam(conn, "peerid", peerid);
 		std::string connecturl;
-		url.get_attribute("url",&connecturl);
-		connecturl = url_decode(connecturl);
-		return m_webRtcServer->call(peerid, connecturl, in);
+		CivetServer::getParam(conn, "url", connecturl);
+		std::string url;
+		CivetServer::urlDecode(connecturl, url);
+		return m_webRtcServer->call(peerid, url, in);
 	};
 	
-	m_func["/hangup"]                = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+	m_func["/hangup"]                = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
 		std::string peerid;
-		url.get_attribute("peerid",&peerid);
+		CivetServer::getParam(conn, "peerid", peerid);
 		Json::Value answer(m_webRtcServer->hangUp(peerid));
 		return answer;
 	};
 	
-	m_func["/createOffer"]           = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+	m_func["/createOffer"]           = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
 		std::string peerid;
-		url.get_attribute("peerid",&peerid);
+		CivetServer::getParam(conn, "peerid", peerid);
 		std::string connecturl;
-		url.get_attribute("url",&connecturl);
-		connecturl = url_decode(connecturl);
-		return m_webRtcServer->createOffer(peerid, connecturl);
+		CivetServer::getParam(conn, "url", connecturl);
+		std::string url;
+		CivetServer::urlDecode(connecturl, url);
+		return m_webRtcServer->createOffer(peerid, url);
 	};
-	m_func["/setAnswer"]             = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+	m_func["/setAnswer"]             = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
 		std::string peerid;
-		url.get_attribute("peerid",&peerid);
+		CivetServer::getParam(conn, "peerid", peerid);
 		m_webRtcServer->setAnswer(peerid, in);
 		Json::Value answer(1);
 		return answer;
 	};
 	
-	m_func["/getIceCandidate"]       = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+	m_func["/getIceCandidate"]       = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
 		std::string peerid;
-		url.get_attribute("peerid",&peerid);
+		CivetServer::getParam(conn, "peerid", peerid);
 		return m_webRtcServer->getIceCandidateList(peerid);
 	};
 	
-	m_func["/addIceCandidate"]       = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+	m_func["/addIceCandidate"]       = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
 		std::string peerid;
-		url.get_attribute("peerid",&peerid);
+		CivetServer::getParam(conn, "peerid", peerid);
 		m_webRtcServer->addIceCandidate(peerid, in);
 		Json::Value answer(1);
 		return answer;
 	};
 	
-	m_func["/getPeerConnectionList"] = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+	m_func["/getPeerConnectionList"] = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
 		return m_webRtcServer->getPeerConnectionList();
 	};
 
-	m_func["/getStreamList"] = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+	m_func["/getStreamList"] = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
 		return m_webRtcServer->getStreamList();
 	};
 
-	m_func["/delStream"] = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+	m_func["/delStream"] = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
 		std::string connecturl;
-		url.get_attribute("url",&connecturl);
+		CivetServer::getParam(conn, "url", connecturl);
 		Json::Value answer(m_webRtcServer->delStream(connecturl));
 		return answer;		
 	};
 	
-	m_func["/help"]                  = [this](const rtc::Url<char>& url, const Json::Value & in) -> Json::Value { 
+	m_func["/help"]                  = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
 		Json::Value answer;
 		for (auto it : m_func) {
 			answer.append(it.first);
 		}
 		return answer;
 	};
+	
+	
+	// register handlers
+	for (auto it : m_func) {
+		this->addHandler(it.first, new RequestHandler());
+	}	
 }
 
-/* ---------------------------------------------------------------------------
-**  http callback
-** -------------------------------------------------------------------------*/
-void HttpServerRequestHandler::OnRequest(rtc::HttpServer*, rtc::HttpServerTransaction* t) 
+httpFunction HttpServerRequestHandler::getFunction(const std::string& uri)
 {
-	// parse URL
-	rtc::Url<char> url(t->request.path,"");	
-	std::cout << "===> HTTP request path:" <<  url.path() << std::endl;
-
-	// Allow CORS
-	t->response.addHeader("Access-Control-Allow-Origin","*");
-	
-	// read body
-	size_t size = 0;
-	t->request.document->GetSize(&size);
-	t->request.document->Rewind();
-	char buffer[size];
-	size_t readsize = 0;
-	rtc::StreamResult res = t->request.document->ReadAll(&buffer, size, &readsize, NULL);
-	
-	if (res == rtc::SR_SUCCESS)
+	httpFunction fct = NULL;
+	std::map<std::string,httpFunction>::iterator it = m_func.find(uri);
+	if (it != m_func.end())
 	{
-		std::map<std::string,httpFunction>::iterator it = m_func.find(url.path());
-		if (it != m_func.end())
-		{
-			std::string body(buffer, readsize);	
-			std::cout << "body:" << body << std::endl;
-
-			// parse in
-			Json::Reader reader;
-			Json::Value  jmessage;			
-			if (!reader.parse(body, jmessage)) 
-			{
-				LOG(WARNING) << "Received unknown message:" << body;
-			}
-			// invoke API implementation
-			Json::Value out(it->second(url, jmessage));
-			
-			// fill out
-			if (out.isNull() == false)
-			{
-				std::string answer(Json::StyledWriter().write(out));
-				std::cout << "answer:" << answer << std::endl;
-				
-				rtc::MemoryStream* mem = new rtc::MemoryStream(answer.c_str(), answer.size());			
-				t->response.set_success("text/plain", mem);			
-			}			
-		}
-		else
-		{
-			std::string path(url.path());
-			// remove "/"
-			path = basename(path.c_str());
-			if (path.empty())
-			{
-				path = "index.html";
-			}
-			path.insert(0, m_webroot);
-			std::cout << "filename:" << path << std::endl;
-			rtc::Pathname pathname(path);
-			rtc::FileStream* fs = rtc::Filesystem::OpenFile(pathname, "rb");
-			if (fs)
-			{
-				t->response.set_success("text/html", fs);			
-			}
-		}
+		fct = it->second;
 	}
 	
-	t->response.setHeader(rtc::HH_CONNECTION,"Close");
-	m_server->Respond(t);
+	return fct;
 }
+

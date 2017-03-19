@@ -1,3 +1,6 @@
 [submodule "live555helper"]
 	path = live555helper
 	url = https://github.com/mpromonet/live555helper
+[submodule "civetweb"]
+	path = civetweb
+	url = https://github.com/civetweb/civetweb
