@@ -9,6 +9,7 @@
 
 #include <iostream>
 
+#include "webrtc/base/checks.h"
 #include "webrtc/base/ssladapter.h"
 #include "webrtc/base/thread.h"
 #include "webrtc/p2p/base/stunserver.h"
@@ -85,21 +86,23 @@ int main(int argc, char* argv[])
 	else
 	{
 		// http server
-		rtc::HttpListenServer httpServer;
 		rtc::SocketAddress http_addr;
 		http_addr.FromString(defaultAddress);
+		
+		std::vector<std::string> options;
+		options.push_back("document_root");
+		options.push_back(webroot);
+		options.push_back("listening_ports");
+		options.push_back(http_addr.PortAsString());
+		
+		HttpServerRequestHandler httpServer(&webRtcServer, options);
 		std::cout << "HTTP Listen at " << http_addr.ToString() << std::endl;
-		int ret = httpServer.Listen(http_addr);
-		if (ret != 0)
+		if (httpServer.getContext() == NULL)
 		{
-			std::cout << "Cannot Initialize start HTTP server " << strerror(ret) << std::endl; 
+			std::cout << "Cannot Initialize start HTTP server" << std::endl; 
 		}
 		else
 		{
-			// connect httpserver to a request handler
-			HttpServerRequestHandler http(&httpServer, &webRtcServer, webroot);
-			std::cout << "HTTP Listening at " << http_addr.ToString() << std::endl;
-
 			// start STUN server if needed
 			std::unique_ptr<cricket::StunServer> stunserver;
 			if (localstunurl != NULL)

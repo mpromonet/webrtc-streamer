@@ -12,7 +12,11 @@ all: $(TARGET)
 ifneq ($(wildcard $(SYSROOT)/usr/include/liveMedia/liveMedia.hh),)
 ifneq ($(wildcard $(SYSROOT)/usr/lib/libliveMedia.a),)
 LIBS+=live555helper/live555helper.a
-live555helper/live555helper.a:
+live555helper/Makefile:
+	git submodule update --init live555helper
+
+live555helper/live555helper.a: live555helper/Makefile
+	git submodule update live555helper
 	make -C live555helper
 
 CFLAGS += -DHAVE_LIVE555
@@ -23,6 +27,18 @@ LDFLAGS += live555helper/live555helper.a
 LDFLAGS += -l:libliveMedia.a -l:libgroupsock.a -l:libUsageEnvironment.a -l:libBasicUsageEnvironment.a -l:liblog4cpp.a
 endif
 endif
+
+# civetweb
+LIBS+=civetweb/libcivetweb.a
+civetweb/Makefile:
+	git submodule update --init civetweb
+
+civetweb/libcivetweb.a: civetweb/Makefile
+	make lib WITH_CPP=1 -C civetweb
+
+CFLAGS += -I civetweb/include
+LDFLAGS += -L civetweb -l civetweb
+
 
 # webrtc
 WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
@@ -36,9 +52,7 @@ ifeq ($(TESTDEBUG),debug)
 endif
 LDFLAGS += -lX11 -ldl -lrt
 
-WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH)/obj/base -name '*.o')
-WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/webrtc -name '*.o')
-WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/third_party -name '*.o')
+WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj -name '*.a')
 LIBS+=libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
 libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 	$(AR) -rcT $@ $^
@@ -49,7 +63,7 @@ src/%.o: src/%.cpp
 	$(CC) -o $@ -c $^ $(CFLAGS) 
 
 FILES = $(wildcard src/*.cpp)
-$(TARGET): $(subst .cpp,.o,$(FILES)) $(LIBS)
+$(TARGET): $(subst .cpp,.o,$(FILES)) $(LIBS) 
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 clean:
@@ -57,3 +71,6 @@ clean:
 
 install:
 	install -m 0755 $(TARGET) /usr/local/bin
+
+
+

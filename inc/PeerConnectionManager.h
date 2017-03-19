@@ -79,11 +79,9 @@ class PeerConnectionManager {
 			void setPeerConnection(rtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc) { m_pc = pc; };
 			Json::Value getIceCandidateList() { return iceCandidateList_; };
 			
-			virtual void OnAddStream(webrtc::MediaStreamInterface* stream)    {
-				LOG(INFO) << __PRETTY_FUNCTION__;
-			}
-			virtual void OnRemoveStream(webrtc::MediaStreamInterface* stream) {}
-			virtual void OnDataChannel(webrtc::DataChannelInterface* channel) {}
+			virtual void OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)    {}
+			virtual void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {}
+			virtual void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {}
 			virtual void OnRenegotiationNeeded()                              {}
 
 			virtual void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
