@@ -146,7 +146,7 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 	m_func["/getIceCandidate"]       = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
 		const struct mg_request_info *req_info = mg_get_request_info(conn);
 		std::string peerid;
-		CivetServer::getParam(conn, "peerid", peerid);
+		CivetServer::getParam(req_info->query_string, "peerid", peerid);
 		return m_webRtcServer->getIceCandidateList(peerid);
 	};
 	
