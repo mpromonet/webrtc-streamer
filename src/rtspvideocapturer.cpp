@@ -59,7 +59,9 @@ bool RTSPVideoCapturer::onNewSession(const char* id,const char* media, const cha
 				cfg.insert(cfg.end(), sprops.sps_nalu().begin(), sprops.sps_nalu().end());
 				cfg.insert(cfg.end(), marker, marker+sizeof(marker));
 				cfg.insert(cfg.end(), sprops.pps_nalu().begin(), sprops.pps_nalu().end());
-				onData(id, cfg.data(), cfg.size());
+				struct timeval presentationTime;
+				timerclear(&presentationTime);
+				onData(id, cfg.data(), cfg.size(), presentationTime);
 			}
 			else
 			{
@@ -71,7 +73,7 @@ bool RTSPVideoCapturer::onNewSession(const char* id,const char* media, const cha
 	return success;			
 }
 		
-bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t size) 
+bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t size, struct timeval presentationTime) 
 {			
 	LOG(INFO) << "RTSPVideoCapturer:onData size:" << size << " GetCaptureFormat:" << GetCaptureFormat();
 	

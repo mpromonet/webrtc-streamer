@@ -68,6 +68,8 @@ $(TARGET): $(subst .cpp,.o,$(FILES)) $(LIBS)
 
 clean:
 	rm -f src/*.o libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a $(TARGET)
+	make -C civetweb clean
+	make -C live555helper clean
 
 install:
 	install -m 0755 $(TARGET) /usr/local/bin
