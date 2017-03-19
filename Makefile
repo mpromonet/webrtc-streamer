@@ -50,11 +50,9 @@ TESTDEBUG=$(shell nm $(wildcard $(WEBRTCLIBPATH)/obj/webrtc/media/rtc_media/vide
 ifeq ($(TESTDEBUG),debug)
 	CFLAGS += -D_GLIBCXX_DEBUG=1
 endif
-LDFLAGS += -ldl -lrt
+LDFLAGS += -lX11 -ldl -lrt
 
-WEBRTC_LIB = $(shell find $(WEBRTCLIBPATH)/obj/base -name '*.o')
-WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/webrtc -name '*.o')
-WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/third_party -name '*.o')
+WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj -name '*.a')
 LIBS+=libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
 libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 	$(AR) -rcT $@ $^
@@ -65,7 +63,7 @@ src/%.o: src/%.cpp
 	$(CC) -o $@ -c $^ $(CFLAGS) 
 
 FILES = $(wildcard src/*.cpp)
-$(TARGET): $(LIBS) $(subst .cpp,.o,$(FILES)) 
+$(TARGET): $(subst .cpp,.o,$(FILES)) $(LIBS) 
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 clean:
@@ -73,3 +71,6 @@ clean:
 
 install:
 	install -m 0755 $(TARGET) /usr/local/bin
+
+
+

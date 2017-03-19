@@ -55,7 +55,7 @@ class RequestHandler : public CivetHandler
 					LOG(WARNING) << "Received unknown message:" << body;
 				}
 			}
-		
+			
 			// invoke API implementation
 			Json::Value out(fct(conn, jmessage));
 			
@@ -67,7 +67,7 @@ class RequestHandler : public CivetHandler
 
 				mg_printf(conn,"HTTP/1.1 200 OK\r\n");
 				mg_printf(conn,"Access-Control-Allow-Origin: *\r\n");
-				mg_printf(conn,"Content-Type: plain/text\r\n");
+				mg_printf(conn,"Content-Type: text/plain\r\n");
 				mg_printf(conn,"Content-Length: %zd\r\n", answer.size());
 				mg_printf(conn,"Connection: close\r\n");
 				mg_printf(conn,"\r\n");
@@ -105,12 +105,15 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 	};
 	
 	m_func["/call"]                  = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 		
+
+		const struct mg_request_info *req_info = mg_get_request_info(conn);
 		std::string peerid;
-		CivetServer::getParam(conn, "peerid", peerid);
+		CivetServer::getParam(req_info->query_string, "peerid", peerid);
 		std::string connecturl;
-		CivetServer::getParam(conn, "url", connecturl);
+		CivetServer::getParam(req_info->query_string, "url", connecturl);
 		std::string url;
 		CivetServer::urlDecode(connecturl, url);
+		std::cout << "url:" << url<< std::endl;
 		return m_webRtcServer->call(peerid, url, in);
 	};
 	
@@ -122,31 +125,35 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 	};
 	
 	m_func["/createOffer"]           = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
+		const struct mg_request_info *req_info = mg_get_request_info(conn);
 		std::string peerid;
-		CivetServer::getParam(conn, "peerid", peerid);
+		CivetServer::getParam(req_info->query_string, "peerid", peerid);
 		std::string connecturl;
-		CivetServer::getParam(conn, "url", connecturl);
+		CivetServer::getParam(req_info->query_string, "url", connecturl);
 		std::string url;
 		CivetServer::urlDecode(connecturl, url);
 		return m_webRtcServer->createOffer(peerid, url);
 	};
 	m_func["/setAnswer"]             = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
+		const struct mg_request_info *req_info = mg_get_request_info(conn);
 		std::string peerid;
-		CivetServer::getParam(conn, "peerid", peerid);
+		CivetServer::getParam(req_info->query_string, "peerid", peerid);
 		m_webRtcServer->setAnswer(peerid, in);
 		Json::Value answer(1);
 		return answer;
 	};
 	
 	m_func["/getIceCandidate"]       = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
+		const struct mg_request_info *req_info = mg_get_request_info(conn);
 		std::string peerid;
 		CivetServer::getParam(conn, "peerid", peerid);
 		return m_webRtcServer->getIceCandidateList(peerid);
 	};
 	
 	m_func["/addIceCandidate"]       = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
+		const struct mg_request_info *req_info = mg_get_request_info(conn);
 		std::string peerid;
-		CivetServer::getParam(conn, "peerid", peerid);
+		CivetServer::getParam(req_info->query_string, "peerid", peerid);
 		m_webRtcServer->addIceCandidate(peerid, in);
 		Json::Value answer(1);
 		return answer;
@@ -161,8 +168,9 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 	};
 
 	m_func["/delStream"] = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
+		const struct mg_request_info *req_info = mg_get_request_info(conn);
 		std::string connecturl;
-		CivetServer::getParam(conn, "url", connecturl);
+		CivetServer::getParam(req_info->query_string, "url", connecturl);
 		Json::Value answer(m_webRtcServer->delStream(connecturl));
 		return answer;		
 	};
