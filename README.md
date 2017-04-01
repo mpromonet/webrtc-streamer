@@ -59,21 +59,36 @@ Example
 
 [Live Demo](https://webrtc-streamer.herokuapp.com/)
 
+You can access to the WebRTC stream coming from an RTSP url using [rtsp2webrtc.html](html/rtsp2webrtc.html) page with the RTSP url as argument, something like:
+
+     https://webrtc-streamer.herokuapp.com/rtsp2webrtc.html?rtsp://217.17.220.110/axis-media/media.amp
+
 Embed in a HTML page:
 ------------------------
-It is easy to embed a WebRTC stream in a HTML page served by an external HTTP server.
+Instead of using the internal HTTP server, it is easy to display a WebRTC stream in a HTML page served by an external HTTP server. The URL of the webrtc-streamer to use should be given creating the WebRtcStreamer instance :
+
+	var webRtcServer      = new WebRtcStreamer(<video tag>, <url of webrtc-streamer>);
+
 A short sample using webrtc-streamer running locally on port 8000 :
 
-    <html>
-    <head>
-    <script src="ajax.js" ></script>
-    <script src="webrtcstreamer.js" ></script>
-    <script>        
-        var webRtcServer = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000");
-    </script>
-    </head>
-    <body onload='webRtcServer.connect("rtsp://pi2.local:8554/unicast")' onbeforeunload='webRtcServer.disconnect()'>
-        <video id="video" />
-    </body>
-    </html>
+	<html>
+	<head>
+	<script src="ajax.js" ></script>
+	<script src="webrtcstreamer.js" ></script>
+	<script>        
+	    var webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000");
+	    window.onload         = function() { webRtcServer.connect(location.search.slice(1)) }
+	    window.onbeforeunload = function() { webRtcServer.disconnect() }
+	</script>
+	</head>
+	<body> 
+	    <video id="video" />
+	</body>
+	</html>
+	
+
+
+
+ 
+
 
