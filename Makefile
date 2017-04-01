@@ -8,6 +8,23 @@ WEBRTCBUILD?=Release
 TARGET = webrtc-server_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD)
 all: $(TARGET)
 
+# webrtc
+WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
+
+CFLAGS += -DWEBRTC_POSIX -fno-rtti -D_GLIBCXX_USE_CXX11_ABI=0
+CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/third_party/jsoncpp/source/include
+#detect
+TESTDEBUG=$(shell nm $(wildcard $(WEBRTCLIBPATH)/obj/webrtc/media/rtc_media/videocapturer.o $(WEBRTCLIBPATH)/obj/webrtc/media/librtc_media.a) | c++filt | grep std::__debug::vector >/dev/null && echo debug)
+ifeq ($(TESTDEBUG),debug)
+	CFLAGS +=-DUSE_DEBUG_WEBRTC -D_GLIBCXX_DEBUG=1
+endif
+LDFLAGS += -lX11 -ldl -lrt
+
+WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj -name '*.a')
+LIBS+=libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
+libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
+	$(AR) -rcT $@ $^
+
 # live555helper
 ifneq ($(wildcard $(SYSROOT)/usr/include/liveMedia/liveMedia.hh),)
 ifneq ($(wildcard $(SYSROOT)/usr/lib/libliveMedia.a),)
@@ -28,40 +45,16 @@ LDFLAGS += -l:libliveMedia.a -l:libgroupsock.a -l:libUsageEnvironment.a -l:libBa
 endif
 endif
 
-ifeq ($(WEBRTCBUILD),Debug)
-	CFLAGS += -DUSE_DEBUG_WEBRTC
-	CIVERWEB_CFLAGS=-D_GLIBCXX_DEBUG=1
-endif
-
 # civetweb
 LIBS+=civetweb/libcivetweb.a
 civetweb/Makefile:
 	git submodule update --init civetweb
 
 civetweb/libcivetweb.a: civetweb/Makefile
-	make lib WITH_CPP=1 COPT=$(CIVERWEB_CFLAGS) -C civetweb
+	make lib WITH_CPP=1 COPT="$(CFLAGS)" -C civetweb
 
 CFLAGS += -I civetweb/include
 LDFLAGS += -L civetweb -l civetweb
-
-
-# webrtc
-WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
-
-CFLAGS += -DWEBRTC_POSIX -fno-rtti -D_GLIBCXX_USE_CXX11_ABI=0
-CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/chromium/src/third_party/jsoncpp/source/include
-#detect
-TESTDEBUG=$(shell nm $(wildcard $(WEBRTCLIBPATH)/obj/webrtc/media/rtc_media/videocapturer.o $(WEBRTCLIBPATH)/obj/webrtc/media/librtc_media.a) | c++filt | grep std::__debug::vector >/dev/null && echo debug)
-ifeq ($(TESTDEBUG),debug)
-	CFLAGS += -D_GLIBCXX_DEBUG=1
-endif
-LDFLAGS += -lX11 -ldl -lrt
-
-WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj -name '*.a')
-LIBS+=libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
-libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
-	$(AR) -rcT $@ $^
-
 
 
 src/%.o: src/%.cpp
