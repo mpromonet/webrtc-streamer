@@ -1,4 +1,4 @@
-Webrtc-streamer
+WebRTC-streamer
 -------------
 
 This is a try to stream a video source through WebRTC.  
