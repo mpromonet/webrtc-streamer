@@ -113,7 +113,7 @@ class PeerConnectionManager {
 	};
 
 	public:
-		PeerConnectionManager(const std::string & stunurl, const std::list<std::string> & urlList);
+		PeerConnectionManager(const std::string & stunurl, const std::string & turnurl, const std::list<std::string> & urlList);
 		virtual ~PeerConnectionManager();
 
 		bool InitializePeerConnection();
@@ -142,6 +142,9 @@ class PeerConnectionManager {
 		std::map<std::string, PeerConnectionObserver* >                           peer_connectionobs_map_;
 		std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >  stream_map_;
 		std::string                                                               stunurl_;
+		std::string                                                               turnurl_;
+		std::string                                                               turnuser_;
+		std::string                                                               turnpass_;
 		const std::list<std::string>                                              urlList_;
 };
 

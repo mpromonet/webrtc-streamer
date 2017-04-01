@@ -35,11 +35,31 @@ const char kSessionDescriptionSdpName[] = "sdp";
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionManager(const std::string & stunurl, const std::list<std::string> & urlList) 
+PeerConnectionManager::PeerConnectionManager(const std::string & stunurl, const std::string & turnurl, const std::list<std::string> & urlList)
 	: peer_connection_factory_(webrtc::CreatePeerConnectionFactory())
 	, stunurl_(stunurl)
+	, turnurl_(turnurl)
 	, urlList_(urlList)
 {
+	if (turnurl_.length() > 0)
+	{
+		std::size_t pos = turnurl_.find('@');
+		if (pos != std::string::npos)
+		{
+			std::string credentials = turnurl_.substr(0, pos);
+			pos = credentials.find(':');
+			if (pos == std::string::npos)
+			{
+				turnuser_ = credentials;
+			}
+			else
+			{
+				turnuser_ = credentials.substr(0, pos);
+				turnpass_ = credentials.substr(pos + 1);
+			}
+			turnurl_ = turnurl_.substr(pos + 1);
+		}
+	}
 }
 
 /* ---------------------------------------------------------------------------
@@ -93,6 +113,15 @@ const Json::Value PeerConnectionManager::getIceServers()
 
 	Json::Value urls;
 	urls.append(url);
+
+	if (turnurl_.length() > 0)
+	{
+		Json::Value turn;
+		turn["url"] = "turn:" + turnurl_;
+		if (turnuser_.length() > 0) turn["username"] = turnuser_;
+		if (turnpass_.length() > 0) turn["credential"] = turnpass_;
+		urls.append(turn);
+	}
 
 	Json::Value iceServers;
 	iceServers["iceServers"] = urls;
@@ -456,7 +485,16 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 	server.username = "";
 	server.password = "";
 	config.servers.push_back(server);
-	
+
+	if (stunurl_.length() > 0)
+	{
+		webrtc::PeerConnectionInterface::IceServer turnserver;
+		turnserver.uri = "turn:" + turnurl_;
+		turnserver.username = turnuser_;
+		turnserver.password = turnpass_;
+		config.servers.push_back(turnserver);
+	}
+
 	webrtc::FakeConstraints constraints;
 	constraints.AddOptional(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp, "true");
             
