@@ -1,0 +1,15 @@
+<html>
+<head>
+<script src="ajax.js" ></script>
+<script src="webrtcstreamer.js" ></script>
+<script>        
+    var webRtcServer      = new WebRtcStreamer("video");
+    window.onload         = function() { webRtcServer.connect(location.search.slice(1)) }
+    window.onbeforeunload = function() { webRtcServer.disconnect() }
+</script>
+</head>
+<body> 
+    <video id="video" />
+</body>
+</html>
+
