@@ -28,13 +28,18 @@ LDFLAGS += -l:libliveMedia.a -l:libgroupsock.a -l:libUsageEnvironment.a -l:libBa
 endif
 endif
 
+ifeq ($(WEBRTCBUILD),Debug)
+	CFLAGS += -DUSE_DEBUG_WEBRTC
+	CIVERWEB_CFLAGS=-D_GLIBCXX_DEBUG=1
+endif
+
 # civetweb
 LIBS+=civetweb/libcivetweb.a
 civetweb/Makefile:
 	git submodule update --init civetweb
 
 civetweb/libcivetweb.a: civetweb/Makefile
-	make lib WITH_CPP=1 -C civetweb
+	make lib WITH_CPP=1 COPT=$(CIVERWEB_CFLAGS) -C civetweb
 
 CFLAGS += -I civetweb/include
 LDFLAGS += -L civetweb -l civetweb
