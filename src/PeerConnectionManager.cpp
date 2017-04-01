@@ -388,6 +388,20 @@ bool PeerConnectionManager::hangUp(const std::string &peerid)
 				std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(url);
 				if (it != stream_map_.end())
 				{
+#if defined(USE_DEBUG_WEBRTC)
+					/* In Debug version of webrtc this code correctly removed video track,
+					 * but unfortunatelly in with Release build of webrtc it crash when
+					 * deleting RTSPVideoCapturer
+					 */
+					while (it->second->GetVideoTracks().size() > 0)
+					{
+						it->second->RemoveTrack(it->second->GetVideoTracks().at(0));
+					}
+					while (it->second->GetAudioTracks().size() > 0)
+					{
+						it->second->RemoveTrack(it->second->GetAudioTracks().at(0));
+					}
+#endif // USE_DEBUG_WEBRTC
 					it->second.release();
 					stream_map_.erase(it);
 				}		
