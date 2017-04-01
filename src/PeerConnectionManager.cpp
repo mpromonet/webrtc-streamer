@@ -500,7 +500,7 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 	server.password = "";
 	config.servers.push_back(server);
 
-	if (stunurl_.length() > 0)
+	if (turnurl_.length() > 0)
 	{
 		webrtc::PeerConnectionInterface::IceServer turnserver;
 		turnserver.uri = "turn:" + turnurl_;
@@ -521,6 +521,7 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 	if (!peer_connection) 
 	{
 		LOG(LERROR) << __FUNCTION__ << "CreatePeerConnection failed";
+		obs = NULL; // TODO: call delete, but it crash !!!
 	}
 	else 
 	{
