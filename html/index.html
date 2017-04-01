@@ -2,36 +2,39 @@
 <head>
 <title>WebRTC Streamer</title>
 <style media="screen" type="text/css">
- .select-editable {
-     position:relative;
-     border:solid grey 1px;
-     width:100%;
-     height:20px;
- }
- .select-editable select {
-     position:absolute;
-     border:none;
-     font-size:14px;
-     top:0px;
-     left:0px;
-     width:100%;
- }
- .select-editable input {
-     position:absolute;
-     border:none;
-     font-size:14px;
-     top:0px;
-     left:0px;
-     width:calc(100% - 14px);
- }
+nav {
+    background-color: #333;
+    overflow: hidden;
+}
+nav a {
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    font-size: 17px;
+}
+nav a:hover {
+    background-color: #ddd;
+    color: black;
+}
+nav a.active {
+    background-color: #4CAF50;
+    color: white;
+}
+video {
+	display:block; 
+	margin: 0 auto;
+}
 </style> 
 <script src="ajax.js" ></script>
 <script src="webrtcstreamer.js" ></script>
-<script>	
-	var webRtcServer = new WebRtcStreamer("remote-video");
+<script>		
+	var webRtcServerList = []
 	
 	// ------------------------------------------
-	// init device list and callback
+	// init device list 
 	// ------------------------------------------	
 	function onGetDeviceList(request) {
 		var deviceList = [];
@@ -44,32 +47,59 @@
 			deviceList.push.apply( deviceList, remoteDeviceList );
 		}
 
-		var urllist = document.getElementById("urlList");
+		var urllist = document.getElementById("menu");
 		for (var dev in deviceList) {
-			var option = document.createElement("option");
+			var option = document.createElement("a");
+			option.href = "javascript:add('" + deviceList[dev] + "')";
 			option.text = deviceList[dev];
-			urllist.add(option);
-		}
-		var url = document.getElementById("url");
-		if (urllist.length > 0) {
-			url.value=urllist[0].value;
-			webRtcServer.connect(url.value);
-		} else {
-			url.value="";
+			option.id   = "nav_" +deviceList[dev];
+			urllist.appendChild(option);
 		}
 	}
+		
+	// ------------------------------------------
+	// add a webrtc client connection
+	// ------------------------------------------	
+	function add(url) {
+		var videoTag = "video_" + url;
+		
+		// add a video element to display webrtc stream
+		if (document.getElementById (videoTag) === null) {
+			var videoelt = document.createElement("video");
+			videoelt.id = videoTag;
+			document.body.appendChild(videoelt);
+		}
+		var videoelt = 	document.getElementById (videoTag);
+		
+		// connect videoelement to webrtc stream
+		var webRtcServer = new WebRtcStreamer(videoTag);
+		webRtcServer.connect(url);
+			
+		// highlight the navigation 
+		var navElt = 	document.getElementById ("nav_" + url);
+		navElt.className = "active";
+
+		videoelt.onclick = function() {
+			// close the connection
+			webRtcServer.disconnect(); 
+			// remove the video element
+			document.body.removeChild(videoelt); 
+			// unhighlight the navigation
+			navElt.className = "";
+		}			
+
+		// register webrtc streamer connection
+		webRtcServerList.push(webRtcServer);		
+	}
 	
-	window.onload = function() { send("/getDeviceList", null, null, onGetDeviceList); } 
-	window.onbeforeunload = function() { webRtcServer.disconnect() };
-	
+	// ------------------------------------------
+	// load/unload callbacks
+	// ------------------------------------------	
+	window.onload         = function() { send("/getDeviceList", null, null, onGetDeviceList); } 
+	window.onbeforeunload = function() { for (var webrtclient in webRtcServerList) { webrtclient.disconnect() } };	
 </script>
 </head>
 <body>
-	<div class="select-editable">
-		<select id="urlList" onchange="this.nextElementSibling.value=this.value; webRtcServer.connect(this.value);"></select>
-		<input type="text" id="url" onkeypress="if (event.keyCode == 13) webRtcServer.connect(this.value)"/>
-	</div>
-	<br>
-	<video style="display:block; margin: 0 auto;" id="remote-video" ></video>
+<nav id="menu"></nav>
 </body>
 </html>
