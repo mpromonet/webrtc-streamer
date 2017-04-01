@@ -49,14 +49,15 @@ video {
 
 		var urllist = document.getElementById("menu");
 		for (var dev in deviceList) {
+			var url = deviceList[dev];
 			var option = document.createElement("a");
-			option.text = deviceList[dev];
-			option.id   = "nav_" +deviceList[dev];
+			option.text = url;
+			option.id   = "nav_" + url;
 			option.onclick = function () { 
 				if (this.className === "active") {
-					del(deviceList[dev]); 
+					del(this.text); 
 				} else {
-					add(deviceList[dev]); 
+					add(this.text); 
 				}
 			}
 			urllist.appendChild(option);
