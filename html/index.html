@@ -24,14 +24,14 @@ nav a.active {
     color: white;
 }
 video {
-	display:block; 
-	margin: 0 auto;
+    display:block; 
+    margin: 0 auto;
 }
 </style> 
 <script src="ajax.js" ></script>
 <script src="webrtcstreamer.js" ></script>
 <script>		
-	var webRtcServerList = []
+	var webRtcServerList = {};
 	
 	// ------------------------------------------
 	// init device list 
@@ -50,11 +50,42 @@ video {
 		var urllist = document.getElementById("menu");
 		for (var dev in deviceList) {
 			var option = document.createElement("a");
-			option.href = "javascript:add('" + deviceList[dev] + "')";
 			option.text = deviceList[dev];
 			option.id   = "nav_" +deviceList[dev];
+			option.onclick = function () { 
+				if (this.className === "active") {
+					del(deviceList[dev]); 
+				} else {
+					add(deviceList[dev]); 
+				}
+			}
 			urllist.appendChild(option);
 		}
+		if (deviceList.length > 0) {
+			add(deviceList[0]);
+		}
+	}
+		
+	// ------------------------------------------
+	// add a webrtc client connection
+	// ------------------------------------------	
+	function del(url) {
+		var videoTag = "video_" + url;
+		
+		// disconnect webrtc connection
+		var webrtcServer = webRtcServerList[url];
+		if (webrtcServer) {
+			webrtcServer.disconnect();		
+			webRtcServerList[url] = undefined;
+		}
+		
+		// remove the video element
+		var videoelt = 	document.getElementById (videoTag);
+		document.body.removeChild(videoelt); 
+		
+		// unhighlight the navigation
+		var navElt = 	document.getElementById ("nav_" + url);
+		navElt.className = "";		
 	}
 		
 	// ------------------------------------------
@@ -79,24 +110,21 @@ video {
 		var navElt = 	document.getElementById ("nav_" + url);
 		navElt.className = "active";
 
-		videoelt.onclick = function() {
-			// close the connection
-			webRtcServer.disconnect(); 
-			// remove the video element
-			document.body.removeChild(videoelt); 
-			// unhighlight the navigation
-			navElt.className = "";
-		}			
-
 		// register webrtc streamer connection
-		webRtcServerList.push(webRtcServer);		
+		webRtcServerList[url] = webRtcServer;		
 	}
 	
 	// ------------------------------------------
 	// load/unload callbacks
 	// ------------------------------------------	
-	window.onload         = function() { send("/getDeviceList", null, null, onGetDeviceList); } 
-	window.onbeforeunload = function() { for (var webrtclient in webRtcServerList) { webrtclient.disconnect() } };	
+	window.onload         = function() { 
+		send("/getDeviceList", null, null, onGetDeviceList); 
+	} 
+	window.onbeforeunload = function() { 
+		for (var url in webRtcServerList) { 
+			webRtcServerList[url].disconnect() 
+		} 
+	};	
 </script>
 </head>
 <body>
