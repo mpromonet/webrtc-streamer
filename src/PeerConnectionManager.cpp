@@ -180,7 +180,7 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 	Json::Value offer;
 	LOG(INFO) << __FUNCTION__;
 	
-	PeerConnectionObserver* peerConnectionObserver = this->CreatePeerConnection();
+	PeerConnectionObserver* peerConnectionObserver = this->CreatePeerConnection(peerid);
 	if (!peerConnectionObserver) 
 	{
 		LOG(LERROR) << "Failed to initialize PeerConnection";
@@ -276,7 +276,7 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 	}
 	else
 	{
-		PeerConnectionObserver* peerConnectionObserver = this->CreatePeerConnection();
+		PeerConnectionObserver* peerConnectionObserver = this->CreatePeerConnection(peerid);
 		if (!peerConnectionObserver) 
 		{
 			LOG(LERROR) << "Failed to initialize PeerConnection";
@@ -498,7 +498,7 @@ bool PeerConnectionManager::InitializePeerConnection()
 /* ---------------------------------------------------------------------------
 **  create a new PeerConnection
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeerConnection() 
+PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeerConnection(const std::string& peerid)
 {
 	webrtc::PeerConnectionInterface::RTCConfiguration config;
 	webrtc::PeerConnectionInterface::IceServer server;
@@ -519,7 +519,7 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 	webrtc::FakeConstraints constraints;
 	constraints.AddOptional(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp, "true");
             
-	PeerConnectionObserver* obs = PeerConnectionObserver::Create();
+	PeerConnectionObserver* obs = PeerConnectionObserver::Create(this, peerid);
 	rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection = peer_connection_factory_->CreatePeerConnection(config,
 							    &constraints,
 							    NULL,
