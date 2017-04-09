@@ -27,7 +27,6 @@ libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 
 # live555helper
 ifneq ($(wildcard $(SYSROOT)/usr/include/liveMedia/liveMedia.hh),)
-ifneq ($(wildcard $(SYSROOT)/usr/lib/libliveMedia.a),)
 LIBS+=live555helper/live555helper.a
 live555helper/Makefile:
 	git submodule update --init live555helper
@@ -42,7 +41,6 @@ CFLAGS += -I $(SYSROOT)/usr/include/liveMedia  -I $(SYSROOT)/usr/include/groupso
 
 LDFLAGS += live555helper/live555helper.a
 LDFLAGS += -l:libliveMedia.a -l:libgroupsock.a -l:libUsageEnvironment.a -l:libBasicUsageEnvironment.a 
-endif
 endif
 
 # civetweb
