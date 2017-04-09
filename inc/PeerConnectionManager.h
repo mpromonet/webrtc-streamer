@@ -88,7 +88,7 @@ class PeerConnectionManager {
 			virtual void OnRenegotiationNeeded()                              {}
 
 			virtual void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
-			virtual void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState state);
+			virtual void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState state) {}
 			virtual void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState state) {
 				LOG(INFO) << __PRETTY_FUNCTION__ << " " << state  << " " << m_peerid;
 				if ( (state == webrtc::PeerConnectionInterface::kIceConnectionFailed)
@@ -99,7 +99,7 @@ class PeerConnectionManager {
 					m_peerConnectionManager->hangUp(m_peerid);
 				}
 			}
-			virtual void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState state);
+			virtual void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState state) {}
 
 			virtual ~PeerConnectionObserver() { 
 				LOG(INFO) << __PRETTY_FUNCTION__;
