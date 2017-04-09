@@ -4,8 +4,13 @@
 <script src="webrtcstreamer.js" ></script>
 <script>        
     var webRtcServer      = new WebRtcStreamer("video");
-    window.onload         = function() { webRtcServer.connect(location.search.slice(1)) }
-    window.onbeforeunload = function() { webRtcServer.disconnect() }
+    var url               = location.search.slice(1);
+    if (url) {
+        window.onload         = function() { webRtcServer.connect(url) }
+        window.onbeforeunload = function() { webRtcServer.disconnect() }
+    } else {
+	alert("WebRTC stream name to connect is missing\n\nUsage :" + window.location + "?<WebRTC stream name>")
+    }
 </script>
 </head>
 <body> 
