@@ -134,7 +134,7 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 		CivetServer::getParam(req_info->query_string, "url", url);
 		std::string options;
 		CivetServer::getParam(req_info->query_string, "options", options);
-		return m_webRtcServer->createOffer(peerid, options, url);
+		return m_webRtcServer->createOffer(peerid, url, options);
 	};
 	m_func["/setAnswer"]             = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
 		const struct mg_request_info *req_info = mg_get_request_info(conn);
