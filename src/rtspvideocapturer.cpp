@@ -21,7 +21,7 @@
 
 uint8_t marker[] = { 0, 0, 0, 1};
 
-RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri) : m_connection(m_env,this,uri.c_str())
+RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, int timeout, bool rtpovertcp) : m_connection(m_env, this, uri.c_str(), timeout, rtpovertcp, 1)
 {
 	LOG(INFO) << "RTSPVideoCapturer" << uri ;
 }

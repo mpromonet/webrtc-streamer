@@ -18,6 +18,7 @@
 
 #ifdef HAVE_LIVE555
 #include "rtspvideocapturer.h"
+#include "CivetServer.h"
 #endif
 
 const char kAudioLabel[] = "audio_label";
@@ -171,7 +172,10 @@ bool PeerConnectionManager::addIceCandidate(const std::string& peerid, const Jso
 	return result;
 }
 
-const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, const std::string & url) 
+/* ---------------------------------------------------------------------------
+** create an offer for a call
+** -------------------------------------------------------------------------*/
+const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, const std::string & url, const std::string & options) 
 {
 	Json::Value offer;
 	LOG(INFO) << __FUNCTION__;
@@ -183,7 +187,7 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 	}
 	else
 	{		
-		if (!this->AddStreams(peerConnectionObserver->getPeerConnection(), url))
+		if (!this->AddStreams(peerConnectionObserver->getPeerConnection(), url, options))
 		{ 
 			LOG(WARNING) << "Can't add stream";
 		}		
@@ -219,6 +223,9 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 	return offer;
 }
 
+/* ---------------------------------------------------------------------------
+** set answer to a call initiated by createOffer
+** -------------------------------------------------------------------------*/
 void PeerConnectionManager::setAnswer(const std::string &peerid, const Json::Value& jmessage)
 {
 	LOG(INFO) << jmessage;	
@@ -254,7 +261,7 @@ void PeerConnectionManager::setAnswer(const std::string &peerid, const Json::Val
 /* ---------------------------------------------------------------------------
 **  auto-answer to a call  
 ** -------------------------------------------------------------------------*/
-const Json::Value PeerConnectionManager::call(const std::string & peerid, const std::string &url, const Json::Value& jmessage) 
+const Json::Value PeerConnectionManager::call(const std::string & peerid, const std::string &url, const std::string & options, const Json::Value& jmessage) 
 {
 	LOG(INFO) << __FUNCTION__;
 	Json::Value answer;
@@ -295,7 +302,7 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 			}
 
 			// add local stream
-			if (!this->AddStreams(peerConnection, url))
+			if (!this->AddStreams(peerConnection, url, options))
 			{
 				LOG(WARNING) << "Can't add stream";
 			}
@@ -391,7 +398,7 @@ bool PeerConnectionManager::hangUp(const std::string &peerid)
 #if defined(USE_DEBUG_WEBRTC)
 					/* In Debug version of webrtc this code correctly removed video track,
 					 * but unfortunatelly in with Release build of webrtc it crash when
-					 * deleting RTSPVideoCapturer
+					 * deleting VideoCapturer
 					 */
 					while (it->second->GetVideoTracks().size() > 0)
 					{
@@ -533,15 +540,24 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 /* ---------------------------------------------------------------------------
 **  get the capturer from its URL
 ** -------------------------------------------------------------------------*/
-cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std::string & url) 
+cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std::string & url, const std::string & options) 
 {
-	LOG(INFO) << "url:" << url;	
+	LOG(INFO) << "url:" << url << " options:" << options;	
 	
 	cricket::VideoCapturer* capturer = NULL;
 	if (url.find("rtsp://") == 0)
 	{
 #ifdef HAVE_LIVE555
-		capturer = new RTSPVideoCapturer(url);
+		int timeout = 10;
+		std::string tmp;
+		if (CivetServer::getParam(options, "timeout", tmp)) {
+			timeout = std::stoi(tmp);
+		}
+		bool rtpovertcp = false;
+		if (CivetServer::getParam(options, "rtpovertcp", tmp)) {
+			rtpovertcp = std::stoi(tmp);
+		}
+		capturer = new RTSPVideoCapturer(url, timeout, rtpovertcp);
 #endif
 	}
 	else
@@ -568,34 +584,18 @@ cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std:
 	}
 	return capturer;
 }
-
-/* ---------------------------------------------------------------------------
-**  Del a stream 
-** -------------------------------------------------------------------------*/
-bool PeerConnectionManager::delStream(const std::string & url) 
-{
-	bool result = false;
-	std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(url);
-	if (it != stream_map_.end())
-	{
-		it->second.release();
-		stream_map_.erase(it);
-		result = true;
-	}
-	return result;
-}
 		
 /* ---------------------------------------------------------------------------
 **  Add a stream to a PeerConnection
 ** -------------------------------------------------------------------------*/
-bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url) 
+bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url, const std::string & options) 
 {
 	bool ret = false;
 	std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(url);
 	if (it == stream_map_.end())
 	{
 		// need to create the strem
-		cricket::VideoCapturer* capturer = OpenVideoCaptureDevice(url);
+		cricket::VideoCapturer* capturer = OpenVideoCaptureDevice(url, options);
 		if (!capturer)
 		{
 			LOG(LS_ERROR) << "Cannot create capturer " << url;

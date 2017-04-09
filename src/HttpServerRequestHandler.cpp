@@ -11,6 +11,9 @@
 
 #include "HttpServerRequestHandler.h"
 
+/* ---------------------------------------------------------------------------
+**  Civet HTTP callback 
+** -------------------------------------------------------------------------*/
 class RequestHandler : public CivetHandler
 {
   public:
@@ -109,12 +112,11 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 		const struct mg_request_info *req_info = mg_get_request_info(conn);
 		std::string peerid;
 		CivetServer::getParam(req_info->query_string, "peerid", peerid);
-		std::string connecturl;
-		CivetServer::getParam(req_info->query_string, "url", connecturl);
 		std::string url;
-		CivetServer::urlDecode(connecturl, url);
-		std::cout << "url:" << url<< std::endl;
-		return m_webRtcServer->call(peerid, url, in);
+		CivetServer::getParam(req_info->query_string, "url", url);
+		std::string options;
+		CivetServer::getParam(req_info->query_string, "options", options);
+		return m_webRtcServer->call(peerid, url, options, in);
 	};
 	
 	m_func["/hangup"]                = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
@@ -128,11 +130,11 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 		const struct mg_request_info *req_info = mg_get_request_info(conn);
 		std::string peerid;
 		CivetServer::getParam(req_info->query_string, "peerid", peerid);
-		std::string connecturl;
-		CivetServer::getParam(req_info->query_string, "url", connecturl);
 		std::string url;
-		CivetServer::urlDecode(connecturl, url);
-		return m_webRtcServer->createOffer(peerid, url);
+		CivetServer::getParam(req_info->query_string, "url", url);
+		std::string options;
+		CivetServer::getParam(req_info->query_string, "options", options);
+		return m_webRtcServer->createOffer(peerid, options, url);
 	};
 	m_func["/setAnswer"]             = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
 		const struct mg_request_info *req_info = mg_get_request_info(conn);
@@ -165,14 +167,6 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 
 	m_func["/getStreamList"] = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
 		return m_webRtcServer->getStreamList();
-	};
-
-	m_func["/delStream"] = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
-		const struct mg_request_info *req_info = mg_get_request_info(conn);
-		std::string connecturl;
-		CivetServer::getParam(req_info->query_string, "url", connecturl);
-		Json::Value answer(m_webRtcServer->delStream(connecturl));
-		return answer;		
 	};
 	
 	m_func["/help"]                  = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 

@@ -26,7 +26,7 @@
 class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::Callback, public rtc::Thread, public webrtc::DecodedImageCallback
 {
 	public:
-		RTSPVideoCapturer(const std::string & uri);		
+		RTSPVideoCapturer(const std::string & uri, int timeout, bool rtpovertcp);		
 
 		// overide RTSPConnection::Callback
 		virtual bool onNewSession(const char* id, const char* media, const char* codec, const char* sdp);		
