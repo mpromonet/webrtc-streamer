@@ -21,20 +21,11 @@
 
 uint8_t marker[] = { 0, 0, 0, 1};
 
-RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri) : m_connection(m_env,this,uri.c_str()), m_decoder(NULL)
+RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, int timeout, bool rtpovertcp) : m_connection(m_env, this, uri.c_str(), timeout, rtpovertcp, 1)
 {
 	LOG(INFO) << "RTSPVideoCapturer" << uri ;
 }
 	  
-RTSPVideoCapturer::~RTSPVideoCapturer() 
-{
-	LOG(INFO) << "~RTSPVideoCapturer";
-	if (m_decoder) 
-	{
-		delete m_decoder;
-	}				
-}
-		
 bool RTSPVideoCapturer::onNewSession(const char* id,const char* media, const char* codec, const char* sdp)
 {
 	LOG(INFO) << "RTSPVideoCapturer::onNewSession" << media << "/" << codec << " " << sdp;
@@ -77,7 +68,7 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 {			
 	LOG(INFO) << "RTSPVideoCapturer:onData size:" << size << " GetCaptureFormat:" << GetCaptureFormat();
 	
-	if (!m_decoder) 
+	if (!m_decoder.get()) 
 	{
 		webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[sizeof(marker)]);
 		if (nalu_type == webrtc::H264::NaluType::kSps)
@@ -94,7 +85,7 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 				cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(25), cricket::FOURCC_H264);
 				SetCaptureFormat(&videoFormat);
 				
-				m_decoder = m_factory.CreateVideoDecoder(webrtc::VideoCodecType::kVideoCodecH264);
+				m_decoder.reset(m_factory.CreateVideoDecoder(webrtc::VideoCodecType::kVideoCodecH264));
 				webrtc::VideoCodec codec_settings;
 				codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecH264;
 				m_decoder->InitDecode(&codec_settings,2);

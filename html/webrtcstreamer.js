@@ -117,7 +117,7 @@ WebRtcStreamer.prototype.onReceiveCandidate = function(request) {
 // ------------------------------------------
 // Connect to WebRtc Stream
 // ------------------------------------------	
-WebRtcStreamer.prototype.connect = function(url) {
+WebRtcStreamer.prototype.connect = function(url, options) {
 	this.disconnect();
 	
 	try {            
@@ -131,7 +131,7 @@ WebRtcStreamer.prototype.connect = function(url) {
 			trace("Create offer:" + JSON.stringify(sessionDescription));
 			
 			streamer.pc.setLocalDescription(sessionDescription
-				, function() { send(streamer.srvurl + "/call?peerid="+ peerid+"&url="+url, null, JSON.stringify(sessionDescription), streamer.onReceiveCall, null, streamer); }
+				, function() { send(streamer.srvurl + "/call?peerid="+ peerid+"&url="+encodeURIComponent(url)+"&options="+encodeURIComponent(options), null, JSON.stringify(sessionDescription), streamer.onReceiveCall, null, streamer); }
 				, function() {} );
 			
 		}, function(error) { 

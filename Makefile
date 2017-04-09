@@ -55,8 +55,8 @@ CFLAGS += -I civetweb/include
 LDFLAGS += -L civetweb -l civetweb
 
 
-src/%.o: src/%.cpp
-	$(CC) -o $@ -c $^ $(CFLAGS) 
+src/%.o: src/%.cpp $(LIBS)
+	$(CC) -o $@ -c $< $(CFLAGS) 
 
 FILES = $(wildcard src/*.cpp)
 $(TARGET): $(subst .cpp,.o,$(FILES)) $(LIBS) 

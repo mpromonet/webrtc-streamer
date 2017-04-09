@@ -138,19 +138,18 @@ class PeerConnectionManager {
 		bool              addIceCandidate(const std::string &peerid, const Json::Value& jmessage);
 		const Json::Value getDeviceList();
 		bool              hangUp(const std::string &peerid);
-		const Json::Value call(const std::string &peerid, const std::string &url, const Json::Value& jmessage);
+		const Json::Value call(const std::string &peerid, const std::string &url, const std::string & options, const Json::Value& jmessage);
 		const Json::Value getIceServers();
 		const Json::Value getPeerConnectionList();
 		const Json::Value getStreamList();
-		bool              delStream(const std::string & url);
-		const Json::Value createOffer(const std::string &peerid, const std::string & url);
+		const Json::Value createOffer(const std::string &peerid, const std::string & url, const std::string & options);
 		void              setAnswer(const std::string &peerid, const Json::Value& jmessage);
 
 
 	protected:
 		PeerConnectionObserver* CreatePeerConnection(const std::string& peerid);
-		bool                    AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url);
-		cricket::VideoCapturer* OpenVideoCaptureDevice(const std::string & url);
+		bool                    AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url, const std::string & options);
+		cricket::VideoCapturer* OpenVideoCaptureDevice(const std::string & url, const std::string & options);
 		bool                    streamStillUsed(const std::string & url);
 
 	protected: 
