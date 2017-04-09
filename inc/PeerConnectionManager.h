@@ -99,7 +99,7 @@ class PeerConnectionManager {
 					m_peerConnectionManager->hangUp(m_peerid);
 				}
 			}
-			virtual void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState state) {}
+			virtual void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState) {}
 
 			virtual ~PeerConnectionObserver() { 
 				LOG(INFO) << __PRETTY_FUNCTION__;
