@@ -16,7 +16,11 @@ A video source could be :
  - V4L2 devices detected by WebRTC capture factory
  - RTSP url that give access to an H264 video stream (need live555)
 
-It is based on WebRTC Native Code Package [http://www.webrtc.org] and use civetweb [https://github.com/civetweb/civetweb] as embedded HTTP server
+Dependencies :
+--------
+It is based on :
+ * WebRTC Native Code Package [http://www.webrtc.org] 
+ * civetweb HTTP server [https://github.com/civetweb/civetweb]
 
 Build WebRTC with H264 support
 -------
