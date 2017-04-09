@@ -61,7 +61,7 @@ Example
 
 You can access to the WebRTC stream coming from an RTSP url using [rtsp2webrtc.html](html/rtsp2webrtc.html) page with the RTSP url as argument, something like:
 
-     https://webrtc-streamer.herokuapp.com/rtsp2webrtc.html?rtsp://217.17.220.110/axis-media/media.amp
+     https://webrtc-streamer.herokuapp.com/webrtcstream.html?rtsp://217.17.220.110/axis-media/media.amp
 
 Embed in a HTML page:
 ------------------------
