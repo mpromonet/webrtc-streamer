@@ -80,7 +80,7 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 		m_cfg.clear();
 		m_cfg.insert(m_cfg.end(), buffer, buffer+size);
 		
-		rtc::Optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(buffer+sizeof(marker)+webrtc::H264::kNaluTypeSize, size-sizeof(marker)-webrtc::H264::kNaluTypeSize);			
+		rtc::Optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(buffer, size);
 		if (!sps)
 		{	
 			LOG(LS_ERROR) << "cannot parse sps" << std::endl;
