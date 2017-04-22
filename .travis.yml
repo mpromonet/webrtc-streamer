@@ -19,7 +19,7 @@ language: cpp
 compiler:
 - gcc
 script:
-- make WEBRTCROOT=.
+- make WEBRTCROOT=webrtc
 deploy:
   provider: heroku
   api_key:
