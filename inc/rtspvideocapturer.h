@@ -20,6 +20,7 @@
 
 #include "webrtc/video_decoder.h"
 #include "webrtc/media/base/videocapturer.h"
+#include "webrtc/media/base/audiosource.h"
 #include "webrtc/media/engine/internaldecoderfactory.h"
 
 
@@ -51,6 +52,7 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 		virtual bool GetPreferredFourccs(std::vector<unsigned int>* fourccs);
 		virtual bool IsScreencast() const { return false; };
 		virtual bool IsRunning() { return this->capture_state() == cricket::CS_RUNNING; }
+		
 	  
 	private:
 		Environment                           m_env;
@@ -58,6 +60,8 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 		cricket::InternalDecoderFactory       m_factory;
 		std::unique_ptr<webrtc::VideoDecoder> m_decoder;
 		std::vector<uint8_t>                  m_cfg;	
+		std::string                           m_h264_id;
+		std::string                           m_pcm_id;
 };
 
 #endif 

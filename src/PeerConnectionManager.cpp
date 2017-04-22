@@ -540,11 +540,11 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 /* ---------------------------------------------------------------------------
 **  get the capturer from its URL
 ** -------------------------------------------------------------------------*/
-cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std::string & url, const std::string & options) 
+std::unique_ptr<cricket::VideoCapturer> PeerConnectionManager::OpenVideoCaptureDevice(const std::string & url, const std::string & options) 
 {
 	LOG(INFO) << "url:" << url << " options:" << options;	
 	
-	cricket::VideoCapturer* capturer = NULL;
+	std::unique_ptr<cricket::VideoCapturer> capturer;
 	if (url.find("rtsp://") == 0)
 	{
 #ifdef HAVE_LIVE555
@@ -557,7 +557,7 @@ cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std:
 		if (CivetServer::getParam(options, "rtpovertcp", tmp)) {
 			rtpovertcp = std::stoi(tmp);
 		}
-		capturer = new RTSPVideoCapturer(url, timeout, rtpovertcp);
+		capturer.reset(new RTSPVideoCapturer(url, timeout, rtpovertcp));
 #endif
 	}
 	else
@@ -576,7 +576,7 @@ cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std:
 					if (url == name)
 					{
 						cricket::WebRtcVideoDeviceCapturerFactory factory;
-						capturer = factory.Create(cricket::Device(name, 0)).release();
+						capturer = factory.Create(cricket::Device(name, 0));
 					}
 				}
 			}
@@ -600,16 +600,17 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 	if (it == stream_map_.end())
 	{
 		// need to create the strem
-		cricket::VideoCapturer* capturer = OpenVideoCaptureDevice(url, options);
+		std::unique_ptr<cricket::VideoCapturer> capturer = OpenVideoCaptureDevice(url, options);
 		if (!capturer)
 		{
 			LOG(LS_ERROR) << "Cannot create capturer " << url;
 		}
 		else
 		{			
-			rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> source = peer_connection_factory_->CreateVideoSource(capturer, NULL);
-			rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(peer_connection_factory_->CreateVideoTrack(kVideoLabel, source));
-			rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(peer_connection_factory_->CreateAudioTrack(kAudioLabel, peer_connection_factory_->CreateAudioSource(NULL)));			
+			rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = peer_connection_factory_->CreateVideoSource(std::move(capturer), NULL);
+			rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(peer_connection_factory_->CreateVideoTrack(kVideoLabel, videoSource));
+			rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource = peer_connection_factory_->CreateAudioSource(NULL);
+			rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(peer_connection_factory_->CreateAudioTrack(kAudioLabel, audioSource));			
 			rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(streamLabel);
 			if (!stream.get())
 			{

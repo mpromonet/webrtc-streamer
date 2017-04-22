@@ -141,10 +141,10 @@ class PeerConnectionManager {
 
 
 	protected:
-		PeerConnectionObserver* CreatePeerConnection(const std::string& peerid);
-		bool                    AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url, const std::string & options);
-		cricket::VideoCapturer* OpenVideoCaptureDevice(const std::string & url, const std::string & options);
-		bool                    streamStillUsed(const std::string & url);
+		PeerConnectionObserver*                 CreatePeerConnection(const std::string& peerid);
+		bool                                    AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url, const std::string & options);
+		std::unique_ptr<cricket::VideoCapturer> OpenVideoCaptureDevice(const std::string & url, const std::string & options);
+		bool                                    streamStillUsed(const std::string & streamLabel);
 
 	protected: 
 		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>                peer_connection_factory_;

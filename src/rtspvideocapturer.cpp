@@ -63,6 +63,12 @@ bool RTSPVideoCapturer::onNewSession(const char* id,const char* media, const cha
 				LOG(WARNING) << "Cannot decode SPS:" << sprop;
 			}
 		}
+		m_h264_id = id;
+		success = true;
+	}
+	else if ( (strcmp(media, "audio") == 0) && (strcmp(codec, "L16") == 0) )
+	{
+		m_pcm_id = id;
 		success = true;
 	}
 	return success;			
@@ -73,64 +79,67 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 	LOG(INFO) << "RTSPVideoCapturer:onData size:" << size << " GetCaptureFormat:" << GetCaptureFormat();
 	
 	int res = 0;
-	webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[sizeof(marker)]);
 	
-	if (nalu_type == webrtc::H264::NaluType::kSps) {
-		LOG(INFO) << "===========================SPS";
-		m_cfg.clear();
-		m_cfg.insert(m_cfg.end(), buffer, buffer+size);
+	if (m_h264_id == id) {	
+		webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[sizeof(marker)]);
 		
-		rtc::Optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(buffer+sizeof(marker)+webrtc::H264::kNaluTypeSize, size-sizeof(marker)-webrtc::H264::kNaluTypeSize);			
-		if (!sps)
-		{	
-			LOG(LS_ERROR) << "cannot parse sps" << std::endl;
+		if (nalu_type == webrtc::H264::NaluType::kSps) {
+			LOG(INFO) << "===========================SPS";
+			m_cfg.clear();
+			m_cfg.insert(m_cfg.end(), buffer, buffer+size);
+			
+			rtc::Optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(buffer+sizeof(marker)+webrtc::H264::kNaluTypeSize, size-sizeof(marker)-webrtc::H264::kNaluTypeSize);			
+			if (!sps)
+			{	
+				LOG(LS_ERROR) << "cannot parse sps" << std::endl;
+				res = -1;
+			}
+			else
+			{	
+				if (m_decoder.get()) {
+					if ( (GetCaptureFormat()->width != sps->width) || (GetCaptureFormat()->height != sps->height) )  {
+						LOG(INFO) << "format changed => set format from " << GetCaptureFormat()->width << "x" << GetCaptureFormat()->height	 << " to " << sps->width << "x" << sps->height << std::endl;
+						m_decoder.reset(NULL);
+					}			
+				}
+				
+				if (!m_decoder.get()) {
+					LOG(INFO) << "set format " << sps->width << "x" << sps->height << std::endl;
+					cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(25), cricket::FOURCC_H264);
+					SetCaptureFormat(&videoFormat);
+					
+					m_decoder.reset(m_factory.CreateVideoDecoder(webrtc::VideoCodecType::kVideoCodecH264));
+					webrtc::VideoCodec codec_settings;
+					codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecH264;
+					m_decoder->InitDecode(&codec_settings,2);
+					m_decoder->RegisterDecodeCompleteCallback(this);						
+				}		
+			}
+		}
+		else if (nalu_type == webrtc::H264::NaluType::kPps) {
+			LOG(INFO) << "===========================PPS";
+			m_cfg.insert(m_cfg.end(), buffer, buffer+size);
+		}
+		else if (m_decoder.get()) {
+			if (nalu_type == webrtc::H264::NaluType::kIdr) {
+				LOG(INFO) << "===========================IDR";
+				uint8_t buf[m_cfg.size() + size];
+				memcpy(buf, m_cfg.data(), m_cfg.size());
+				memcpy(buf+m_cfg.size(), buffer, size);
+				webrtc::EncodedImage input_image(buf, sizeof(buf), sizeof(buf) + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264));
+				res = m_decoder->Decode(input_image, false, NULL);
+			}
+			else {
+				LOG(INFO) << "===========================" << nalu_type;
+				webrtc::EncodedImage input_image(buffer, size, size + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264));
+				res = m_decoder->Decode(input_image, false, NULL);
+			}	
+		} else {
+			LOG(LS_ERROR) << "===========================onData no decoder";
 			res = -1;
 		}
-		else
-		{	
-			if (m_decoder.get()) {
-				if ( (GetCaptureFormat()->width != sps->width) || (GetCaptureFormat()->height != sps->height) )  {
-					LOG(INFO) << "format changed => set format from " << GetCaptureFormat()->width << "x" << GetCaptureFormat()->height	 << " to " << sps->width << "x" << sps->height << std::endl;
-					m_decoder.reset(NULL);
-				}			
-			}
-			
-			if (!m_decoder.get()) {
-				LOG(INFO) << "set format " << sps->width << "x" << sps->height << std::endl;
-				cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(25), cricket::FOURCC_H264);
-				SetCaptureFormat(&videoFormat);
-				
-				m_decoder.reset(m_factory.CreateVideoDecoder(webrtc::VideoCodecType::kVideoCodecH264));
-				webrtc::VideoCodec codec_settings;
-				codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecH264;
-				m_decoder->InitDecode(&codec_settings,2);
-				m_decoder->RegisterDecodeCompleteCallback(this);						
-			}		
-		}
+	} else if (m_pcm_id == id) {
 	}
-	else if (nalu_type == webrtc::H264::NaluType::kPps) {
-		LOG(INFO) << "===========================PPS";
-		m_cfg.insert(m_cfg.end(), buffer, buffer+size);
-	}
-	else if (m_decoder.get()) {
-		if (nalu_type == webrtc::H264::NaluType::kIdr) {
-			LOG(INFO) << "===========================IDR";
-			uint8_t buf[m_cfg.size() + size];
-			memcpy(buf, m_cfg.data(), m_cfg.size());
-			memcpy(buf+m_cfg.size(), buffer, size);
-			webrtc::EncodedImage input_image(buf, sizeof(buf), 2*sizeof(buf));
-			res = m_decoder->Decode(input_image, false, NULL);
-		}
-		else {
-			LOG(INFO) << "===========================" << nalu_type;
-			webrtc::EncodedImage input_image(buffer, size, size + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264));
-			res = m_decoder->Decode(input_image, false, NULL);
-		}	
-	} else {
-		LOG(LS_ERROR) << "===========================onData no decoder";
-		res = -1;
-	}
-	
 				
 	return (res == 0);
 }
