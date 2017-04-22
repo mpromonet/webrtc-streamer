@@ -1,8 +1,9 @@
 dist: trusty
-sudo: required
+addons:
+  apt:
+    packages:
+    - git
 before_install:
-- sudo apt-get update
-- sudo apt-get install git curl
 - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 - export PATH=$PATH:$(pwd)/depot_tools
 - fetch --no-hook webrtc
