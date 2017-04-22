@@ -27,6 +27,9 @@ video {
     display:block; 
     margin: 0 auto;
 }
+h2 {
+    text-align: center; 
+}
 </style> 
 <script src="ajax.js" ></script>
 <script src="webrtcstreamer.js" ></script>
@@ -80,6 +83,10 @@ video {
 			webRtcServerList[url] = undefined;
 		}
 		
+		// remove the video title element
+		var videotitleelt = 	document.getElementById ("title_" + url);
+		document.body.removeChild(videotitleelt); 
+		
 		// remove the video element
 		var videoelt = 	document.getElementById (videoTag);
 		document.body.removeChild(videoelt); 
@@ -97,6 +104,10 @@ video {
 		
 		// add a video element to display webrtc stream
 		if (document.getElementById (videoTag) === null) {
+			var nameelt = document.createElement("h2");
+			nameelt.id = "title_" + url
+			nameelt.innerHTML = url;
+			document.body.appendChild(nameelt);
 			var videoelt = document.createElement("video");
 			videoelt.id = videoTag;
 			document.body.appendChild(videoelt);
@@ -105,7 +116,7 @@ video {
 		
 		// connect videoelement to webrtc stream
 		var webRtcServer = new WebRtcStreamer(videoTag);
-		webRtcServer.connect(url);
+		webRtcServer.connect(url, "timeout=20&rtpovertcp=1");
 			
 		// highlight the navigation 
 		var navElt = 	document.getElementById ("nav_" + url);
