@@ -1,4 +1,4 @@
-CC = $(CROSS)g++ $(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
+CXX = $(CROSS)g++ $(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
 AR = $(CROSS)ar
 CFLAGS = -Wall -pthread -g -std=c++11 -Iinc
 LDFLAGS = -pthread 
@@ -56,11 +56,11 @@ LDFLAGS += -L civetweb -l civetweb
 
 
 src/%.o: src/%.cpp $(LIBS)
-	$(CC) -o $@ -c $< $(CFLAGS) 
+	$(CXX) -o $@ -c $< $(CFLAGS) 
 
 FILES = $(wildcard src/*.cpp)
 $(TARGET): $(subst .cpp,.o,$(FILES)) $(LIBS) 
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:
 	rm -f src/*.o libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a $(TARGET)
