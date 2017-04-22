@@ -32,6 +32,7 @@ bool RTSPVideoCapturer::onNewSession(const char* id,const char* media, const cha
 	bool success = false;
 	if ( (strcmp(media, "video") == 0) && (strcmp(codec, "H264") == 0) )
 	{
+		m_h264_id = id;
 		const char* pattern="sprop-parameter-sets=";
 		const char* sprop=strstr(sdp, pattern);
 		if (sprop)
@@ -63,7 +64,6 @@ bool RTSPVideoCapturer::onNewSession(const char* id,const char* media, const cha
 				LOG(WARNING) << "Cannot decode SPS:" << sprop;
 			}
 		}
-		m_h264_id = id;
 		success = true;
 	}
 	else if ( (strcmp(media, "audio") == 0) && (strcmp(codec, "L16") == 0) )
