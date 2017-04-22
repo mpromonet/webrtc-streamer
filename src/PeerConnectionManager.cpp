@@ -348,7 +348,7 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 	return answer;
 }
 
-bool PeerConnectionManager::streamStillUsed(const std::string & url)
+bool PeerConnectionManager::streamStillUsed(const std::string & streamLabel)
 {
 	bool stillUsed = false;
 	for (auto it: peer_connectionobs_map_) 
@@ -357,7 +357,7 @@ bool PeerConnectionManager::streamStillUsed(const std::string & url)
 		rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
 		for (unsigned int i = 0; i<localstreams->count(); i++)
 		{			
-			if (localstreams->at(i)->label() == url)
+			if (localstreams->at(i)->label() == streamLabel)
 			{
 				stillUsed = true;
 				break;
@@ -386,13 +386,13 @@ bool PeerConnectionManager::hangUp(const std::string &peerid)
 		Json::Value streams;
 		for (unsigned int i = 0; i<localstreams->count(); i++)
 		{
-			std::string url = localstreams->at(i)->label();
+			std::string streamLabel = localstreams->at(i)->label();
 			
-			bool stillUsed = this->streamStillUsed(url);
+			bool stillUsed = this->streamStillUsed(streamLabel);
 			if (!stillUsed) 
 			{
-				LOG(LS_ERROR) << "Close PeerConnection no more used " << url;
-				std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(url);
+				LOG(LS_ERROR) << "Close PeerConnection no more used " << streamLabel;
+				std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(streamLabel);
 				if (it != stream_map_.end())
 				{
 #if defined(USE_DEBUG_WEBRTC)
@@ -591,7 +591,12 @@ cricket::VideoCapturer* PeerConnectionManager::OpenVideoCaptureDevice(const std:
 bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url, const std::string & options) 
 {
 	bool ret = false;
-	std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(url);
+	
+	// compute stream label removing space because SDP use label 
+	std::string streamLabel = url;
+	streamLabel.erase(std::remove_if(streamLabel.begin(), streamLabel.end(), isspace), streamLabel.end());
+	
+	std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(streamLabel);
 	if (it == stream_map_.end())
 	{
 		// need to create the strem
@@ -601,11 +606,11 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 			LOG(LS_ERROR) << "Cannot create capturer " << url;
 		}
 		else
-		{
+		{			
 			rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> source = peer_connection_factory_->CreateVideoSource(capturer, NULL);
 			rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(peer_connection_factory_->CreateVideoTrack(kVideoLabel, source));
-			rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(peer_connection_factory_->CreateAudioTrack(kAudioLabel, peer_connection_factory_->CreateAudioSource(NULL)));
-			rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(url);
+			rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(peer_connection_factory_->CreateAudioTrack(kAudioLabel, peer_connection_factory_->CreateAudioSource(NULL)));			
+			rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(streamLabel);
 			if (!stream.get())
 			{
 				LOG(LS_ERROR) << "Cannot create stream";
@@ -623,7 +628,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 				else
 				{
 					LOG(INFO) << "Adding Stream to map";
-					stream_map_[url] = stream;
+					stream_map_[streamLabel] = stream;
 				}
 			}
 		}
@@ -631,7 +636,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 	}
 	
 	
-	it = stream_map_.find(url);
+	it = stream_map_.find(streamLabel);
 	if (it != stream_map_.end())
 	{
 		if (!peer_connection->AddStream(it->second)) 
