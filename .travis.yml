@@ -1,14 +1,20 @@
-before_install: 
+dist: trusty
+sudo: required
+before_install:
 - sudo apt-get update
 - sudo apt-get install git curl
-- curl https://src.chromium.org/svn/trunk/src/build/install-build-deps.sh -o install-build-deps.sh
-- sudo /bin/bash ./install-build-deps.sh --no-prompt --no-nacl --no-chromeos-fonts --no-arm
 - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 - export PATH=$PATH:$(pwd)/depot_tools
-- fetch --no-history webrtc
-- ninja -C src/out/Release
+- fetch --no-hook webrtc
+- cd webrtc && gclient sync
+- cd webrtc/src && gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false'
+- ninja -C webrtc/src/out/Release
 language: cpp
 compiler:
 - gcc
-script: 
+script:
 - make WEBRTCROOT=.
+deploy:
+  provider: heroku
+  api_key:
+    secure: KhZVpH3MqZxcarJMMku96twpNJw0qeXE8i5gz0hydR7i31NSUl4M69r8uRk6kBiVl7lm7kCTCONE+18cbqLKf1jc3pFV7y3nf178xY6St0NUbsjuYart1EAEwSlZMMw1cGy3Qd3YDn/xKG2+hpNbpW4MVyZ6abYtYt14rV/Pcoo=
