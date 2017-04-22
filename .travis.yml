@@ -7,10 +7,14 @@ before_install:
 - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 - export PATH=$PATH:$(pwd)/depot_tools
 - mkdir webrtc
-- cd webrtc && fetch --nohooks webrtc
-- cd webrtc && gclient sync
-- cd webrtc/src && gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false'
-- ninja -C webrtc/src/out/Release
+- pushd webrtc
+- fetch --nohooks webrtc
+- gclient sync
+- pushd src
+- gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false'
+- ninja -C out/Release
+- popd
+- popd
 language: cpp
 compiler:
 - gcc
