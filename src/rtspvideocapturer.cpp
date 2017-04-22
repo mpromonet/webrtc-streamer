@@ -123,7 +123,7 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 		}
 		else {
 			LOG(INFO) << "===========================" << nalu_type;
-			webrtc::EncodedImage input_image(buffer, size, 2*size);
+			webrtc::EncodedImage input_image(buffer, size, size + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264));
 			res = m_decoder->Decode(input_image, false, NULL);
 		}	
 	} else {
