@@ -1,3 +1,5 @@
+[![Build status](https://travis-ci.org/mpromonet/webrtc-streamer.png)](https://travis-ci.org/mpromonet/webrtc-streamer)
+
 WebRTC-streamer
 -------------
 
@@ -63,7 +65,7 @@ Example
 
 [Live Demo](https://webrtc-streamer.herokuapp.com/)
 
-You can access to the WebRTC stream coming from an RTSP url using [rtsp2webrtc.html](html/webrtcstream.html) page with the RTSP url as argument, something like:
+You can access to the WebRTC stream coming from an RTSP url using [webrtcstream.html](html/webrtcstream.html) page with the RTSP url as argument, something like:
 
      https://webrtc-streamer.herokuapp.com/webrtcstream.html?rtsp://217.17.220.110/axis-media/media.amp
 
