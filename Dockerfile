@@ -8,10 +8,9 @@ RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 ENV PATH /app/depot_tools:$PATH
 RUN mkdir /webrtc
 RUN cd /webrtc && fetch --no-history --nohooks webrtc
-RUN cd /webrtc/src && git checkout master
 RUN cd /webrtc && gclient sync
-RUN cd /webrtc/src && gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false use_gold=false'
-RUN cd /webrtc/src && ninja -C out/Release
+RUN cd /webrtc/src && gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false'
+RUN cd /webrtc/src && ninja -C out/Release -j 4
 
 # Build webrtc-streamer
 ADD . /app
@@ -21,4 +20,4 @@ RUN make
 EXPOSE 8000
 
 # Run when the container launches
-CMD "./webrtc-streamer" "rtsp://217.17.220.110/axis-media/media.amp"
+CMD "./webrtc-streamer*" "rtsp://217.17.220.110/axis-media/media.amp"
