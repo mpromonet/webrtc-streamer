@@ -39,13 +39,12 @@ h2 {
 	// ------------------------------------------
 	// init device list 
 	// ------------------------------------------	
-	function onGetDeviceList(request) {
+	function onGetDeviceList(remoteDeviceList) {
 		var deviceList = [];
                 var argurl = location.search.slice(1);
                 if (argurl) {
 			deviceList.push( [argurl] );
 		}
-		var remoteDeviceList = JSON.parse(request.responseText);
 		if (remoteDeviceList) {
 			deviceList.push.apply( deviceList, remoteDeviceList );
 		}
@@ -116,7 +115,7 @@ h2 {
 		
 		// connect videoelement to webrtc stream
 		var webRtcServer = new WebRtcStreamer(videoTag);
-		webRtcServer.connect(url, "timeout=20&rtpovertcp=1");
+		webRtcServer.connect(url, "timeout=20");
 			
 		// highlight the navigation 
 		var navElt = 	document.getElementById ("nav_" + url);

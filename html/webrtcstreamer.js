@@ -25,9 +25,6 @@ function WebRtcStreamer (videoElement, srvurl) {
 
 	// getIceServers
 	var iceServers = sendSync('/getIceServers');
-	if (iceServers) {
-		iceServers = JSON.parse(iceServers);
-	}
 	this.pcConfig         = iceServers || {'iceServers': [] };
 }
  
@@ -60,7 +57,7 @@ WebRtcStreamer.prototype.createPeerConnection = function() {
 // ------------------------------------------
 WebRtcStreamer.prototype.onIceCandidate = function (event) {
 	if (event.candidate) {
-		send(this.srvurl + "/addIceCandidate?peerid="+this.pc.peerid,null,JSON.stringify(event.candidate));
+		send(this.srvurl + "/addIceCandidate?peerid="+this.pc.peerid, null, event.candidate);
 	} 
 	else {
 		trace("End of candidates.");
@@ -86,10 +83,9 @@ WebRtcStreamer.prototype.onTrack = function(event) {
 // ------------------------------------------
 // AJAX /call callback
 // ------------------------------------------		
-WebRtcStreamer.prototype.onReceiveCall = function(request) {
+WebRtcStreamer.prototype.onReceiveCall = function(dataJson) {
 	var streamer = this;
-	trace("offer: " + request.responseText);
-	var dataJson = JSON.parse(request.responseText);
+	trace("offer: " + JSON.stringify(dataJson));
 	var peerid = this.pc.peerid;
 	this.pc.setRemoteDescription(new RTCSessionDescription(dataJson)
 		, function()      { send  (streamer.srvurl + "/getIceCandidate?peerid="+peerid, null, null, streamer.onReceiveCandidate, null, streamer); }
@@ -99,9 +95,8 @@ WebRtcStreamer.prototype.onReceiveCall = function(request) {
 // ------------------------------------------
 // AJAX /getIceCandidate callback
 // ------------------------------------------		
-WebRtcStreamer.prototype.onReceiveCandidate = function(request) {
-	trace("candidate: " + request.responseText);
-	var dataJson = JSON.parse(request.responseText);
+WebRtcStreamer.prototype.onReceiveCandidate = function(dataJson) {
+	trace("candidate: " + JSON.stringify(dataJson));
 	if (dataJson) {
 		for (var i=0; i<dataJson.length; i++) {
 			var candidate = new RTCIceCandidate(dataJson[i]);
@@ -131,7 +126,7 @@ WebRtcStreamer.prototype.connect = function(url, options) {
 			trace("Create offer:" + JSON.stringify(sessionDescription));
 			
 			streamer.pc.setLocalDescription(sessionDescription
-				, function() { send(streamer.srvurl + "/call?peerid="+ peerid+"&url="+encodeURIComponent(url)+"&options="+encodeURIComponent(options), null, JSON.stringify(sessionDescription), streamer.onReceiveCall, null, streamer); }
+				, function() { send(streamer.srvurl + "/call?peerid="+ peerid+"&url="+encodeURIComponent(url)+"&options="+encodeURIComponent(options), null, sessionDescription, streamer.onReceiveCall, null, streamer); }
 				, function() {} );
 			
 		}, function(error) { 

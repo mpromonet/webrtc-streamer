@@ -1,0 +1,109 @@
+<html>
+<head>
+<script src="ajax.js" ></script>
+<script src="webrtcstreamer.js" ></script>
+<script>        
+	function write(text) {
+		var textNode = document.createTextNode(text);
+		document.body.appendChild(textNode);
+		var textNode = document.createElement("br");
+		document.body.appendChild(textNode);
+	}
+
+	function JoinJanusVideoRoom (janusUrl) {	
+		this.sessionId;
+		this.pluginsId;
+		this.jsep;				
+		this.peerid = Math.random().toString() ;
+		this.janusUrl = janusUrl;
+	}
+		
+	JoinJanusVideoRoom.prototype.connect = function(url) {
+		send("/createOffer?peerid="+ this.peerid+"&url="+encodeURIComponent(url), null, null, this.onCreateOffer, null, this); 
+	}
+
+	JoinJanusVideoRoom.prototype.onSendCandidate = function(dataJson) {
+		write("onSendCandidate answer:" + JSON.stringify(dataJson))	
+	}
+
+	JoinJanusVideoRoom.prototype.poll = function(dataJson) {
+		if (dataJson) {
+			write("poll evt:" + JSON.stringify(dataJson))		
+		}
+		send(this.janusUrl + "/" + this.sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, this.poll, null, this);
+	}
+
+	JoinJanusVideoRoom.prototype.onReceiveCandidate = function(dataJson) {
+		write("onReceiveCandidate answer:" + JSON.stringify(dataJson))	
+		
+		for (var i=0; i<dataJson.length; i++) {
+			var candidate = new RTCIceCandidate(dataJson[i]);
+
+			var msg = { "janus": "trickle", "candidate": candidate, "transaction": Math.random().toString()  };
+			send(this.janusUrl + "/" + this.sessionId + "/" + this.pluginid, null, msg,  this.onSendCandidate, null, this);		
+		}
+		
+		var dataJson = sendSync(this.janusUrl + "/" + this.sessionId + "?rid=" + new Date().getTime() + "&maxev=1");
+		write("onReceiveCandidate evt:" + JSON.stringify(dataJson))
+		
+		this.poll();
+	}
+		
+	JoinJanusVideoRoom.prototype.onSetAnswer = function(dataJson) {
+		write("onSetAnswer answer:" + JSON.stringify(dataJson))	
+		
+		send("/getIceCandidate?peerid="+this.peerid, null, null, this.onReceiveCandidate, null, this);		
+	}
+
+	JoinJanusVideoRoom.prototype.onConfigured = function(dataJson) {
+		write("onConfigured list:" + JSON.stringify(dataJson))	
+	
+		var dataJson = sendSync(this.janusUrl + "/" + this.sessionId + "?rid=" + new Date().getTime() + "&maxev=1");
+		write("onConfigured evt:" + JSON.stringify(dataJson))
+		
+		send("/setAnswer?peerid="+ this.peerid, null, dataJson.jsep, this.onSetAnswer, null, this); 						
+	}
+
+	JoinJanusVideoRoom.prototype.onJoinList = function(dataJson) {
+		write("onJoinList list:" + JSON.stringify(dataJson))
+	
+		var answer = sendSync(this.janusUrl + "/" + this.sessionId + "?rid=" + new Date().getTime() + "&maxev=1");
+		write("onJoinList evt:" + JSON.stringify(answer))
+		
+		var msg = { "janus": "message", "body": {"request": "publish", "video": true, "audio": false}, "jsep": this.jsep, "transaction": Math.random().toString() };		
+		send(this.janusUrl + "/" + this.sessionId + "/" + this.pluginid, null, msg,  this.onConfigured, null, this);
+	}
+
+	JoinJanusVideoRoom.prototype.onPluginsAttached = function(dataJson) {
+		this.pluginid = dataJson.data.id;
+		write("onPluginsAttached pluginid:" + this.pluginid)
+		
+		var join = {"janus":"message","body":{"request":"join","room":1234,"ptype":"publisher","display":"cn"},"transaction":Math.random().toString()}
+		send(this.janusUrl + "/" + this.sessionId + "/" + this.pluginid, null, join,  this.onJoinList, null, this );
+	}
+	
+	JoinJanusVideoRoom.prototype.onCreateSession = function(dataJson) {
+		this.sessionId = dataJson.data.id;
+		write("onCreateSession sessionId:" + this.sessionId)
+		
+		var attach = { "janus": "attach", "plugin": "janus.plugin.videoroom", "transaction": Math.random().toString() };			
+		send(this.janusUrl + "/" + this.sessionId, null, attach, this.onPluginsAttached, null, this );
+	}
+    
+	JoinJanusVideoRoom.prototype.onCreateOffer = function(dataJson) {
+		this.jsep = dataJson;
+		write("onCreateOffer sdp:" + JSON.stringify(this.jsep))
+	
+		var createReq = {janus: "create", transaction: Math.random().toString() }
+		send(this.janusUrl, null, createReq, this.onCreateSession, null, this);
+	}
+    
+	var janus = new JoinJanusVideoRoom("http://pi2.local:8088/janus");
+	janus.connect("rtsp://pi2.local:8554/unicast");
+    
+</script>
+</head>
+<body> 
+</body>
+</html>
+
