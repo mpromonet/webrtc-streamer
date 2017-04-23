@@ -4,6 +4,7 @@ addons:
     packages:
     - git
 before_install:
+- pushd ..
 - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 - export PATH=$PATH:$(pwd)/depot_tools
 - mkdir webrtc
@@ -11,16 +12,18 @@ before_install:
 - fetch --nohooks webrtc
 - gclient sync
 - pushd src
-- gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false'
+- gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false use_gold=false'
 - ninja -C out/Release
+- popd
 - popd
 - popd
 language: cpp
 compiler:
 - gcc
 script:
-- make WEBRTCROOT=webrtc
+- make 
 deploy:
   provider: heroku
+  skip_cleanup: true
   api_key:
     secure: KhZVpH3MqZxcarJMMku96twpNJw0qeXE8i5gz0hydR7i31NSUl4M69r8uRk6kBiVl7lm7kCTCONE+18cbqLKf1jc3pFV7y3nf178xY6St0NUbsjuYart1EAEwSlZMMw1cGy3Qd3YDn/xKG2+hpNbpW4MVyZ6abYtYt14rV/Pcoo=
