@@ -12,7 +12,7 @@ before_install:
 - fetch --nohooks webrtc
 - gclient sync
 - pushd src
-- gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false use_gold=false'
+- gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false'
 - ninja -C out/Release
 - popd
 - popd
