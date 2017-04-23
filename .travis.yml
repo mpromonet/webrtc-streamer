@@ -7,6 +7,12 @@ addons:
     - git
 before_install:
 - pushd ..
+# build live555
+- wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -
+- pushd live
+- ./genMakefiles linux
+- make install PREFIX=${PREFIX}
+- popd
 # build WebRTC
 - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 - export PATH=$PATH:$(pwd)/depot_tools
@@ -19,11 +25,6 @@ before_install:
 - ninja -C out/Release
 - popd
 - popd
-# build live555
-- wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -
-- pushd live
-- ./genMakefiles linux
-- make install PREFIX=${PREFIX}
 #
 - popd
 language: cpp
