@@ -4,6 +4,7 @@ CFLAGS = -Wall -pthread -g -std=c++11 -Iinc
 LDFLAGS = -pthread 
 WEBRTCROOT?=../webrtc
 WEBRTCBUILD?=Release
+PREFIX?=/usr
 
 TARGET = webrtc-server_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD)
 all: $(TARGET)
@@ -26,7 +27,7 @@ libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 	$(AR) -rcT $@ $^
 
 # live555helper
-ifneq ($(wildcard $(SYSROOT)/usr/include/liveMedia/liveMedia.hh),)
+ifneq ($(wildcard $(SYSROOT)/$(PREFIX)/include/liveMedia/liveMedia.hh),)
 LIBS+=live555helper/live555helper.a
 live555helper/Makefile:
 	git submodule update --init live555helper
@@ -37,10 +38,10 @@ live555helper/live555helper.a: live555helper/Makefile
 
 CFLAGS += -DHAVE_LIVE555
 CFLAGS += -I live555helper/inc
-CFLAGS += -I $(SYSROOT)/usr/include/liveMedia  -I $(SYSROOT)/usr/include/groupsock -I $(SYSROOT)/usr/include/UsageEnvironment -I $(SYSROOT)/usr/include/BasicUsageEnvironment/
+CFLAGS += -I $(SYSROOT)/$(PREFIX)/include/liveMedia  -I $(SYSROOT)/$(PREFIX)/include/groupsock -I $(SYSROOT)/$(PREFIX)/include/UsageEnvironment -I $(SYSROOT)/$(PREFIX)/include/BasicUsageEnvironment/
 
 LDFLAGS += live555helper/live555helper.a
-LDFLAGS += -l:libliveMedia.a -l:libgroupsock.a -l:libUsageEnvironment.a -l:libBasicUsageEnvironment.a 
+LDFLAGS += -L $(SYSROOT)/$(PREFIX)/lib -l:libliveMedia.a -l:libgroupsock.a -l:libUsageEnvironment.a -l:libBasicUsageEnvironment.a 
 endif
 
 # civetweb

@@ -1,27 +1,36 @@
 dist: trusty
+env:
+  PREFIX=/tmp
 addons:
   apt:
     packages:
     - git
 before_install:
 - pushd ..
+# build WebRTC
 - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 - export PATH=$PATH:$(pwd)/depot_tools
 - mkdir webrtc
 - pushd webrtc
-- fetch --nohooks webrtc
+- fetch --no-history --nohooks webrtc
 - gclient sync
 - pushd src
 - gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false'
 - ninja -C out/Release
 - popd
 - popd
+# build live555
+- wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -
+- pushd live
+- ./genMakefiles linux
+- make install PREFIX=${PREFIX}
+#
 - popd
 language: cpp
 compiler:
 - gcc
 script:
-- make 
+- make PREFIX=${PREFIX}
 deploy:
   provider: heroku
   skip_cleanup: true
