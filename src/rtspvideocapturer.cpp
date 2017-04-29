@@ -13,8 +13,6 @@
 #include "webrtc/base/logging.h"
 #include "webrtc/base/optional.h"
 
-#include "webrtc/common_video/h264/sps_parser.h"
-#include "webrtc/common_video/h264/h264_common.h"
 #include "webrtc/modules/video_coding/h264_sprop_parameter_sets.h"
 
 #include "rtspvideocapturer.h"

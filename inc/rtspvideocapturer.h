@@ -18,7 +18,7 @@
 
 #include "webrtc/base/thread.h"
 
-#include "webrtc/video_decoder.h"
+#include "webrtc/api/video_codecs/video_decoder.h"
 #include "webrtc/media/base/videocapturer.h"
 #include "webrtc/media/base/audiosource.h"
 #include "webrtc/media/engine/internaldecoderfactory.h"
