@@ -40,6 +40,11 @@
 		var dataJson = sendSync(this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1");
 		write("onReceiveCandidate evt:" + JSON.stringify(dataJson))
 		
+		window.setInterval( function() {
+			var msg = { "janus": "keepalive", "session_id": sessionId, "transaction": Math.random().toString()  };
+			send(this.janusUrl + "/" + sessionId, null, msg);
+		}, 10000);
+		
 		this.poll(null, sessionId);
 	}
 		

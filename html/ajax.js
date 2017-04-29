@@ -11,18 +11,26 @@ function trace(txt) {
 function send(method,headers,data,onSuccess,onFailure,scope) {
 	
 	trace("HTTP call "+ method);
-	try {
-		var r = new XMLHttpRequest();
-		r.open("POST", method, true);
-		r.setRequestHeader("Content-Type", "text/plain");
-		if (headers) {
-			for (key in headers) {
-				r.setRequestHeader(key, headers[key]);
-			}
+	var request = new XMLHttpRequest();
+	var verb = 'GET';
+	if (data) {
+		verb = 'POST';
+	}	
+	var async = (!onSuccess) || (!onFailure);
+	request.open(verb, method, async);
+	if (headers) {
+		for (key in headers) {
+			request.setRequestHeader(key, headers[key]);
 		}
-		r.onreadystatechange = function() {
-			if (this.readyState == 4) {
-				if ( (this.status == 200) && onSuccess ) {
+	}
+	if (data) {
+		request.setRequestHeader("Content-Type", "text/plain");
+		data = JSON.stringify(data);
+	}
+	if (async) {
+		request.onreadystatechange = function() {
+			if (this.readyState === 4) {
+				if ( (this.status === 200) && onSuccess ) {
 					onSuccess.call(scope,JSON.parse(this.responseText));
 				}
 				else if (onFailure) {
@@ -30,21 +38,14 @@ function send(method,headers,data,onSuccess,onFailure,scope) {
 				}
 			}			
 		}
-		if (data) {
-			data = JSON.stringify(data);
-		}
-		r.send(data);
-		r = null;
-	} catch (e) {
-		trace("send to peer:" + peerid + " error: " + e.description);
 	}
+	request.send(data);
+	return request;
 }
 
-function sendSync(method) {
+function sendSync(method,headers,data) {
 	var answer = null;
-	var request = new XMLHttpRequest();
-	request.open('GET', method, false);  
-	request.send(null);
+	var request = send(method, headers, data);
 	if (request.status === 200) {
 		answer = JSON.parse(request.responseText);
 	}
