@@ -55,6 +55,19 @@ civetweb/libcivetweb.a: civetweb/Makefile
 CFLAGS += -I civetweb/include
 LDFLAGS += -L civetweb -l civetweb
 
+#h264bitstream
+LIBS+=h264bitstream/.libs/libh264bitstream.a
+h264bitstream/Makefile:
+	git submodule update --init h264bitstream
+	cd h264bitstream && autoreconf -i
+	cd h264bitstream && ./configure 
+	
+
+h264bitstream/.libs/libh264bitstream.a: h264bitstream/Makefile
+	make -C h264bitstream
+
+CFLAGS += -I h264bitstream
+LDFLAGS += h264bitstream/.libs/libh264bitstream.a
 
 src/%.o: src/%.cpp $(LIBS)
 	$(CXX) -o $@ -c $< $(CFLAGS) 

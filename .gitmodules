@@ -4,3 +4,6 @@
 [submodule "civetweb"]
 	path = civetweb
 	url = https://github.com/civetweb/civetweb
+[submodule "h264bitstream"]
+	path = h264bitstream
+	url = https://github.com/aizvorski/h264bitstream

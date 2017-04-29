@@ -23,11 +23,13 @@
 #include "webrtc/media/base/audiosource.h"
 #include "webrtc/media/engine/internaldecoderfactory.h"
 
+#include "h264_stream.h"
 
 class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::Callback, public rtc::Thread, public webrtc::DecodedImageCallback
 {
 	public:
 		RTSPVideoCapturer(const std::string & uri, int timeout, bool rtpovertcp);		
+		virtual ~RTSPVideoCapturer();
 
 		// overide RTSPConnection::Callback
 		virtual bool onNewSession(const char* id, const char* media, const char* codec, const char* sdp);		
@@ -62,6 +64,7 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 		std::vector<uint8_t>                  m_cfg;	
 		std::string                           m_h264_id;
 		std::string                           m_pcm_id;
+                h264_stream_t*                        m_h264; 
 };
 
 #endif 
