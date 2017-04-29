@@ -12,9 +12,15 @@ RUN cd /webrtc && gclient sync
 RUN cd /webrtc/src && gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false'
 RUN cd /webrtc/src && ninja -C out/Release -j 4
 
+# Build live555
+RUN wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -
+RUN cd live && ./genMakefiles linux
+RUN cd live && make install PREFIX=/tmp
+
+
 # Build webrtc-streamer
 ADD . /app
-RUN make 
+RUN make PREFIX=/tmp
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
