@@ -24,6 +24,8 @@ endif
 LDFLAGS += -lX11 -ldl -lrt
 
 WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj -name '*.a')
+WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/third_party/jsoncpp -name '*.o')
+WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/webrtc/base/rtc_json -name '*.o')
 LIBS+=libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
 libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 	$(AR) -rcT $@ $^
@@ -52,7 +54,7 @@ civetweb/Makefile:
 	git submodule update --init civetweb
 
 civetweb/libcivetweb.a: civetweb/Makefile
-	make lib WITH_CPP=1 COPT="$(CFLAGS)" -C civetweb
+	make lib WITH_CPP=1 COPT="-std=c++11" -C civetweb
 
 CFLAGS += -I civetweb/include
 LDFLAGS += -L civetweb -l civetweb
@@ -84,7 +86,8 @@ $(TARGET): $(subst .cpp,.o,$(FILES)) $(LIBS)
 clean:
 	rm -f src/*.o libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a $(TARGET)
 	make -C civetweb clean
-	make -C live555helper clean
+	make -C h264bitstream clean
+	make -k -C live555helper clean
 
 install:
 	install -m 0755 $(TARGET) /usr/local/bin
