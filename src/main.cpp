@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 	defaultAddress.append(std::to_string(defaultPort));
 	
 	int c = 0;     
-	while ((c = getopt (argc, argv, "hH:v::w:" "t:S:s::")) != -1)
+	while ((c = getopt (argc, argv, "hV" "H:v::w:" "t:S:s::")) != -1)
 	{
 		switch (c)
 		{
@@ -49,6 +49,11 @@ int main(int argc, char* argv[])
 			case 't': turnurl = optarg; break;
 			case 'S': localstunurl = optarg; stunurl = localstunurl; break;
 			case 's': localstunurl = NULL; if (optarg) stunurl = optarg; break;
+			
+			case 'V':
+				std::cout << VERSION << std::endl;
+				exit(0);			
+			break;	
 			
 			case 'h':
 			default:

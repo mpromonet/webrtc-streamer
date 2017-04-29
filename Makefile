@@ -5,11 +5,13 @@ LDFLAGS = -pthread
 WEBRTCROOT?=../webrtc
 WEBRTCBUILD?=Release
 PREFIX?=/usr
+VERSION=$(shell git describe --tags --always --dirty)
 
 TARGET = webrtc-server_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD)
 all: $(TARGET)
 
 # webrtc
+VERSION+=webrtc@$(shell git -C $(WEBRTCROOT)/src describe --tags --always --dirty)
 WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
 
 CFLAGS += -DWEBRTC_POSIX -fno-rtti -D_GLIBCXX_USE_CXX11_ABI=0
@@ -68,6 +70,9 @@ h264bitstream/.libs/libh264bitstream.a: h264bitstream/Makefile
 
 CFLAGS += -I h264bitstream
 LDFLAGS += h264bitstream/.libs/libh264bitstream.a
+
+# VERSION
+CFLAGS += -DVERSION="\"$(VERSION)\""
 
 src/%.o: src/%.cpp $(LIBS)
 	$(CXX) -o $@ -c $< $(CFLAGS) 
