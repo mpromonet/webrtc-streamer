@@ -33,7 +33,8 @@ h2 {
 </style> 
 <script src="ajax.js" ></script>
 <script src="webrtcstreamer.js" ></script>
-<script>		
+<script>	
+	var params = new URLSearchParams(location.search.slice(1));
 	var webRtcServerList = {};
 	
 	// ------------------------------------------
@@ -41,7 +42,7 @@ h2 {
 	// ------------------------------------------	
 	function onGetDeviceList(remoteDeviceList) {
 		var deviceList = [];
-                var argurl = location.search.slice(1);
+                var argurl = params.get("url");
                 if (argurl) {
 			deviceList.push( [argurl] );
 		}
@@ -115,7 +116,7 @@ h2 {
 		
 		// connect videoelement to webrtc stream
 		var webRtcServer = new WebRtcStreamer(videoTag);
-		webRtcServer.connect(url, "timeout=20");
+		webRtcServer.connect(url, params.get("options"));
 			
 		// highlight the navigation 
 		var navElt = 	document.getElementById ("nav_" + url);
