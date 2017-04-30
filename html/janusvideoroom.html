@@ -1,0 +1,66 @@
+<html>
+<head>
+<script src="ajax.js" ></script>
+<script src="janusvideoroom.js" ></script>
+<script src="ag-grid.min.js"></script>
+</head>
+<body> 
+	Janus Url:<input id="janusUrl" type="text" value="http://pi2.local:8088/janus" /> 
+	Room id:<input id="janusRoom" type="number" value="1234" />
+	<input id="connect" type="button" onclick="connect()" value="Connect" /><br/>
+	<div id="myGrid" style="height: 20%;" class="ag-fresh"></div>
+</body>
+<script>        
+	// columns
+	var columnDefs = [
+	    {headerName: "Name"   , field: "name"   },
+	    {headerName: "Url"    , field: "url"    },
+	    {headerName: "Status" , field: "status", cellRenderer: function(params) { return '<b>' + params.value.toUpperCase() + '</b>'; } }
+	];
+
+	// data
+	var rowData = [
+	    {name: "pi2"     , url: "rtsp://pi2.local:8554/unicast"              , status:"not connected" },
+	    {name: "norway"  , url: "rtsp://217.17.220.110/axis-media/media.amp" , status:"not connected" }
+	];
+
+	// options
+	var gridOptions = {
+		enableFilter: true,
+		enableSorting: true,
+		enableColResize: true,
+		columnDefs: columnDefs,
+		rowData: rowData,
+		onGridReady: function($event) { $event.api.sizeColumnsToFit(); }
+	};
+	
+	// fill grid
+	var grid = new agGrid.Grid(document.querySelector('#myGrid'), gridOptions);	
+
+	function clientCallBack(name, status) {		
+		var updatedNodes = [];
+		gridOptions.api.forEachNode( function(node) {
+			var data = node.data;
+			if (data.name == name) {
+			    data.status = status;
+			    updatedNodes.push(node);
+			}
+		});
+		gridOptions.api.refreshCells(updatedNodes, ['status']);
+	}
+
+	var janus;
+	function connect() {
+		if (!janus) {
+			janus = new JanusVideoRoom(document.querySelector('#janusUrl').value, parseInt(document.querySelector('#janusRoom').value), clientCallBack);
+		}
+				
+		gridOptions.api.forEachNode( function(node) {
+			var data = node.data;
+			janus.connect(data.url, data.name)
+		});
+	}
+
+</script>
+</html>
+

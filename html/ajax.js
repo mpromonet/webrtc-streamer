@@ -16,7 +16,7 @@ function send(method,headers,data,onSuccess,onFailure,scope) {
 	if (data) {
 		verb = 'POST';
 	}	
-	var async = (!onSuccess) || (!onFailure);
+	var async = (typeof onSuccess === 'function') || (typeof onFailure === 'function');
 	request.open(verb, method, async);
 	if (headers) {
 		for (key in headers) {
