@@ -108,7 +108,7 @@ JanusVideoRoom.prototype.longpoll = function(dataJson, sessionId) {
 	if (dataJson) {
 		write("poll evt:" + JSON.stringify(dataJson))		
 	}
-	send(this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.longpoll(dataJson,sessionId) }, function(dataJson) { this.poll(dataJson,sessionId) }, this);
+	send(this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.longpoll(dataJson,sessionId) }, function(dataJson) { this.longpoll(dataJson,sessionId) }, this);
 }
 
 	
