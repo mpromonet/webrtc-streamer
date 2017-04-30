@@ -54,7 +54,7 @@ civetweb/Makefile:
 	git submodule update --init civetweb
 
 civetweb/libcivetweb.a: civetweb/Makefile
-	make lib WITH_CPP=1 COPT="-std=c++11" -C civetweb
+	make lib WITH_CPP=1 COPT="$(CFLAGS)" -C civetweb
 
 CFLAGS += -I civetweb/include
 LDFLAGS += -L civetweb -l civetweb
@@ -73,11 +73,8 @@ h264bitstream/.libs/libh264bitstream.a: h264bitstream/Makefile
 CFLAGS += -I h264bitstream
 LDFLAGS += h264bitstream/.libs/libh264bitstream.a
 
-# VERSION
-CFLAGS += -DVERSION="\"$(VERSION)\""
-
 src/%.o: src/%.cpp $(LIBS)
-	$(CXX) -o $@ -c $< $(CFLAGS) 
+	$(CXX) -o $@ -c $< $(CFLAGS) -DVERSION="\"$(VERSION)\""
 
 FILES = $(wildcard src/*.cpp)
 $(TARGET): $(subst .cpp,.o,$(FILES)) $(LIBS) 
