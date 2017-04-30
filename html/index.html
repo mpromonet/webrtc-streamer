@@ -33,16 +33,28 @@ h2 {
 </style> 
 <script src="ajax.js" ></script>
 <script src="webrtcstreamer.js" ></script>
-<script>	
-	var params = new URLSearchParams(location.search.slice(1));
+<script>
+	// ------------------------------------------
+	// WebRTC connections
+	// ------------------------------------------	
 	var webRtcServerList = {};
-	
+
+	// ------------------------------------------
+	// decode URL arguments
+	// ------------------------------------------	
+	var argurl = location.search.slice(1);
+	var argoptions;
+	if (URLSearchParams) {
+		var params = new URLSearchParams(location.search.slice(1));
+		argurl = params.get("url");
+		argoptions = params.get("options");
+	}
+		
 	// ------------------------------------------
 	// init device list 
 	// ------------------------------------------	
 	function onGetDeviceList(remoteDeviceList) {
 		var deviceList = [];
-                var argurl = params.get("url");
                 if (argurl) {
 			deviceList.push( [argurl] );
 		}
@@ -116,7 +128,7 @@ h2 {
 		
 		// connect videoelement to webrtc stream
 		var webRtcServer = new WebRtcStreamer(videoTag);
-		webRtcServer.connect(url, params.get("options"));
+		webRtcServer.connect(url, argoptions);
 			
 		// highlight the navigation 
 		var navElt = 	document.getElementById ("nav_" + url);
@@ -140,6 +152,6 @@ h2 {
 </script>
 </head>
 <body>
-<nav id="menu"></nav>
+	<nav id="menu"></nav>
 </body>
 </html>
