@@ -44,7 +44,7 @@ h2 {
 	// ------------------------------------------	
 	var argurl = location.search.slice(1);
 	var argoptions;
-	if (URLSearchParams) {
+	if (typeof URLSearchParams != 'undefined') {
 		var params = new URLSearchParams(location.search.slice(1));
 		argurl = params.get("url");
 		argoptions = params.get("options");
