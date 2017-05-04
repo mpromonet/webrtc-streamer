@@ -34,6 +34,14 @@ Build WebRTC with H264 support
 	popd
 
 
+Build live555 to enable RTSP support(optional)
+-------
+	wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -
+	pushd live
+	./genMakefiles linux
+	sudo make install
+	popd
+
 Build
 ------- 
 	make WEBRTCROOT=<path to WebRTC> WEBRTCBUILD=<Release or Debug>
