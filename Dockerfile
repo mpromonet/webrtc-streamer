@@ -7,10 +7,9 @@ WORKDIR /app
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 ENV PATH /app/depot_tools:$PATH
 RUN mkdir /webrtc
-RUN cd /webrtc && fetch --no-history --nohooks webrtc
-RUN cd /webrtc && gclient sync
+RUN cd /webrtc && fetch --no-history webrtc
 RUN cd /webrtc/src && gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false'
-RUN cd /webrtc/src && ninja -C out/Release -j 4
+RUN cd /webrtc/src && ninja -C out/Release 
 
 # Build live555
 RUN wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -
