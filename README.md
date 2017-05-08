@@ -44,11 +44,12 @@ Build live555 to enable RTSP support(optional)
 
 Build
 ------- 
-	make WEBRTCROOT=<path to WebRTC> WEBRTCBUILD=<Release or Debug>
+	make WEBRTCROOT=<path to WebRTC> WEBRTCBUILD=<Release or Debug> PREFIX=/usr/local
 	
 where WEBRTCROOT and WEBRTCBUILD indicate how to point to WebRTC :
  - $WEBRTCROOT/src should contains source 
  - $WEBRTCROOT/src/out/$WEBRTCBUILD should contains libraries
+and where PREFIX point to live555 installation (default is /usr/local)
 
 Usage
 -----
