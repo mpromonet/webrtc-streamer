@@ -186,7 +186,9 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 		LOG(LERROR) << "Failed to initialize PeerConnection";
 	}
 	else
-	{		
+	{	
+		peerConnectionObserver->createDataChannel("JanusDataChannel");
+		
 		if (!this->AddStreams(peerConnectionObserver->getPeerConnection(), url, options))
 		{ 
 			LOG(WARNING) << "Can't add stream";
@@ -311,6 +313,7 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 				// create answer
 				webrtc::FakeConstraints constraints;
 				constraints.AddMandatory(webrtc::MediaConstraintsInterface::kOfferToReceiveVideo, "false");
+				constraints.AddMandatory(webrtc::MediaConstraintsInterface::kOfferToReceiveAudio, "false");
 				peerConnection->CreateAnswer(CreateSessionDescriptionObserver::Create(peerConnection), &constraints);								
 				
 				LOG(INFO) << "nbStreams local:" << peerConnection->local_streams()->count() << " remote:" << peerConnection->remote_streams()->count() 
@@ -519,20 +522,11 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 	webrtc::FakeConstraints constraints;
 	constraints.AddOptional(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp, "true");
             
-	PeerConnectionObserver* obs = PeerConnectionObserver::Create(this, peerid);
-	rtc::scoped_refptr<webrtc::PeerConnectionInterface> peer_connection = peer_connection_factory_->CreatePeerConnection(config,
-							    &constraints,
-							    NULL,
-							    NULL,
-							    obs);
-	if (!peer_connection) 
+	PeerConnectionObserver* obs = new PeerConnectionObserver(this, peerid, config, constraints);
+	if (!obs) 
 	{
 		LOG(LERROR) << __FUNCTION__ << "CreatePeerConnection failed";
 		obs = NULL; // TODO: call delete, but it crash !!!
-	}
-	else 
-	{
-		obs->setPeerConnection(peer_connection);		
 	}
 	return obs;
 }

@@ -13,6 +13,7 @@
 #include <string>
 
 #include "webrtc/api/peerconnectioninterface.h"
+#include "webrtc/api/test/fakeconstraints.h"
 
 #include "webrtc/base/logging.h"
 #include "webrtc/base/json.h"
@@ -75,14 +76,15 @@ class PeerConnectionManager {
 	
 	class PeerConnectionObserver : public webrtc::PeerConnectionObserver, public webrtc::DataChannelObserver {
 		public:
-			static PeerConnectionObserver* Create(PeerConnectionManager* peerConnectionManager, const std::string& peerid)
-			{
-				return new PeerConnectionObserver(peerConnectionManager, peerid);
-			}
-			void setPeerConnection(rtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc) { 
-				m_pc = pc;
-			}
-			Json::Value getIceCandidateList() { return iceCandidateList_; };
+			PeerConnectionObserver(PeerConnectionManager* peerConnectionManager, const std::string& peerid, const webrtc::PeerConnectionInterface::RTCConfiguration & config, const webrtc::FakeConstraints & constraints)
+			: m_peerConnectionManager(peerConnectionManager)
+			, m_peerid(peerid) {
+				m_pc = m_peerConnectionManager->peer_connection_factory_->CreatePeerConnection(config,
+							    &constraints,
+							    NULL,
+							    NULL,
+							    this);				
+			};
 
 			virtual ~PeerConnectionObserver() { 
 				LOG(INFO) << __PRETTY_FUNCTION__;
@@ -90,6 +92,13 @@ class PeerConnectionManager {
 				m_pc->Close(); 
 			}
 			
+			bool createDataChannel(const std::string & channelName) {
+				m_dataChannel = m_pc->CreateDataChannel(channelName, NULL);
+				m_dataChannel->RegisterObserver(this);
+				return (m_dataChannel.get() != NULL);
+			}
+			
+			Json::Value getIceCandidateList() { return iceCandidateList_; };			
 			rtc::scoped_refptr<webrtc::PeerConnectionInterface> getPeerConnection() { return m_pc; };
 				
 			// PeerConnectionObserver interface
@@ -127,13 +136,7 @@ class PeerConnectionManager {
 				std::string msg((const char*)buffer.data.data(),buffer.data.size());
 				LOG(LERROR) << __PRETTY_FUNCTION__ << m_peerid << "/" << m_dataChannel->label() << " msg:" << msg;				
 			}
-			
-		protected:
-			PeerConnectionObserver(PeerConnectionManager* peerConnectionManager, const std::string& peerid)
-			: m_peerConnectionManager(peerConnectionManager)
-			, m_peerid(peerid) {
-			};
-				
+							
 		private:
 			PeerConnectionManager* m_peerConnectionManager;
 			const std::string m_peerid;
