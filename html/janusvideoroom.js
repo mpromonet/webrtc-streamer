@@ -2,18 +2,27 @@ function write(text) {
 	console.log(text);
 }
 
+// ------------------------------------------
+// Constructor
+// ------------------------------------------
 function JanusVideoRoom (janusUrl, janusRoomId, callback) {	
 	this.janusUrl    = janusUrl;
 	this.janusRoomId = janusRoomId;	
-	this.callback    = callback;	
+	this.callback    = callback || function() {};	
 }
 	
+// ------------------------------------------
+// Ask to connect an URL to a Janus Video Room user
+// ------------------------------------------
 JanusVideoRoom.prototype.connect = function(url,name) {
 	// create a session
 	var createReq = {janus: "create", transaction: Math.random().toString() }
 	send(this.janusUrl, null, createReq, function(dataJson) { this.onCreateSession(dataJson,url,name) }, this.onError, this);		
 }
 
+// ------------------------------------------
+// Janus callback for Session Creation
+// ------------------------------------------
 JanusVideoRoom.prototype.onCreateSession = function(dataJson,url,name) {
 	var sessionId = dataJson.data.id;
 	write("onCreateSession sessionId:" + sessionId);
@@ -23,6 +32,9 @@ JanusVideoRoom.prototype.onCreateSession = function(dataJson,url,name) {
 	send(this.janusUrl + "/" + sessionId, null, attach, function(dataJson) { this.onPluginsAttached(dataJson,url,name,sessionId) }, this.onError, this );
 }
 	
+// ------------------------------------------
+// Janus callback for Video Room Plugins Connection
+// ------------------------------------------
 JanusVideoRoom.prototype.onPluginsAttached = function(dataJson,url,name,sessionId) {
 	var pluginid = dataJson.data.id;
 	write("onPluginsAttached pluginid:" + pluginid)	
@@ -33,6 +45,9 @@ JanusVideoRoom.prototype.onPluginsAttached = function(dataJson,url,name,sessionI
 	send(this.janusUrl + "/" + sessionId + "/" + pluginid, null, join, function(dataJson) { this.onJoinRoom(dataJson,name,url,sessionId,pluginid) }, this.onError, this );		
 }
 
+// ------------------------------------------
+// Janus callback for Video Room Joined
+// ------------------------------------------
 JanusVideoRoom.prototype.onJoinRoom = function(dataJson,name,url,sessionId,pluginid) {
 	write("onJoinRoom:" + JSON.stringify(dataJson))
 
@@ -48,6 +63,9 @@ JanusVideoRoom.prototype.onJoinRoom = function(dataJson,name,url,sessionId,plugi
 	}
 }
 
+// ------------------------------------------
+// WebRTC streamer callback for Offer 
+// ------------------------------------------
 JanusVideoRoom.prototype.onCreateOffer = function(dataJson,name,peerid,sessionId,pluginid) {
 	write("onCreateOffer:" + JSON.stringify(dataJson))
 	
@@ -57,6 +75,9 @@ JanusVideoRoom.prototype.onCreateOffer = function(dataJson,name,peerid,sessionId
 	send(this.janusUrl + "/" + sessionId + "/" + pluginid, null, msg,  function(dataJson) { this.onPublishStream(dataJson,name,peerid,sessionId,pluginid) }, this.onError, this);
 }
 
+// ------------------------------------------
+// Janus callback for WebRTC stream is published
+// ------------------------------------------
 JanusVideoRoom.prototype.onPublishStream = function(dataJson,name,peerid,sessionId,pluginid) {
 	write("onPublishStream:" + JSON.stringify(dataJson))	
 
@@ -70,45 +91,60 @@ JanusVideoRoom.prototype.onPublishStream = function(dataJson,name,peerid,session
 	}
 }
 
+// ------------------------------------------
+// WebRTC streamer callback for Answer 
+// ------------------------------------------
 JanusVideoRoom.prototype.onSetAnswer = function(dataJson,name,peerid,sessionId,pluginid) {
 	write("onSetAnswer:" + JSON.stringify(dataJson))	
 	
 	send("/getIceCandidate?peerid="+peerid, null, null, function(dataJson) { this.onReceiveCandidate(dataJson,name,sessionId,pluginid) }, this.onError, this);		
 }
 
+// ------------------------------------------
+// WebRTC streamer callback for ICE candidate 
+// ------------------------------------------
 JanusVideoRoom.prototype.onReceiveCandidate = function(dataJson,name,sessionId,pluginid) {
 	write("onReceiveCandidate answer:" + JSON.stringify(dataJson))	
 	
 	for (var i=0; i<dataJson.length; i++) {
 		var candidate = new RTCIceCandidate(dataJson[i]);
 
+		// send ICE candidate to Janus
 		var msg = { "janus": "trickle", "candidate": candidate, "transaction": Math.random().toString()  };
 		sendSync(this.janusUrl + "/" + sessionId + "/" + pluginid, null, msg);		
 	}
 	
-	var answer = sendSync(this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1");
-	write("onReceiveCandidate evt:" + JSON.stringify(answer))
-	this.callback(name, "connected");
-
 	// start long polling
-	this.longpoll(null, sessionId);
-	
-	// start keep alive
-	var bind = this;
-	window.setInterval( function() { bind.keepAlive(sessionId); }, 10000);	
+	this.longpoll(null, name, sessionId);	
 }
 
+// ------------------------------------------
+// Janus callback for keepAlive Session
+// ------------------------------------------
 JanusVideoRoom.prototype.keepAlive = function(sessionId) {
 	var msg = { "janus": "keepalive", "session_id": sessionId, "transaction": Math.random().toString()  };
 	var answer = sendSync(this.janusUrl + "/" + sessionId, null, msg);
 	write("keepAlive :" + JSON.stringify(answer))
 }
 
-JanusVideoRoom.prototype.longpoll = function(dataJson, sessionId) {
+// ------------------------------------------
+// Janus callback for Long Polling
+// ------------------------------------------
+JanusVideoRoom.prototype.longpoll = function(dataJson, name, sessionId) {
 	if (dataJson) {
 		write("poll evt:" + JSON.stringify(dataJson))		
+	
+		if (dataJson.janus == "webrtcup") {
+			// notify connection
+			this.callback(name, "connected");
+			
+			// start keep alive
+			var bind = this;
+			window.setInterval( function() { bind.keepAlive(sessionId); }, 10000);	
+		}
 	}
-	send(this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.longpoll(dataJson,sessionId) }, function(dataJson) { this.longpoll(dataJson,sessionId) }, this);
+	
+	send(this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.longpoll(dataJson, name, sessionId) }, function(dataJson) { this.longpoll(dataJson, name, sessionId) }, this);
 }
 
 	
