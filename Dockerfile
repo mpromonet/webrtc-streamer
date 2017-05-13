@@ -25,4 +25,4 @@ RUN make PREFIX=/tmp
 EXPOSE 8000
 
 # Run when the container launches
-CMD "./webrtc-streamer*" "rtsp://217.17.220.110/axis-media/media.amp"
+CMD "/app/webrtc-server*" "rtsp://217.17.220.110/axis-media/media.amp"
