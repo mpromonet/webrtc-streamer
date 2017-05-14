@@ -24,8 +24,10 @@ A video source could be :
 Dependencies :
 --------
 It is based on :
- * WebRTC Native Code Package [http://www.webrtc.org] 
- * civetweb HTTP server [https://github.com/civetweb/civetweb]
+ * [WebRTC Native Code Package](http://www.webrtc.org)
+ * [civetweb HTTP server](https://github.com/civetweb/civetweb)
+ * [h264bitstream](https://github.com/aizvorski/h264bitstream)
+ * [live555](http://www.live555.com/liveMedia)
 
 Build WebRTC with H264 support
 -------
@@ -104,6 +106,11 @@ A short sample using webrtc-streamer running locally on port 8000 :
 	</body>
 	</html>
 	
+Docker
+------
+You can start the application using the docker image :
+
+        docker run -p 8000:8000 -it mpromonet/webrtc-streamer
 
 
 
