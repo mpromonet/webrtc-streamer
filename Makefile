@@ -7,7 +7,7 @@ WEBRTCBUILD?=Release
 PREFIX?=/usr
 VERSION=$(shell git describe --tags --always --dirty)
 
-TARGET = webrtc-server_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD)
+TARGET = webrtc-server
 all: $(TARGET)
 
 # webrtc

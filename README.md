@@ -58,8 +58,8 @@ and where PREFIX point to live555 installation (default is /usr/local)
 
 Usage
 -----
-	./webrtc-server__Release [-H http port] [-S embeded stun address] -[v[v]]  [url1]...[urln]
-	./webrtc-server__Release [-H http port] [-s externel stun address] -[v[v]] [url1]...[urln]
+	./webrtc-server [-H http port] [-S embeded stun address] -[v[v]]  [url1]...[urln]
+	./webrtc-server [-H http port] [-s externel stun address] -[v[v]] [url1]...[urln]
         	-v[v[v]]           : verbosity
          	-H [hostname:]port : HTTP server binding (default 0.0.0.0:8000)
          	-S stun_address    : start embeded STUN server bind to address (default 127.0.0.1:3478)
@@ -69,7 +69,7 @@ Usage
 
 Example
 -----
-	webrtc-server__Release rtsp://217.17.220.110/axis-media/media.amp \
+	webrtc-server rtsp://217.17.220.110/axis-media/media.amp \
 				rtsp://85.255.175.241/h264 \
 				rtsp://85.255.175.244/h264 \
 				rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov
@@ -111,6 +111,8 @@ Docker
 You can start the application using the docker image :
 
         docker run -p 8000:8000 -it mpromonet/webrtc-streamer
+
+The container accept arguments that are forward to webrtc-server application
 
 
 
