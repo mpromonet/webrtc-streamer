@@ -1,0 +1,8 @@
+---
+applications:
+- name: webrtc-streamer
+  buildpack: https://github.com/cloudfoundry/binary-buildpack
+  memory: 128M
+  disk: 128M
+  target: webrtc-server_*.tgz
+
