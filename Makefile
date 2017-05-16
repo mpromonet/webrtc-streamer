@@ -5,7 +5,8 @@ LDFLAGS = -pthread
 WEBRTCROOT?=../webrtc
 WEBRTCBUILD?=Release
 PREFIX?=/usr
-VERSION=$(shell git describe --tags --always --dirty)
+GITVERSION=$(shell git describe --tags --always --dirty)
+VERSION=$(GITVERSION)
 
 TARGET = webrtc-server
 all: $(TARGET)
@@ -89,5 +90,6 @@ clean:
 install:
 	install -m 0755 $(TARGET) /usr/local/bin
 
-
+tgz:
+	tar cvzf $(TARGET)_$(GITVERSION).tgz $(TARGET) html
 
