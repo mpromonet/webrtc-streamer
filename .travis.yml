@@ -40,11 +40,10 @@ deploy:
 - provider: heroku
   skip_cleanup: true
   api_key:
-    secure: KhZVpH3MqZxcarJMMku96twpNJw0qeXE8i5gz0hydR7i31NSUl4M69r8uRk6kBiVl7lm7kCTCONE+18cbqLKf1jc3pFV7y3nf178xY6St0NUbsjuYart1EAEwSlZMMw1cGy3Qd3YDn/xKG2+hpNbpW4MVyZ6abYtYt14rV/Pcoo=
+    secure: NmTNf38MkoWWQZrRkXyWqCdRRO4Xjv+Kl0TOZPw+qCXva4kc2T0uwSi2o4YNZBUA533NyZvO6IJMQOpx24UkjPhxVv591FBB+HdUevOxD4SEAE8fBibpHVX3sTU0XLp/mx+BpNFdxKrEHHzoyBZBFjesQVVMVczB4AOv/KZerGw=
   on:
     repo: mpromonet/webrtc-streamer
     tags: false
-    
 - provider: releases
   skip_cleanup: true
   api_key:
