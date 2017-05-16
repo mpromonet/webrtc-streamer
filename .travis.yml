@@ -41,9 +41,12 @@ deploy:
   skip_cleanup: true
   api_key:
     secure: KhZVpH3MqZxcarJMMku96twpNJw0qeXE8i5gz0hydR7i31NSUl4M69r8uRk6kBiVl7lm7kCTCONE+18cbqLKf1jc3pFV7y3nf178xY6St0NUbsjuYart1EAEwSlZMMw1cGy3Qd3YDn/xKG2+hpNbpW4MVyZ6abYtYt14rV/Pcoo=
+  on:
+    repo: mpromonet/webrtc-streamer
   provider: releases
   api_key:
     secure: FMXzmhBmuy7Jou3h5lG10b8xl5oqI96aYoUrUHO2rfKqQ4UMKxT3hXcdxOnSsnbI6d8NfXbOPKqmqmD4vTk+EqQjCK9fmsNxAg1UktLIsuOxoWmEWYLK5d3xpIuRmfRQDtPVjcryrE420FCfZS67lyr22+v1pLcvcD61ebGZLCg=
   file: "${RELEASE_PKG_FILE}"
   on:
     repo: mpromonet/webrtc-streamer
+    tags: true
