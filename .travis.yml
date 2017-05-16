@@ -32,6 +32,7 @@ compiler:
 - gcc
 script:
 - make PREFIX=${PREFIX}
+- make tgz
 before_deploy:
 - export RELEASE_PKG_FILE=$(ls *.tgz)
 - echo "deploying ${RELEASE_PKG_FILE} to GitHub releases"    
