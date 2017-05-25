@@ -23,7 +23,8 @@
 int main(int argc, char* argv[]) 
 {
 	const char* turnurl       = "";
-	const char* localstunurl  = "127.0.0.1:3478";
+	const char* defaultlocalstunurl  = "127.0.0.1:3478";
+	const char* localstunurl  = NULL;
 	const char* stunurl       = "stun.l.google.com:19302";
 	int logLevel              = rtc::LERROR; 
 	const char* webroot       = "./html";
@@ -38,7 +39,7 @@ int main(int argc, char* argv[])
 	defaultAddress.append(std::to_string(defaultPort));
 	
 	int c = 0;     
-	while ((c = getopt (argc, argv, "hV" "H:v::w:" "t:S:s::")) != -1)
+	while ((c = getopt (argc, argv, "hV" "H:v::w:" "t:S::s::")) != -1)
 	{
 		switch (c)
 		{
@@ -47,7 +48,7 @@ int main(int argc, char* argv[])
 			case 'w': webroot = optarg; break;
 			
 			case 't': turnurl = optarg; break;
-			case 'S': localstunurl = optarg; stunurl = localstunurl; break;
+			case 'S': localstunurl = optarg ? optarg : defaultlocalstunurl; stunurl = localstunurl; break;
 			case 's': localstunurl = NULL; if (optarg) stunurl = optarg; break;
 			
 			case 'V':
@@ -62,7 +63,7 @@ int main(int argc, char* argv[])
 				std::cout << "\t -v[v[v]]           : verbosity"                                                                  << std::endl;
 				std::cout << "\t -H hostname:port   : HTTP server binding (default "   << defaultAddress    << ")"                << std::endl;
 				std::cout << "\t -w webroot         : path to get files"                                                          << std::endl;
-				std::cout << "\t -S stun_address    : start embeded STUN server bind to address (default " << localstunurl << ")" << std::endl;
+				std::cout << "\t -S[stun_address]    : start embeded STUN server bind to address (default " << defaultlocalstunurl << ")" << std::endl;
 				std::cout << "\t -s[stun_address]   : use an external STUN server (default " << stunurl << ")"                    << std::endl;
 				std::cout << "\t -t[username:password@]turn_address : use an external TURN relay server (default disabled)"       << std::endl;
 				std::cout << "\t [url]              : url to register in the source list"                                         << std::endl;
