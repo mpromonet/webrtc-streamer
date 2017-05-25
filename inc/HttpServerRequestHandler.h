@@ -10,7 +10,7 @@
 #include "CivetServer.h"
 #include "PeerConnectionManager.h"
 
-typedef std::function<Json::Value(struct mg_connection *conn, const Json::Value &)> httpFunction;
+typedef std::function<Json::Value(const struct mg_request_info *, const Json::Value &)> httpFunction;
 
 /* ---------------------------------------------------------------------------
 **  http callback

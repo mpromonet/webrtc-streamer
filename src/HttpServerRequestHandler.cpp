@@ -60,7 +60,7 @@ class RequestHandler : public CivetHandler
 			}
 			
 			// invoke API implementation
-			Json::Value out(fct(conn, jmessage));
+			Json::Value out(fct(req_info, jmessage));
 			
 			// fill out
 			if (out.isNull() == false)
@@ -99,17 +99,15 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 	: CivetServer(options), m_webRtcServer(webRtcServer)
 {
 	// http api callbacks
-	m_func["/getDeviceList"]         = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
+	m_func["/getDeviceList"]         = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
 		return m_webRtcServer->getDeviceList();
 	};
 	
-	m_func["/getIceServers"]         = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
+	m_func["/getIceServers"]         = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
 		return m_webRtcServer->getIceServers();
 	};
 	
-	m_func["/call"]                  = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 		
-
-		const struct mg_request_info *req_info = mg_get_request_info(conn);
+	m_func["/call"]                  = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 		
 		std::string peerid;
 		CivetServer::getParam(req_info->query_string, "peerid", peerid);
 		std::string url;
@@ -119,15 +117,14 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 		return m_webRtcServer->call(peerid, url, options, in);
 	};
 	
-	m_func["/hangup"]                = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
+	m_func["/hangup"]                = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
 		std::string peerid;
-		CivetServer::getParam(conn, "peerid", peerid);
+		CivetServer::getParam(req_info->query_string, "peerid", peerid);
 		Json::Value answer(m_webRtcServer->hangUp(peerid));
 		return answer;
 	};
 	
-	m_func["/createOffer"]           = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
-		const struct mg_request_info *req_info = mg_get_request_info(conn);
+	m_func["/createOffer"]           = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
 		std::string peerid;
 		CivetServer::getParam(req_info->query_string, "peerid", peerid);
 		std::string url;
@@ -136,8 +133,7 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 		CivetServer::getParam(req_info->query_string, "options", options);
 		return m_webRtcServer->createOffer(peerid, url, options);
 	};
-	m_func["/setAnswer"]             = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
-		const struct mg_request_info *req_info = mg_get_request_info(conn);
+	m_func["/setAnswer"]             = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
 		std::string peerid;
 		CivetServer::getParam(req_info->query_string, "peerid", peerid);
 		m_webRtcServer->setAnswer(peerid, in);
@@ -145,15 +141,13 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 		return answer;
 	};
 	
-	m_func["/getIceCandidate"]       = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
-		const struct mg_request_info *req_info = mg_get_request_info(conn);
+	m_func["/getIceCandidate"]       = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
 		std::string peerid;
 		CivetServer::getParam(req_info->query_string, "peerid", peerid);
 		return m_webRtcServer->getIceCandidateList(peerid);
 	};
 	
-	m_func["/addIceCandidate"]       = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
-		const struct mg_request_info *req_info = mg_get_request_info(conn);
+	m_func["/addIceCandidate"]       = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
 		std::string peerid;
 		CivetServer::getParam(req_info->query_string, "peerid", peerid);
 		m_webRtcServer->addIceCandidate(peerid, in);
@@ -161,15 +155,15 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 		return answer;
 	};
 	
-	m_func["/getPeerConnectionList"] = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
+	m_func["/getPeerConnectionList"] = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
 		return m_webRtcServer->getPeerConnectionList();
 	};
 
-	m_func["/getStreamList"] = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
+	m_func["/getStreamList"] = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
 		return m_webRtcServer->getStreamList();
 	};
 	
-	m_func["/help"]                  = [this](struct mg_connection *conn, const Json::Value & in) -> Json::Value { 
+	m_func["/help"]                  = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
 		Json::Value answer;
 		for (auto it : m_func) {
 			answer.append(it.first);
