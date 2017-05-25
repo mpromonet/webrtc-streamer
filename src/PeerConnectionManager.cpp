@@ -76,7 +76,7 @@ PeerConnectionManager::~PeerConnectionManager()
 ** -------------------------------------------------------------------------*/
 const Json::Value PeerConnectionManager::getDeviceList()
 {
-	Json::Value value;
+	Json::Value value(Json::arrayValue);
 		
 	std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo());
 	if (info) 
@@ -452,7 +452,7 @@ const Json::Value PeerConnectionManager::getIceCandidateList(const std::string &
 ** -------------------------------------------------------------------------*/
 const Json::Value PeerConnectionManager::getPeerConnectionList()
 {
-	Json::Value value;
+	Json::Value value(Json::arrayValue);
 	for (auto it : peer_connectionobs_map_) 
 	{
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it.second->getPeerConnection();
@@ -482,7 +482,7 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 ** -------------------------------------------------------------------------*/
 const Json::Value PeerConnectionManager::getStreamList()
 {
-	Json::Value value;
+	Json::Value value(Json::arrayValue);
 	for (auto it : stream_map_) 
 	{
 		value.append(it.first);
