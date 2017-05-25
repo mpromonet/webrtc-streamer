@@ -114,11 +114,12 @@ A short sample using webrtc-streamer running locally on port 8000 :
 
 Connect to Janus Gateway Video Room
 ===============
-A simple way to publish WebRTC stream to a Janus Gateway Video Room is to use the JanusVideoRoom interface
+A simple way to publish WebRTC stream to a [Janus Gateway](https://janus.conf.meetecho.com) Video Room is to use the JanusVideoRoom interface
 
         var janus = new JanusVideoRoom(<janus url>)
 
 A short sample to publish WebRTC streams to Janus Video Room could be :
+
 	<html>
 	<head>
 	<script src="ajax.js" ></script>
