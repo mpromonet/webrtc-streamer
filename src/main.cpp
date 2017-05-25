@@ -104,14 +104,10 @@ int main(int argc, char* argv[])
 		options.push_back("listening_ports");
 		options.push_back(http_addr.PortAsString());
 		
-		HttpServerRequestHandler httpServer(&webRtcServer, options);
-		std::cout << "HTTP Listen at " << http_addr.ToString() << std::endl;
-		if (httpServer.getContext() == NULL)
-		{
-			std::cout << "Cannot Initialize start HTTP server" << std::endl; 
-		}
-		else
-		{
+		try {
+			std::cout << "HTTP Listen at " << http_addr.ToString() << std::endl;
+			HttpServerRequestHandler httpServer(&webRtcServer, options);
+			
 			// start STUN server if needed
 			std::unique_ptr<cricket::StunServer> stunserver;
 			if (localstunurl != NULL)
@@ -128,6 +124,9 @@ int main(int argc, char* argv[])
 
 			// mainloop
 			thread->Run();
+			
+		} catch (const CivetException & ex) {
+			std::cout << "Cannot Initialize start HTTP server exception:" << ex.what() << std::endl; 
 		}
 	}
 	
