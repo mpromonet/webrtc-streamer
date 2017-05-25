@@ -16,9 +16,9 @@
 		document.body.appendChild(textNode);
 	}
 
-	var janus = new JanusVideoRoom("http://pi2.local:8088/janus", 1234, writeStatus);
-	janus.connect("rtsp://pi2.local:8554/unicast","pi2");
-	janus.connect("rtsp://217.17.220.110/axis-media/media.amp","media");
+	var janus = new JanusVideoRoom("http://pi2.local:8088/janus", writeStatus);
+	janus.join(1234, "rtsp://pi2.local:8554/unicast","pi2");
+	janus.join(1234, "rtsp://217.17.220.110/axis-media/media.amp","media");
     
 </script>
 </head>
