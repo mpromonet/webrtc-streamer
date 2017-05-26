@@ -35,6 +35,7 @@ libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 
 # live555helper
 ifneq ($(wildcard $(SYSROOT)/$(PREFIX)/include/liveMedia/liveMedia.hh),)
+VERSION+=live555helper@$(shell git -C live555helper describe --tags --always --dirty)
 LIBS+=live555helper/live555helper.a
 live555helper/Makefile:
 	git submodule update --init live555helper
@@ -52,6 +53,7 @@ LDFLAGS += -L $(SYSROOT)/$(PREFIX)/lib -l:libliveMedia.a -l:libgroupsock.a -l:li
 endif
 
 # civetweb
+VERSION+=civetweb@$(shell git -C civetweb describe --tags --always --dirty)
 LIBS+=civetweb/libcivetweb.a
 civetweb/Makefile:
 	git submodule update --init civetweb
@@ -63,6 +65,7 @@ CFLAGS += -I civetweb/include
 LDFLAGS += -L civetweb -l civetweb
 
 #h264bitstream
+VERSION+=h264bitstream@$(shell git -C h264bitstream describe --tags --always --dirty)
 LIBS+=h264bitstream/.libs/libh264bitstream.a
 h264bitstream/Makefile:
 	git submodule update --init h264bitstream

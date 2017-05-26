@@ -171,6 +171,10 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 		return answer;
 	};
 	
+	m_func["/version"]                  = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
+		Json::Value answer(VERSION);
+		return answer;
+	};
 	
 	// register handlers
 	for (auto it : m_func) {
