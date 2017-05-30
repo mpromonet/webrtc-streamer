@@ -5,7 +5,7 @@ env:
     - GYP_DEFINES="target_arch=arm"
   matrix:
     - GYP_GENERATOR_OUTPUT=x86_64 GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false'
-    - GYP_GENERATOR_OUTPUT=arm GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false is_clang=false target_cpu="arm" arm_float_abi=hard treat_warnings_as_errors=false' CROSS=arm-linux-gnueabihf- SYSROOT=$(pwd)/../webrtc/src/build/linux/debian_jessie_arm-sysroot
+    - GYP_GENERATOR_OUTPUT=arm GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false is_clang=false target_cpu="arm" arm_float_abi=hard treat_warnings_as_errors=false' CROSS=arm-linux-gnueabihf- SYSROOT=${TRAVIS_BUILD_DIR}/../webrtc/src/build/linux/debian_jessie_arm-sysroot
 addons:
   apt:
     packages:
