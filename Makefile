@@ -69,13 +69,12 @@ LDFLAGS += -L civetweb -l civetweb
 VERSION+=h264bitstream@$(shell git -C h264bitstream describe --tags --always --dirty)
 LIBS+=h264bitstream/.libs/libh264bitstream.a
 h264bitstream/Makefile:
-	git submodule update --init h264bitstream
-	cd h264bitstream && autoreconf -i
-	cd h264bitstream && CC=$(CXX) ./configure --host=$(shell $(CXX) -dumpmachine)
-	
+	git submodule update --init h264bitstream	
 
 h264bitstream/.libs/libh264bitstream.a: h264bitstream/Makefile
-	make -C h264bitstream
+	cd h264bitstream && autoreconf -i -f
+	cd h264bitstream && CC=$(CXX) ./configure --host=$(shell $(CXX) -dumpmachine)
+	make -C h264bitstream 
 
 CFLAGS += -I h264bitstream
 LDFLAGS += h264bitstream/.libs/libh264bitstream.a
@@ -97,7 +96,7 @@ install:
 	install -m 0755 $(TARGET) /usr/local/bin
 
 tgz:
-	tar cvzf $(TARGET)_$(GITVERSION).tgz $(TARGET) html
+	tar cvzf $(TARGET)_$(GITVERSION)_$(shell $(CC) -dumpmachine).tgz $(TARGET) html
 
 live555:
 	wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -

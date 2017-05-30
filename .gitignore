@@ -1,3 +1,4 @@
 src/*.o
 *.a
+*.tgz
 webrtc-server
