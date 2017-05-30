@@ -1,6 +1,11 @@
 dist: trusty
 env:
-  PREFIX=/tmp
+  global:
+    - PREFIX=/tmp
+    - GYP_DEFINES="target_arch=arm"
+  matrix:
+    - GYP_GENERATOR_OUTPUT=x86_64 GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false'
+    - GYP_GENERATOR_OUTPUT=arm GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false is_clang=false target_cpu="arm" arm_float_abi=hard treat_warnings_as_errors=false' CROSS=arm-linux-gnueabihf- SYSROOT=$(pwd)/../webrtc/src/build/linux/debian_jessie_arm-sysroot
 addons:
   apt:
     packages:
@@ -8,26 +13,19 @@ addons:
 before_install:
 - pushd ..
 # get toolchain need to build WebRTC
-- git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+- git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
 - export PATH=$PATH:$(pwd)/depot_tools
-- git clone https://github.com/raspberrypi/tools.git rpi_tools
+- git clone --depth 1 https://github.com/raspberrypi/tools.git rpi_tools
 - export PATH=$PATH:$(pwd)/rpi_tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin
 # get WebRTC
 - mkdir webrtc
 - pushd webrtc
 - fetch --no-history --nohooks webrtc
-# buid WebRTC for x86
+# buid WebRTC
 - gclient sync
 - pushd src
-- gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false'
-- ninja -C out/Release
-- popd
-# buid WebRTC for rpi
-- export GYP_DEFINES="target_arch=arm arm_float_abi=hard"
-- gclient sync
-- pushd src
-- gn gen arm/out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false is_clang=false target_cpu="arm" treat_warnings_as_errors=false'
-- ninja -C arm/out/Release
+- gn gen ${GNOUTPUT}/out/Release --args=${GNARGS}
+- ninja -C ${GNOUTPUT}/out/Release
 - popd
 #
 - popd
@@ -35,11 +33,7 @@ language: cpp
 compiler:
 - gcc
 script:
-# x86
 - make PREFIX=${PREFIX} live555 all tgz
-- make clean
-# arm
-- make PREFIX=${PREFIX} GYP_GENERATOR_OUTPUT=arm CROSS=arm-linux-gnueabihf- SYSROOT=$(pwd)/../webrtc/src/build/linux/debian_jessie_arm-sysroot live555 all tgz
 before_deploy:
 - export RELEASE_X86_PKG_FILE=$(ls *_x86_64-linux*.tgz)
 - echo "RELEASE_X86_PKG_FILE=${RELEASE_X86_PKG_FILE}"   
