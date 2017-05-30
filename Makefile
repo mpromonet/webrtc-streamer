@@ -1,7 +1,8 @@
-CXX = $(CROSS)g++ $(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
+CC = $(CROSS)gcc 
+CXX = $(CROSS)g++
 AR = $(CROSS)ar
-CFLAGS = -Wall -pthread -g -std=c++11 -Iinc
-LDFLAGS = -pthread 
+CFLAGS = -Wall -pthread -g -std=c++11 -Iinc $(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
+LDFLAGS = -pthread $(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
 WEBRTCROOT?=../webrtc
 WEBRTCBUILD?=Release
 PREFIX?=/usr
@@ -42,7 +43,7 @@ live555helper/Makefile:
 
 live555helper/live555helper.a: live555helper/Makefile
 	git submodule update live555helper
-	make -C live555helper
+	make -C live555helper CC=$(CXX)
 
 CFLAGS += -DHAVE_LIVE555
 CFLAGS += -I live555helper/inc
@@ -59,7 +60,7 @@ civetweb/Makefile:
 	git submodule update --init civetweb
 
 civetweb/libcivetweb.a: civetweb/Makefile
-	make lib WITH_CPP=1 COPT="$(CFLAGS)" -C civetweb
+	make lib WITH_CPP=1 CXX=$(CXX) CC=$(CC) COPT="$(CFLAGS)" -C civetweb
 
 CFLAGS += -I civetweb/include
 LDFLAGS += -L civetweb -l civetweb
@@ -70,7 +71,7 @@ LIBS+=h264bitstream/.libs/libh264bitstream.a
 h264bitstream/Makefile:
 	git submodule update --init h264bitstream
 	cd h264bitstream && autoreconf -i
-	cd h264bitstream && ./configure 
+	cd h264bitstream && CC=$(CXX) ./configure --host=$(shell $(CXX) -dumpmachine)
 	
 
 h264bitstream/.libs/libh264bitstream.a: h264bitstream/Makefile
@@ -98,3 +99,8 @@ install:
 tgz:
 	tar cvzf $(TARGET)_$(GITVERSION).tgz $(TARGET) html
 
+live555:
+	wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -
+	cd live && ./genMakefiles linux
+	make -C live CPLUSPLUS_COMPILER=$(CXX) C_COMPILER=$(CC) LINK='$(CXX) -o' PREFIX=$(SYSROOT)/$(PREFIX) install
+	rm -rf live

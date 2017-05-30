@@ -7,16 +7,12 @@ WORKDIR /app
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 ENV PATH /app/depot_tools:$PATH
 RUN mkdir /webrtc && cd /webrtc && fetch --no-history webrtc
-RUN cd /webrtc/src && gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false'
+RUN cd /webrtc/src && gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false''
 RUN cd /webrtc/src && ninja -C out/Release 
 
-# Build live555
-RUN wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -
-RUN cd live && ./genMakefiles linux && make install PREFIX=/tmp
-
-# Build webrtc-streamer
+# Build webrtc-streamer with live555 support
 ADD . /app
-RUN make PREFIX=/tmp
+RUN make PREFIX=/tmp live555 all
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000

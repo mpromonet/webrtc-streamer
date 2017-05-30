@@ -7,12 +7,6 @@ addons:
     - git
 before_install:
 - pushd ..
-# build live555
-- wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -
-- pushd live
-- ./genMakefiles linux
-- make install PREFIX=${PREFIX}
-- popd
 # build WebRTC
 - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 - export PATH=$PATH:$(pwd)/depot_tools
@@ -21,7 +15,7 @@ before_install:
 - fetch --no-history --nohooks webrtc
 - gclient sync
 - pushd src
-- gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false'
+- gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false'
 - ninja -C out/Release
 - popd
 - popd
@@ -31,7 +25,7 @@ language: cpp
 compiler:
 - gcc
 script:
-- make PREFIX=${PREFIX}
+- make PREFIX=${PREFIX} live555 all
 - make tgz
 before_deploy:
 - export RELEASE_PKG_FILE=$(ls *.tgz)
