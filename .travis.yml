@@ -36,10 +36,8 @@ compiler:
 script:
 - make PREFIX=${PREFIX} live555 all tgz
 before_deploy:
-- export RELEASE_X86_PKG_FILE=$(ls *_x86_64-linux*.tgz)
-- echo "RELEASE_X86_PKG_FILE=${RELEASE_X86_PKG_FILE}"   
-- export RELEASE_ARM_PKG_FILE=$(ls *_arm-linux*.tgz)
-- echo "RELEASE_ARM_PKG_FILE=${RELEASE_ARM_PKG_FILE}"   
+- export RELEASE_PKG_FILE=$(ls *.tgz)
+- echo "RELEASE_PKG_FILE=${RELEASE_PKG_FILE}"   
 deploy:
 - provider: heroku
   skip_cleanup: true
@@ -48,13 +46,13 @@ deploy:
   on:
     repo: mpromonet/webrtc-streamer
     tags: false
+    condition: $GYP_GENERATOR_OUTPUT = x86_64
 - provider: releases
   skip_cleanup: true
   api_key:
     secure: FMXzmhBmuy7Jou3h5lG10b8xl5oqI96aYoUrUHO2rfKqQ4UMKxT3hXcdxOnSsnbI6d8NfXbOPKqmqmD4vTk+EqQjCK9fmsNxAg1UktLIsuOxoWmEWYLK5d3xpIuRmfRQDtPVjcryrE420FCfZS67lyr22+v1pLcvcD61ebGZLCg=
   file: 
-  - "${RELEASE_X86_PKG_FILE}"
-  - "${RELEASE_ARM_PKG_FILE}"
+  - "${RELEASE_PKG_FILE}"
   on:
     repo: mpromonet/webrtc-streamer
     tags: true
