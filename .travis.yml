@@ -27,6 +27,7 @@ before_install:
 - gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGS}"
 - ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release
 - popd
+- popd
 #
 - popd
 language: cpp
