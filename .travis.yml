@@ -34,7 +34,8 @@ language: cpp
 compiler:
 - gcc
 script:
-- make PREFIX=${PREFIX} live555 all tgz
+- make PREFIX=${PREFIX} live555 
+- make PREFIX=${PREFIX} all tgz
 before_deploy:
 - export RELEASE_PKG_FILE=$(ls *.tgz)
 - echo "RELEASE_PKG_FILE=${RELEASE_PKG_FILE}"   
