@@ -143,9 +143,15 @@ You can start the application using the docker image :
 
         docker run -p 8000:8000 -it mpromonet/webrtc-streamer
 
-The container accept arguments that are forward to webrtc-server application, then you can get the help using :
+The container accept arguments that are forward to webrtc-server application, then you can :
+
+* get the help using :
 
         docker run -p 8000:8000 -it mpromonet/webrtc-streamer -h
+
+* expose the V4L2 device /dev/video0 using :
+
+        docker run --device=/dev/video0 -p 8000:8000 -it mpromonet/webrtc-streamer
 
 
 
