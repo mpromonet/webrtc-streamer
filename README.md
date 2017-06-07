@@ -87,7 +87,7 @@ Example
 
 You can access to the WebRTC stream coming from an RTSP url using [webrtcstream.html](html/webrtcstream.html) page with the RTSP url as argument, something like:
 
-     https://webrtc-streamer.herokuapp.com/webrtcstream.html?rtsp://217.17.220.110/axis-media/media.amp
+   https://webrtc-streamer.herokuapp.com/webrtcstream.html?rtsp://217.17.220.110/axis-media/media.amp
 
 Embed in a HTML page:
 ===============
@@ -103,7 +103,7 @@ A short sample using webrtc-streamer running locally on port 8000 :
 	<script src="webrtcstreamer.js" ></script>
 	<script>        
 	    var webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000");
-	    window.onload         = function() { webRtcServer.connect(location.search.slice(1)) }
+	    window.onload         = function() { webRtcServer.connect("rtsp://pi2.local:8554/unicast") }
 	    window.onbeforeunload = function() { webRtcServer.disconnect() }
 	</script>
 	</head>
