@@ -9,8 +9,10 @@
 WebRTC-streamer
 ===============
 
-This is a try to stream a video source through WebRTC.  
+This is a try to stream video sources through WebRTC using simple mechanism.  
+
 It embeds a HTTP server that implements API and serve a simple HTML page that use them through AJAX.   
+
 The WebRTC signaling is implemented throught HTTP requests:
 
  - /call   : send offer and get answer
@@ -19,10 +21,11 @@ The WebRTC signaling is implemented throught HTTP requests:
  - /addIceCandidate : add a candidate
  - /getIceCandidate : get the list of candidates
 
-An other HTTP API /getDeviceList give available sources.
-A video source could be :
- - V4L2 devices detected by WebRTC capture factory
- - RTSP url that give access to an H264 video stream (need live555)
+The list of HTTP API is available using /help.
+
+Nowdays there is 2 builds on [Travis CI](https://travis-ci.org/mpromonet/webrtc-streamer) :
+ * for x86_64 on Ubuntu trusty
+ * for arm crosscompiling with gcc-linaro-arm-linux-gnueabihf-raspbian-x64 (this build is running on Raspberry Pi and NanoPi NEO)
 
 Dependencies :
 -------------
