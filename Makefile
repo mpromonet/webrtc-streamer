@@ -9,7 +9,7 @@ PREFIX?=/usr
 GITVERSION=$(shell git describe --tags --always --dirty)
 VERSION=$(GITVERSION)
 
-TARGET = webrtc-server
+TARGET = $(notdir $(CURDIR))
 all: $(TARGET)
 
 # webrtc
