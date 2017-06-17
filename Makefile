@@ -92,10 +92,10 @@ clean:
 	make -C h264bitstream clean
 	make -k -C live555helper clean
 
-install:
+install: $(TARGET)
 	install -m 0755 $(TARGET) /usr/local/bin
 
-tgz:
+tgz: $(TARGET)
 	tar cvzf $(TARGET)_$(GITVERSION)_$(shell $(CC) -dumpmachine).tgz $(TARGET) html
 
 live555:
