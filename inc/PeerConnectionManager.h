@@ -153,7 +153,8 @@ class PeerConnectionManager {
 	
 		const Json::Value getIceCandidateList(const std::string &peerid);
 		bool              addIceCandidate(const std::string &peerid, const Json::Value& jmessage);
-		const Json::Value getDeviceList();
+		const Json::Value getVideoDeviceList();
+		const Json::Value getAudioDeviceList();
 		bool              hangUp(const std::string &peerid);
 		const Json::Value call(const std::string &peerid, const std::string &url, const std::string & options, const Json::Value& jmessage);
 		const Json::Value getIceServers();
@@ -165,8 +166,8 @@ class PeerConnectionManager {
 
 	protected:
 		PeerConnectionObserver*                 CreatePeerConnection(const std::string& peerid);
-		bool                                    AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url, const std::string & options);
-		std::unique_ptr<cricket::VideoCapturer> OpenVideoCaptureDevice(const std::string & url, const std::string & options);
+		bool                                    AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & videourl, const std::string & audiourl, const std::string & options);
+		std::unique_ptr<cricket::VideoCapturer> OpenVideoCaptureDevice(const std::string & videourl, const std::string & audiourl, const std::string & options);
 		bool                                    streamStillUsed(const std::string & streamLabel);
 
 	protected:

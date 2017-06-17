@@ -85,7 +85,7 @@ PeerConnectionManager::~PeerConnectionManager()
 /* ---------------------------------------------------------------------------
 **  return deviceList as JSON vector
 ** -------------------------------------------------------------------------*/
-const Json::Value PeerConnectionManager::getDeviceList()
+const Json::Value PeerConnectionManager::getVideoDeviceList()
 {
 	Json::Value value(Json::arrayValue);
 		
@@ -105,6 +105,21 @@ const Json::Value PeerConnectionManager::getDeviceList()
 			}
 		}
 	}
+	
+	for (std::string url : urlList_)
+	{
+		value.append(url);
+	}
+
+	return value;
+}
+
+/* ---------------------------------------------------------------------------
+**  return deviceList as JSON vector
+** -------------------------------------------------------------------------*/
+const Json::Value PeerConnectionManager::getAudioDeviceList()
+{
+	Json::Value value(Json::arrayValue);
 
 	int16_t num_audioDevices = audioDeviceModule_->RecordingDevices();
 	LOG(INFO) << "nb audio devices:" << num_audioDevices;
@@ -118,13 +133,8 @@ const Json::Value PeerConnectionManager::getDeviceList()
 		}
 	}
 
-	for (std::string url : urlList_)
-	{
-		value.append(url);
-	}
-		
 	return value;
-}  
+}
 
 /* ---------------------------------------------------------------------------
 **  return iceServers as JSON vector
@@ -212,9 +222,9 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 	else
 	{	
 		peerConnectionObserver->createDataChannel("JanusDataChannel");
-		
-		if (!this->AddStreams(peerConnectionObserver->getPeerConnection(), url, options))
-		{ 
+
+		if (!this->AddStreams(peerConnectionObserver->getPeerConnection(), url, "", options))
+		{
 			LOG(WARNING) << "Can't add stream";
 		}		
 		
@@ -328,7 +338,7 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 			}
 
 			// add local stream
-			if (!this->AddStreams(peerConnection, url, options))
+			if (!this->AddStreams(peerConnection, url, "", options))
 			{
 				LOG(WARNING) << "Can't add stream";
 			}
@@ -555,12 +565,12 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 /* ---------------------------------------------------------------------------
 **  get the capturer from its URL
 ** -------------------------------------------------------------------------*/
-std::unique_ptr<cricket::VideoCapturer> PeerConnectionManager::OpenVideoCaptureDevice(const std::string & url, const std::string & options) 
+std::unique_ptr<cricket::VideoCapturer> PeerConnectionManager::OpenVideoCaptureDevice(const std::string & videourl, const std::string & audiourl, const std::string & options)
 {
-	LOG(INFO) << "url:" << url << " options:" << options;	
-	
+	LOG(INFO) << "videourl:" << videourl << " audiourl:" << audiourl << " options:" << options;
+
 	std::unique_ptr<cricket::VideoCapturer> capturer;
-	if (url.find("rtsp://") == 0)
+	if (videourl.find("rtsp://") == 0)
 	{
 #ifdef HAVE_LIVE555
 		int timeout = 10;
@@ -572,7 +582,7 @@ std::unique_ptr<cricket::VideoCapturer> PeerConnectionManager::OpenVideoCaptureD
 		if (CivetServer::getParam(options, "rtpovertcp", tmp)) {
 			rtpovertcp = std::stoi(tmp);
 		}
-		capturer.reset(new RTSPVideoCapturer(url, timeout, rtpovertcp));
+		capturer.reset(new RTSPVideoCapturer(videourl, timeout, rtpovertcp));
 #endif
 	}
 	else
@@ -588,14 +598,40 @@ std::unique_ptr<cricket::VideoCapturer> PeerConnectionManager::OpenVideoCaptureD
 				char id[kSize] = {0};
 				if (info->GetDeviceName(i, name, kSize, id, kSize) != -1) 
 				{
-					if (url == name)
+					if (videourl == name)
 					{
 						cricket::WebRtcVideoDeviceCapturerFactory factory;
 						capturer = factory.Create(cricket::Device(name, 0));
+						break;
 					}
 				}
 			}
 		}
+
+		int16_t num_audioDevices = audioDeviceModule_->RecordingDevices();
+		int16_t idx_audioDevice = -1;
+		for (int i = 0; i < num_audioDevices; ++i)
+		{
+			char name[webrtc::kAdmMaxDeviceNameSize] = {0};
+			char id[webrtc::kAdmMaxGuidSize] = {0};
+			if (audiourl == name)
+			{
+				if (audioDeviceModule_->RecordingDeviceName(i, name, id) != -1)
+				{
+					idx_audioDevice = i;
+					break;
+				}
+			}
+		}
+		if ( (idx_audioDevice >= 0) && (idx_audioDevice < num_audioDevices) )
+		{
+			audioDeviceModule_->SetRecordingDevice(idx_audioDevice);
+		}
+		else
+		{
+			audioDeviceModule_->SetRecordingDevice(-1);
+		}
+
 	}
 	return capturer;
 }
@@ -603,22 +639,22 @@ std::unique_ptr<cricket::VideoCapturer> PeerConnectionManager::OpenVideoCaptureD
 /* ---------------------------------------------------------------------------
 **  Add a stream to a PeerConnection
 ** -------------------------------------------------------------------------*/
-bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & url, const std::string & options) 
+bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & videourl, const std::string & audiourl, const std::string & options)
 {
 	bool ret = false;
-	
-	// compute stream label removing space because SDP use label 
-	std::string streamLabel = url;
+
+	// compute stream label removing space because SDP use label
+	std::string streamLabel = videourl;
 	streamLabel.erase(std::remove_if(streamLabel.begin(), streamLabel.end(), isspace), streamLabel.end());
 	
 	std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(streamLabel);
 	if (it == stream_map_.end())
 	{
 		// need to create the strem
-		std::unique_ptr<cricket::VideoCapturer> capturer = OpenVideoCaptureDevice(url, options);
+		std::unique_ptr<cricket::VideoCapturer> capturer = OpenVideoCaptureDevice(videourl, audiourl, options);
 		if (!capturer)
 		{
-			LOG(LS_ERROR) << "Cannot create capturer " << url;
+			LOG(LS_ERROR) << "Cannot create capturer video:" << videourl << " audio:" << audiourl;
 		}
 		else
 		{			

@@ -99,10 +99,14 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 	: CivetServer(options), m_webRtcServer(webRtcServer)
 {
 	// http api callbacks
-	m_func["/getDeviceList"]         = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
-		return m_webRtcServer->getDeviceList();
+	m_func["/getVideoDeviceList"]    = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
+		return m_webRtcServer->getVideoDeviceList();
 	};
-	
+
+	m_func["/getAudioDeviceList"]    = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
+		return m_webRtcServer->getAudioDeviceList();
+	};
+
 	m_func["/getIceServers"]         = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
 		return m_webRtcServer->getIceServers();
 	};

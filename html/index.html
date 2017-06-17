@@ -142,7 +142,7 @@ h2 {
 	// load/unload callbacks
 	// ------------------------------------------	
 	window.onload         = function() { 
-		send("/getDeviceList", null, null, onGetDeviceList); 
+		send("/getVideoDeviceList", null, null, onGetDeviceList); 
 	} 
 	window.onbeforeunload = function() { 
 		for (var url in webRtcServerList) { 
