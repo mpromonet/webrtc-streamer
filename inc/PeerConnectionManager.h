@@ -169,7 +169,8 @@ class PeerConnectionManager {
 		std::unique_ptr<cricket::VideoCapturer> OpenVideoCaptureDevice(const std::string & url, const std::string & options);
 		bool                                    streamStillUsed(const std::string & streamLabel);
 
-	protected: 
+	protected:
+		rtc::scoped_refptr<webrtc::AudioDeviceModule>                             audioDeviceModule_;
 		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>                peer_connection_factory_;
 		std::map<std::string, PeerConnectionObserver* >                           peer_connectionobs_map_;
 		std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >  stream_map_;

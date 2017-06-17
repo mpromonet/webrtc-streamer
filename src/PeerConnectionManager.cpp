@@ -13,6 +13,9 @@
 #include "webrtc/modules/video_capture/video_capture_factory.h"
 #include "webrtc/media/engine/webrtcvideocapturerfactory.h"
 #include "webrtc/api/test/fakeconstraints.h"
+#include "webrtc/api/audio_codecs/builtin_audio_encoder_factory.h"
+#include "webrtc/api/audio_codecs/builtin_audio_decoder_factory.h"
+#include "webrtc/modules/audio_device/include/audio_device.h"
 
 #include "PeerConnectionManager.h"
 
@@ -37,7 +40,15 @@ const char kSessionDescriptionSdpName[] = "sdp";
 **  Constructor
 ** -------------------------------------------------------------------------*/
 PeerConnectionManager::PeerConnectionManager(const std::string & stunurl, const std::string & turnurl, const std::list<std::string> & urlList)
-	: peer_connection_factory_(webrtc::CreatePeerConnectionFactory())
+	: audioDeviceModule_(webrtc::AudioDeviceModule::Create(0, webrtc::AudioDeviceModule::kPlatformDefaultAudio))
+	, peer_connection_factory_(webrtc::CreatePeerConnectionFactory(rtc::Thread::Current(),
+                                                                    rtc::Thread::Current(),
+                                                                    rtc::Thread::Current(),
+                                                                    audioDeviceModule_,
+                                                                    webrtc::CreateBuiltinAudioEncoderFactory(),
+                                                                    webrtc::CreateBuiltinAudioDecoderFactory(),
+                                                                    NULL,
+                                                                    NULL))
 	, stunurl_(stunurl)
 	, turnurl_(turnurl)
 	, urlList_(urlList)
@@ -81,8 +92,9 @@ const Json::Value PeerConnectionManager::getDeviceList()
 	std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo());
 	if (info) 
 	{
-		int num_devices = info->NumberOfDevices();
-		for (int i = 0; i < num_devices; ++i) 
+		int num_videoDevices = info->NumberOfDevices();
+		LOG(INFO) << "nb video devices:" << num_videoDevices;
+		for (int i = 0; i < num_videoDevices; ++i)
 		{
 			const uint32_t kSize = 256;
 			char name[kSize] = {0};
@@ -93,7 +105,19 @@ const Json::Value PeerConnectionManager::getDeviceList()
 			}
 		}
 	}
-	
+
+	int16_t num_audioDevices = audioDeviceModule_->RecordingDevices();
+	LOG(INFO) << "nb audio devices:" << num_audioDevices;
+	for (int i = 0; i < num_audioDevices; ++i)
+	{
+		char name[webrtc::kAdmMaxDeviceNameSize] = {0};
+		char id[webrtc::kAdmMaxGuidSize] = {0};
+		if (audioDeviceModule_->RecordingDeviceName(i, name, id) != -1)
+		{
+			value.append(name);
+		}
+	}
+
 	for (std::string url : urlList_)
 	{
 		value.append(url);
