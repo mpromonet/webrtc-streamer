@@ -16,7 +16,6 @@
 	document.querySelector('#janusRoom').value = janusRoomConfig.roomId;
 
 	var janus;	
-	var srvurl = location.protocol+"//"+window.location.hostname+":"+window.location.port;
 	
 	// columns
 	var columnDefs = [
@@ -35,7 +34,7 @@
 				params.api.refreshCells([params.node], ['roomid']);
 				
 				if (!janus) {
-					janus = new JanusVideoRoom(document.querySelector('#janusUrl').value, clientCallBack, srvurl);
+					janus = new JanusVideoRoom(document.querySelector('#janusUrl').value, clientCallBack);
 				}
 				janus.join(parseInt(params.data.roomid), params.data.url, params.data.url);
 				
