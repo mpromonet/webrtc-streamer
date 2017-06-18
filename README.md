@@ -94,7 +94,7 @@ You can access to the WebRTC stream coming from an RTSP url using [webrtcstream.
 
 Embed in a HTML page:
 ===============
-Instead of using the internal HTTP server, it is easy to display a WebRTC stream in a HTML page served by an external HTTP server. The URL of the webrtc-streamer to use should be given creating the WebRtcStreamer instance :
+Instead of using the internal HTTP server, it is easy to display a WebRTC stream in a HTML page served by an external HTTP server. The URL of the webrtc-streamer to use should be given creating the [WebRtcStreamer](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer/blob/master/jsdoc/WebRtcStreamer.html) instance :
 
 	var webRtcServer      = new WebRtcStreamer(<video tag>, <url of webrtc-streamer>);
 
@@ -117,7 +117,7 @@ A short sample using webrtc-streamer running locally on port 8000 :
 
 Connect to Janus Gateway Video Room
 ===============
-A simple way to publish WebRTC stream to a [Janus Gateway](https://janus.conf.meetecho.com) Video Room is to use the JanusVideoRoom interface
+A simple way to publish WebRTC stream to a [Janus Gateway](https://janus.conf.meetecho.com) Video Room is to use the [JanusVideoRoom](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer/blob/master/jsdoc/JanusVideoRoom.html) interface
 
         var janus = new JanusVideoRoom(<janus url>)
 
