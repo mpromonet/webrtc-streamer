@@ -44,10 +44,14 @@ h2 {
 	// ------------------------------------------	
 	var argurl = location.search.slice(1);
 	var argoptions;
+	var audiourl;
 	if (typeof URLSearchParams != 'undefined') {
 		var params = new URLSearchParams(location.search.slice(1));
 		argurl = params.get("url");
 		argoptions = params.get("options");
+		audiourl = params.get("audiourl");
+	} else {
+		console.log("URLSearchParams not supported then no argument could be used");
 	}
 		
 	// ------------------------------------------
@@ -62,6 +66,7 @@ h2 {
 			deviceList.push.apply( deviceList, remoteDeviceList );
 		}
 
+		// create navigation menu
 		var urllist = document.getElementById("menu");
 		for (var dev in deviceList) {
 			var url = deviceList[dev];
@@ -95,14 +100,10 @@ h2 {
 			webRtcServerList[url] = undefined;
 		}
 		
-		// remove the video title element
-		var videotitleelt = 	document.getElementById ("title_" + url);
-		document.body.removeChild(videotitleelt); 
-		
-		// remove the video element
-		var videoelt = 	document.getElementById (videoTag);
-		document.body.removeChild(videoelt); 
-		
+		// remove the video element and its tile
+		var divElt = 	document.getElementById ("div_" + url);
+		document.body.removeChild(divElt); 
+				
 		// unhighlight the navigation
 		var navElt = 	document.getElementById ("nav_" + url);
 		navElt.className = "";		
@@ -116,19 +117,22 @@ h2 {
 		
 		// add a video element to display webrtc stream
 		if (document.getElementById (videoTag) === null) {
+			var divelt = document.createElement("div");
+			divelt.id = "div_" + url
 			var nameelt = document.createElement("h2");
 			nameelt.id = "title_" + url
 			nameelt.innerHTML = url;
-			document.body.appendChild(nameelt);
+			divelt.appendChild(nameelt);
 			var videoelt = document.createElement("video");
 			videoelt.id = videoTag;
-			document.body.appendChild(videoelt);
+			divelt.appendChild(videoelt);
+			document.body.appendChild(divelt);
 		}
 		var videoelt = 	document.getElementById (videoTag);
 		
-		// connect videoelement to webrtc stream
+		// connect video element to webrtc stream
 		var webRtcServer = new WebRtcStreamer(videoTag);
-		webRtcServer.connect(url, argoptions);
+		webRtcServer.connect(url, audiourl, argoptions);
 			
 		// highlight the navigation 
 		var navElt = 	document.getElementById ("nav_" + url);

@@ -99,8 +99,9 @@ const Json::Value PeerConnectionManager::getVideoDeviceList()
 			const uint32_t kSize = 256;
 			char name[kSize] = {0};
 			char id[kSize] = {0};
-			if (info->GetDeviceName(i, name, kSize, id, kSize) != -1) 
+			if (info->GetDeviceName(i, name, kSize, id, kSize) != -1)
 			{
+				LOG(INFO) << "video device name:" << name << " id:" << id;
 				value.append(name);
 			}
 		}
@@ -129,6 +130,7 @@ const Json::Value PeerConnectionManager::getAudioDeviceList()
 		char id[webrtc::kAdmMaxGuidSize] = {0};
 		if (audioDeviceModule_->RecordingDeviceName(i, name, id) != -1)
 		{
+			LOG(INFO) << "audio device name:" << name << " id:" << id;
 			value.append(name);
 		}
 	}
@@ -209,7 +211,7 @@ bool PeerConnectionManager::addIceCandidate(const std::string& peerid, const Jso
 /* ---------------------------------------------------------------------------
 ** create an offer for a call
 ** -------------------------------------------------------------------------*/
-const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, const std::string & url, const std::string & options) 
+const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, const std::string & videourl, const std::string & audiourl, const std::string & options)
 {
 	Json::Value offer;
 	LOG(INFO) << __FUNCTION__;
@@ -223,7 +225,7 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 	{	
 		peerConnectionObserver->createDataChannel("JanusDataChannel");
 
-		if (!this->AddStreams(peerConnectionObserver->getPeerConnection(), url, "", options))
+		if (!this->AddStreams(peerConnectionObserver->getPeerConnection(), videourl, audiourl, options))
 		{
 			LOG(WARNING) << "Can't add stream";
 		}		
@@ -297,7 +299,7 @@ void PeerConnectionManager::setAnswer(const std::string &peerid, const Json::Val
 /* ---------------------------------------------------------------------------
 **  auto-answer to a call  
 ** -------------------------------------------------------------------------*/
-const Json::Value PeerConnectionManager::call(const std::string & peerid, const std::string &url, const std::string & options, const Json::Value& jmessage) 
+const Json::Value PeerConnectionManager::call(const std::string & peerid, const std::string & videourl, const std::string & audiourl, const std::string & options, const Json::Value& jmessage)
 {
 	LOG(INFO) << __FUNCTION__;
 	Json::Value answer;
@@ -338,7 +340,7 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 			}
 
 			// add local stream
-			if (!this->AddStreams(peerConnection, url, "", options))
+			if (!this->AddStreams(peerConnection, videourl, audiourl, options))
 			{
 				LOG(WARNING) << "Can't add stream";
 			}
@@ -488,22 +490,29 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 	{
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it.second->getPeerConnection();
 		
-		std::string sdp;
-		peerConnection->local_description()->ToString(&sdp);
-		
-		rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
-		Json::Value streams;
-		for (unsigned int i = 0; i<localstreams->count(); i++)
-		{
-			streams.append(localstreams->at(i)->label());
+		if ( (peerConnection) && (peerConnection->local_description()) ) {
+			std::string sdp;
+			peerConnection->local_description()->ToString(&sdp);
+			
+			rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
+			
+			Json::Value streams;
+			if (localstreams) {
+				for (unsigned int i = 0; i<localstreams->count(); i++)
+				{
+					if (localstreams->at(i)) {
+						streams.append(localstreams->at(i)->label());
+					}
+				}
+			}
+			Json::Value content;
+			content["sdp"] = sdp;
+			content["streams"] = streams;
+			
+			Json::Value pc;
+			pc[it.first] = content;
+			value.append(pc);
 		}
-		Json::Value content;
-		content["sdp"] = sdp;
-		content["streams"] = streams;
-
-		Json::Value pc;
-		pc[it.first] = content;
-		value.append(pc);
 	}
 	return value;
 }
@@ -565,10 +574,11 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 /* ---------------------------------------------------------------------------
 **  get the capturer from its URL
 ** -------------------------------------------------------------------------*/
-std::unique_ptr<cricket::VideoCapturer> PeerConnectionManager::OpenVideoCaptureDevice(const std::string & videourl, const std::string & audiourl, const std::string & options)
+rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVideoTrack(const std::string & videourl, const std::string & options)
 {
-	LOG(INFO) << "videourl:" << videourl << " audiourl:" << audiourl << " options:" << options;
-
+	LOG(INFO) << "videourl:" << videourl << " options:" << options;
+	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
+	
 	std::unique_ptr<cricket::VideoCapturer> capturer;
 	if (videourl.find("rtsp://") == 0)
 	{
@@ -608,32 +618,57 @@ std::unique_ptr<cricket::VideoCapturer> PeerConnectionManager::OpenVideoCaptureD
 			}
 		}
 
+	}
+	
+	if (!capturer) 
+	{
+		LOG(LS_ERROR) << "Cannot create capturer video:" << videourl;		
+	} 
+	else
+	{
+		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = peer_connection_factory_->CreateVideoSource(std::move(capturer), NULL);
+		video_track = peer_connection_factory_->CreateVideoTrack(kVideoLabel, videoSource);		
+	}
+	return video_track;
+}
+
+
+rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAudioTrack(const std::string & audiourl, const std::string & options)
+{
+	LOG(INFO) << "audiourl:" << audiourl << " options:" << options;
+	
+	rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track;
+	if (audiourl.find("rtsp://") == 0)
+	{
+#ifdef HAVE_LIVE555
+#endif
+	}
+	else	
+	{
 		int16_t num_audioDevices = audioDeviceModule_->RecordingDevices();
 		int16_t idx_audioDevice = -1;
 		for (int i = 0; i < num_audioDevices; ++i)
 		{
 			char name[webrtc::kAdmMaxDeviceNameSize] = {0};
 			char id[webrtc::kAdmMaxGuidSize] = {0};
-			if (audiourl == name)
+			if (audioDeviceModule_->RecordingDeviceName(i, name, id) != -1)
 			{
-				if (audioDeviceModule_->RecordingDeviceName(i, name, id) != -1)
+				if (audiourl == name)
 				{
 					idx_audioDevice = i;
 					break;
 				}
 			}
 		}
+		LOG(LS_ERROR) << "audiourl:" << audiourl << " options:" << options << " idx_audioDevice:" << idx_audioDevice;
 		if ( (idx_audioDevice >= 0) && (idx_audioDevice < num_audioDevices) )
 		{
 			audioDeviceModule_->SetRecordingDevice(idx_audioDevice);
+			rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource = peer_connection_factory_->CreateAudioSource(NULL);
+			audio_track = peer_connection_factory_->CreateAudioTrack(kAudioLabel, audioSource);			
 		}
-		else
-		{
-			audioDeviceModule_->SetRecordingDevice(-1);
-		}
-
-	}
-	return capturer;
+	}		
+	return audio_track;
 }
 		
 /* ---------------------------------------------------------------------------
@@ -650,44 +685,32 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 	std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(streamLabel);
 	if (it == stream_map_.end())
 	{
-		// need to create the strem
-		std::unique_ptr<cricket::VideoCapturer> capturer = OpenVideoCaptureDevice(videourl, audiourl, options);
-		if (!capturer)
+		// need to create the stream
+		rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(this->CreateVideoTrack(videourl, options));
+		rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(this->CreateAudioTrack(audiourl, options));
+		rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(streamLabel);
+		if (!stream.get())
 		{
-			LOG(LS_ERROR) << "Cannot create capturer video:" << videourl << " audio:" << audiourl;
+			LOG(LS_ERROR) << "Cannot create stream";
 		}
 		else
-		{			
-			rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = peer_connection_factory_->CreateVideoSource(std::move(capturer), NULL);
-			rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(peer_connection_factory_->CreateVideoTrack(kVideoLabel, videoSource));
-			rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource = peer_connection_factory_->CreateAudioSource(NULL);
-			rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(peer_connection_factory_->CreateAudioTrack(kAudioLabel, audioSource));			
-			rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(streamLabel);
-			if (!stream.get())
+		{
+			if ( (video_track) && (!stream->AddTrack(video_track)) )
 			{
-				LOG(LS_ERROR) << "Cannot create stream";
+				LOG(LS_ERROR) << "Adding VideoTrack to MediaStream failed";
 			}
-			else
+			
+			if ( (audio_track) && (!stream->AddTrack(audio_track)) )
 			{
-				if (!stream->AddTrack(video_track))
-				{
-					LOG(LS_ERROR) << "Adding VideoTrack to MediaStream failed";
-				}
-				if (!stream->AddTrack(audio_track))
-				{
-					LOG(LS_ERROR) << "Adding AudioTrack to MediaStream failed";
-				}
-				else
-				{
-					LOG(INFO) << "Adding Stream to map";
-					stream_map_[streamLabel] = stream;
-				}
+				LOG(LS_ERROR) << "Adding AudioTrack to MediaStream failed";
 			}
+			
+			LOG(INFO) << "Adding Stream to map";
+			stream_map_[streamLabel] = stream;
 		}
-		
 	}
-	
-	
+
+
 	it = stream_map_.find(streamLabel);
 	if (it != stream_map_.end())
 	{

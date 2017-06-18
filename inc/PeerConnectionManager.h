@@ -156,18 +156,19 @@ class PeerConnectionManager {
 		const Json::Value getVideoDeviceList();
 		const Json::Value getAudioDeviceList();
 		bool              hangUp(const std::string &peerid);
-		const Json::Value call(const std::string &peerid, const std::string &url, const std::string & options, const Json::Value& jmessage);
+		const Json::Value call(const std::string &peerid, const std::string & videourl, const std::string & audiourl, const std::string & options, const Json::Value& jmessage);
 		const Json::Value getIceServers();
 		const Json::Value getPeerConnectionList();
 		const Json::Value getStreamList();
-		const Json::Value createOffer(const std::string &peerid, const std::string & url, const std::string & options);
+		const Json::Value createOffer(const std::string &peerid, const std::string & videourl, const std::string & audiourl, const std::string & options);
 		void              setAnswer(const std::string &peerid, const Json::Value& jmessage);
 
 
 	protected:
 		PeerConnectionObserver*                 CreatePeerConnection(const std::string& peerid);
 		bool                                    AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & videourl, const std::string & audiourl, const std::string & options);
-		std::unique_ptr<cricket::VideoCapturer> OpenVideoCaptureDevice(const std::string & videourl, const std::string & audiourl, const std::string & options);
+		rtc::scoped_refptr<webrtc::VideoTrackInterface> CreateVideoTrack(const std::string & videourl, const std::string & options);
+		rtc::scoped_refptr<webrtc::AudioTrackInterface> CreateAudioTrack(const std::string & audiourl, const std::string & options);
 		bool                                    streamStillUsed(const std::string & streamLabel);
 
 	protected:

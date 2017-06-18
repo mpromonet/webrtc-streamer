@@ -116,9 +116,11 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 		CivetServer::getParam(req_info->query_string, "peerid", peerid);
 		std::string url;
 		CivetServer::getParam(req_info->query_string, "url", url);
+		std::string audiourl;
+		CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
 		std::string options;
 		CivetServer::getParam(req_info->query_string, "options", options);
-		return m_webRtcServer->call(peerid, url, options, in);
+		return m_webRtcServer->call(peerid, url, audiourl, options, in);
 	};
 	
 	m_func["/hangup"]                = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
@@ -133,9 +135,11 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 		CivetServer::getParam(req_info->query_string, "peerid", peerid);
 		std::string url;
 		CivetServer::getParam(req_info->query_string, "url", url);
+		std::string audiourl;
+		CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
 		std::string options;
 		CivetServer::getParam(req_info->query_string, "options", options);
-		return m_webRtcServer->createOffer(peerid, url, options);
+		return m_webRtcServer->createOffer(peerid, url, audiourl, options);
 	};
 	m_func["/setAnswer"]             = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
 		std::string peerid;

@@ -5,9 +5,12 @@ RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate || window.
 URL = window.webkitURL || window.URL;
 
 
-// ------------------------------------------
-// Constructor
-// ------------------------------------------
+/** 
+ * Interface with WebRTC-streamer API
+ * @constructor
+ * @param {string} videoElement - id of the video element tag
+ * @param {string} srvurl -  url of webrtc-streamer (default is current location)
+*/
 function WebRtcStreamer (videoElement, srvurl) {
 	this.videoElement     = videoElement;	
 	this.srvurl           = srvurl || location.protocol+"//"+window.location.hostname+":"+window.location.port;
@@ -27,34 +30,89 @@ function WebRtcStreamer (videoElement, srvurl) {
 	var iceServers = sendSync('/getIceServers');
 	this.pcConfig         = iceServers || {'iceServers': [] };
 }
- 
-// ------------------------------------------
-// create RTCPeerConnection 
-// ------------------------------------------
-WebRtcStreamer.prototype.createPeerConnection = function() {
-	var pc = null;
-	try {
-		trace("createPeerConnection  config: " + JSON.stringify(this.pcConfig) + " option:"+  JSON.stringify(this.pcOptions));
-		pc = new RTCPeerConnection(this.pcConfig, this.pcOptions);
+ 	
+/** 
+ * Connect a WebRTC Stream to videoElement 
+ * @param {string} videourl - id of WebRTC video stream
+ * @param {string} audiourl - id of WebRTC audio stream
+ * @param {string} options -  options of WebRTC call
+*/
+WebRtcStreamer.prototype.connect = function(videourl, audiourl, options) {
+	this.disconnect();
+	
+	try {            
+		this.pc = this.createPeerConnection();
+		var peerid = Math.random();			
+		this.pc.peerid = peerid;
+		
 		var streamer = this;
-		pc.onicecandidate = function(evt) { streamer.onIceCandidate.call(streamer, evt) };
-		if (typeof pc.ontrack != "undefined") {
-			pc.ontrack        = function(evt) { streamer.onTrack.call(streamer,evt) };
-		} 
-		else {
-			pc.onaddstream    = function(evt) { streamer.onTrack.call(streamer,evt) };
+		var callurl = this.srvurl + "/call?peerid="+ peerid+"&url="+encodeURIComponent(videourl);
+		if (audiourl) {
+			callurl += "&audiourl="+encodeURIComponent(audiourl);
 		}
-		trace("Created RTCPeerConnnection with config: " + JSON.stringify(this.pcConfig) + "option:"+  JSON.stringify(this.pcOptions) );
-	} 
-	catch (e) {
-		trace("Failed to create PeerConnection exception: " + e.message);
+		if (options) {
+			callurl += "&options="+encodeURIComponent(options);
+		}
+		
+		// create Offer
+		this.pc.createOffer(function(sessionDescription) {
+			trace("Create offer:" + JSON.stringify(sessionDescription));
+			
+			streamer.pc.setLocalDescription(sessionDescription
+				, function() { send(callurl, null, sessionDescription, streamer.onReceiveCall, null, streamer); }
+				, function() {} );
+			
+		}, function(error) { 
+			alert("Create offer error:" + JSON.stringify(error));
+		}, this.mediaConstraints); 															
+
+	} catch (e) {
+		this.disconnect();
+		alert("connect error: " + e);
+	}	    
+}
+
+/** 
+ * Disconnect a WebRTC Stream and clear videoElement source
+*/
+WebRtcStreamer.prototype.disconnect = function() {		
+	if (this.pc) {
+		send(this.srvurl + "/hangup?peerid="+this.pc.peerid);
+		try {
+			this.pc.close();
+		}
+		catch (e) {
+			trace ("Failure close peer connection:" + e);
+		}
+		this.pc = null;
 	}
+	var videoElement = document.getElementById(this.videoElement);
+	if (videoElement) {
+		videoElement.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+	}
+}    
+
+/*
+* create RTCPeerConnection 
+*/
+WebRtcStreamer.prototype.createPeerConnection = function() {
+	trace("createPeerConnection  config: " + JSON.stringify(this.pcConfig) + " option:"+  JSON.stringify(this.pcOptions));
+	var pc = new RTCPeerConnection(this.pcConfig, this.pcOptions);
+	var streamer = this;
+	pc.onicecandidate = function(evt) { streamer.onIceCandidate.call(streamer, evt) };
+	if (typeof pc.ontrack != "undefined") {
+		pc.ontrack        = function(evt) { streamer.onTrack.call(streamer,evt) };
+	} 
+	else {
+		pc.onaddstream    = function(evt) { streamer.onTrack.call(streamer,evt) };
+	}
+	trace("Created RTCPeerConnnection with config: " + JSON.stringify(this.pcConfig) + "option:"+  JSON.stringify(this.pcOptions) );
 	return pc;
 }
-		
-// ------------------------------------------
-// RTCPeerConnection IceCandidate callback
-// ------------------------------------------
+
+/*
+* RTCPeerConnection IceCandidate callback
+*/
 WebRtcStreamer.prototype.onIceCandidate = function (event) {
 	if (event.candidate) {
 		send(this.srvurl + "/addIceCandidate?peerid="+this.pc.peerid, null, event.candidate);
@@ -64,9 +122,9 @@ WebRtcStreamer.prototype.onIceCandidate = function (event) {
 	}
 }
 
-// ------------------------------------------
-// RTCPeerConnection AddTrack callback
-// ------------------------------------------
+/*
+* RTCPeerConnection AddTrack callback
+*/
 WebRtcStreamer.prototype.onTrack = function(event) {
 	trace("Remote track added:" +  JSON.stringify(event));
 	if (event.streams) {
@@ -80,9 +138,9 @@ WebRtcStreamer.prototype.onTrack = function(event) {
 	videoElement.play();
 }
 		
-// ------------------------------------------
-// AJAX /call callback
-// ------------------------------------------		
+/*
+* AJAX /call callback
+*/
 WebRtcStreamer.prototype.onReceiveCall = function(dataJson) {
 	var streamer = this;
 	trace("offer: " + JSON.stringify(dataJson));
@@ -92,9 +150,9 @@ WebRtcStreamer.prototype.onReceiveCall = function(dataJson) {
 		, function(error) { trace ("setRemoteDescription error:" + JSON.stringify(error)); });
 }	
 
-// ------------------------------------------
-// AJAX /getIceCandidate callback
-// ------------------------------------------		
+/*
+* AJAX /getIceCandidate callback
+*/
 WebRtcStreamer.prototype.onReceiveCandidate = function(dataJson) {
 	trace("candidate: " + JSON.stringify(dataJson));
 	if (dataJson) {
@@ -108,51 +166,3 @@ WebRtcStreamer.prototype.onReceiveCandidate = function(dataJson) {
 		}
 	}
 }
-
-// ------------------------------------------
-// Connect to WebRtc Stream
-// ------------------------------------------	
-WebRtcStreamer.prototype.connect = function(url, options) {
-	this.disconnect();
-	
-	try {            
-		this.pc = this.createPeerConnection();
-		var peerid = Math.random();			
-		this.pc.peerid = peerid;
-		
-		var streamer = this;
-		// create Offer
-		this.pc.createOffer(function(sessionDescription) {
-			trace("Create offer:" + JSON.stringify(sessionDescription));
-			
-			streamer.pc.setLocalDescription(sessionDescription
-				, function() { send(streamer.srvurl + "/call?peerid="+ peerid+"&url="+encodeURIComponent(url)+"&options="+encodeURIComponent(options), null, sessionDescription, streamer.onReceiveCall, null, streamer); }
-				, function() {} );
-			
-		}, function(error) { 
-			alert("Create offer error:" + JSON.stringify(error));
-		}, this.mediaConstraints); 															
-
-	} catch (e) {
-		this.disconnect();
-		alert("connect error: " + e);
-	}	    
-}
-
-// ------------------------------------------
-// Disconnect from a WebRtc Stream
-// ------------------------------------------	
-WebRtcStreamer.prototype.disconnect = function() {		
-	if (this.pc) {
-		send(this.srvurl + "/hangup?peerid="+this.pc.peerid);
-		try {
-			this.pc.close();
-		}
-		catch (e) {
-			trace ("Failure close peer connection:" + e);
-		}
-		this.pc = null;
-	}
-	var videoElement = document.getElementById(this.videoElement);
-	videoElement.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///////yH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
-}    
