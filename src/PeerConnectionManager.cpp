@@ -125,15 +125,20 @@ const Json::Value PeerConnectionManager::getAudioDeviceList()
 
 	int16_t num_audioDevices = audioDeviceModule_->RecordingDevices();
 	LOG(INFO) << "nb audio devices:" << num_audioDevices;
+	
+	std::map<std::string,std::string> deviceMap;
 	for (int i = 0; i < num_audioDevices; ++i)
 	{
 		char name[webrtc::kAdmMaxDeviceNameSize] = {0};
-		char id[webrtc::kAdmMaxGuidSize] = {0};
+		char id[webrtc::kAdmMaxGuidSize] = {0};				
 		if (audioDeviceModule_->RecordingDeviceName(i, name, id) != -1)
 		{
 			LOG(INFO) << "audio device name:" << name << " id:" << id;
-			value.append(name);
+			deviceMap[name]=id;
 		}
+	}
+	for (auto& pair : deviceMap) {
+		value.append(pair.first);
 	}
 
 	return value;
