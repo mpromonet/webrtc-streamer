@@ -41,12 +41,13 @@ const char kSessionDescriptionSdpName[] = "sdp";
 ** -------------------------------------------------------------------------*/
 PeerConnectionManager::PeerConnectionManager(const std::string & stunurl, const std::string & turnurl, const std::list<std::string> & urlList)
 	: audioDeviceModule_(webrtc::AudioDeviceModule::Create(0, webrtc::AudioDeviceModule::kPlatformDefaultAudio))
+	, audioDecoderfactory_(webrtc::CreateBuiltinAudioDecoderFactory())
 	, peer_connection_factory_(webrtc::CreatePeerConnectionFactory(rtc::Thread::Current(),
                                                                     rtc::Thread::Current(),
                                                                     rtc::Thread::Current(),
                                                                     audioDeviceModule_,
                                                                     webrtc::CreateBuiltinAudioEncoderFactory(),
-                                                                    webrtc::CreateBuiltinAudioDecoderFactory(),
+                                                                    audioDecoderfactory_,
                                                                     NULL,
                                                                     NULL))
 	, stunurl_(stunurl)
@@ -641,7 +642,7 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 	if (audiourl.find("rtsp://") == 0)
 	{
 #ifdef HAVE_LIVE555
-		rtc::scoped_refptr<RTSPAudioSource> audioSource = RTSPAudioSource::Create(audiourl);
+		rtc::scoped_refptr<RTSPAudioSource> audioSource = RTSPAudioSource::Create(audioDecoderfactory_, audiourl);
 		audio_track = peer_connection_factory_->CreateAudioTrack(kAudioLabel, audioSource);	
 #endif
 	}
