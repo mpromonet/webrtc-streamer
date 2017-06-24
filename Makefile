@@ -43,7 +43,7 @@ live555helper/Makefile:
 
 live555helper/live555helper.a: live555helper/Makefile
 	git submodule update live555helper
-	make -C live555helper CC=$(CXX) PREFIX=$(PREFIX) CFLAGS_EXTRA=-fno-rtti
+	make -C live555helper CC=$(CXX) PREFIX=$(PREFIX) CFLAGS_EXTRA="$(CFLAGS)"
 
 CFLAGS += -DHAVE_LIVE555
 CFLAGS += -I live555helper/inc
