@@ -641,6 +641,8 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 	if (audiourl.find("rtsp://") == 0)
 	{
 #ifdef HAVE_LIVE555
+		rtc::scoped_refptr<RTSPAudioSource> audioSource = RTSPAudioSource::Create(audiourl);
+		audio_track = peer_connection_factory_->CreateAudioTrack(kAudioLabel, audioSource);	
 #endif
 	}
 	else	
