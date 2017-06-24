@@ -43,7 +43,7 @@ live555helper/Makefile:
 
 live555helper/live555helper.a: live555helper/Makefile
 	git submodule update live555helper
-	make -C live555helper CC=$(CXX)
+	make -C live555helper CC=$(CXX) PREFIX=$(PREFIX) CFLAGS_EXTRA=-fno-rtti
 
 CFLAGS += -DHAVE_LIVE555
 CFLAGS += -I live555helper/inc
@@ -100,6 +100,6 @@ tgz: $(TARGET)
 
 live555:
 	wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -
-	cd live && ./genMakefiles linux
-	make -C live CPLUSPLUS_COMPILER=$(CXX) C_COMPILER=$(CC) LINK='$(CXX) -o' PREFIX=$(SYSROOT)/$(PREFIX) install
+	cd live && ./genMakefiles linux-gdb
+	make -C live CPLUSPLUS_COMPILER="$(CXX) -fno-rtti" C_COMPILER=$(CC) LINK='$(CXX) -o' PREFIX=$(SYSROOT)/$(PREFIX) install
 	rm -rf live
