@@ -65,7 +65,7 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 		cricket::InternalDecoderFactory       m_factory;
 		std::unique_ptr<webrtc::VideoDecoder> m_decoder;
 		std::vector<uint8_t>                  m_cfg;
-		std::string                           m_h264_id;
+		std::string                           m_codec;
                 h264_stream_t*                        m_h264;
 };
 
@@ -76,13 +76,16 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 #include "webrtc/api/audio_codecs/builtin_audio_decoder_factory.h"
 #include <iostream>
 
-class RTSPAudioSource : public webrtc::LocalAudioSource, public rtc::Thread, public RTSPConnection::Callback {
+class RTSPAudioSource : public webrtc::Notifier<webrtc::AudioSourceInterface>, public rtc::Thread, public RTSPConnection::Callback {
 	public:
 		static rtc::scoped_refptr<RTSPAudioSource> Create(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri) {
 			rtc::scoped_refptr<RTSPAudioSource> source(new rtc::RefCountedObject<RTSPAudioSource>(audioDecoderFactory, uri));
 			return source;
 		}
 
+		SourceState state() const override { return kLive; }
+		bool remote() const override { return true; }
+		
 		void AddSink(webrtc::AudioTrackSinkInterface* sink) override {
 			std::cout << "=> AddSink" << std::endl;
 			m_sink = sink;

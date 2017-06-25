@@ -14,6 +14,9 @@
 #include "webrtc/base/optional.h"
 
 #include "webrtc/modules/video_coding/h264_sprop_parameter_sets.h"
+#include "webrtc/api/video/i420_buffer.h"
+#include "webrtc/common_video/libyuv/include/webrtc_libyuv.h"
+#include "libyuv/convert.h"
 
 #include "rtspvideocapturer.h"
 
@@ -36,7 +39,7 @@ bool RTSPVideoCapturer::onNewSession(const char* id,const char* media, const cha
 	bool success = false;
 	if ( (strcmp(media, "video") == 0) && (strcmp(codec, "H264") == 0) )
 	{
-		m_h264_id = id;
+		m_codec = codec;
 		const char* pattern="sprop-parameter-sets=";
 		const char* sprop=strstr(sdp, pattern);
 		if (sprop)
@@ -70,6 +73,11 @@ bool RTSPVideoCapturer::onNewSession(const char* id,const char* media, const cha
 		}
 		success = true;
 	}
+	else if ( (strcmp(media, "video") == 0) && (strcmp(codec, "JPEG") == 0) )
+	{
+		m_codec = codec;
+		success = true;
+	}
 	return success;
 }
 
@@ -79,7 +87,7 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 
 	int res = 0;
 
-	if (m_h264_id == id) {
+	if (m_codec == "H264") {
 		int nal_start = 0;
 		int nal_end   = 0;
 		find_nal_unit(buffer, size, &nal_start, &nal_end);
@@ -133,6 +141,27 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			LOG(LS_ERROR) << "===========================onData no decoder";
 			res = -1;
 		}
+	} else if (m_codec == "JPEG") {
+		int32_t width = 0;
+		int32_t height = 0;
+		if (libyuv::MJPGSize(buffer, size, &width, &height) == 0) {
+			int stride_y = width;
+			int stride_uv = (width + 1) / 2;
+					
+			rtc::scoped_refptr<webrtc::I420Buffer> I420buffer = webrtc::I420Buffer::Create(width, height, stride_y, stride_uv, stride_uv);
+			const int conversionResult = ConvertToI420(webrtc::VideoType::kMJPEG, buffer, 0, 0,  
+									width, height, size,
+									webrtc::kVideoRotation_0, I420buffer.get());
+			if (conversionResult >= 0) {
+				webrtc::VideoFrame frame(I420buffer, 0, rtc::TimeMillis(), webrtc::kVideoRotation_0);
+				this->Decoded(frame);
+			} else {
+				LOG(LS_ERROR) << "===========================onData decoder error:" << conversionResult;
+			}
+		} else {
+			LOG(LS_ERROR) << "===========================onData cannot JPEG dimension";
+		}
+			    
 	}
 
 	return (res == 0);
@@ -141,10 +170,12 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 ssize_t RTSPVideoCapturer::onNewBuffer(unsigned char* buffer, ssize_t size)
 {
 	ssize_t markerSize = 0;
-	if (size > sizeof(marker))
-	{
-		memcpy( buffer, marker, sizeof(marker) );
-		markerSize = sizeof(marker);
+	if (m_codec == "H264") {
+		if (size > sizeof(marker))
+		{
+			memcpy( buffer, marker, sizeof(marker) );
+			markerSize = sizeof(marker);
+		}
 	}
 	return 	markerSize;
 }
@@ -180,7 +211,6 @@ void RTSPVideoCapturer::Run()
 
 bool RTSPVideoCapturer::GetPreferredFourccs(std::vector<unsigned int>* fourccs)
 {
-	fourccs->push_back(cricket::FOURCC_H264);
 	return true;
 }
 #endif
