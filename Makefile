@@ -29,7 +29,7 @@ LDFLAGS += -lX11 -ldl -lrt
 
 WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj -name '*.a')
 WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/third_party/jsoncpp -name '*.o')
-WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/webrtc/base/rtc_json -name '*.o')
+WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/webrtc/rtc_base -name '*.o')
 LIBS+=libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
 libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 	$(AR) -rcT $@ $^
