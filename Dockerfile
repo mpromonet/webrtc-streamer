@@ -10,13 +10,12 @@ ENV PATH /app/depot_tools:$PATH
 
 # Build 
 RUN mkdir /webrtc \
-	&& pushd /webrtc \
+	&& cd /webrtc \
 	&& fetch --no-history webrtc \
-	&& pushd src \
+	&& cd src \
 	&& gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false' \
 	&& ninja -C out/Release \
-	&& popd \
-	&& popd \
+	&& cd /app \
 	&& make PREFIX=/tmp live555 \
 	&& make PREFIX=/tmp all \
 	&& rm -rf /webrtc
