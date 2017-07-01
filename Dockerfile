@@ -2,16 +2,22 @@ FROM heroku/cedar
 LABEL maintainer michel.promonet@free.fr
 
 WORKDIR /app
+ADD . /app
 
-# Build WebRTC
+# Get tools for WebRTC
 RUN git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
 ENV PATH /app/depot_tools:$PATH
-RUN mkdir /webrtc && cd /webrtc && fetch --no-history webrtc
-RUN cd /webrtc/src && gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false' && ninja -C out/Release 
 
-# Build webrtc-streamer with live555 support
-ADD . /app
-RUN make PREFIX=/tmp live555 && make PREFIX=/tmp all
+# Build 
+RUN mkdir /webrtc \
+	&& pushd /webrtc \
+	&& fetch --no-history webrtc \
+	&& gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false' \
+	&& ninja -C out/Release \
+	&& popd \
+	&& make PREFIX=/tmp live555 \
+	&& make PREFIX=/tmp all \
+	&& rm -rf /webrtc
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
