@@ -32,6 +32,9 @@ video {
 h2 {
     text-align: center; 
 }
+footer {
+    text-align: center; 
+}
 </style> 
 <script src="ajax.js" ></script>
 <script src="webrtcstreamer.js" ></script>
@@ -88,6 +91,14 @@ h2 {
 			add(deviceList[0]);
 		}
 	}
+	
+	// ------------------------------------------
+	// Fill version
+	// ------------------------------------------	
+	function onVersion(version) {
+		document.getElementById("footer").innerHTML = "<p><a href='https://github.com/mpromonet/webrtc-streamer'>WebRTC-Streamer</a>"
+							+ " " + version.split(" ")[0] + "</p>";
+	}
 		
 	// ------------------------------------------
 	// add a webrtc client connection
@@ -104,7 +115,7 @@ h2 {
 		
 		// remove the video element and its tile
 		var divElt = 	document.getElementById ("div_" + url);
-		document.body.removeChild(divElt); 
+		document.getElementById("content").removeChild(divElt); 
 				
 		// unhighlight the navigation
 		var navElt = 	document.getElementById ("nav_" + url);
@@ -128,7 +139,7 @@ h2 {
 			var videoelt = document.createElement("video");
 			videoelt.id = videoTag;
 			divelt.appendChild(videoelt);
-			document.body.appendChild(divelt);
+			document.getElementById("content").appendChild(divelt);
 		}
 		var videoelt = 	document.getElementById (videoTag);
 		
@@ -149,6 +160,7 @@ h2 {
 	// ------------------------------------------	
 	window.onload         = function() { 
 		send("/getVideoDeviceList", null, null, onGetDeviceList); 
+		send("/version", null, null, onVersion); 
 	} 
 	window.onbeforeunload = function() { 
 		for (var url in webRtcServerList) { 
@@ -159,5 +171,7 @@ h2 {
 </head>
 <body>
 	<nav id="menu"></nav>
+	<div id="content"></div>
+	<footer id="footer"></footer>
 </body>
 </html>
