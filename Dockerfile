@@ -13,7 +13,7 @@ RUN mkdir /webrtc \
 	&& cd /webrtc \
 	&& fetch --no-history webrtc \
 	&& cd src \
-	&& gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false' \
+	&& gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false use_custom_libcxx=false' \
 	&& ninja -C out/Release \
 	&& cd /app \
 	&& make PREFIX=/tmp live555 \
