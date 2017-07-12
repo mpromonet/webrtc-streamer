@@ -1,12 +1,12 @@
 FROM heroku/cedar
 LABEL maintainer michel.promonet@free.fr
 
-WORKDIR /app
-ADD . /app
+WORKDIR /webrtc-streamer
+ADD . /webrtc-streamer
 
 # Get tools for WebRTC
 RUN git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
-ENV PATH /app/depot_tools:$PATH
+ENV PATH /webrtc-streamer/depot_tools:$PATH
 
 # Build 
 RUN mkdir /webrtc \
@@ -15,7 +15,7 @@ RUN mkdir /webrtc \
 	&& cd src \
 	&& gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false use_custom_libcxx=false' \
 	&& ninja -C out/Release \
-	&& cd /app \
+	&& cd /webrtc-streamer \
 	&& make PREFIX=/tmp live555 \
 	&& make PREFIX=/tmp all \
 	&& rm -rf /webrtc
