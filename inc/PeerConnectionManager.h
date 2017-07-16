@@ -88,7 +88,9 @@ class PeerConnectionManager {
 
 			virtual ~PeerConnectionObserver() { 
 				LOG(INFO) << __PRETTY_FUNCTION__;
-				m_dataChannel->UnregisterObserver(); 
+				if (m_dataChannel) {
+					m_dataChannel->UnregisterObserver();
+				}
 				m_pc->Close(); 
 			}
 			

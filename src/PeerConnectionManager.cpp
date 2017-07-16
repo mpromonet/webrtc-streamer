@@ -424,7 +424,8 @@ bool PeerConnectionManager::hangUp(const std::string &peerid)
 	if (it != peer_connectionobs_map_.end())
 	{
 		LOG(LS_ERROR) << "Close PeerConnection";
-		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it->second->getPeerConnection();
+		PeerConnectionObserver* pcObserver = it->second;
+		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = pcObserver->getPeerConnection();
 		peer_connectionobs_map_.erase(it);
 		
 		rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
@@ -456,7 +457,8 @@ bool PeerConnectionManager::hangUp(const std::string &peerid)
 				}		
 			}			
 		}
-		
+
+		delete pcObserver;
 		result = true;			
 	}
 	
