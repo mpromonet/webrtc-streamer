@@ -1,8 +1,9 @@
 CC = $(CROSS)gcc 
 CXX = $(CROSS)g++
 AR = $(CROSS)ar
-CFLAGS = -Wall -pthread -g -std=c++11 -Iinc $(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
-LDFLAGS = -pthread $(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
+SYSROOTOPT=$(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
+CFLAGS = -Wall -pthread -g -std=c++11 -Iinc $(SYSROOTOPT) $(CFLAGS_EXTRA)
+LDFLAGS = -pthread $(SYSROOTOPT)
 WEBRTCROOT?=../webrtc
 WEBRTCBUILD?=Release
 PREFIX?=/usr
@@ -96,10 +97,10 @@ install: $(TARGET)
 	install -m 0755 $(TARGET) /usr/local/bin
 
 tgz: $(TARGET)
-	tar cvzf $(TARGET)_$(GITVERSION)_$(shell $(CC) -dumpmachine).tgz $(TARGET) html
+	tar cvzf $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).tgz $(TARGET) html
 
 live555:
 	wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -
 	cd live && ./genMakefiles linux-gdb
-	make -C live CPLUSPLUS_COMPILER="$(CXX) -fno-rtti" C_COMPILER=$(CC) LINK='$(CXX) -o' PREFIX=$(SYSROOT)/$(PREFIX) install
+	make -C live CPLUSPLUS_COMPILER="$(CXX) -fno-rtti $(CFLAGS_EXTRA)" C_COMPILER=$(CC) LINK='$(CXX) -o' PREFIX=$(SYSROOT)/$(PREFIX) install
 	rm -rf live
