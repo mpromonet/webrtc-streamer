@@ -133,20 +133,18 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 				memcpy(buf, m_cfg.data(), m_cfg.size());
 				memcpy(buf+m_cfg.size(), buffer, size);
 				webrtc::EncodedImage input_image(buf, sizeof(buf), sizeof(buf) + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264));
-				input_image._completeFrame = true;
-				input_image._frameType = webrtc::kVideoFrameKey;
-				input_image._timeStamp = ts;
+				input_image._timeStamp = ts/1000;
 				input_image.capture_time_ms_ = ts;
-				res = m_decoder->Decode(input_image, false, NULL);
+				input_image.ntp_time_ms_ = ts;
+				res = m_decoder->Decode(input_image, false, NULL, NULL, ts);
 			}
 			else {
 				LOG(LS_VERBOSE) << "===========================" << m_h264->nal->nal_unit_type;
 				webrtc::EncodedImage input_image(buffer, size, size + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264));
-				input_image._completeFrame = false;
-				input_image._frameType = webrtc::kVideoFrameDelta;
-				input_image._timeStamp = ts;
+				input_image._timeStamp = ts/1000;
 				input_image.capture_time_ms_ = ts;
-				res = m_decoder->Decode(input_image, false, NULL);
+				input_image.ntp_time_ms_ = ts;
+				res = m_decoder->Decode(input_image, false, NULL, NULL, ts);
 			}
 		} else {
 			LOG(LS_ERROR) << "===========================onData no decoder";
