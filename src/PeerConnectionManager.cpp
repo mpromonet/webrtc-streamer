@@ -42,9 +42,9 @@ const char kSessionDescriptionSdpName[] = "sdp";
 PeerConnectionManager::PeerConnectionManager(const std::string & stunurl, const std::string & turnurl, const std::list<std::string> & urlList)
 	: audioDeviceModule_(webrtc::AudioDeviceModule::Create(0, webrtc::AudioDeviceModule::kPlatformDefaultAudio))
 	, audioDecoderfactory_(webrtc::CreateBuiltinAudioDecoderFactory())
-	, peer_connection_factory_(webrtc::CreatePeerConnectionFactory(rtc::Thread::Current(),
-                                                                    rtc::Thread::Current(),
-                                                                    rtc::Thread::Current(),
+	, peer_connection_factory_(webrtc::CreatePeerConnectionFactory(NULL,
+                                                                    NULL,
+                                                                    NULL,
                                                                     audioDeviceModule_,
                                                                     webrtc::CreateBuiltinAudioEncoderFactory(),
                                                                     audioDecoderfactory_,
