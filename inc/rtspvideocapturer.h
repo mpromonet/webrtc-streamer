@@ -16,7 +16,7 @@
 #include "environment.h"
 #include "rtspconnectionclient.h"
 
-#include "webrtc/base/thread.h"
+#include "webrtc/rtc_base/thread.h"
 
 #include "webrtc/api/video_codecs/video_decoder.h"
 #include "webrtc/media/base/videocapturer.h"

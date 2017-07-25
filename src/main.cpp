@@ -9,9 +9,8 @@
 
 #include <iostream>
 
-#include "webrtc/base/checks.h"
-#include "webrtc/base/ssladapter.h"
-#include "webrtc/base/thread.h"
+#include "webrtc/rtc_base/ssladapter.h"
+#include "webrtc/rtc_base/thread.h"
 #include "webrtc/p2p/base/stunserver.h"
 
 #include "PeerConnectionManager.h"

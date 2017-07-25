@@ -15,8 +15,8 @@
 #include "webrtc/api/peerconnectioninterface.h"
 #include "webrtc/api/test/fakeconstraints.h"
 
-#include "webrtc/base/logging.h"
-#include "webrtc/base/json.h"
+#include "webrtc/rtc_base/logging.h"
+#include "webrtc/rtc_base/json.h"
 
 
 class PeerConnectionManager {

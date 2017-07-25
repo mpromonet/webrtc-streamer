@@ -9,9 +9,9 @@
 
 #ifdef HAVE_LIVE555
 
-#include "webrtc/base/timeutils.h"
-#include "webrtc/base/logging.h"
-#include "webrtc/base/optional.h"
+#include "webrtc/rtc_base/timeutils.h"
+#include "webrtc/rtc_base/logging.h"
+#include "webrtc/rtc_base/optional.h"
 
 #include "webrtc/modules/video_coding/h264_sprop_parameter_sets.h"
 #include "webrtc/api/video/i420_buffer.h"
