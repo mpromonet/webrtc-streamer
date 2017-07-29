@@ -25,8 +25,6 @@
 #include "CivetServer.h"
 #endif
 
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
 #include <alsa/asoundlib.h>
 
 const char kAudioLabel[] = "audio_label";
@@ -96,68 +94,72 @@ PeerConnectionManager::PeerConnectionManager(const std::string & stunurl, const 
 	}
 
 	// build video audio map
-    std::map<std::string,std::string> videodevices;
-    for (auto & p : fs::directory_iterator("/sys/class/video4linux")) {
-        std::string devicename;
-        std::string deviceid;
-        if (p.path().filename().string().find("video") == 0) {
-            for (auto & q : fs::directory_iterator(p)) {
-                if (q.path().filename()  == "name") {
-                    std::ifstream ifs(q.path());
-                    devicename = std::string(std::istreambuf_iterator<char>{ifs}, {});
-                    devicename.erase(devicename.find_last_not_of("\n")+1);
-                }
-                if (q.path().filename()  == "device") {
-                    std::ifstream ifs(q.path().string().append("/uevent"));
-                    deviceid = std::string(std::istreambuf_iterator<char>{ifs}, {});
-                    deviceid.erase(deviceid.find_last_not_of("\n")+1);
-                }
+	std::map<std::string,std::string> videodevices;
+	std::string video4linuxPath("/sys/class/video4linux");
+	DIR *dp = opendir(video4linuxPath.c_str());
+	if (dp != NULL) {
+		struct dirent *entry = NULL;
+		while((entry = readdir(dp))) {
+			std::string devicename;
+			std::string deviceid;
+			if (strstr(entry->d_name,"video") == entry->d_name) {								
+				std::string devicePath(video4linuxPath);
+				devicePath.append("/").append(entry->d_name).append("/name");
+				std::ifstream ifsn(devicePath.c_str());
+				devicename = std::string(std::istreambuf_iterator<char>{ifsn}, {});
+				devicename.erase(devicename.find_last_not_of("\n")+1);
 
-            }
-        }
+				std::string ueventPath(video4linuxPath);
+				ueventPath.append("/").append(entry->d_name).append("/device/uevent");
+				std::ifstream ifsd(ueventPath.c_str());
+				deviceid = std::string(std::istreambuf_iterator<char>{ifsd}, {});
+				deviceid.erase(deviceid.find_last_not_of("\n")+1);
+			}
 
-        if (!devicename.empty() && !deviceid.empty()) {
-            videodevices[devicename] = getDeviceId(deviceid);
-        }
-    }
+			if (!devicename.empty() && !deviceid.empty()) {
+				videodevices[devicename] = getDeviceId(deviceid);
+			}
+		}
+		closedir(dp);
+	}
 
-    std::map<std::string,std::string> audiodevices;
-    int rcard = -1;
-    while ( (snd_card_next(&rcard) == 0) && (rcard>=0) ) {
-        void **hints = NULL;
-        if (snd_device_name_hint(rcard, "pcm", &hints) >= 0) {
-            void **str = hints;
-            while (*str) {
-                std::ostringstream os;
-                os << "/sys/class/sound/card" << rcard << "/device/uevent";
+	std::map<std::string,std::string> audiodevices;
+	int rcard = -1;
+	while ( (snd_card_next(&rcard) == 0) && (rcard>=0) ) {
+		void **hints = NULL;
+		if (snd_device_name_hint(rcard, "pcm", &hints) >= 0) {
+			void **str = hints;
+			while (*str) {
+				std::ostringstream os;
+				os << "/sys/class/sound/card" << rcard << "/device/uevent";
 
-                std::ifstream ifs(os.str().c_str());
-                std::string deviceid = std::string(std::istreambuf_iterator<char>{ifs}, {});
-                deviceid.erase(deviceid.find_last_not_of("\n")+1);
-                deviceid = getDeviceId(deviceid);
+				std::ifstream ifs(os.str().c_str());
+				std::string deviceid = std::string(std::istreambuf_iterator<char>{ifs}, {});
+				deviceid.erase(deviceid.find_last_not_of("\n")+1);
+				deviceid = getDeviceId(deviceid);
 
-                if (!deviceid.empty()) {
-                    if (audiodevices.find(deviceid) == audiodevices.end()) {
-                        std::string audioname = snd_device_name_get_hint(*str, "DESC");
-                        std::replace( audioname.begin(), audioname.end(), '\n', '-');
-                        audiodevices[deviceid] = audioname;
-                    }
-                }
+				if (!deviceid.empty()) {
+					if (audiodevices.find(deviceid) == audiodevices.end()) {
+						std::string audioname = snd_device_name_get_hint(*str, "DESC");
+						std::replace( audioname.begin(), audioname.end(), '\n', '-');
+						audiodevices[deviceid] = audioname;
+					}
+				}
 
-                str++;
-            }
+				str++;
+			}
 
-            snd_device_name_free_hint(hints);
-        }
-    }
+			snd_device_name_free_hint(hints);
+		}
+	}
 
-    for (auto & id : videodevices) {
+	for (auto & id : videodevices) {
 		auto audioDevice = audiodevices.find(id.second);
 		if (audioDevice != audiodevices.end()) {
 			std::cout <<  id.first << "=>" << audioDevice->second << std::endl;
 			m_videoaudiomap[id.first] = audioDevice->second;
 		}
-    }
+	}
 }
 
 /* ---------------------------------------------------------------------------
