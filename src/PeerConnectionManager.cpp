@@ -736,12 +736,14 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 	if (audiourl.find("rtsp://") == 0)
 	{
 #ifdef HAVE_LIVE555
+		audioDeviceModule_->Terminate();		
 		rtc::scoped_refptr<RTSPAudioSource> audioSource = RTSPAudioSource::Create(audioDecoderfactory_, audiourl);
 		audio_track = peer_connection_factory_->CreateAudioTrack(kAudioLabel, audioSource);
 #endif
 	}
 	else
 	{
+		audioDeviceModule_->Init();		
 		int16_t num_audioDevices = audioDeviceModule_->RecordingDevices();
 		int16_t idx_audioDevice = -1;
 		for (int i = 0; i < num_audioDevices; ++i)
