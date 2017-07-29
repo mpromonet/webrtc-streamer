@@ -4,7 +4,7 @@
 ** any purpose.
 **
 ** PeerConnectionManager.h
-** 
+**
 ** -------------------------------------------------------------------------*/
 
 #ifndef PEERCONNECTIONMANAGER_H_
@@ -22,42 +22,42 @@
 class PeerConnectionManager {
 	class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver {
 		public:
-			static SetSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc) 
+			static SetSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc)
 			{
-				return  new rtc::RefCountedObject<SetSessionDescriptionObserver>(pc);  
+				return  new rtc::RefCountedObject<SetSessionDescriptionObserver>(pc);
 			}
 			virtual void OnSuccess()
 			{
 				std::string sdp;
 				if (m_pc->local_description())
 				{
-					m_pc->local_description()->ToString(&sdp);				
-					LOG(INFO) << __PRETTY_FUNCTION__ << " Local SDP:" << sdp;	
+					m_pc->local_description()->ToString(&sdp);
+					LOG(INFO) << __PRETTY_FUNCTION__ << " Local SDP:" << sdp;
 				}
 				if (m_pc->remote_description())
 				{
-					m_pc->remote_description()->ToString(&sdp);				
-					LOG(INFO) << __PRETTY_FUNCTION__ << " Remote SDP:" << sdp;	
+					m_pc->remote_description()->ToString(&sdp);
+					LOG(INFO) << __PRETTY_FUNCTION__ << " Remote SDP:" << sdp;
 				}
 			}
-			virtual void OnFailure(const std::string& error) 
+			virtual void OnFailure(const std::string& error)
 			{
 				LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
 			}
 		protected:
 			SetSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc) : m_pc(pc) {};
-				
+
 		private:
 			webrtc::PeerConnectionInterface* m_pc;
 	};
 
 	class CreateSessionDescriptionObserver : public webrtc::CreateSessionDescriptionObserver {
 		public:
-			static CreateSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc) 
-			{  
-				return  new rtc::RefCountedObject<CreateSessionDescriptionObserver>(pc);  
+			static CreateSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc)
+			{
+				return  new rtc::RefCountedObject<CreateSessionDescriptionObserver>(pc);
 			}
-			virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc) 
+			virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc)
 			{
 				std::string sdp;
 				desc->ToString(&sdp);
@@ -69,11 +69,11 @@ class PeerConnectionManager {
 			}
 		protected:
 			CreateSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc) : m_pc(pc) {};
-				
+
 		private:
 			webrtc::PeerConnectionInterface* m_pc;
 	};
-	
+
 	class PeerConnectionObserver : public webrtc::PeerConnectionObserver, public webrtc::DataChannelObserver {
 		public:
 			PeerConnectionObserver(PeerConnectionManager* peerConnectionManager, const std::string& peerid, const webrtc::PeerConnectionInterface::RTCConfiguration & config, const webrtc::FakeConstraints & constraints)
@@ -83,26 +83,26 @@ class PeerConnectionManager {
 							    &constraints,
 							    NULL,
 							    NULL,
-							    this);				
+							    this);
 			};
 
-			virtual ~PeerConnectionObserver() { 
+			virtual ~PeerConnectionObserver() {
 				LOG(INFO) << __PRETTY_FUNCTION__;
 				if (m_dataChannel) {
 					m_dataChannel->UnregisterObserver();
 				}
-				m_pc->Close(); 
+				m_pc->Close();
 			}
-			
+
 			bool createDataChannel(const std::string & channelName) {
 				m_dataChannel = m_pc->CreateDataChannel(channelName, NULL);
 				m_dataChannel->RegisterObserver(this);
 				return (m_dataChannel.get() != NULL);
 			}
-			
-			Json::Value getIceCandidateList() { return iceCandidateList_; };			
+
+			Json::Value getIceCandidateList() { return iceCandidateList_; };
 			rtc::scoped_refptr<webrtc::PeerConnectionInterface> getPeerConnection() { return m_pc; };
-				
+
 			// PeerConnectionObserver interface
 			virtual void OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)    {}
 			virtual void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {}
@@ -136,9 +136,9 @@ class PeerConnectionManager {
 			}
 			virtual void OnMessage(const webrtc::DataBuffer& buffer) {
 				std::string msg((const char*)buffer.data.data(),buffer.data.size());
-				LOG(LERROR) << __PRETTY_FUNCTION__ << m_peerid << "/" << m_dataChannel->label() << " msg:" << msg;				
+				LOG(LERROR) << __PRETTY_FUNCTION__ << m_peerid << "/" << m_dataChannel->label() << " msg:" << msg;
 			}
-							
+
 		private:
 			PeerConnectionManager* m_peerConnectionManager;
 			const std::string m_peerid;
@@ -152,7 +152,7 @@ class PeerConnectionManager {
 		virtual ~PeerConnectionManager();
 
 		bool InitializePeerConnection();
-	
+
 		const Json::Value getIceCandidateList(const std::string &peerid);
 		bool              addIceCandidate(const std::string &peerid, const Json::Value& jmessage);
 		const Json::Value getVideoDeviceList();
@@ -184,6 +184,7 @@ class PeerConnectionManager {
 		std::string                                                               turnuser_;
 		std::string                                                               turnpass_;
 		const std::list<std::string>                                              urlList_;
+		std::map<std::string,std::string>                                         m_videoaudiomap;
 };
 
-#endif  
+#endif

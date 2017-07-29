@@ -26,7 +26,7 @@ ifeq ($(TESTDEBUG),debug)
 else
 	CFLAGS +=-DNDEBUG=1
 endif
-LDFLAGS += -lX11 -ldl -lrt
+LDFLAGS += -lX11 -ldl -lrt -lstdc++fs -lasound
 
 WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj -name '*.a')
 WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/third_party/jsoncpp -name '*.o')
