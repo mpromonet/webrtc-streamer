@@ -39,6 +39,9 @@ const char kCandidateSdpName[] = "candidate";
 const char kSessionDescriptionTypeName[] = "type";
 const char kSessionDescriptionSdpName[] = "sdp";
 
+/* ---------------------------------------------------------------------------
+**  get a "deviceid" from uevent sys file
+** -------------------------------------------------------------------------*/
 std::string getDeviceId(const std::string& evt) {
     std::string deviceid;
     std::istringstream f(evt);
@@ -102,7 +105,7 @@ PeerConnectionManager::PeerConnectionManager(const std::string & stunurl, const 
 		while((entry = readdir(dp))) {
 			std::string devicename;
 			std::string deviceid;
-			if (strstr(entry->d_name,"video") == entry->d_name) {								
+			if (strstr(entry->d_name,"video") == entry->d_name) {
 				std::string devicePath(video4linuxPath);
 				devicePath.append("/").append(entry->d_name).append("/name");
 				std::ifstream ifsn(devicePath.c_str());
@@ -583,31 +586,33 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 	Json::Value value(Json::arrayValue);
 	for (auto it : peer_connectionobs_map_)
 	{
-		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it.second->getPeerConnection();
+		Json::Value content;
 
+		// get local SDP
+		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it.second->getPeerConnection();
 		if ( (peerConnection) && (peerConnection->local_description()) ) {
 			std::string sdp;
 			peerConnection->local_description()->ToString(&sdp);
-
-			rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
+			content["sdp"] = sdp;
 
 			Json::Value streams;
+			rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
 			if (localstreams) {
-				for (unsigned int i = 0; i<localstreams->count(); i++)
-				{
+				for (unsigned int i = 0; i<localstreams->count(); i++) {
 					if (localstreams->at(i)) {
 						streams.append(localstreams->at(i)->label());
 					}
 				}
 			}
-			Json::Value content;
-			content["sdp"] = sdp;
 			content["streams"] = streams;
-
-			Json::Value pc;
-			pc[it.first] = content;
-			value.append(pc);
 		}
+		
+		// get Stats
+		content["stats"] = it.second->getStats();
+
+		Json::Value pc;
+		pc[it.first] = content;
+		value.append(pc);
 	}
 	return value;
 }
@@ -736,14 +741,14 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 	if (audiourl.find("rtsp://") == 0)
 	{
 #ifdef HAVE_LIVE555
-		audioDeviceModule_->Terminate();		
+		audioDeviceModule_->Terminate();
 		rtc::scoped_refptr<RTSPAudioSource> audioSource = RTSPAudioSource::Create(audioDecoderfactory_, audiourl);
 		audio_track = peer_connection_factory_->CreateAudioTrack(kAudioLabel, audioSource);
 #endif
 	}
 	else
 	{
-		audioDeviceModule_->Init();		
+		audioDeviceModule_->Init();
 		int16_t num_audioDevices = audioDeviceModule_->RecordingDevices();
 		int16_t idx_audioDevice = -1;
 		for (int i = 0; i < num_audioDevices; ++i)

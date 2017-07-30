@@ -74,6 +74,26 @@ class PeerConnectionManager {
 			webrtc::PeerConnectionInterface* m_pc;
 	};
 
+	class PeerConnectionStatsCollectorCallback : public webrtc::RTCStatsCollectorCallback {
+		public:
+			PeerConnectionStatsCollectorCallback() {}
+			void clearReport() { m_report.clear(); }
+			Json::Value getReport() { return m_report; }
+
+		protected:
+			virtual void OnStatsDelivered(const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
+				for (const webrtc::RTCStats& stats : *report) {
+					Json::Value statsMembers;
+					for (const webrtc::RTCStatsMemberInterface* member : stats.Members()) {
+						statsMembers[member->name()] = member->ValueToString();
+					}
+					m_report[stats.id()] = statsMembers;
+				}
+			}
+
+			Json::Value m_report;
+	};
+
 	class PeerConnectionObserver : public webrtc::PeerConnectionObserver, public webrtc::DataChannelObserver {
 		public:
 			PeerConnectionObserver(PeerConnectionManager* peerConnectionManager, const std::string& peerid, const webrtc::PeerConnectionInterface::RTCConfiguration & config, const webrtc::FakeConstraints & constraints)
@@ -84,6 +104,8 @@ class PeerConnectionManager {
 							    NULL,
 							    NULL,
 							    this);
+
+                m_statsCallback = new rtc::RefCountedObject<PeerConnectionStatsCollectorCallback>();
 			};
 
 			virtual ~PeerConnectionObserver() {
@@ -101,6 +123,18 @@ class PeerConnectionManager {
 			}
 
 			Json::Value getIceCandidateList() { return iceCandidateList_; };
+			
+			Json::Value getStats() {
+				m_statsCallback->clearReport();
+				m_pc->GetStats(m_statsCallback);
+				int count=10;
+				while ( (m_statsCallback->getReport().empty()) && (--count > 0) )
+				{
+					usleep(100);
+				}
+				return Json::Value(m_statsCallback->getReport());
+			};
+
 			rtc::scoped_refptr<webrtc::PeerConnectionInterface> getPeerConnection() { return m_pc; };
 
 			// PeerConnectionObserver interface
@@ -145,6 +179,7 @@ class PeerConnectionManager {
 			rtc::scoped_refptr<webrtc::PeerConnectionInterface> m_pc;
 			rtc::scoped_refptr<webrtc::DataChannelInterface>    m_dataChannel;
 			Json::Value iceCandidateList_;
+			rtc::scoped_refptr<PeerConnectionStatsCollectorCallback> m_statsCallback;
 	};
 
 	public:
