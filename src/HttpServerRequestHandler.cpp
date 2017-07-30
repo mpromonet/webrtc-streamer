@@ -113,36 +113,44 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 
 	m_func["/call"]                  = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		std::string peerid;
-		CivetServer::getParam(req_info->query_string, "peerid", peerid);
 		std::string url;
-		CivetServer::getParam(req_info->query_string, "url", url);
 		std::string audiourl;
-		CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
 		std::string options;
-		CivetServer::getParam(req_info->query_string, "options", options);
+		if (req_info->query_string) {
+            CivetServer::getParam(req_info->query_string, "peerid", peerid);
+            CivetServer::getParam(req_info->query_string, "url", url);
+            CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
+            CivetServer::getParam(req_info->query_string, "options", options);
+        }
 		return m_webRtcServer->call(peerid, url, audiourl, options, in);
 	};
 
 	m_func["/hangup"]                = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		std::string peerid;
-		CivetServer::getParam(req_info->query_string, "peerid", peerid);
+		if (req_info->query_string) {
+            CivetServer::getParam(req_info->query_string, "peerid", peerid);
+        }
 		return m_webRtcServer->hangUp(peerid);
 	};
 
 	m_func["/createOffer"]           = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		std::string peerid;
-		CivetServer::getParam(req_info->query_string, "peerid", peerid);
 		std::string url;
-		CivetServer::getParam(req_info->query_string, "url", url);
 		std::string audiourl;
-		CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
 		std::string options;
-		CivetServer::getParam(req_info->query_string, "options", options);
+		if (req_info->query_string) {
+            CivetServer::getParam(req_info->query_string, "peerid", peerid);
+            CivetServer::getParam(req_info->query_string, "url", url);
+            CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
+            CivetServer::getParam(req_info->query_string, "options", options);
+        }
 		return m_webRtcServer->createOffer(peerid, url, audiourl, options);
 	};
 	m_func["/setAnswer"]             = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		std::string peerid;
-		CivetServer::getParam(req_info->query_string, "peerid", peerid);
+		if (req_info->query_string) {
+            CivetServer::getParam(req_info->query_string, "peerid", peerid);
+        }
 		m_webRtcServer->setAnswer(peerid, in);
 		Json::Value answer(1);
 		return answer;
@@ -150,13 +158,17 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 
 	m_func["/getIceCandidate"]       = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		std::string peerid;
-		CivetServer::getParam(req_info->query_string, "peerid", peerid);
+		if (req_info->query_string) {
+            CivetServer::getParam(req_info->query_string, "peerid", peerid);
+        }
 		return m_webRtcServer->getIceCandidateList(peerid);
 	};
 
 	m_func["/addIceCandidate"]       = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		std::string peerid;
-		CivetServer::getParam(req_info->query_string, "peerid", peerid);
+		if (req_info->query_string) {
+            CivetServer::getParam(req_info->query_string, "peerid", peerid);
+        }
 		m_webRtcServer->addIceCandidate(peerid, in);
 		Json::Value answer(1);
 		return answer;
@@ -180,6 +192,18 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 
 	m_func["/version"]                  = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		Json::Value answer(VERSION);
+		return answer;
+	};
+
+	m_func["/log"]                      = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+		std::string loglevel;
+		if (req_info->query_string) {
+			CivetServer::getParam(req_info->query_string, "level", loglevel);
+			if (!loglevel.empty()) {
+				rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)atoi(loglevel.c_str()));
+			}
+		}
+		Json::Value answer(rtc::LogMessage::GetLogToDebug());
 		return answer;
 	};
 
