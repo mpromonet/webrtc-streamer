@@ -666,7 +666,6 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 	if (!obs)
 	{
 		LOG(LERROR) << __FUNCTION__ << "CreatePeerConnection failed";
-		obs = NULL; // TODO: call delete, but it crash !!!
 	}
 	return obs;
 }
@@ -789,18 +788,18 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 	std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(streamLabel);
 	if (it == stream_map_.end())
 	{
-        // compute audiourl if not set
-        std::string audio = audiourl;
-        if (audio.empty()) {
-            if (videourl.find("rtsp://") == 0) {
-                audio = videourl;
-            } else {
-                std::map<std::string,std::string>::iterator it = m_videoaudiomap.find(videourl);
-                if (it != m_videoaudiomap.end()) {
-                    audio = it->second;
-                }
-            }
-        }
+		// compute audiourl if not set
+		std::string audio = audiourl;
+		if (audio.empty()) {
+			if (videourl.find("rtsp://") == 0) {
+				audio = videourl;
+			} else {
+				std::map<std::string,std::string>::iterator it = m_videoaudiomap.find(videourl);
+				if (it != m_videoaudiomap.end()) {
+					audio = it->second;
+				}
+			}
+		}
 
 		// need to create the stream
 		rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(this->CreateVideoTrack(videourl, options));
