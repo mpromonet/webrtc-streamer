@@ -106,6 +106,7 @@ WebRtcStreamer.prototype.createPeerConnection = function() {
 	else {
 		pc.onaddstream    = function(evt) { streamer.onTrack.call(streamer,evt) };
 	}
+	pc.onremovestream = function(evt) {  streamer.disconnect(); };
 	trace("Created RTCPeerConnnection with config: " + JSON.stringify(this.pcConfig) + "option:"+  JSON.stringify(this.pcOptions) );
 	return pc;
 }
