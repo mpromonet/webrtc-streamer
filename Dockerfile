@@ -14,7 +14,7 @@ RUN apt-get install -y libasound2-dev \
 	&& cd /webrtc \
 	&& fetch --no-history webrtc \
 	&& cd src \
-	&& gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false use_custom_libcxx=false' \
+	&& gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true' \
 	&& ninja -C out/Release jsoncpp rtc_json webrtc \
 	&& cd /webrtc-streamer \
 	&& make PREFIX=/tmp live555 \

@@ -19,24 +19,22 @@ WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
 
 CFLAGS += -DWEBRTC_POSIX -fno-rtti -D_GLIBCXX_USE_CXX11_ABI=0 -DHAVE_JPEG
 CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/third_party/jsoncpp/source/include -I $(WEBRTCROOT)/src/third_party/libyuv/include
-#detect
+#detect debug vs release
 TESTDEBUG=$(shell nm $(wildcard $(WEBRTCLIBPATH)/obj/webrtc/rtc_base/librtc_base.a) | c++filt | grep std::__debug::vector >/dev/null && echo debug)
 ifeq ($(TESTDEBUG),debug)
 	CFLAGS +=-DUSE_DEBUG_WEBRTC -D_GLIBCXX_DEBUG=1
 else
 	CFLAGS +=-DNDEBUG=1
 endif
-LDFLAGS += -lX11 -ldl -lrt 
+LDFLAGS += -ldl -lrt 
 
-WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj -name '*.a')
-WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/third_party/jsoncpp -name '*.o')
-WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj/webrtc/rtc_base -name '*.o')
+WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj -name '*.o')
 LIBS+=libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
 libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
-	$(AR) -rcT $@ $^
+	$(AR) -rc $@ $^
 
 # alsa-lib
-ifneq ($(wildcard $(SYSROOT)/usr/include/alsa/asoundlib.h),)
+ifneq ($(wildcard $(SYSROOT)/$(PREFIX)/include/alsa/asoundlib.h),)
 CFLAGS += -DHAVE_ALSA
 LDFLAGS+= -lasound
 endif
@@ -111,3 +109,10 @@ live555:
 	cd live && ./genMakefiles linux-gdb
 	make -C live CPLUSPLUS_COMPILER="$(CXX) -fno-rtti $(CFLAGS_EXTRA)" C_COMPILER=$(CC) LINK='$(CXX) -o' PREFIX=$(SYSROOT)/$(PREFIX) install
 	rm -rf live
+
+ALSAVERSION=1.1.4.1
+alsa-lib:
+	wget ftp://ftp.alsa-project.org/pub/lib/alsa-lib-$(ALSAVERSION).tar.bz2 -O - | tar xjf -
+	cd alsa-lib-$(ALSAVERSION) && CC=$(CC) ./configure --disable-python --disable-shared --enable-static --host=$(shell $(CC) -dumpmachine) --prefix=$(SYSROOT)/$(PREFIX) && make && make install
+	rm -rf alsa-lib-$(ALSAVERSION)
+
