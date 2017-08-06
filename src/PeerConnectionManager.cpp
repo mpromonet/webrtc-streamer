@@ -45,7 +45,7 @@ PeerConnectionManager::PeerConnectionManager(const std::string & stunurl, const 
 	: audioDeviceModule_(webrtc::AudioDeviceModule::Create(0, webrtc::AudioDeviceModule::kPlatformDefaultAudio))
 	, audioDecoderfactory_(webrtc::CreateBuiltinAudioDecoderFactory())
 	, peer_connection_factory_(webrtc::CreatePeerConnectionFactory(NULL,
-                                                                    NULL,
+                                                                    rtc::Thread::Current(),
                                                                     NULL,
                                                                     audioDeviceModule_,
                                                                     webrtc::CreateBuiltinAudioEncoderFactory(),
