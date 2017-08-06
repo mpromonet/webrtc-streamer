@@ -6,7 +6,7 @@ env:
     - GNARGSCOM='is_debug=false rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true' 
   matrix:
     - GYP_GENERATOR_OUTPUT=x86_64 GNARGS=$GNARGSCOM' rtc_use_h264=true ffmpeg_branding="Chrome"'
-    - GYP_GENERATOR_OUTPUT=armv7  GNARGS=$GNARGSCOM' rtc_use_h264=true ffmpeg_branding="Chrome" is_clang=false target_cpu="arm" treat_warnings_as_errors=false' CROSS=arm-linux-gnueabihf- SYSROOT=${TRAVIS_BUILD_DIR}/../webrtc/src/build/linux/debian_jessie_arm-sysroot
+    - GYP_GENERATOR_OUTPUT=armv7  GNARGS=$GNARGSCOM' rtc_use_h264=true ffmpeg_branding="Chrome" is_clang=false target_cpu="arm" treat_warnings_as_errors=false' CROSS=arm-linux-gnueabihf- SYSROOT=${TRAVIS_BUILD_DIR}/webrtc/src/build/linux/debian_jessie_arm-sysroot
     - GYP_GENERATOR_OUTPUT=armv6  GNARGS=$GNARGSCOM' use_sysroot=false is_clang=false target_cpu="arm" arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false treat_warnings_as_errors=false rtc_include_opus=false' CROSS=arm-linux-gnueabihf- SYSROOT=$(${CROSS}gcc -print-sysroot) CFLAGS_EXTRA="-march=armv6 -mfpu=vfp -mfloat-abi=hard"
 addons:
   apt:
@@ -17,16 +17,13 @@ compiler:
 - gcc
 script:
 # get toolchain need to build WebRTC
-- pushd ..
 - git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
 - export PATH=$PATH:$(pwd)/depot_tools
 - git clone --depth 1 https://github.com/raspberrypi/tools.git rpi_tools
 - export PATH=$PATH:$(pwd)/rpi_tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin
-- popd
 # get, build and install live555 & alsa
-- make PREFIX=${PREFIX} live555 alsa-lib
+- make WEBRTCROOT=./webrtc PREFIX=${PREFIX} live555 alsa-lib
 # get, build and install WebRTC
-- pushd ..
 - mkdir webrtc
 - pushd webrtc
 - fetch --no-history --nohooks webrtc
@@ -36,9 +33,8 @@ script:
 - ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc
 - popd
 - popd
-- popd
 # build
-- make PREFIX=${PREFIX} all tgz
+- make WEBRTCROOT=./webrtc PREFIX=${PREFIX} all tgz
 before_deploy:
 - export RELEASE_PKG_FILE=$(ls *.tgz)
 - echo "RELEASE_PKG_FILE=${RELEASE_PKG_FILE}"   
