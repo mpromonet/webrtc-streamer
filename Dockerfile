@@ -9,12 +9,13 @@ RUN git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_t
 ENV PATH /webrtc-streamer/depot_tools:$PATH
 
 # Build 
-RUN mkdir /webrtc \
+RUN apt-get install -y libasound2-dev \
+        && mkdir /webrtc \
 	&& cd /webrtc \
 	&& fetch --no-history webrtc \
 	&& cd src \
 	&& gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false use_custom_libcxx=false' \
-	&& ninja -C out/Release \
+	&& ninja -C out/Release jsoncpp rtc_json webrtc \
 	&& cd /webrtc-streamer \
 	&& make PREFIX=/tmp live555 \
 	&& make PREFIX=/tmp all \
