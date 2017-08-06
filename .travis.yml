@@ -30,7 +30,7 @@ script:
 - fetch --no-history --nohooks webrtc
 - gclient sync
 - pushd src
-- [ -z ${TARGET_SYSROOT} ] && export GNEXTRAARGS="target_sysroot=\"${TARGET_SYSROOT}\""
+- [ -z ${TARGET_SYSROOT} ] || GNEXTRAARGS="target_sysroot=\"${TARGET_SYSROOT}\""
 - gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS} ${GNEXTRAARGS}"
 - ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc
 - popd
