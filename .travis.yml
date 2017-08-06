@@ -27,7 +27,7 @@ before_install:
 - gclient sync
 - pushd src
 - gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGS}"
-- ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release webrtc
+- ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc
 - popd
 - popd
 #
