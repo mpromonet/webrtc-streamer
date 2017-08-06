@@ -24,7 +24,7 @@ script:
 # get, build and install live555 & alsa
 - make WEBRTCROOT=./webrtc PREFIX=${PREFIX} live555 alsa-lib
 # get, build and install WebRTC
-- mkdir webrtc
+- mkdir -p webrtc
 - pushd webrtc
 - fetch --no-history --nohooks webrtc
 - gclient sync
