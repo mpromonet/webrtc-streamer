@@ -16,27 +16,26 @@ language: cpp
 compiler:
 - gcc
 script:
-# live555 & alsa
-- make PREFIX=${PREFIX} live555 alsa-lib
-# WebRTC
-- pushd ..
 # get toolchain need to build WebRTC
+- pushd ..
 - git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
 - export PATH=$PATH:$(pwd)/depot_tools
 - git clone --depth 1 https://github.com/raspberrypi/tools.git rpi_tools
 - export PATH=$PATH:$(pwd)/rpi_tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin
-# get WebRTC
+- popd
+# get, build and install live555 & alsa
+- make PREFIX=${PREFIX} live555 alsa-lib
+# get, build and install WebRTC
+- pushd ..
 - mkdir webrtc
 - pushd webrtc
 - fetch --no-history --nohooks webrtc
-# buid WebRTC
 - gclient sync
 - pushd src
 - gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGS}"
 - ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc
 - popd
 - popd
-#
 - popd
 # build
 - make PREFIX=${PREFIX} all tgz
