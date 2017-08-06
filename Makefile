@@ -36,8 +36,8 @@ libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 
 # alsa-lib
 ifneq ($(wildcard $(SYSROOT)/$(PREFIX)/include/alsa/asoundlib.h),)
-CFLAGS += -DHAVE_ALSA
-LDFLAGS+= -lasound
+CFLAGS += -DHAVE_ALSA -I $(SYSROOT)/$(PREFIX)/include
+LDFLAGS+= -L $(SYSROOT)/$(PREFIX)/lib -lasound
 endif
 
 
