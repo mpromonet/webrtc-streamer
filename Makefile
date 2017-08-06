@@ -1,7 +1,8 @@
 CC = $(CROSS)gcc 
 CXX = $(CROSS)g++
 AR = $(CROSS)ar
-SYSROOTOPT=$(foreach sysroot,$(SYSROOT),--sysroot=$(sysroot))
+SYSROOT?=$(shell $(CC) -print-sysroot)
+SYSROOTOPT=--sysroot=$(SYSROOT)
 CFLAGS = -Wall -pthread -g -std=c++11 -Iinc $(SYSROOTOPT) $(CFLAGS_EXTRA)
 LDFLAGS = -pthread $(SYSROOTOPT)
 WEBRTCROOT?=../webrtc
