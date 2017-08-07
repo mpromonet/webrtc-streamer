@@ -20,7 +20,7 @@ script:
 - git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
 - export PATH=$PATH:$(pwd)/depot_tools
 - git clone --depth 1 https://github.com/raspberrypi/tools.git rpi_tools
-- export PATH=$PATH:$(pwd)/rpi_tools/arm-bcm2708/arm-rpi-4.9.3-linux-gnueabihf/bin
+- export PATH=$PATH:$(pwd)/rpi_tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin
 # get, build and install live555 & alsa
 - make WEBRTCROOT=./webrtc PREFIX=${PREFIX} live555 alsa-lib
 # get, build and install WebRTC
@@ -30,8 +30,8 @@ script:
 - fetch --no-history --nohooks webrtc
 - gclient sync
 - pushd src
-- export GNEXTRAARGS=$(if [ "$TARGET_SYSROOT" != "" ]; then echo "target_sysroot=\"${TARGET_SYSROOT}\""; else echo ""; fi)
-- gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS} ${GNEXTRAARGS}"
+- if [ "$TARGET_SYSROOT" != "" ]; then gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}  target_sysroot=\"${TARGET_SYSROOT}\""; fi
+- gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}"
 - ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc
 - popd
 - popd
