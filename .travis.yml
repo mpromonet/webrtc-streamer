@@ -1,11 +1,10 @@
 dist: trusty
 env:
   global:
-    - PREFIX=/tmp
     - GYP_DEFINES="target_arch=arm"
     - GNARGSCOMMON='is_debug=false rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false' 
   matrix:
-    - GYP_GENERATOR_OUTPUT=x86_64     GNARGS='rtc_use_h264=true ffmpeg_branding="Chrome"'
+    - PREFIX=/tmp GYP_GENERATOR_OUTPUT=x86_64     GNARGS='rtc_use_h264=true ffmpeg_branding="Chrome"'
     - GYP_GENERATOR_OUTPUT=rpi-armv7  GNARGS='is_clang=false target_cpu="arm" treat_warnings_as_errors=false rtc_use_h264=true ffmpeg_branding="Chrome"' CROSS=arm-linux-gnueabihf- SYSROOT=${TRAVIS_BUILD_DIR}/webrtc/src/build/linux/debian_jessie_arm-sysroot
     - GYP_GENERATOR_OUTPUT=rpi-armv6  GNARGS='is_clang=false target_cpu="arm" treat_warnings_as_errors=false arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false rtc_use_gtk=false' CROSS=arm-linux-gnueabihf- CFLAGS_EXTRA="-march=armv6 -mfpu=vfp -mfloat-abi=hard"
 addons:
