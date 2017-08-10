@@ -23,9 +23,10 @@ The WebRTC signaling is implemented throught HTTP requests:
 
 The list of HTTP API is available using /help.
 
-Nowdays there is 2 builds on [Travis CI](https://travis-ci.org/mpromonet/webrtc-streamer) :
+Nowdays there is 3 builds on [Travis CI](https://travis-ci.org/mpromonet/webrtc-streamer) :
  * for x86_64 on Ubuntu trusty
- * for arm crosscompiling with gcc-linaro-arm-linux-gnueabihf-raspbian-x64 (this build is running on Raspberry Pi and NanoPi NEO)
+ * for armv7 crosscompiling with gcc-linaro-arm-linux-gnueabihf-raspbian-x64 (this build is running on Raspberry Pi2 and NanoPi NEO)
+ * for armv6+vfp crosscompiling with gcc-linaro-arm-linux-gnueabihf-raspbian-x64 (this build is running on Raspberry PiB and should run on a Raspberry Zero)
 
 Dependencies :
 -------------
