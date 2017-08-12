@@ -1,8 +1,8 @@
 
 RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription || window.RTCSessionDescription;
-RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate || window.RTCIceCandidate;
-URL = window.webkitURL || window.URL;
+RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription || window.webkitRTCSessionDescription;
+RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate || window.webkitRTCIceCandidate;
+URL = window.URL || window.webkitURL;
 
 
 /** 
@@ -76,6 +76,10 @@ WebRtcStreamer.prototype.connect = function(videourl, audiourl, options) {
  * Disconnect a WebRTC Stream and clear videoElement source
 */
 WebRtcStreamer.prototype.disconnect = function() {		
+	var videoElement = document.getElementById(this.videoElement);
+	if (videoElement) {
+		videoElement.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+	}
 	if (this.pc) {
 		send(this.srvurl + "/hangup?peerid="+this.pc.peerid);
 		try {
@@ -85,10 +89,6 @@ WebRtcStreamer.prototype.disconnect = function() {
 			trace ("Failure close peer connection:" + e);
 		}
 		this.pc = null;
-	}
-	var videoElement = document.getElementById(this.videoElement);
-	if (videoElement) {
-		videoElement.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
 	}
 }    
 
@@ -106,7 +106,16 @@ WebRtcStreamer.prototype.createPeerConnection = function() {
 	else {
 		pc.onaddstream    = function(evt) { streamer.onTrack.call(streamer,evt) };
 	}
-	pc.onremovestream = function(evt) {  streamer.disconnect(); };
+	pc.oniceconnectionstatechange = function(evt) {  
+		trace("oniceconnectionstatechange  state: " + pc.iceConnectionState);
+		if ( (pc.iceConnectionState == "diconnected") || (pc.iceConnectionState == "failed") || (pc.iceConnectionState == "closed") )  {
+			var videoElement = document.getElementById(streamer.videoElement);
+			if (videoElement) {
+				videoElement.style.opacity = "0.5";
+			}			
+		}
+	}
+	
 	trace("Created RTCPeerConnnection with config: " + JSON.stringify(this.pcConfig) + "option:"+  JSON.stringify(this.pcOptions) );
 	return pc;
 }
