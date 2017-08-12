@@ -129,6 +129,7 @@ WebRtcStreamer.prototype.onIceCandidate = function (event) {
 	} 
 	else {
 		trace("End of candidates.");
+		send  (this.srvurl + "/getIceCandidate?peerid="+this.pc.peerid, null, null, this.onReceiveCandidate, null, this);
 	}
 }
 
@@ -156,7 +157,7 @@ WebRtcStreamer.prototype.onReceiveCall = function(dataJson) {
 	trace("offer: " + JSON.stringify(dataJson));
 	var peerid = this.pc.peerid;
 	this.pc.setRemoteDescription(new RTCSessionDescription(dataJson)
-		, function()      { send  (streamer.srvurl + "/getIceCandidate?peerid="+peerid, null, null, streamer.onReceiveCandidate, null, streamer); }
+		, function()      { trace ("setRemoteDescription ok") }
 		, function(error) { trace ("setRemoteDescription error:" + JSON.stringify(error)); });
 }	
 
