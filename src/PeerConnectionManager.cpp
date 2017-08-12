@@ -91,6 +91,49 @@ PeerConnectionManager::~PeerConnectionManager()
 /* ---------------------------------------------------------------------------
 **  return deviceList as JSON vector
 ** -------------------------------------------------------------------------*/
+const Json::Value PeerConnectionManager::getMediaList()
+{
+	Json::Value value(Json::arrayValue);
+
+	std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo());
+	if (info)
+	{
+		int num_videoDevices = info->NumberOfDevices();
+		LOG(INFO) << "nb video devices:" << num_videoDevices;
+		for (int i = 0; i < num_videoDevices; ++i)
+		{
+			const uint32_t kSize = 256;
+			char name[kSize] = {0};
+			char id[kSize] = {0};
+			if (info->GetDeviceName(i, name, kSize, id, kSize) != -1)
+			{
+				LOG(INFO) << "video device name:" << name << " id:" << id;
+				Json::Value media;
+				media["video"] = name;
+				
+				std::map<std::string,std::string>::iterator it = m_videoaudiomap.find(name);
+				if (it != m_videoaudiomap.end()) {
+					media["audio"] = it->second;
+				}				
+				value.append(media);
+			}
+		}
+	}
+
+	for (std::string url : urlList_)
+	{
+		Json::Value media;
+		media["video"] = url;
+
+		value.append(media);
+	}
+
+	return value;
+}
+
+/* ---------------------------------------------------------------------------
+**  return deviceList as JSON vector
+** -------------------------------------------------------------------------*/
 const Json::Value PeerConnectionManager::getVideoDeviceList()
 {
 	Json::Value value(Json::arrayValue);
