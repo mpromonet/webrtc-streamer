@@ -122,7 +122,21 @@ class PeerConnectionManager {
 				return (m_dataChannel.get() != NULL);
 			}
 
-			Json::Value getIceCandidateList() { return iceCandidateList_; };
+			Json::Value getIceCandidateList() { 
+				const webrtc::SessionDescriptionInterface* sdp = m_pc->current_local_description();
+				if (sdp != NULL) {
+					int count=10;
+					while ( ( (sdp->candidates(0) == NULL) || (sdp->candidates(0)->count() != iceCandidateList_.size()) ) && (--count > 0) ) {
+						if (sdp->candidates(0)) {
+							LOG(LERROR) << __PRETTY_FUNCTION__ << "waiting for candidate:" << sdp->candidates(0)->count() <<"/" << iceCandidateList_.size();
+						} else {
+							LOG(LERROR) << __PRETTY_FUNCTION__ << "waiting for candidate:" << 0 <<"/" << iceCandidateList_.size();
+						}
+						usleep(1000);
+					}
+				}
+				return iceCandidateList_; 
+			}
 			
 			Json::Value getStats() {
 				m_statsCallback->clearReport();
@@ -130,7 +144,7 @@ class PeerConnectionManager {
 				int count=10;
 				while ( (m_statsCallback->getReport().empty()) && (--count > 0) )
 				{
-					usleep(100);
+					usleep(1000);
 				}
 				return Json::Value(m_statsCallback->getReport());
 			};
@@ -143,7 +157,7 @@ class PeerConnectionManager {
 			virtual void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
 				m_dataChannel = channel;
 				m_dataChannel->RegisterObserver(this);
-				LOG(LERROR) << __PRETTY_FUNCTION__;
+				LOG(INFO) << __PRETTY_FUNCTION__;
 			}
 			virtual void OnRenegotiationNeeded()                              {}
 
