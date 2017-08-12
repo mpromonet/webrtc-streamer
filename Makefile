@@ -35,14 +35,16 @@ libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 	$(AR) -rc $@ $^
 
 # alsa-lib
-ifneq ($(wildcard $(SYSROOT)/$(PREFIX)/include/alsa/asoundlib.h),)
-CFLAGS += -DHAVE_ALSA -I $(SYSROOT)/$(PREFIX)/include
-LDFLAGS+= -L $(SYSROOT)/$(PREFIX)/lib -lasound
+ifneq ($(wildcard $(SYSROOT)$(PREFIX)/include/alsa/asoundlib.h),)
+CFLAGS += -DHAVE_ALSA -I $(SYSROOT)$(PREFIX)/include
+LDFLAGS+= -L $(SYSROOT)$(PREFIX)/lib -lasound
+else	
+$(info ALSA not found in $(SYSROOT)$(PREFIX)/include)
 endif
 
 
 # live555helper
-ifneq ($(wildcard $(SYSROOT)/$(PREFIX)/include/liveMedia/liveMedia.hh),)
+ifneq ($(wildcard $(SYSROOT)$(PREFIX)/include/liveMedia/liveMedia.hh),)
 VERSION+=live555helper@$(shell git -C live555helper describe --tags --always --dirty)
 LIBS+=live555helper/live555helper.a
 live555helper/Makefile:
@@ -54,10 +56,12 @@ live555helper/live555helper.a: live555helper/Makefile
 
 CFLAGS += -DHAVE_LIVE555
 CFLAGS += -I live555helper/inc
-CFLAGS += -I $(SYSROOT)/$(PREFIX)/include/liveMedia  -I $(SYSROOT)/$(PREFIX)/include/groupsock -I $(SYSROOT)/$(PREFIX)/include/UsageEnvironment -I $(SYSROOT)/$(PREFIX)/include/BasicUsageEnvironment/
+CFLAGS += -I $(SYSROOT)$(PREFIX)/include/liveMedia  -I $(SYSROOT)$(PREFIX)/include/groupsock -I $(SYSROOT)$(PREFIX)/include/UsageEnvironment -I $(SYSROOT)$(PREFIX)/include/BasicUsageEnvironment/
 
 LDFLAGS += live555helper/live555helper.a
-LDFLAGS += -L $(SYSROOT)/$(PREFIX)/lib -l:libliveMedia.a -l:libgroupsock.a -l:libUsageEnvironment.a -l:libBasicUsageEnvironment.a 
+LDFLAGS += -L $(SYSROOT)$(PREFIX)/lib -l:libliveMedia.a -l:libgroupsock.a -l:libUsageEnvironment.a -l:libBasicUsageEnvironment.a 
+else	
+$(info LIVE555 not found in $(SYSROOT)$(PREFIX)/include)
 endif
 
 # civetweb
@@ -108,12 +112,12 @@ tgz: $(TARGET)
 live555:
 	wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -
 	cd live && ./genMakefiles linux-gdb
-	make -C live CPLUSPLUS_COMPILER="$(CXX) -fno-rtti $(CFLAGS_EXTRA)" C_COMPILER=$(CC) LINK='$(CXX) -o' PREFIX=$(SYSROOT)/$(PREFIX) install
+	make -C live CPLUSPLUS_COMPILER="$(CXX) -fno-rtti $(CFLAGS_EXTRA)" C_COMPILER=$(CC) LINK='$(CXX) -o' PREFIX=$(SYSROOT)$(PREFIX) install
 	rm -rf live
 
 ALSAVERSION=1.1.4.1
 alsa-lib:
 	wget ftp://ftp.alsa-project.org/pub/lib/alsa-lib-$(ALSAVERSION).tar.bz2 -O - | tar xjf -
-	cd alsa-lib-$(ALSAVERSION) && CC=$(CC) ./configure --enable-static --disable-shared --disable-python --host=$(shell $(CC) -dumpmachine) --prefix=$(SYSROOT)/$(PREFIX) && make && make install
+	cd alsa-lib-$(ALSAVERSION) && CC=$(CC) ./configure --enable-static --disable-shared --disable-python --host=$(shell $(CC) -dumpmachine) --prefix=$(SYSROOT)$(PREFIX) && make && make install
 	rm -rf alsa-lib-$(ALSAVERSION)
 
