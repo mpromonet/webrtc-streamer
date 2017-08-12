@@ -1,11 +1,10 @@
 dist: trusty
 env:
   global:
-    - GYP_DEFINES="target_arch=arm"
     - GNARGSCOMMON='is_debug=false rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false' 
   matrix:
     - GYP_GENERATOR_OUTPUT=x86_64     GNARGS='rtc_use_h264=true ffmpeg_branding="Chrome"' SYSROOT=${TRAVIS_BUILD_DIR}/webrtc/src/build/linux/debian_jessie_amd64-sysroot
-    - GYP_GENERATOR_OUTPUT=rpi-armv7  GNARGS='is_clang=false target_cpu="arm" treat_warnings_as_errors=false rtc_use_h264=true ffmpeg_branding="Chrome"' CROSS=arm-linux-gnueabihf- SYSROOT=${TRAVIS_BUILD_DIR}/webrtc/src/build/linux/debian_jessie_arm-sysroot
+    - GYP_GENERATOR_OUTPUT=rpi-armv7  GNARGS='is_clang=false target_cpu="arm" treat_warnings_as_errors=false rtc_use_h264=true ffmpeg_branding="Chrome"' CROSS=arm-linux-gnueabihf- SYSROOT=${TRAVIS_BUILD_DIR}/webrtc/src/build/linux/debian_jessie_arm-sysroot GYP_DEFINES="target_arch=arm"
     - GYP_GENERATOR_OUTPUT=rpi-armv6  GNARGS='is_clang=false target_cpu="arm" treat_warnings_as_errors=false arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false' CROSS=arm-linux-gnueabihf- CFLAGS_EXTRA="-march=armv6 -mfpu=vfp -mfloat-abi=hard"
 addons:
   apt:
@@ -16,10 +15,8 @@ compiler:
 - gcc
 script:
 # get toolchain need to build WebRTC
-- git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
-- export PATH=$PATH:$(pwd)/depot_tools
-- git clone --depth 1 https://github.com/raspberrypi/tools.git rpi_tools
-- export PATH=$PATH:$(pwd)/rpi_tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin
+- git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git && export PATH=$PATH:$(pwd)/depot_tools
+- if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then git clone --depth 1 https://github.com/raspberrypi/tools.git rpi_tools && export PATH=$PATH:$(pwd)/rpi_tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin; fi
 # get, build and install live555 & alsa
 - make WEBRTCROOT=./webrtc live555 alsa-lib
 # get, build and install WebRTC
