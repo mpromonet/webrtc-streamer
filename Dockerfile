@@ -1,4 +1,4 @@
-FROM heroku/cedar
+FROM heroku/heroku:16
 LABEL maintainer michel.promonet@free.fr
 
 WORKDIR /webrtc-streamer
@@ -9,16 +9,20 @@ RUN git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_t
 ENV PATH /webrtc-streamer/depot_tools:$PATH
 
 # Build 
-RUN make PREFIX=/tmp live555 alsa-lib \
+RUN apt-get update && apt-get install -y g++ xz-utils \
         && mkdir /webrtc \
 	&& cd /webrtc \
-	&& fetch --no-history webrtc \
+	&& fetch --no-history --nohooks webrtc \
+	&& gclient sync \
+	&& make -C /webrtc-streamer live555 alsa-lib \
 	&& cd src \
+	&& sed -i -e 's|"//webrtc/examples",||' BUILD.gn \
 	&& gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false' \
 	&& ninja -C out/Release jsoncpp rtc_json webrtc \
 	&& cd /webrtc-streamer \
-	&& make PREFIX=/tmp all \
-	&& rm -rf /webrtc
+	&& make all \
+	&& rm -rf /webrtc \
+	&& apt-get clean
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
