@@ -9,7 +9,7 @@ RUN git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_t
 ENV PATH /webrtc-streamer/depot_tools:$PATH
 
 # Build 
-RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf libtool xz-utils \
+RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils \
         && mkdir /webrtc \
 	&& cd /webrtc \
 	&& fetch --no-history --nohooks webrtc \
