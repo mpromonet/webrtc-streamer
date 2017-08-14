@@ -108,7 +108,7 @@ WebRtcStreamer.prototype.createPeerConnection = function() {
 	}
 	pc.oniceconnectionstatechange = function(evt) {  
 		trace("oniceconnectionstatechange  state: " + pc.iceConnectionState);
-		if ( (pc.iceConnectionState == "diconnected") || (pc.iceConnectionState == "failed") || (pc.iceConnectionState == "closed") )  {
+		if ( (pc.iceConnectionState == "disconnected") || (pc.iceConnectionState == "failed") || (pc.iceConnectionState == "closed") )  {
 			var videoElement = document.getElementById(streamer.videoElement);
 			if (videoElement) {
 				videoElement.style.opacity = "0.5";
