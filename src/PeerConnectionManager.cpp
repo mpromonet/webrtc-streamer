@@ -376,6 +376,22 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 		else
 		{
 			rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = peerConnectionObserver->getPeerConnection();
+			
+			// set bandwidth
+			std::string tmp;
+			if (CivetServer::getParam(options, "bitrate", tmp)) {
+				int bitrate = std::stoi(tmp);
+				
+				webrtc::PeerConnectionInterface::BitrateParameters bitrateParam;
+				bitrateParam.min_bitrate_bps = rtc::Optional<int>(bitrate/2);
+				bitrateParam.current_bitrate_bps = rtc::Optional<int>(bitrate);
+				bitrateParam.max_bitrate_bps = rtc::Optional<int>(bitrate*2);
+				peerConnection->SetBitrate(bitrateParam);			
+				
+				LOG(WARNING) << "set bitrate:" << bitrate;
+			}			
+			
+			
 			LOG(INFO) << "nbStreams local:" << peerConnection->local_streams()->count() << " remote:" << peerConnection->remote_streams()->count() << " localDescription:" << peerConnection->local_description();
 
 			// register peerid

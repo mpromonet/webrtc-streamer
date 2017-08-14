@@ -104,9 +104,6 @@ class PeerConnectionManager {
 							    NULL,
 							    NULL,
 							    this);
-				
-//				webrtc::BitrateParameters bitrate;
-//				m_pc->SetBitrate(bitrate);
 
 				m_statsCallback = new rtc::RefCountedObject<PeerConnectionStatsCollectorCallback>();
 			};
@@ -125,21 +122,7 @@ class PeerConnectionManager {
 				return (m_dataChannel.get() != NULL);
 			}
 
-			Json::Value getIceCandidateList() { 
-				const webrtc::SessionDescriptionInterface* sdp = m_pc->current_local_description();
-				if (sdp != NULL) {
-					int count=10;
-					while ( ( (sdp->candidates(0) == NULL) || (sdp->candidates(0)->count() != iceCandidateList_.size()) ) && (--count > 0) ) {
-						if (sdp->candidates(0)) {
-							LOG(LERROR) << __PRETTY_FUNCTION__ << "waiting for candidate:" << sdp->candidates(0)->count() <<"/" << iceCandidateList_.size();
-						} else {
-							LOG(LERROR) << __PRETTY_FUNCTION__ << "waiting for candidate:" << 0 <<"/" << iceCandidateList_.size();
-						}
-						usleep(1000);
-					}
-				}
-				return iceCandidateList_; 
-			}
+			Json::Value getIceCandidateList() { return iceCandidateList_; 	}
 			
 			Json::Value getStats() {
 				m_statsCallback->clearReport();
