@@ -133,18 +133,14 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 				memcpy(buf, m_cfg.data(), m_cfg.size());
 				memcpy(buf+m_cfg.size(), buffer, size);
 				webrtc::EncodedImage input_image(buf, sizeof(buf), sizeof(buf) + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264));
-				input_image._timeStamp = ts/1000;
-				input_image.capture_time_ms_ = ts;
-				input_image.ntp_time_ms_ = ts;
-				res = m_decoder->Decode(input_image, false, NULL, NULL, ts);
+				input_image._timeStamp = ts*1000;
+				res = m_decoder->Decode(input_image, false, NULL);
 			}
 			else {
 				LOG(LS_VERBOSE) << "===========================" << m_h264->nal->nal_unit_type;
 				webrtc::EncodedImage input_image(buffer, size, size + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264));
-				input_image._timeStamp = ts/1000;
-				input_image.capture_time_ms_ = ts;
-				input_image.ntp_time_ms_ = ts;
-				res = m_decoder->Decode(input_image, false, NULL, NULL, ts);
+				input_image._timeStamp = ts*1000;
+				res = m_decoder->Decode(input_image, false, NULL);
 			}
 		} else {
 			LOG(LS_ERROR) << "===========================onData no decoder";
@@ -162,7 +158,7 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 									width, height, size,
 									webrtc::kVideoRotation_0, I420buffer.get());
 			if (conversionResult >= 0) {
-				webrtc::VideoFrame frame(I420buffer, ts, ts, webrtc::kVideoRotation_0);
+				webrtc::VideoFrame frame(I420buffer, 0, ts*1000, webrtc::kVideoRotation_0);
 				this->Decoded(frame);
 			} else {
 				LOG(LS_ERROR) << "===========================onData decoder error:" << conversionResult;
@@ -191,7 +187,10 @@ ssize_t RTSPVideoCapturer::onNewBuffer(unsigned char* buffer, ssize_t size)
 
 int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 {
-	LOG(LS_VERBOSE) << "RTSPVideoCapturer::Decoded " << decodedImage.size() << " " << decodedImage.timestamp_us() << " " << decodedImage.timestamp() << " " << decodedImage.ntp_time_ms();
+	if (decodedImage.timestamp_us() == 0) {
+		decodedImage.set_timestamp_us(decodedImage.timestamp());
+	}
+	LOG(LS_VERBOSE) << "RTSPVideoCapturer::Decoded " << decodedImage.size() << " " << decodedImage.timestamp_us() << " " << decodedImage.timestamp() << " " << decodedImage.ntp_time_ms() << " " << decodedImage.render_time_ms();
 	this->OnFrame(decodedImage, decodedImage.height(), decodedImage.width());
 	return true;
 }
