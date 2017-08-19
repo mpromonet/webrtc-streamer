@@ -77,9 +77,16 @@ JanusVideoRoom.prototype.onPluginsAttached = function(dataJson, janusroomid, url
 JanusVideoRoom.prototype.onJoinRoom = function(dataJson,janusroomid,name,url,sessionId,pluginid) {
 	write("onJoinRoom:" + JSON.stringify(dataJson))
 
-	var answer = sendSync(this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1");
-	write("onJoinRoom evt:" + JSON.stringify(answer))
-	if (answer.plugindata.data.videoroom === "joined") {	
+	send(this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.onJoinRoomResult(dataJson,janusroomid,name,url,sessionId,pluginid) }, this.onError, this);
+}
+
+// ------------------------------------------
+// Janus callback for Video Room Joined
+// ------------------------------------------
+JanusVideoRoom.prototype.onJoinRoomResult = function(dataJson,janusroomid,name,url,sessionId,pluginid) {
+	write("onJoinRoomResult:" + JSON.stringify(dataJson))
+
+	if (dataJson.plugindata.data.videoroom === "joined") {	
 		// register connection
 		this.connection[janusroomid + "_" + url + "_" + name] = {"sessionId":sessionId, "pluginId": pluginid };
 		
@@ -111,11 +118,17 @@ JanusVideoRoom.prototype.onCreateOffer = function(dataJson,name,peerid,sessionId
 JanusVideoRoom.prototype.onPublishStream = function(dataJson,name,peerid,sessionId,pluginid) {
 	write("onPublishStream:" + JSON.stringify(dataJson))	
 
-	var answer = sendSync(this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1");
-	write("onPublishStream evt:" + JSON.stringify(answer))
-	
-	if (answer.jsep) {
-		send(this.srvurl + "/setAnswer?peerid="+ peerid, null, answer.jsep, function(dataJson) { this.onSetAnswer(dataJson,name,peerid,sessionId,pluginid) }, this.onError, this); 						
+	send(this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.onPublishStreamResult(dataJson,name,peerid,sessionId,pluginid); }, this.onError, this  );
+}
+
+// ------------------------------------------
+// Janus callback for WebRTC stream is published
+// ------------------------------------------
+JanusVideoRoom.prototype.onPublishStreamResult = function(dataJson,name,peerid,sessionId,pluginid) {
+	write("onPublishStreamResult:" + JSON.stringify(dataJson))	
+
+	if (dataJson.jsep) {
+		send(this.srvurl + "/setAnswer?peerid="+ peerid, null, dataJson.jsep, function(dataJson) { this.onSetAnswer(dataJson,name,peerid,sessionId,pluginid) }, this.onError, this); 						
 	} else {
 		this.callback(name, "publishing failed (no SDP)");
 	}
@@ -137,11 +150,9 @@ JanusVideoRoom.prototype.onReceiveCandidate = function(dataJson,name,sessionId,p
 	write("onReceiveCandidate answer:" + JSON.stringify(dataJson))	
 	
 	for (var i=0; i<dataJson.length; i++) {
-		var candidate = new RTCIceCandidate(dataJson[i]);
-
 		// send ICE candidate to Janus
-		var msg = { "janus": "trickle", "candidate": candidate, "transaction": Math.random().toString()  };
-		sendSync(this.janusUrl + "/" + sessionId + "/" + pluginid, null, msg);		
+		var msg = { "janus": "trickle", "candidate": dataJson[i], "transaction": Math.random().toString()  };
+		send(this.janusUrl + "/" + sessionId + "/" + pluginid, null, msg);		
 	}
 	
 	// start long polling
@@ -153,8 +164,7 @@ JanusVideoRoom.prototype.onReceiveCandidate = function(dataJson,name,sessionId,p
 // ------------------------------------------
 JanusVideoRoom.prototype.keepAlive = function(sessionId) {
 	var msg = { "janus": "keepalive", "session_id": sessionId, "transaction": Math.random().toString()  };
-	var answer = sendSync(this.janusUrl + "/" + sessionId, null, msg);
-	write("keepAlive :" + JSON.stringify(answer))
+	send(this.janusUrl + "/" + sessionId, null, msg, function(dataJson) { write("keepAlive :" + JSON.stringify(dataJson)); }, this.onError, this);	
 }
 
 // ------------------------------------------
@@ -170,7 +180,7 @@ JanusVideoRoom.prototype.longpoll = function(dataJson, name, sessionId) {
 			
 			// start keep alive
 			var bind = this;
-			window.setInterval( function() { bind.keepAlive(sessionId); }, 10000);	
+			setInterval( function() { bind.keepAlive(sessionId); }, 10000);	
 		}
 		else if (dataJson.janus == "hangup") {
 			// notify connection
@@ -180,10 +190,3 @@ JanusVideoRoom.prototype.longpoll = function(dataJson, name, sessionId) {
 	
 	send(this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.longpoll(dataJson, name, sessionId) }, function(dataJson) { this.longpoll(dataJson, name, sessionId) }, this);
 }
-
-	
-
-
-
-
-
