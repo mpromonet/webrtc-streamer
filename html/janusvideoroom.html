@@ -34,7 +34,7 @@
 				params.api.refreshCells([params.node], ['roomid']);
 				
 				if (!janus) {
-					janus = new JanusVideoRoom(document.querySelector('#janusUrl').value, clientCallBack);
+					janus = new JanusVideoRoom(document.querySelector('#janusUrl').value, clientCallBack, null, send);
 				}
 				janus.join(parseInt(params.data.roomid), params.data.url, params.data.url);
 				
