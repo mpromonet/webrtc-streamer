@@ -140,7 +140,39 @@ A short sample to publish WebRTC streams to Janus Video Room could be :
 [Live Demo](https://webrtc-streamer.herokuapp.com/janusvideoroom.html)
 
 This way the communication between [Janus API](https://janus.conf.meetecho.com/docs/JS.html) and [WebRTC Streamer API](https://webrtc-streamer.herokuapp.com/help) is implemented in Javascript running in browser.
-Same logic could be implemented using NodeJS, or whatever langague allowing to call HTTP requests.
+
+The same logic could be implemented in NodeJS using the same JS API :
+
+	function send(method,headers,data,onSuccess,onFailure,scope) {
+
+		console.log("HTTP call "+ method);
+		var request = require('request');
+		var verb = 'GET';
+		if (data) {
+			verb = 'POST';
+			data = JSON.stringify(data);
+		}	
+		request({
+				method: verb,
+				uri: method,
+				body: data,
+			},
+			function (error, response, body) { 
+				console.log("HTTP code:"+ response.statusCode);
+				if ( (response.statusCode === 200) && onSuccess ) {
+					onSuccess.call(scope,JSON.parse(body));
+				}
+				else if (onFailure) {
+					onFailure.call(scope,response.statusCode);
+				}
+			}
+		)
+	}
+
+	var JanusVideoRoom = require('./janusvideoroom.js'); 
+	var janus = new JanusVideoRoom("http://192.168.0.15:8088/janus", null, "http://192.168.0.15:8000", send)
+	janus.join(1234,"mmal service 16.1","video")
+
 
 Docker image
 ===============
