@@ -110,10 +110,10 @@ WebRtcStreamer.prototype.createPeerConnection = function() {
 		trace("oniceconnectionstatechange  state: " + pc.iceConnectionState);
 		var videoElement = document.getElementById(streamer.videoElement);
 		if (videoElement) {
-			if (pc.iceConnectionState == "connected")
+			if (pc.iceConnectionState == "connected") {
 				videoElement.style.opacity = "0.0";
 			}			
-			else if (pc.iceConnectionState == "disconnected")
+			else if (pc.iceConnectionState == "disconnected") {
 				videoElement.style.opacity = "0.25";
 			}			
 			else if ( (pc.iceConnectionState == "failed") || (pc.iceConnectionState == "closed") )  {
