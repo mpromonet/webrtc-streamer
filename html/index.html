@@ -47,11 +47,11 @@ footer {
 	// ------------------------------------------
 	// decode URL arguments
 	// ------------------------------------------	
-	var argurl = location.search.slice(1);
+	var argurl = { video:location.search.slice(1) };
 	var argoptions;
 	if (typeof URLSearchParams != 'undefined') {
 		var params = new URLSearchParams(location.search.slice(1));
-		argurl = params.get("url");
+		argurl = { video:params.get("video"), audio:params.get("audio") };
 		argoptions = params.get("options");
 	} else {
 		console.log("URLSearchParams not supported then no argument could be used");
