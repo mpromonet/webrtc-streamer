@@ -74,7 +74,7 @@ footer {
 	function onGetDeviceList(remoteDeviceList) {
 		var deviceList = [];
                 if (argurl) {
-			deviceList.push( [argurl] );
+			deviceList.push( argurl );
 		}
 		if (remoteDeviceList) {
 			deviceList.push.apply( deviceList, remoteDeviceList );
