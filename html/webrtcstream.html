@@ -3,13 +3,23 @@
 <script src="ajax.js" ></script>
 <script src="webrtcstreamer.js" ></script>
 <script>        
-    var webRtcServer      = new WebRtcStreamer("video");
-    var url               = location.search.slice(1);
-    if (url) {
-        window.onload         = function() { webRtcServer.connect(url,null,"timeout=20&rtptransport=tcp") }
+    if (location.search.slice(1)) {
+	var webRtcServer      = new WebRtcStreamer("video");
+	var url = { video:location.search.slice(1) };  
+	var options;
+	if (typeof URLSearchParams != 'undefined') {
+		var params = new URLSearchParams(location.search.slice(1));
+		url = { video:params.get("video"), audio:params.get("audio") };
+		options = params.get("options");
+	} 	    
+        window.onload         = function() { webRtcServer.connect(url.video,url.audio,options) }
         window.onbeforeunload = function() { webRtcServer.disconnect() }
     } else {
-	alert("WebRTC stream name to connect is missing\n\nUsage :" + window.location + "?<WebRTC stream name>")
+	if (typeof URLSearchParams != 'undefined') {
+		alert("WebRTC stream name to connect is missing\n\nUsage :" + window.location + "?video=<WebRTC video stream name>&audio=<WebRTC audio stream name>&options=<WebRTC options>")
+	} else {
+		alert("WebRTC stream name to connect is missing\n\nUsage :" + window.location + "?<WebRTC video stream name>")
+	}
     }
 </script>
 </head>
