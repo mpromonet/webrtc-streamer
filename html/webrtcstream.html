@@ -6,7 +6,7 @@
     var webRtcServer      = new WebRtcStreamer("video");
     var url               = location.search.slice(1);
     if (url) {
-        window.onload         = function() { webRtcServer.connect(url,null,"timeout=20&rtpovertcp=1") }
+        window.onload         = function() { webRtcServer.connect(url,null,"timeout=20&rtptransport=tcp") }
         window.onbeforeunload = function() { webRtcServer.disconnect() }
     } else {
 	alert("WebRTC stream name to connect is missing\n\nUsage :" + window.location + "?<WebRTC stream name>")

@@ -22,7 +22,20 @@
 
 uint8_t marker[] = { 0, 0, 0, 1};
 
-RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, int timeout, bool rtpovertcp) : m_connection(m_env, this, uri.c_str(), timeout, rtpovertcp, 1)
+int decodeRTPTransport(const std::string & rtpTransportString) 
+{
+	int rtptransport = RTSPConnection::RTPUDPUNICAST;
+	if (rtpTransportString == "tcp") {
+		rtptransport = RTSPConnection::RTPOVERTCP;
+	} else if (rtpTransportString == "http") {
+		rtptransport = RTSPConnection::RTPOVERHTTP;
+	} else if (rtpTransportString == "multicast") {
+		rtptransport = RTSPConnection::RTPUDPMULTICAST;
+	}
+	return rtptransport;
+}
+
+RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, int timeout, const std::string & rtptransport) : m_connection(m_env, this, uri.c_str(), timeout, decodeRTPTransport(rtptransport), 1)
 {
 	LOG(INFO) << "RTSPVideoCapturer" << uri ;
 	m_h264 = h264_new();

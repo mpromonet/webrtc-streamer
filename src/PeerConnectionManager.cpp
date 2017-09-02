@@ -661,11 +661,9 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 		if (CivetServer::getParam(options, "timeout", tmp)) {
 			timeout = std::stoi(tmp);
 		}
-		bool rtpovertcp = false;
-		if (CivetServer::getParam(options, "rtpovertcp", tmp)) {
-			rtpovertcp = std::stoi(tmp);
-		}
-		capturer.reset(new RTSPVideoCapturer(videourl, timeout, rtpovertcp));
+		std::string rtptransport;
+		CivetServer::getParam(options, "rtptransport", rtptransport);
+		capturer.reset(new RTSPVideoCapturer(videourl, timeout, rtptransport));
 #endif
 	}
 	else
