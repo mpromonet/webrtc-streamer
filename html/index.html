@@ -73,7 +73,7 @@ footer {
 	// ------------------------------------------	
 	function onGetDeviceList(remoteDeviceList) {
 		var deviceList = [];
-                if (argurl) {
+                if (argurl.video || argurl.audio) {
 			deviceList.push( argurl );
 		}
 		if (remoteDeviceList) {
