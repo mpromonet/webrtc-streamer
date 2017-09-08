@@ -111,7 +111,7 @@ WebRtcStreamer.prototype.createPeerConnection = function() {
 		var videoElement = document.getElementById(streamer.videoElement);
 		if (videoElement) {
 			if (pc.iceConnectionState == "connected") {
-				videoElement.style.opacity = "0.0";
+				videoElement.style.opacity = "1.0";
 			}			
 			else if (pc.iceConnectionState == "disconnected") {
 				videoElement.style.opacity = "0.25";
