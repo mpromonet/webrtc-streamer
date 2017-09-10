@@ -9,7 +9,9 @@
 	var options;
 	if (typeof URLSearchParams != 'undefined') {
 		var params = new URLSearchParams(location.search.slice(1));
-		url = { video:params.get("video"), audio:params.get("audio") };
+		if (params.has("video") || params.has("audio")) {
+			url = { video:params.get("video"), audio:params.get("audio") };
+		}
 		options = params.get("options");
 	} 	    
         window.onload         = function() { webRtcServer.connect(url.video,url.audio,options) }
