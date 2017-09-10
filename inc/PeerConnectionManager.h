@@ -98,7 +98,8 @@ class PeerConnectionManager {
 		public:
 			PeerConnectionObserver(PeerConnectionManager* peerConnectionManager, const std::string& peerid, const webrtc::PeerConnectionInterface::RTCConfiguration & config, const webrtc::FakeConstraints & constraints)
 			: m_peerConnectionManager(peerConnectionManager)
-			, m_peerid(peerid) {
+			, m_peerid(peerid)
+			, iceCandidateList_(Json::arrayValue) {
 				m_pc = m_peerConnectionManager->peer_connection_factory_->CreatePeerConnection(config,
 							    &constraints,
 							    NULL,
@@ -152,7 +153,6 @@ class PeerConnectionManager {
 			virtual void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState state) {
 				LOG(INFO) << __PRETTY_FUNCTION__ << " " << state  << " " << m_peerid;
 				if ( (state == webrtc::PeerConnectionInterface::kIceConnectionFailed)
-				   ||(state == webrtc::PeerConnectionInterface::kIceConnectionDisconnected)
 				   ||(state == webrtc::PeerConnectionInterface::kIceConnectionClosed) )
 				{
 					iceCandidateList_.clear();
@@ -189,11 +189,11 @@ class PeerConnectionManager {
 		bool InitializePeerConnection();
 
 		const Json::Value getIceCandidateList(const std::string &peerid);
-		bool              addIceCandidate(const std::string &peerid, const Json::Value& jmessage);
+		const Json::Value addIceCandidate(const std::string &peerid, const Json::Value& jmessage);
 		const Json::Value getVideoDeviceList();
 		const Json::Value getAudioDeviceList();
 		const Json::Value getMediaList();
-		bool              hangUp(const std::string &peerid);
+		const Json::Value hangUp(const std::string &peerid);
 		const Json::Value call(const std::string &peerid, const std::string & videourl, const std::string & audiourl, const std::string & options, const Json::Value& jmessage);
 		const Json::Value getIceServers();
 		const Json::Value getPeerConnectionList();

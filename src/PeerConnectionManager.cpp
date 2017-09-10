@@ -223,7 +223,7 @@ const Json::Value PeerConnectionManager::getIceServers()
 /* ---------------------------------------------------------------------------
 **  add ICE candidate to a PeerConnection
 ** -------------------------------------------------------------------------*/
-bool PeerConnectionManager::addIceCandidate(const std::string& peerid, const Json::Value& jmessage)
+const Json::Value PeerConnectionManager::addIceCandidate(const std::string& peerid, const Json::Value& jmessage)
 {
 	bool result = false;
 	std::string sdp_mid;
@@ -259,7 +259,11 @@ bool PeerConnectionManager::addIceCandidate(const std::string& peerid, const Jso
 			}
 		}
 	}
-	return result;
+	Json::Value answer;
+	if (result) {
+		answer = result;
+	}
+	return answer;
 }
 
 /* ---------------------------------------------------------------------------
@@ -479,7 +483,7 @@ bool PeerConnectionManager::streamStillUsed(const std::string & streamLabel)
 /* ---------------------------------------------------------------------------
 **  hangup a call
 ** -------------------------------------------------------------------------*/
-bool PeerConnectionManager::hangUp(const std::string &peerid)
+const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 {
 	bool result = false;
 	LOG(INFO) << __FUNCTION__ << " " << peerid;
@@ -525,8 +529,11 @@ bool PeerConnectionManager::hangUp(const std::string &peerid)
 		delete pcObserver;
 		result = true;
 	}
-
-	return result;
+	Json::Value answer;
+	if (result) {
+		answer = result;
+	}
+	return answer;
 }
 
 
@@ -535,6 +542,8 @@ bool PeerConnectionManager::hangUp(const std::string &peerid)
 ** -------------------------------------------------------------------------*/
 const Json::Value PeerConnectionManager::getIceCandidateList(const std::string &peerid)
 {
+	LOG(INFO) << __FUNCTION__;
+	
 	Json::Value value;
 	std::map<std::string, PeerConnectionObserver* >::iterator  it = peer_connectionobs_map_.find(peerid);
 	if (it != peer_connectionobs_map_.end())
@@ -574,7 +583,25 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 			if (localstreams) {
 				for (unsigned int i = 0; i<localstreams->count(); i++) {
 					if (localstreams->at(i)) {
-						streams.append(localstreams->at(i)->label());
+						Json::Value tracks;
+						
+						const webrtc::VideoTrackVector& videoTracks = localstreams->at(i)->GetVideoTracks();
+						for (unsigned int j=0; j<videoTracks.size() ; j++)
+						{
+							Json::Value track;
+							tracks[videoTracks.at(j)->kind()].append(videoTracks.at(j)->id());
+						}
+						const webrtc::AudioTrackVector& audioTracks = localstreams->at(i)->GetAudioTracks();
+						for (unsigned int j=0; j<audioTracks.size() ; j++)
+						{
+							Json::Value track;
+							tracks[audioTracks.at(j)->kind()].append(audioTracks.at(j)->id());
+						}
+						
+						Json::Value stream;
+						stream[localstreams->at(i)->label()] = tracks;
+						
+						streams.append(stream);						
 					}
 				}
 			}
