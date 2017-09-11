@@ -62,6 +62,7 @@ PeerConnectionManager::PeerConnectionManager(const std::string & stunurl, const 
 		if (pos != std::string::npos)
 		{
 			std::string credentials = turnurl_.substr(0, pos);
+			turnurl_ = turnurl_.substr(pos + 1);
 			pos = credentials.find(':');
 			if (pos == std::string::npos)
 			{
@@ -72,7 +73,6 @@ PeerConnectionManager::PeerConnectionManager(const std::string & stunurl, const 
 				turnuser_ = credentials.substr(0, pos);
 				turnpass_ = credentials.substr(pos + 1);
 			}
-			turnurl_ = turnurl_.substr(pos + 1);
 		}
 	}
 
