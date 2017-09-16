@@ -68,14 +68,16 @@ and where PREFIX point to live555 installation (default is /usr/local)
 
 Usage
 ===============
-	./webrtc-streamer [-H http port] [-S embeded stun address] -[v[v]]  [url1]...[urln]
+	./webrtc-streamer [-H http port] [-S[embeded stun address]] -[v[v]]  [url1]...[urln]
 	./webrtc-streamer [-H http port] [-s[external stun address]] -[v[v]] [url1]...[urln]
+	./webrtc-streamer -V
         	-v[v[v]]           : verbosity
          	-H [hostname:]port : HTTP server binding (default 0.0.0.0:8000)
          	-S[stun_address]   : start embeded STUN server bind to address (default 127.0.0.1:3478)
          	-s[stun_address]   : use an external STUN server (default stun.l.google.com:19302)
                 -t[username:password@]turn_address : use an external TURN relay server (default disabled)
          	[url]              : url to register in the source list
+        	-V                 : print version
 
 
 Example

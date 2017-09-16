@@ -57,8 +57,9 @@ int main(int argc, char* argv[])
 
 			case 'h':
 			default:
-				std::cout << argv[0] << " [-H http port] [-S embeded stun address] [-t [username:password@]turn_address] -[v[v]]  [url1]...[urln]" << std::endl;
-				std::cout << argv[0] << " [-H http port] [-s externel stun address] [-t [username:password@]turn_address] -[v[v]] [url1]...[urln]" << std::endl;
+				std::cout << argv[0] << " [-H http port] [-S[embeded stun address]] [-t [username:password@]turn_address] -[v[v]]  [url1]...[urln]" << std::endl;
+				std::cout << argv[0] << " [-H http port] [-s[externel stun address]] [-t [username:password@]turn_address] -[v[v]] [url1]...[urln]" << std::endl;
+				std::cout << argv[0] << " -V" << std::endl;
 				std::cout << "\t -v[v[v]]           : verbosity"                                                                  << std::endl;
 				std::cout << "\t -H hostname:port   : HTTP server binding (default "   << defaultAddress    << ")"                << std::endl;
 				std::cout << "\t -w webroot         : path to get files"                                                          << std::endl;
@@ -66,6 +67,7 @@ int main(int argc, char* argv[])
 				std::cout << "\t -s[stun_address]   : use an external STUN server (default " << stunurl << ")"                    << std::endl;
 				std::cout << "\t -t[username:password@]turn_address : use an external TURN relay server (default disabled)"       << std::endl;
 				std::cout << "\t [url]              : url to register in the source list"                                         << std::endl;
+				std::cout << "\t -V                 : print version"                                                          << std::endl;
 				exit(0);
 		}
 	}
