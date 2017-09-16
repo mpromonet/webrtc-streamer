@@ -11,9 +11,7 @@
 #include <fstream>
 #include <utility>
 
-#include "api/test/fakeconstraints.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
-#include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "modules/audio_device/include/audio_device.h"
 #include "modules/video_capture/video_capture_factory.h"
 #include "media/engine/webrtcvideocapturerfactory.h"

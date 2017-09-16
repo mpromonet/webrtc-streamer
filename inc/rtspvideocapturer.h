@@ -69,10 +69,7 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 
 
 #include "pc/localaudiosource.h"
-#include "api/mediaconstraintsinterface.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
-#include "media/base/mediaengine.h"
-#include "media/base/audiosource.h"
 #include <iostream>
 
 class RTSPAudioSource : public webrtc::Notifier<webrtc::AudioSourceInterface>, public rtc::Thread, public RTSPConnection::Callback {
