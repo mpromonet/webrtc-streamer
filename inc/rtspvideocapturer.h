@@ -16,12 +16,10 @@
 #include "environment.h"
 #include "rtspconnectionclient.h"
 
-#include "webrtc/rtc_base/thread.h"
-
-#include "webrtc/api/video_codecs/video_decoder.h"
-#include "webrtc/media/base/videocapturer.h"
-#include "webrtc/media/base/audiosource.h"
-#include "webrtc/media/engine/internaldecoderfactory.h"
+#include "rtc_base/thread.h"
+#include "api/video_codecs/video_decoder.h"
+#include "media/base/videocapturer.h"
+#include "media/engine/internaldecoderfactory.h"
 
 #include "h264_stream.h"
 
@@ -70,10 +68,11 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 };
 
 
-#include "webrtc/pc/localaudiosource.h"
-#include "webrtc/api/mediaconstraintsinterface.h"
-#include "webrtc/media/base/mediaengine.h"
-#include "webrtc/api/audio_codecs/builtin_audio_decoder_factory.h"
+#include "pc/localaudiosource.h"
+#include "api/mediaconstraintsinterface.h"
+#include "api/audio_codecs/builtin_audio_decoder_factory.h"
+#include "media/base/mediaengine.h"
+#include "media/base/audiosource.h"
 #include <iostream>
 
 class RTSPAudioSource : public webrtc::Notifier<webrtc::AudioSourceInterface>, public rtc::Thread, public RTSPConnection::Callback {

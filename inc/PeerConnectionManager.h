@@ -12,11 +12,11 @@
 
 #include <string>
 
-#include "webrtc/api/peerconnectioninterface.h"
-#include "webrtc/api/test/fakeconstraints.h"
+#include "api/peerconnectioninterface.h"
+#include "api/test/fakeconstraints.h"
 
-#include "webrtc/rtc_base/logging.h"
-#include "webrtc/rtc_base/json.h"
+#include "rtc_base/logging.h"
+#include "rtc_base/json.h"
 
 
 class PeerConnectionManager {

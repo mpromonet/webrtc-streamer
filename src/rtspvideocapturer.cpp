@@ -9,13 +9,14 @@
 
 #ifdef HAVE_LIVE555
 
-#include "webrtc/rtc_base/timeutils.h"
-#include "webrtc/rtc_base/logging.h"
-#include "webrtc/rtc_base/optional.h"
+#include "rtc_base/timeutils.h"
+#include "rtc_base/logging.h"
+#include "rtc_base/optional.h"
 
-#include "webrtc/modules/video_coding/h264_sprop_parameter_sets.h"
-#include "webrtc/api/video/i420_buffer.h"
-#include "webrtc/common_video/libyuv/include/webrtc_libyuv.h"
+#include "modules/video_coding/h264_sprop_parameter_sets.h"
+#include "api/video/i420_buffer.h"
+#include "common_video/libyuv/include/webrtc_libyuv.h"
+
 #include "libyuv/convert.h"
 
 #include "rtspvideocapturer.h"
