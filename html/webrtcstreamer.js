@@ -42,6 +42,7 @@ WebRtcStreamer.prototype.connect = function(videourl, audiourl, options) {
 	
 	try {            
 		this.pc = this.createPeerConnection();
+
 		var peerid = Math.random();			
 		this.pc.peerid = peerid;
 		
@@ -121,10 +122,31 @@ WebRtcStreamer.prototype.createPeerConnection = function() {
 			}			
 		}
 	}
+	pc.ondatachannel = function(evt) {  
+		console.log("remote datachannel created:"+JSON.stringify(evt));
+		
+		evt.channel.onopen = function () {
+			console.log("remote datachannel open");
+			this.send("remote channel openned");
+		}
+		evt.channel.onmessage = function (event) {
+			console.log("remote datachannel recv:"+JSON.stringify(event.data));
+		}
+	}
+
+	var dataChannel = pc.createDataChannel("ClientDataChannel");
+	dataChannel.onopen = function() {
+		console.log("local datachannel open");
+		this.send("local channel openned");
+	}
+	dataChannel.onmessage = function(evt) {
+		console.log("local datachannel recv:"+JSON.stringify(evt.data));
+	}
 	
 	trace("Created RTCPeerConnnection with config: " + JSON.stringify(this.pcConfig) + "option:"+  JSON.stringify(this.pcOptions) );
 	return pc;
 }
+
 
 /*
 * RTCPeerConnection IceCandidate callback

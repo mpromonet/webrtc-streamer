@@ -94,11 +94,39 @@ class PeerConnectionManager {
 			Json::Value m_report;
 	};
 
-	class PeerConnectionObserver : public webrtc::PeerConnectionObserver, public webrtc::DataChannelObserver {
+	class DataChannelObserver : public webrtc::DataChannelObserver  {
+		public:
+			DataChannelObserver(rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel): m_dataChannel(dataChannel) {
+				m_dataChannel->RegisterObserver(this);
+			
+			}
+			virtual ~DataChannelObserver() {
+				m_dataChannel->UnregisterObserver();
+			}
+
+			// DataChannelObserver interface
+			virtual void OnStateChange() {
+				LOG(LERROR) << __PRETTY_FUNCTION__ << " channel:" << m_dataChannel->label() << " state:"<< webrtc::DataChannelInterface::DataStateString(m_dataChannel->state());
+				std::string msg(m_dataChannel->label() + " " + webrtc::DataChannelInterface::DataStateString(m_dataChannel->state()));
+				webrtc::DataBuffer buffer(msg);
+				m_dataChannel->Send(buffer);
+			}
+			virtual void OnMessage(const webrtc::DataBuffer& buffer) {
+				std::string msg((const char*)buffer.data.data(),buffer.data.size());
+				LOG(LERROR) << __PRETTY_FUNCTION__ << " channel:" << m_dataChannel->label() << " msg:" << msg;
+			}
+
+		protected:
+			rtc::scoped_refptr<webrtc::DataChannelInterface>    m_dataChannel;
+	};
+
+	class PeerConnectionObserver : public webrtc::PeerConnectionObserver {
 		public:
 			PeerConnectionObserver(PeerConnectionManager* peerConnectionManager, const std::string& peerid, const webrtc::PeerConnectionInterface::RTCConfiguration & config, const webrtc::FakeConstraints & constraints)
 			: m_peerConnectionManager(peerConnectionManager)
 			, m_peerid(peerid)
+			, m_localChannel(NULL)
+			, m_remoteChannel(NULL)
 			, iceCandidateList_(Json::arrayValue) {
 				m_pc = m_peerConnectionManager->peer_connection_factory_->CreatePeerConnection(config,
 							    &constraints,
@@ -107,20 +135,16 @@ class PeerConnectionManager {
 							    this);
 
 				m_statsCallback = new rtc::RefCountedObject<PeerConnectionStatsCollectorCallback>();
+				
+				rtc::scoped_refptr<webrtc::DataChannelInterface>   channel = m_pc->CreateDataChannel("ServerDataChannel", NULL);
+				m_localChannel = new DataChannelObserver(channel);
 			};
 
 			virtual ~PeerConnectionObserver() {
 				LOG(INFO) << __PRETTY_FUNCTION__;
-				if (m_dataChannel) {
-					m_dataChannel->UnregisterObserver();
-				}
+				delete m_localChannel;
+				delete m_remoteChannel;
 				m_pc->Close();
-			}
-
-			bool createDataChannel(const std::string & channelName) {
-				m_dataChannel = m_pc->CreateDataChannel(channelName, NULL);
-				m_dataChannel->RegisterObserver(this);
-				return (m_dataChannel.get() != NULL);
 			}
 
 			Json::Value getIceCandidateList() { return iceCandidateList_; 	}
@@ -142,9 +166,8 @@ class PeerConnectionManager {
 			virtual void OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)    {}
 			virtual void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {}
 			virtual void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
-				m_dataChannel = channel;
-				m_dataChannel->RegisterObserver(this);
-				LOG(INFO) << __PRETTY_FUNCTION__;
+				LOG(LERROR) << __PRETTY_FUNCTION__;
+				m_remoteChannel = new DataChannelObserver(channel);
 			}
 			virtual void OnRenegotiationNeeded()                              {}
 
@@ -161,23 +184,13 @@ class PeerConnectionManager {
 			}
 			virtual void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState) {}
 
-			// DataChannelObserver interface
-			virtual void OnStateChange() {
-				LOG(LERROR) << __PRETTY_FUNCTION__ << m_peerid << "/" << m_dataChannel->label() << " state:"<< webrtc::DataChannelInterface::DataStateString(m_dataChannel->state());
-				std::string msg(m_dataChannel->label() + webrtc::DataChannelInterface::DataStateString(m_dataChannel->state()));
-				webrtc::DataBuffer buffer(msg);
-				m_dataChannel->Send(buffer);
-			}
-			virtual void OnMessage(const webrtc::DataBuffer& buffer) {
-				std::string msg((const char*)buffer.data.data(),buffer.data.size());
-				LOG(LERROR) << __PRETTY_FUNCTION__ << m_peerid << "/" << m_dataChannel->label() << " msg:" << msg;
-			}
 
 		private:
 			PeerConnectionManager* m_peerConnectionManager;
 			const std::string m_peerid;
 			rtc::scoped_refptr<webrtc::PeerConnectionInterface> m_pc;
-			rtc::scoped_refptr<webrtc::DataChannelInterface>    m_dataChannel;
+			DataChannelObserver*    m_localChannel;
+			DataChannelObserver*    m_remoteChannel;
 			Json::Value iceCandidateList_;
 			rtc::scoped_refptr<PeerConnectionStatsCollectorCallback> m_statsCallback;
 	};

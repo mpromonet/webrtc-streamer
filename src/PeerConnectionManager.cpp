@@ -281,8 +281,6 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 	}
 	else
 	{
-		peerConnectionObserver->createDataChannel("JanusDataChannel");
-
 		if (!this->AddStreams(peerConnectionObserver->getPeerConnection(), videourl, audiourl, options))
 		{
 			LOG(WARNING) << "Can't add stream";
