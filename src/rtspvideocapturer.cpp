@@ -107,16 +107,15 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 		int nal_end   = 0;
 		find_nal_unit(buffer, size, &nal_start, &nal_end);
 		read_nal_unit(m_h264, &buffer[nal_start], nal_end - nal_start);
-		LOG(LS_VERBOSE) << "NAL:" << m_h264->nal->nal_unit_type;
 		if (m_h264->nal->nal_unit_type == NAL_UNIT_TYPE_SPS) {
-			LOG(LS_VERBOSE) << "===========================SPS";
+			LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData SPS";
 			m_cfg.clear();
 			m_cfg.insert(m_cfg.end(), buffer, buffer+size);
 
 			unsigned int width = ((m_h264->sps->pic_width_in_mbs_minus1 +1)*16) - m_h264->sps->frame_crop_left_offset*2 - m_h264->sps->frame_crop_right_offset*2;
 			unsigned int height= ((2 - m_h264->sps->frame_mbs_only_flag)* (m_h264->sps->pic_height_in_map_units_minus1 +1) * 16) - (m_h264->sps->frame_crop_top_offset * 2) - (m_h264->sps->frame_crop_bottom_offset * 2);
 			unsigned int fps=25;
-			LOG(LS_VERBOSE) << "=========set timing_info_present_flag:" << m_h264->sps->vui.timing_info_present_flag << " " << m_h264->sps->vui.time_scale << " " << m_h264->sps->vui.num_units_in_tick;
+			LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData SPS set timing_info_present_flag:" << m_h264->sps->vui.timing_info_present_flag << " " << m_h264->sps->vui.time_scale << " " << m_h264->sps->vui.num_units_in_tick;
 			if (m_decoder.get()) {
 				if ( (GetCaptureFormat()->width != width) || (GetCaptureFormat()->height != height) )  {
 					LOG(INFO) << "format changed => set format from " << GetCaptureFormat()->width << "x" << GetCaptureFormat()->height	 << " to " << width << "x" << height;
@@ -125,7 +124,7 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			}
 
 			if (!m_decoder.get()) {
-				LOG(INFO) << "=========set format " << width << "x" << height << " fps:" << fps;
+				LOG(INFO) << "RTSPVideoCapturer:onData SPS set format " << width << "x" << height << " fps:" << fps;
 				cricket::VideoFormat videoFormat(width, height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
 				SetCaptureFormat(&videoFormat);
 
@@ -137,12 +136,12 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			}
 		}
 		else if (m_h264->nal->nal_unit_type == NAL_UNIT_TYPE_PPS) {
-			LOG(LS_VERBOSE) << "===========================PPS";
+			LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData PPS";
 			m_cfg.insert(m_cfg.end(), buffer, buffer+size);
 		}
 		else if (m_decoder.get()) {
 			if (m_h264->nal->nal_unit_type == NAL_UNIT_TYPE_CODED_SLICE_IDR) {
-				LOG(LS_VERBOSE) << "===========================IDR";
+				LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData IDR";
 				uint8_t buf[m_cfg.size() + size];
 				memcpy(buf, m_cfg.data(), m_cfg.size());
 				memcpy(buf+m_cfg.size(), buffer, size);
@@ -151,13 +150,13 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 				res = m_decoder->Decode(input_image, false, NULL);
 			}
 			else {
-				LOG(LS_VERBOSE) << "===========================" << m_h264->nal->nal_unit_type;
+				LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData SLICE NALU:" << m_h264->nal->nal_unit_type;
 				webrtc::EncodedImage input_image(buffer, size, size + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264));
 				input_image._timeStamp = ts*1000;
 				res = m_decoder->Decode(input_image, false, NULL);
 			}
 		} else {
-			LOG(LS_ERROR) << "===========================onData no decoder";
+			LOG(LS_ERROR) << "RTSPVideoCapturer:onData no decoder";
 			res = -1;
 		}
 	} else if (m_codec == "JPEG") {
@@ -175,10 +174,12 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 				webrtc::VideoFrame frame(I420buffer, 0, ts*1000, webrtc::kVideoRotation_0);
 				this->Decoded(frame);
 			} else {
-				LOG(LS_ERROR) << "===========================onData decoder error:" << conversionResult;
+				LOG(LS_ERROR) << "RTSPVideoCapturer:onData decoder error:" << conversionResult;
+				res = -1;
 			}
 		} else {
-			LOG(LS_ERROR) << "===========================onData cannot JPEG dimension";
+			LOG(LS_ERROR) << "RTSPVideoCapturer:onData cannot JPEG dimension";
+			res = -1;
 		}
 			    
 	}
