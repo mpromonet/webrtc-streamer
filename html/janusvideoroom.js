@@ -108,7 +108,7 @@ JanusVideoRoom.prototype.onCreateOffer = function(dataJson,name,peerid,sessionId
 	
 	this.callback(name, "publishing");
 	
-	var msg = { "janus": "message", "body": {"request": "publish", "video": true, "audio": false}, "jsep": dataJson, "transaction": Math.random().toString() };		
+	var msg = { "janus": "message", "body": {"request": "publish", "video": true, "audio": true, "data": true}, "jsep": dataJson, "transaction": Math.random().toString() };		
 	this.sendFctn(this.janusUrl + "/" + sessionId + "/" + pluginid, null, msg,  function(dataJson) { this.onPublishStream(dataJson,name,peerid,sessionId,pluginid) }, this.onError, this);
 }
 
