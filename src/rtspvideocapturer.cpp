@@ -11,7 +11,6 @@
 
 #include "rtc_base/timeutils.h"
 #include "rtc_base/logging.h"
-#include "rtc_base/optional.h"
 
 #include "modules/video_coding/h264_sprop_parameter_sets.h"
 #include "api/video/i420_buffer.h"
