@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf au
 	&& gclient sync \
 	&& make -C /webrtc-streamer live555 alsa-lib \
 	&& cd src \
-	&& sed -i -e 's|"//webrtc/examples",||' BUILD.gn \
+	&& sed -i -e 's|"examples",||' BUILD.gn \
 	&& gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false enable_nacl=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false' \
 	&& ninja -C out/Release jsoncpp rtc_json webrtc \
 	&& cd /webrtc-streamer \
