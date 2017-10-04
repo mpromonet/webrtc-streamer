@@ -10,6 +10,7 @@
 #pragma once
 
 #if HAVE_ALSA
+#include <dirent.h>
 #include <alsa/asoundlib.h>
 
 /* ---------------------------------------------------------------------------
