@@ -118,6 +118,5 @@ live555:
 ALSAVERSION=1.1.4.1
 alsa-lib:
 	wget ftp://ftp.alsa-project.org/pub/lib/alsa-lib-$(ALSAVERSION).tar.bz2 -O - | tar xjf -
-	cd alsa-lib-$(ALSAVERSION) && CC=$(CC) ./configure --disable-python --host=$(shell $(CC) -dumpmachine) --prefix=$(SYSROOT)$(PREFIX) && make && make install
+	cd alsa-lib-$(ALSAVERSION) && CC=$(CC) ./configure --disable-python --disable-shared --enable-static --host=$(shell $(CC) -dumpmachine) --prefix=$(SYSROOT)$(PREFIX) && make && make install
 	rm -rf alsa-lib-$(ALSAVERSION)
-
