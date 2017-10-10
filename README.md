@@ -59,12 +59,12 @@ Build live555 to enable RTSP support(optional)
 
 Build WebRTC Streamer
 ------- 
-	make WEBRTCROOT=<path to WebRTC> WEBRTCBUILD=<Release or Debug> PREFIX=/usr/local
+	make WEBRTCROOT=<path to WebRTC> WEBRTCBUILD=<Release or Debug> SYSROOT=<path to WebRTC>/src/build/linux/debian_jessie_amd64-sysroot
 	
 where WEBRTCROOT and WEBRTCBUILD indicate how to point to WebRTC :
- - $WEBRTCROOT/src should contains source 
- - $WEBRTCROOT/src/out/$WEBRTCBUILD should contains libraries
-and where PREFIX point to live555 installation (default is /usr/local)
+ - $WEBRTCROOT/src should contains source (default is ../webrtc) 
+ - $WEBRTCROOT/src/out/$WEBRTCBUILD should contains libraries (default is Release)
+ - $SYSROOT should point to sysroot used to build WebRTC (default is /)
 
 Usage
 ===============
