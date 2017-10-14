@@ -44,18 +44,14 @@ Build WebRTC with H264 support
 	mkdir ../webrtc
 	pushd ../webrtc
 	fetch webrtc
-	gn gen out/Release --args='is_debug=false use_custom_libcxx=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false'
+	gn gen out/Release --args='is_debug=false use_custom_libcxx=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false use_ozone=true rtc_include_pulse_audio=false'
 	ninja -C out/Release
 	popd
 
 
 Build live555 to enable RTSP support(optional)
 -------
-	wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -
-	pushd live
-	./genMakefiles linux
-	sudo make install
-	popd
+	make SYSROOT=<path to WebRTC>/src/build/linux/debian_jessie_amd64-sysroot live555
 
 Build WebRTC Streamer
 ------- 
