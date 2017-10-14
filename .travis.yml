@@ -35,7 +35,7 @@ script:
 # patch webrtc to not generate ninja files for examples (that depend on gtk)
 - sed -i -e 's|"examples",||' src/BUILD.gn
 # patch webrtc to not download chromium-webrtc-resources
-- sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests',|" src/DEPS
+- sed -i -e "s|''src/resources''],|''src/resources''],''condition'':''rtc_include_tests'',|" src/DEPS
 - gclient sync --no-history
 - popd
 # get, build and install live555 & alsa
