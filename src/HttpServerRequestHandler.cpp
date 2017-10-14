@@ -131,7 +131,7 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 	};
 
 	m_func["/getIceServers"]         = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
-		return m_webRtcServer->getIceServers();
+		return m_webRtcServer->getIceServers(req_info->remote_addr);
 	};
 
 	m_func["/call"]                  = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {

@@ -208,7 +208,7 @@ class PeerConnectionManager {
 		const Json::Value getMediaList();
 		const Json::Value hangUp(const std::string &peerid);
 		const Json::Value call(const std::string &peerid, const std::string & videourl, const std::string & audiourl, const std::string & options, const Json::Value& jmessage);
-		const Json::Value getIceServers();
+		const Json::Value getIceServers(const std::string& clientIp);
 		const Json::Value getPeerConnectionList();
 		const Json::Value getStreamList();
 		const Json::Value createOffer(const std::string &peerid, const std::string & videourl, const std::string & audiourl, const std::string & options);

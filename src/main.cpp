@@ -22,7 +22,7 @@
 int main(int argc, char* argv[])
 {
 	const char* turnurl       = "";
-	const char* defaultlocalstunurl  = "127.0.0.1:3478";
+	const char* defaultlocalstunurl  = "0.0.0.0:3478";
 	const char* localstunurl  = NULL;
 	const char* stunurl       = "stun.l.google.com:19302";
 	int logLevel              = rtc::LERROR;

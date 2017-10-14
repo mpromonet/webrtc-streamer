@@ -190,14 +190,50 @@ const Json::Value PeerConnectionManager::getAudioDeviceList()
 	return value;
 }
 
+#include <net/if.h>
+#include <ifaddrs.h>
+std::string getServerIpFromClientIp(int clientip)
+{
+	std::string serverAddress;
+	char host[NI_MAXHOST];
+	struct ifaddrs *ifaddr = NULL;
+	if (getifaddrs(&ifaddr) == 0) 
+	{
+		for (struct ifaddrs* ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) 
+		{
+			if ( (ifa->ifa_netmask != NULL) && (ifa->ifa_netmask->sa_family == AF_INET) && (ifa->ifa_addr != NULL) && (ifa->ifa_addr->sa_family == AF_INET) )  
+			{
+				struct sockaddr_in* addr = (struct sockaddr_in*)ifa->ifa_addr;
+				struct sockaddr_in* mask = (struct sockaddr_in*)ifa->ifa_netmask;
+				if ( (addr->sin_addr.s_addr & mask->sin_addr.s_addr) == (clientip & mask->sin_addr.s_addr) )
+				{
+					if (getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), host, sizeof(host), NULL, 0, NI_NUMERICHOST) == 0)
+					{
+						serverAddress = host;
+						break;
+					}
+				}
+			}
+		}
+	}
+	freeifaddrs(ifaddr);
+	return serverAddress;
+}
+
 /* ---------------------------------------------------------------------------
 **  return iceServers as JSON vector
 ** -------------------------------------------------------------------------*/
-const Json::Value PeerConnectionManager::getIceServers()
+const Json::Value PeerConnectionManager::getIceServers(const std::string& clientIp)
 {
 	Json::Value url;
 	std::string stunurl("stun:");
-	stunurl += stunurl_;
+	if (stunurl_.find("0.0.0.0:") == 0) {
+		// answer with ip that is on same network as client
+		stunurl += getServerIpFromClientIp(inet_addr(clientIp.c_str()));
+		stunurl += stunurl_.substr(stunurl_.find_first_of(':'));
+	} else {
+		stunurl += stunurl_;
+	}
 	url["url"] = stunurl;
 
 	Json::Value urls;
