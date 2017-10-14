@@ -32,7 +32,7 @@ script:
 - mkdir webrtc
 - pushd webrtc
 - fetch --no-history --nohooks webrtc
-- gclient sync
+- gclient sync --no-history
 - popd
 # get, build and install live555 & alsa
 - make WEBRTCROOT=./webrtc live555 alsa-lib

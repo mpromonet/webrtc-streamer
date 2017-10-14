@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf au
         && mkdir /webrtc \
 	&& cd /webrtc \
 	&& fetch --no-history --nohooks webrtc \
-	&& gclient sync \
+	&& gclient sync --no-history \
 	&& make -C /webrtc-streamer live555 alsa-lib \
 	&& cd src \
 	&& sed -i -e 's|"examples",||' BUILD.gn \
