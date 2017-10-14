@@ -92,11 +92,30 @@ class RequestHandler : public CivetHandler
 	}
 };
 
+
+int log_message(const struct mg_connection *conn, const char *message) 
+{
+	const struct mg_context *ctx = mg_get_context(conn);
+	struct tuser_data *ud = (struct tuser_data *)mg_get_user_data(ctx);
+
+	fprintf(stderr, "%s\n", message);
+
+	return 0;
+}
+
+static struct CivetCallbacks _callbacks;
+const struct CivetCallbacks * getCivetCallbacks() 
+{
+	memset(&_callbacks, 0, sizeof(_callbacks));
+	_callbacks.log_message = &log_message;
+	return &_callbacks;
+}
+
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
 HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtcServer, const std::vector<std::string>& options)
-	: CivetServer(options), m_webRtcServer(webRtcServer)
+	: CivetServer(options, getCivetCallbacks()), m_webRtcServer(webRtcServer)
 {
 	// http api callbacks
 	m_func["/getMediaList"]          = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {

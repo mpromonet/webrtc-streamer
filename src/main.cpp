@@ -27,6 +27,7 @@ int main(int argc, char* argv[])
 	const char* stunurl       = "stun.l.google.com:19302";
 	int logLevel              = rtc::LERROR;
 	const char* webroot       = "./html";
+	std::string sslCertificate;
 
 	std::string httpAddress("0.0.0.0:");
 	std::string httpPort = "8000";
@@ -38,12 +39,13 @@ int main(int argc, char* argv[])
 	httpAddress.append(httpPort);
 
 	int c = 0;
-	while ((c = getopt (argc, argv, "hV" "H:v::w:" "t:S::s::")) != -1)
+	while ((c = getopt (argc, argv, "hV" "c:H:v::w:" "t:S::s::")) != -1)
 	{
 		switch (c)
 		{
 			case 'v': logLevel--; if (optarg) logLevel-=strlen(optarg); break;
 			case 'H': httpAddress = optarg; break;
+			case 'c': sslCertificate = optarg; break;
 			case 'w': webroot = optarg; break;
 
 			case 't': turnurl = optarg; break;
@@ -101,6 +103,10 @@ int main(int argc, char* argv[])
 		options.push_back(webroot);
 		options.push_back("listening_ports");
 		options.push_back(httpAddress);
+		if (!sslCertificate.empty()) {
+			options.push_back("ssl_certificate");
+			options.push_back(sslCertificate);
+		}
 
 		try {
 			std::cout << "HTTP Listen at " << httpAddress << std::endl;
