@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf au
         && mkdir /webrtc \
 	&& cd /webrtc \
 	&& fetch --no-history --nohooks webrtc \
-	&& sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests',|" src/DEPS \
-	&& gclient sync --no-history \
+	&& sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
+	&& gclient sync \
 	&& make -C /webrtc-streamer live555 \
 	&& cd src \
 	&& sed -i -e 's|"examples",||' BUILD.gn \
