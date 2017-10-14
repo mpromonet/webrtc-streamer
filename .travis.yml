@@ -40,7 +40,7 @@ script:
 - pushd src
 # patch webrtc to not generate ninja files for examples (that depend on gtk)
 - sed -i -e 's|"examples",||' BUILD.gn
-- sed -i -e "s|'src/resources'],|'src/resources'],'condition': 'rtc_include_tests',|" DEPS
+- sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests',|" DEPS
 # build WebRTC
 - gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}"
 - ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc
