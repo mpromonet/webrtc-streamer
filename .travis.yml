@@ -32,15 +32,16 @@ script:
 - mkdir webrtc
 - pushd webrtc
 - fetch --no-history --nohooks webrtc
+# patch webrtc to not generate ninja files for examples (that depend on gtk)
+- sed -i -e 's|"examples",||' src/BUILD.gn
+# patch webrtc to not download chromium-webrtc-resources
+- sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests',|" src/DEPS
 - gclient sync --no-history
 - popd
 # get, build and install live555 & alsa
 - make WEBRTCROOT=./webrtc live555 alsa-lib
 - pushd webrtc
 - pushd src
-# patch webrtc to not generate ninja files for examples (that depend on gtk)
-- sed -i -e 's|"examples",||' BUILD.gn
-- sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests',|" DEPS
 # build WebRTC
 - gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}"
 - ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc
