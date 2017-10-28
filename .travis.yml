@@ -1,20 +1,24 @@
 dist: trusty
 env:
   global:
-    - GNARGSCOMMON='is_debug=false rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false' 
+    - GNARGSCOMMON='rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false' 
   matrix:
     - |
       GYP_GENERATOR_OUTPUT=x86_64     
-      GNARGS='rtc_use_h264=true ffmpeg_branding="Chrome"'
+      GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome"'
+      SYSROOT=${TRAVIS_BUILD_DIR}/webrtc/src/build/linux/debian_jessie_amd64-sysroot
+    - |
+      GYP_GENERATOR_OUTPUT=x86_64-debug     
+      GNARGS='is_debug=true rtc_use_h264=true ffmpeg_branding="Chrome"'
       SYSROOT=${TRAVIS_BUILD_DIR}/webrtc/src/build/linux/debian_jessie_amd64-sysroot
     - |
       GYP_GENERATOR_OUTPUT=rpi-armv7  
-      GNARGS='rtc_use_h264=true ffmpeg_branding="Chrome" is_clang=false target_cpu="arm" treat_warnings_as_errors=false' 
+      GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" is_clang=false target_cpu="arm" treat_warnings_as_errors=false' 
       CROSS=arm-linux-gnueabihf- 
       SYSROOT=${TRAVIS_BUILD_DIR}/webrtc/src/build/linux/debian_jessie_arm-sysroot GYP_DEFINES="target_arch=arm"
     - |
       GYP_GENERATOR_OUTPUT=rpi-armv6  
-      GNARGS='is_clang=false target_cpu="arm" treat_warnings_as_errors=false arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false' 
+      GNARGS='is_debug=false is_clang=false target_cpu="arm" treat_warnings_as_errors=false arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false' 
       CROSS=arm-linux-gnueabihf- 
       CFLAGS_EXTRA="-march=armv6 -mfpu=vfp -mfloat-abi=hard"
 addons:
@@ -61,7 +65,6 @@ deploy:
     secure: NmTNf38MkoWWQZrRkXyWqCdRRO4Xjv+Kl0TOZPw+qCXva4kc2T0uwSi2o4YNZBUA533NyZvO6IJMQOpx24UkjPhxVv591FBB+HdUevOxD4SEAE8fBibpHVX3sTU0XLp/mx+BpNFdxKrEHHzoyBZBFjesQVVMVczB4AOv/KZerGw=
   on:
     repo: mpromonet/webrtc-streamer
-    tags: false
     condition: $GYP_GENERATOR_OUTPUT = x86_64
 - provider: releases
   skip_cleanup: true
