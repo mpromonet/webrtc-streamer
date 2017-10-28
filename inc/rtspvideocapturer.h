@@ -103,6 +103,7 @@ class RTSPAudioSource : public webrtc::Notifier<webrtc::AudioSourceInterface>, p
 			size_t pos = fmt.find(codec);
 			if (pos != std::string::npos) {
 				fmt.erase(0, pos+strlen(codec));
+				fmt.erase(fmt.find_first_of(" \r\n"));
 				std::istringstream is (fmt);
 				std::string dummy;
 				std::getline(is, dummy, '/');
