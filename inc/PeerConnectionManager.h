@@ -15,6 +15,8 @@
 #include "api/peerconnectioninterface.h"
 #include "api/test/fakeconstraints.h"
 
+#include "modules/audio_device/include/audio_device.h"
+
 #include "rtc_base/logging.h"
 #include "rtc_base/json.h"
 
@@ -196,7 +198,7 @@ class PeerConnectionManager {
 	};
 
 	public:
-		PeerConnectionManager(const std::string & stunurl, const std::string & turnurl, const std::list<std::string> & urlList);
+		PeerConnectionManager(const std::string & stunurl, const std::string & turnurl, const std::list<std::string> & urlList, const webrtc::AudioDeviceModule::AudioLayer audioLayer);
 		virtual ~PeerConnectionManager();
 
 		bool InitializePeerConnection();

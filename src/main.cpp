@@ -28,6 +28,7 @@ int main(int argc, char* argv[])
 	int logLevel              = rtc::LERROR;
 	const char* webroot       = "./html";
 	std::string sslCertificate;
+	webrtc::AudioDeviceModule::AudioLayer audioLayer = webrtc::AudioDeviceModule::kPlatformDefaultAudio;
 
 	std::string httpAddress("0.0.0.0:");
 	std::string httpPort = "8000";
@@ -39,11 +40,10 @@ int main(int argc, char* argv[])
 	httpAddress.append(httpPort);
 
 	int c = 0;
-	while ((c = getopt (argc, argv, "hV" "c:H:v::w:" "t:S::s::")) != -1)
+	while ((c = getopt (argc, argv, "hVv::" "c:H:w:" "t:S::s::a::")) != -1)
 	{
 		switch (c)
 		{
-			case 'v': logLevel--; if (optarg) logLevel-=strlen(optarg); break;
 			case 'H': httpAddress = optarg; break;
 			case 'c': sslCertificate = optarg; break;
 			case 'w': webroot = optarg; break;
@@ -51,25 +51,35 @@ int main(int argc, char* argv[])
 			case 't': turnurl = optarg; break;
 			case 'S': localstunurl = optarg ? optarg : defaultlocalstunurl; stunurl = localstunurl; break;
 			case 's': localstunurl = NULL; if (optarg) stunurl = optarg; break;
+			case 'a': audioLayer = optarg ? (webrtc::AudioDeviceModule::AudioLayer)atoi(optarg) : webrtc::AudioDeviceModule::kDummyAudio; break;
 
+			case 'v': 
+				logLevel--; 
+				if (optarg) {
+					logLevel-=strlen(optarg); 
+				}
+			break;			
 			case 'V':
 				std::cout << VERSION << std::endl;
 				exit(0);
 			break;
-
 			case 'h':
 			default:
 				std::cout << argv[0] << " [-H http port] [-S[embeded stun address]] [-t [username:password@]turn_address] -[v[v]]  [url1]...[urln]" << std::endl;
 				std::cout << argv[0] << " [-H http port] [-s[externel stun address]] [-t [username:password@]turn_address] -[v[v]] [url1]...[urln]" << std::endl;
 				std::cout << argv[0] << " -V" << std::endl;
-				std::cout << "\t -v[v[v]]           : verbosity"                                                                  << std::endl;
 				std::cout << "\t -H hostname:port   : HTTP server binding (default "   << httpAddress    << ")"                   << std::endl;
 				std::cout << "\t -w webroot         : path to get files"                                                          << std::endl;
+				std::cout << "\t -c sslkeycert      : path to private key and certificate for HTTPS"                              << std::endl;
+			
 				std::cout << "\t -S[stun_address]    : start embeded STUN server bind to address (default " << defaultlocalstunurl << ")" << std::endl;
 				std::cout << "\t -s[stun_address]   : use an external STUN server (default " << stunurl << ")"                    << std::endl;
 				std::cout << "\t -t[username:password@]turn_address : use an external TURN relay server (default disabled)"       << std::endl;
+			
 				std::cout << "\t [url]              : url to register in the source list"                                         << std::endl;
-				std::cout << "\t -V                 : print version"                                                          << std::endl;
+			
+				std::cout << "\t -v[v[v]]           : verbosity"                                                                  << std::endl;
+				std::cout << "\t -V                 : print version"                                                              << std::endl;
 				exit(0);
 		}
 	}
@@ -90,7 +100,7 @@ int main(int argc, char* argv[])
 	rtc::InitializeSSL();
 
 	// webrtc server
-	PeerConnectionManager webRtcServer(stunurl, turnurl, urlList);
+	PeerConnectionManager webRtcServer(stunurl, turnurl, urlList, audioLayer);
 	if (!webRtcServer.InitializePeerConnection())
 	{
 		std::cout << "Cannot Initialize WebRTC server" << std::endl;
