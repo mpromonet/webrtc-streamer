@@ -55,7 +55,7 @@ class RequestHandler : public CivetHandler
 				Json::Reader reader;
 				if (!reader.parse(body, jmessage))
 				{
-					LOG(WARNING) << "Received unknown message:" << body;
+					RTC_LOG(WARNING) << "Received unknown message:" << body;
 				}
 			}
 
@@ -95,11 +95,7 @@ class RequestHandler : public CivetHandler
 
 int log_message(const struct mg_connection *conn, const char *message) 
 {
-	const struct mg_context *ctx = mg_get_context(conn);
-	struct tuser_data *ud = (struct tuser_data *)mg_get_user_data(ctx);
-
 	fprintf(stderr, "%s\n", message);
-
 	return 0;
 }
 

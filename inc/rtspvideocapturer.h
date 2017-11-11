@@ -60,7 +60,7 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 	private:
 		Environment                           m_env;
 		RTSPConnection                        m_connection;
-		cricket::InternalDecoderFactory       m_factory;
+		webrtc::InternalDecoderFactory        m_factory;
 		std::unique_ptr<webrtc::VideoDecoder> m_decoder;
 		std::vector<uint8_t>                  m_cfg;
 		std::string                           m_codec;

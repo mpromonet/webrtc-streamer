@@ -34,17 +34,17 @@ class PeerConnectionManager {
 				if (m_pc->local_description())
 				{
 					m_pc->local_description()->ToString(&sdp);
-					LOG(INFO) << __PRETTY_FUNCTION__ << " Local SDP:" << sdp;
+					RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " Local SDP:" << sdp;
 				}
 				if (m_pc->remote_description())
 				{
 					m_pc->remote_description()->ToString(&sdp);
-					LOG(INFO) << __PRETTY_FUNCTION__ << " Remote SDP:" << sdp;
+					RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " Remote SDP:" << sdp;
 				}
 			}
 			virtual void OnFailure(const std::string& error)
 			{
-				LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
+				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
 			}
 		protected:
 			SetSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc) : m_pc(pc) {};
@@ -63,11 +63,11 @@ class PeerConnectionManager {
 			{
 				std::string sdp;
 				desc->ToString(&sdp);
-				LOG(INFO) << __PRETTY_FUNCTION__ << " type:" << desc->type() << " sdp:" << sdp;
+				RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " type:" << desc->type() << " sdp:" << sdp;
 				m_pc->SetLocalDescription(SetSessionDescriptionObserver::Create(m_pc), desc);
 			}
 			virtual void OnFailure(const std::string& error) {
-				LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
+				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
 			}
 		protected:
 			CreateSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc) : m_pc(pc) {};
@@ -108,14 +108,14 @@ class PeerConnectionManager {
 
 			// DataChannelObserver interface
 			virtual void OnStateChange() {
-				LOG(LERROR) << __PRETTY_FUNCTION__ << " channel:" << m_dataChannel->label() << " state:"<< webrtc::DataChannelInterface::DataStateString(m_dataChannel->state());
+				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " channel:" << m_dataChannel->label() << " state:"<< webrtc::DataChannelInterface::DataStateString(m_dataChannel->state());
 				std::string msg(m_dataChannel->label() + " " + webrtc::DataChannelInterface::DataStateString(m_dataChannel->state()));
 				webrtc::DataBuffer buffer(msg);
 				m_dataChannel->Send(buffer);
 			}
 			virtual void OnMessage(const webrtc::DataBuffer& buffer) {
 				std::string msg((const char*)buffer.data.data(),buffer.data.size());
-				LOG(LERROR) << __PRETTY_FUNCTION__ << " channel:" << m_dataChannel->label() << " msg:" << msg;
+				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " channel:" << m_dataChannel->label() << " msg:" << msg;
 			}
 
 		protected:
@@ -143,7 +143,7 @@ class PeerConnectionManager {
 			};
 
 			virtual ~PeerConnectionObserver() {
-				LOG(INFO) << __PRETTY_FUNCTION__;
+				RTC_LOG(INFO) << __PRETTY_FUNCTION__;
 				delete m_localChannel;
 				delete m_remoteChannel;
 				m_pc->Close();
@@ -168,7 +168,7 @@ class PeerConnectionManager {
 			virtual void OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)    {}
 			virtual void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {}
 			virtual void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
-				LOG(LERROR) << __PRETTY_FUNCTION__;
+				RTC_LOG(LERROR) << __PRETTY_FUNCTION__;
 				m_remoteChannel = new DataChannelObserver(channel);
 			}
 			virtual void OnRenegotiationNeeded()                              {}
@@ -176,7 +176,7 @@ class PeerConnectionManager {
 			virtual void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
 			virtual void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState state) {}
 			virtual void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState state) {
-				LOG(INFO) << __PRETTY_FUNCTION__ << " " << state  << " " << m_peerid;
+				RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " " << state  << " " << m_peerid;
 				if ( (state == webrtc::PeerConnectionInterface::kIceConnectionFailed)
 				   ||(state == webrtc::PeerConnectionInterface::kIceConnectionClosed) )
 				{
