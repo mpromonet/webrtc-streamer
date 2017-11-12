@@ -820,6 +820,25 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 	return audio_track;
 }
 
+class VideoSink : public rtc::VideoSinkInterface<webrtc::VideoFrame> {
+	public:
+		VideoSink(webrtc::VideoTrackInterface* track, const std::string outputurl): m_track(track) {
+			m_track->AddOrUpdateSink(this, rtc::VideoSinkWants());
+		}
+		virtual ~VideoSink() {
+			m_track->RemoveSink(this);
+		}		
+
+		// VideoSinkInterface implementation
+		virtual void OnFrame(const webrtc::VideoFrame& video_frame) {
+			rtc::scoped_refptr<webrtc::I420BufferInterface> buffer(video_frame.video_frame_buffer()->ToI420());
+			RTC_LOG(LS_ERROR) << "frame :" << buffer->width() << "x" << buffer->height();
+		}
+
+	protected:
+		rtc::scoped_refptr<webrtc::VideoTrackInterface> m_track;
+};
+  
 /* ---------------------------------------------------------------------------
 **  Add a stream to a PeerConnection
 ** -------------------------------------------------------------------------*/
