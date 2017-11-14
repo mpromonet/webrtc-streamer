@@ -36,8 +36,9 @@ function WebRtcStreamer (videoElement, srvurl) {
  * @param {string} videourl - id of WebRTC video stream
  * @param {string} audiourl - id of WebRTC audio stream
  * @param {string} options -  options of WebRTC call
+ * @param {string} stream  -  local stream to send
 */
-WebRtcStreamer.prototype.connect = function(videourl, audiourl, options) {
+WebRtcStreamer.prototype.connect = function(videourl, audiourl, options, stream) {
 	this.disconnect();
 	
 	try {            
@@ -53,6 +54,10 @@ WebRtcStreamer.prototype.connect = function(videourl, audiourl, options) {
 		}
 		if (options) {
 			callurl += "&options="+encodeURIComponent(options);
+		}
+		
+		if (stream) {
+			this.pc.addStream(stream);
 		}
 		
 		// create Offer

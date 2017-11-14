@@ -22,6 +22,27 @@
 
 
 class PeerConnectionManager {
+	class VideoSink : public rtc::VideoSinkInterface<webrtc::VideoFrame> {
+		public:
+			VideoSink(webrtc::VideoTrackInterface* track): m_track(track) {
+				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " track:" << m_track->id();
+				m_track->AddOrUpdateSink(this, rtc::VideoSinkWants());
+			}
+			virtual ~VideoSink() {
+				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " track:" << m_track->id();
+				m_track->RemoveSink(this);
+			}		
+
+			// VideoSinkInterface implementation
+			virtual void OnFrame(const webrtc::VideoFrame& video_frame) {
+				rtc::scoped_refptr<webrtc::I420BufferInterface> buffer(video_frame.video_frame_buffer()->ToI420());
+				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " frame:" << buffer->width() << "x" << buffer->height();
+			}
+
+		protected:
+			rtc::scoped_refptr<webrtc::VideoTrackInterface> m_track;
+	};
+	
 	class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver {
 		public:
 			static SetSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc)
@@ -165,18 +186,31 @@ class PeerConnectionManager {
 			rtc::scoped_refptr<webrtc::PeerConnectionInterface> getPeerConnection() { return m_pc; };
 
 			// PeerConnectionObserver interface
-			virtual void OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)    {}
-			virtual void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {}
+			virtual void OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)    {
+				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " nb video tracks:" << stream->GetVideoTracks().size();
+				webrtc::VideoTrackVector videoTracks = stream->GetVideoTracks();
+				if (videoTracks.size()>0) {					
+					m_videosink.reset(new VideoSink(videoTracks.at(0)));
+				}
+			}
+			virtual void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
+				RTC_LOG(LERROR) << __PRETTY_FUNCTION__;
+			}
 			virtual void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
 				RTC_LOG(LERROR) << __PRETTY_FUNCTION__;
 				m_remoteChannel = new DataChannelObserver(channel);
 			}
-			virtual void OnRenegotiationNeeded()                              {}
+			virtual void OnRenegotiationNeeded()                              {
+				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " peerid:" << m_peerid;;
+			}
 
 			virtual void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
-			virtual void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState state) {}
+			
+			virtual void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState state) {
+				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " state:" << state << " peerid:" << m_peerid;				
+			}
 			virtual void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState state) {
-				RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " " << state  << " " << m_peerid;
+				RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " state:" << state  << " peerid:" << m_peerid;
 				if ( (state == webrtc::PeerConnectionInterface::kIceConnectionFailed)
 				   ||(state == webrtc::PeerConnectionInterface::kIceConnectionClosed) )
 				{
@@ -184,7 +218,9 @@ class PeerConnectionManager {
 					m_peerConnectionManager->hangUp(m_peerid);
 				}
 			}
-			virtual void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState) {}
+			
+			virtual void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState) {
+			}
 
 
 		private:
@@ -195,6 +231,7 @@ class PeerConnectionManager {
 			DataChannelObserver*    m_remoteChannel;
 			Json::Value iceCandidateList_;
 			rtc::scoped_refptr<PeerConnectionStatsCollectorCallback> m_statsCallback;
+			std::unique_ptr<VideoSink>                               m_videosink;
 	};
 
 	public:

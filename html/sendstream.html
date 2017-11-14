@@ -1,0 +1,42 @@
+<html>
+<head>
+<script src="ajax.js" ></script>
+<script src="webrtcstreamer.js" ></script>
+<script>        
+    if (location.search.slice(1)) {
+	var webRtcServer      = new WebRtcStreamer("remotevideo");
+	var url = { video:location.search.slice(1) };  
+	var options;
+	if (typeof URLSearchParams != 'undefined') {
+		var params = new URLSearchParams(location.search.slice(1));
+		if (params.has("video") || params.has("audio")) {
+			url = { video:params.get("video"), audio:params.get("audio") };
+		}
+		options = params.get("options");
+	} 	    
+        window.onload         = function() { 
+		navigator.mediaDevices.getUserMedia({video: true}).then(function(stream) {
+		
+			var videoElement = document.getElementById("localvideo");
+			videoElement.src = URL.createObjectURL(stream);
+			videoElement.play(); 
+	
+			webRtcServer.connect(url.video,url.audio,options,stream) 
+		})
+	}
+        window.onbeforeunload = function() { webRtcServer.disconnect() }
+    } else {
+	if (typeof URLSearchParams != 'undefined') {
+		alert("WebRTC stream name to connect is missing\n\nUsage :" + window.location + "?video=<WebRTC video stream name>&audio=<WebRTC audio stream name>&options=<WebRTC options>")
+	} else {
+		alert("WebRTC stream name to connect is missing\n\nUsage :" + window.location + "?<WebRTC video stream name>")
+	}
+    }
+</script>
+</head>
+<body> 
+	<div><video id="localvideo" /></div>
+	<div><video id="remotevideo" /></div>
+</body>
+</html>
+
