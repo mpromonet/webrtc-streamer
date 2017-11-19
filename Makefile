@@ -1,6 +1,6 @@
-CC = $(CROSS)gcc 
-CXX = $(CROSS)g++
-AR = $(CROSS)ar
+CC?=$(CROSS)gcc 
+CXX?=$(CROSS)g++
+AR?=$(CROSS)ar
 SYSROOT?=$(shell $(CC) -print-sysroot)
 SYSROOTOPT=--sysroot=$(SYSROOT)
 CFLAGS = -Wall -pthread -g -std=c++11 -Iinc $(SYSROOTOPT) $(CFLAGS_EXTRA)
