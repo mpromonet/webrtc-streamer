@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 	int logLevel              = rtc::LERROR;
 	const char* webroot       = "./html";
 	std::string sslCertificate;
-	webrtc::AudioDeviceModule::AudioLayer audioLayer = webrtc::AudioDeviceModule::kPlatformDefaultAudio;
+	webrtc::AudioDeviceModule::AudioLayer audioLayer = webrtc::AudioDeviceModule::kLinuxAlsaAudio;
 
 	std::string httpAddress("0.0.0.0:");
 	std::string httpPort = "8000";
@@ -72,9 +72,11 @@ int main(int argc, char* argv[])
 				std::cout << "\t -w webroot         : path to get files"                                                          << std::endl;
 				std::cout << "\t -c sslkeycert      : path to private key and certificate for HTTPS"                              << std::endl;
 			
-				std::cout << "\t -S[stun_address]    : start embeded STUN server bind to address (default " << defaultlocalstunurl << ")" << std::endl;
+				std::cout << "\t -S[stun_address]   : start embeded STUN server bind to address (default " << defaultlocalstunurl << ")" << std::endl;
 				std::cout << "\t -s[stun_address]   : use an external STUN server (default " << stunurl << ")"                    << std::endl;
 				std::cout << "\t -t[username:password@]turn_address : use an external TURN relay server (default disabled)"       << std::endl;
+
+				std::cout << "\t -a[audio layer]    : spefify audio capture layer to use (default:" << audioLayer << ")"          << std::endl;
 			
 				std::cout << "\t [url]              : url to register in the source list"                                         << std::endl;
 			
