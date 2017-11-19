@@ -155,14 +155,14 @@ The same logic could be implemented in NodeJS using the same JS API :
 				method: verb,
 				uri: method,
 				body: data,
+				headers: headers
 			},
 			function (error, response, body) { 
-				console.log("HTTP code:"+ response.statusCode);
-				if ( (response.statusCode === 200) && onSuccess ) {
+				if ( !error && (response.statusCode === 200) && onSuccess ) {
 					onSuccess.call(scope,JSON.parse(body));
 				}
 				else if (onFailure) {
-					onFailure.call(scope,response.statusCode);
+					onFailure.call(scope,error);
 				}
 			}
 		)
