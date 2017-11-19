@@ -7,8 +7,6 @@ env:
       GYP_GENERATOR_OUTPUT=x86_64     
       GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome"'
       SYSROOT=${TRAVIS_BUILD_DIR}/webrtc/src/build/linux/debian_stretch_amd64-sysroot
-      CC=gcc-5
-      CXX=g++-5
 #    - |
 #      GYP_GENERATOR_OUTPUT=x86_64-debug     
 #      GNARGS='is_debug=true rtc_use_h264=true ffmpeg_branding="Chrome"'
@@ -38,6 +36,7 @@ script:
 # get toolchain
 - git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git && export PATH=$PATH:$(pwd)/depot_tools
 - if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then git clone --depth 1 https://github.com/raspberrypi/tools.git rpi_tools && export PATH=$PATH:$(pwd)/rpi_tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin; fi
+- if [ "$CROSS" == "" ]; then export CC=gcc-5; export CXX=g++-5; fi
 # get WebRTC
 - mkdir webrtc
 - pushd webrtc
