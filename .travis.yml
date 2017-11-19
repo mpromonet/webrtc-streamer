@@ -25,6 +25,8 @@ addons:
   apt:
     packages:
     - git
+    - gcc-5
+    - g++-5
 language: cpp
 compiler:
 - gcc
