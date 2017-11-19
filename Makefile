@@ -18,7 +18,7 @@ all: $(TARGET)
 VERSION+=webrtc@$(shell git -C $(WEBRTCROOT)/src describe --tags --always --dirty)
 WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
 
-CFLAGS += -DWEBRTC_POSIX -fno-rtti -DHAVE_JPEG
+CFLAGS += -DWEBRTC_POSIX -fno-rtti -D_GLIBCXX_USE_CXX11_ABI=0 -DHAVE_JPEG
 CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/third_party/jsoncpp/source/include -I $(WEBRTCROOT)/src/third_party/libyuv/include
 #detect debug vs release
 TESTDEBUG=$(shell nm $(wildcard $(WEBRTCLIBPATH)/obj/rtc_base/librtc_base_generic.a) | c++filt | grep std::__debug::vector >/dev/null && echo debug)
