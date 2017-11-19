@@ -142,34 +142,9 @@ This way the communication between [Janus API](https://janus.conf.meetecho.com/d
 
 The same logic could be implemented in NodeJS using the same JS API :
 
-	function send(method,headers,data,onSuccess,onFailure,scope) {
-
-		console.log("HTTP call "+ method);
-		var request = require('request');
-		var verb = 'GET';
-		if (data) {
-			verb = 'POST';
-			data = JSON.stringify(data);
-		}	
-		request({
-				method: verb,
-				uri: method,
-				body: data,
-				headers: headers
-			},
-			function (error, response, body) { 
-				if ( !error && (response.statusCode === 200) && onSuccess ) {
-					onSuccess.call(scope,JSON.parse(body));
-				}
-				else if (onFailure) {
-					onFailure.call(scope,error);
-				}
-			}
-		)
-	}
-
+	var request = require('then-request');
 	var JanusVideoRoom = require('./janusvideoroom.js'); 
-	var janus = new JanusVideoRoom("http://192.168.0.15:8088/janus", null, "http://192.168.0.15:8000", send)
+	var janus = new JanusVideoRoom("http://192.168.0.15:8088/janus", null, "http://192.168.0.15:8000", request)
 	janus.join(1234,"mmal service 16.1","video")
 
 

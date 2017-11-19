@@ -1,6 +1,6 @@
 <html>
 <head>
-<script src="ajax.js" ></script>
+<script src="request.min.js" ></script>
 <script src="janusvideoroom.json" ></script>
 <script src="janusvideoroom.js" ></script>
 <script src="ag-grid.min.js"></script>
@@ -34,7 +34,7 @@
 				params.api.refreshCells([params.node], ['roomid']);
 				
 				if (!janus) {
-					janus = new JanusVideoRoom(document.querySelector('#janusUrl').value, clientCallBack, null, send);
+					janus = new JanusVideoRoom(document.querySelector('#janusUrl').value, clientCallBack, null, request);
 				}
 				janus.join(parseInt(params.data.roomid), params.data.url, params.data.url);
 				
@@ -94,7 +94,10 @@
 	
 	// load
 	window.onload         = function() { 
-		send("/getVideoDeviceList", null, null, onGetDeviceList); 
+		request( 'GET',  "/getVideoDeviceList" ).done(
+			function (response) {
+				if (response.statusCode === 200) { onGetDeviceList(JSON.parse(response.body)) }
+			})
 	} 
 </script>
 </html>

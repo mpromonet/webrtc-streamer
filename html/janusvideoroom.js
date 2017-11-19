@@ -1,3 +1,30 @@
+function mysend(request,method,headers,data,onSuccess,onFailure,scope) {
+
+	console.log("HTTP call "+ method);
+	var verb = 'GET';
+	if (data) {
+		verb = 'POST';
+		data = JSON.stringify(data);
+	}
+	if( typeof exports !== 'undefined' ) {
+		var request = require('then-request');
+	}
+	request(verb , method,
+		{	
+			body: data,
+			headers: headers
+		}).done( function (response) { 
+			if ( (response.statusCode === 200) && onSuccess ) {
+				onSuccess.call(scope,JSON.parse(response.body));
+			}
+			else if (onFailure) {
+				onFailure.call(scope,error);
+			}
+		}
+	)
+}
+
+
 var JanusVideoRoom = (function() {
 
 	
@@ -8,12 +35,12 @@ var JanusVideoRoom = (function() {
  * @param {function} callback - callback to trig when state changes
  * @param {string} srvurl - url of WebRTC-streamer
 */
-var JanusVideoRoom = function JanusVideoRoom (janusUrl, callback, srvurl, sendFctn) {	
+var JanusVideoRoom = function JanusVideoRoom (janusUrl, callback, srvurl, request) {	
 	this.janusUrl    = janusUrl;
 	this.callback    = callback || function() {};	
 	this.srvurl      = srvurl || location.protocol+"//"+window.location.hostname+":"+window.location.port;
 	this.connection  = [];
-	this.sendFctn    = sendFctn;
+	this.request  = request;
 }
 	
 /** 
@@ -25,7 +52,7 @@ var JanusVideoRoom = function JanusVideoRoom (janusUrl, callback, srvurl, sendFc
 JanusVideoRoom.prototype.join = function(janusroomid, url, name) {
 	// create a session
 	var createReq = {janus: "create", transaction: Math.random().toString() }
-	this.sendFctn(this.janusUrl, null, createReq, function(dataJson) { this.onCreateSession(dataJson, janusroomid, url, name) }, this.onError, this);		
+	mysend(this.request, this.janusUrl, null, createReq, function(dataJson) { this.onCreateSession(dataJson, janusroomid, url, name) }, this.onError, this);		
 }
 
 /**
@@ -41,7 +68,7 @@ JanusVideoRoom.prototype.leave = function(janusroomid, url, name) {
 		var pluginid  = connection.pluginId;
 		
 		var msg = { "janus": "message", "body": {"request": "unpublish"}, "transaction": Math.random().toString() };		
-		this.sendFctn(this.janusUrl + "/" + sessionId + "/" + pluginid, null, msg,  null, this.onError, this);
+		mysend(this.request, this.janusUrl + "/" + sessionId + "/" + pluginid, null, msg,  null, this.onError, this);
 	}
 }
 
@@ -55,7 +82,7 @@ JanusVideoRoom.prototype.onCreateSession = function(dataJson, janusroomid, url, 
 	
 	// attach to video room plugin
 	var attach = { "janus": "attach", "plugin": "janus.plugin.videoroom", "transaction": Math.random().toString() };			
-	this.sendFctn(this.janusUrl + "/" + sessionId, null, attach, function(dataJson) { this.onPluginsAttached(dataJson, janusroomid, url, name, sessionId) }, this.onError, this );
+	mysend(this.request, this.janusUrl + "/" + sessionId, null, attach, function(dataJson) { this.onPluginsAttached(dataJson, janusroomid, url, name, sessionId) }, this.onError, this );
 }
 	
 // ------------------------------------------
@@ -68,7 +95,7 @@ JanusVideoRoom.prototype.onPluginsAttached = function(dataJson, janusroomid, url
 	this.callback(name, "joining");
 
 	var join = {"janus":"message","body":{"request":"join","room":janusroomid,"ptype":"publisher","display":name},"transaction":Math.random().toString()}
-	this.sendFctn(this.janusUrl + "/" + sessionId + "/" + pluginid, null, join, function(dataJson) { this.onJoinRoom(dataJson,janusroomid,name,url,sessionId,pluginid) }, this.onError, this );		
+	mysend(this.request, this.janusUrl + "/" + sessionId + "/" + pluginid, null, join, function(dataJson) { this.onJoinRoom(dataJson,janusroomid,name,url,sessionId,pluginid) }, this.onError, this );		
 }
 
 // ------------------------------------------
@@ -77,7 +104,7 @@ JanusVideoRoom.prototype.onPluginsAttached = function(dataJson, janusroomid, url
 JanusVideoRoom.prototype.onJoinRoom = function(dataJson,janusroomid,name,url,sessionId,pluginid) {
 	console.log("onJoinRoom:" + JSON.stringify(dataJson))
 
-	this.sendFctn(this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.onJoinRoomResult(dataJson,janusroomid,name,url,sessionId,pluginid) }, this.onError, this);
+	mysend(this.request, this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.onJoinRoomResult(dataJson,janusroomid,name,url,sessionId,pluginid) }, this.onError, this);
 }
 
 // ------------------------------------------
@@ -94,7 +121,7 @@ JanusVideoRoom.prototype.onJoinRoomResult = function(dataJson,janusroomid,name,u
 		this.callback(name, "joined");
 		
 		var peerid = Math.random().toString();
-		this.sendFctn(this.srvurl + "/createOffer?peerid="+ peerid+"&url="+encodeURIComponent(url), null, null, function(dataJson) { this.onCreateOffer(dataJson,name,peerid,sessionId,pluginid) }, this.onError, this); 
+		mysend(this.request, this.srvurl + "/createOffer?peerid="+ peerid+"&url="+encodeURIComponent(url), null, null, function(dataJson) { this.onCreateOffer(dataJson,name,peerid,sessionId,pluginid) }, this.onError, this); 
 	} else {
 		this.callback(name, "joining room failed");
 	}
@@ -109,7 +136,7 @@ JanusVideoRoom.prototype.onCreateOffer = function(dataJson,name,peerid,sessionId
 	this.callback(name, "publishing");
 	
 	var msg = { "janus": "message", "body": {"request": "publish", "video": true, "audio": true, "data": true}, "jsep": dataJson, "transaction": Math.random().toString() };		
-	this.sendFctn(this.janusUrl + "/" + sessionId + "/" + pluginid, null, msg,  function(dataJson) { this.onPublishStream(dataJson,name,peerid,sessionId,pluginid) }, this.onError, this);
+	mysend(this.request, this.janusUrl + "/" + sessionId + "/" + pluginid, null, msg,  function(dataJson) { this.onPublishStream(dataJson,name,peerid,sessionId,pluginid) }, this.onError, this);
 }
 
 // ------------------------------------------
@@ -118,7 +145,7 @@ JanusVideoRoom.prototype.onCreateOffer = function(dataJson,name,peerid,sessionId
 JanusVideoRoom.prototype.onPublishStream = function(dataJson,name,peerid,sessionId,pluginid) {
 	console.log("onPublishStream:" + JSON.stringify(dataJson))	
 
-	this.sendFctn(this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.onPublishStreamResult(dataJson,name,peerid,sessionId,pluginid); }, this.onError, this  );
+	mysend(this.request, this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.onPublishStreamResult(dataJson,name,peerid,sessionId,pluginid); }, this.onError, this  );
 }
 
 // ------------------------------------------
@@ -128,7 +155,7 @@ JanusVideoRoom.prototype.onPublishStreamResult = function(dataJson,name,peerid,s
 	console.log("onPublishStreamResult:" + JSON.stringify(dataJson))	
 
 	if (dataJson.jsep) {
-		this.sendFctn(this.srvurl + "/setAnswer?peerid="+ peerid, null, dataJson.jsep, function(dataJson) { this.onSetAnswer(dataJson,name,peerid,sessionId,pluginid) }, this.onError, this); 						
+		mysend(this.request, this.srvurl + "/setAnswer?peerid="+ peerid, null, dataJson.jsep, function(dataJson) { this.onSetAnswer(dataJson,name,peerid,sessionId,pluginid) }, this.onError, this); 						
 	} else {
 		this.callback(name, "publishing failed (no SDP)");
 	}
@@ -140,7 +167,7 @@ JanusVideoRoom.prototype.onPublishStreamResult = function(dataJson,name,peerid,s
 JanusVideoRoom.prototype.onSetAnswer = function(dataJson,name,peerid,sessionId,pluginid) {
 	console.log("onSetAnswer:" + JSON.stringify(dataJson))	
 	
-	this.sendFctn(this.srvurl + "/getIceCandidate?peerid="+peerid, null, null, function(dataJson) { this.onReceiveCandidate(dataJson,name,sessionId,pluginid) }, this.onError, this);		
+	mysend(this.request, this.srvurl + "/getIceCandidate?peerid="+peerid, null, null, function(dataJson) { this.onReceiveCandidate(dataJson,name,sessionId,pluginid) }, this.onError, this);		
 }
 
 // ------------------------------------------
@@ -152,7 +179,7 @@ JanusVideoRoom.prototype.onReceiveCandidate = function(dataJson,name,sessionId,p
 	for (var i=0; i<dataJson.length; i++) {
 		// send ICE candidate to Janus
 		var msg = { "janus": "trickle", "candidate": dataJson[i], "transaction": Math.random().toString()  };
-		this.sendFctn(this.janusUrl + "/" + sessionId + "/" + pluginid, null, msg);		
+		mysend(this.request, this.janusUrl + "/" + sessionId + "/" + pluginid, null, msg);		
 	}
 	
 	// start long polling
@@ -164,7 +191,7 @@ JanusVideoRoom.prototype.onReceiveCandidate = function(dataJson,name,sessionId,p
 // ------------------------------------------
 JanusVideoRoom.prototype.keepAlive = function(sessionId) {
 	var msg = { "janus": "keepalive", "session_id": sessionId, "transaction": Math.random().toString()  };
-	this.sendFctn(this.janusUrl + "/" + sessionId, null, msg, function(dataJson) { console.log("keepAlive :" + JSON.stringify(dataJson)); }, this.onError, this);	
+	mysend(this.request, this.janusUrl + "/" + sessionId, null, msg, function(dataJson) { console.log("keepAlive :" + JSON.stringify(dataJson)); }, this.onError, this);	
 }
 
 // ------------------------------------------
@@ -188,7 +215,7 @@ JanusVideoRoom.prototype.longpoll = function(dataJson, name, sessionId) {
 		}
 	}
 	
-	this.sendFctn(this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.longpoll(dataJson, name, sessionId) }, function(dataJson) { this.longpoll(dataJson, name, sessionId) }, this);
+	mysend(this.request, this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.longpoll(dataJson, name, sessionId) }, function(dataJson) { this.longpoll(dataJson, name, sessionId) }, this);
 }
 
 return JanusVideoRoom;
