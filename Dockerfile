@@ -7,7 +7,7 @@ ADD . /webrtc-streamer
 # Get tools for WebRTC
 RUN git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
 ENV PATH /webrtc-streamer/depot_tools:$PATH
-ENV SYSROOT /webrtc/src/build/linux/debian_jessie_amd64-sysroot
+ENV SYSROOT /webrtc/src/build/linux/debian_stretch_amd64-sysroot
 
 
 # Build 
