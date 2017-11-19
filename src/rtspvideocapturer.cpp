@@ -14,8 +14,8 @@
 
 #include "modules/video_coding/h264_sprop_parameter_sets.h"
 #include "api/video/i420_buffer.h"
-#include "common_video/libyuv/include/webrtc_libyuv.h"
 
+#include "libyuv/video_common.h"
 #include "libyuv/convert.h"
 
 #include "rtspvideocapturer.h"
@@ -166,9 +166,15 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			int stride_uv = (width + 1) / 2;
 					
 			rtc::scoped_refptr<webrtc::I420Buffer> I420buffer = webrtc::I420Buffer::Create(width, height, stride_y, stride_uv, stride_uv);
-			const int conversionResult = ConvertToI420(webrtc::VideoType::kMJPEG, buffer, 0, 0,  
-									width, height, size,
-									webrtc::kVideoRotation_0, I420buffer.get());
+			const int conversionResult = libyuv::ConvertToI420((const uint8*)buffer, size,
+							(uint8*)I420buffer->DataY(), I420buffer->StrideY(),
+							(uint8*)I420buffer->DataU(), I420buffer->StrideU(),
+							(uint8*)I420buffer->DataV(), I420buffer->StrideV(),
+							0, 0,
+							width, height,
+							width, height,
+							libyuv::kRotate0, ::libyuv::FOURCC_MJPG);									
+									
 			if (conversionResult >= 0) {
 				webrtc::VideoFrame frame(I420buffer, 0, ts*1000, webrtc::kVideoRotation_0);
 				this->Decoded(frame);
