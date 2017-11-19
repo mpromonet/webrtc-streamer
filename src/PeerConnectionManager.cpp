@@ -345,7 +345,7 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 		int count=10;
 		while ( (peerConnectionObserver->getPeerConnection()->local_description() == NULL) && (--count > 0) )
 		{
-			rtc::Thread::Current()->ProcessMessages(10);
+			usleep(1000);
 		}
 
 		// answer with the created offer
@@ -481,7 +481,7 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 				int count=10;
 				while ( (peerConnection->local_description() == NULL) && (--count > 0) )
 				{
-					rtc::Thread::Current()->ProcessMessages(10);
+					usleep(1000);
 				}
 
 				RTC_LOG(INFO) << "nbStreams local:" << peerConnection->local_streams()->count() << " remote:" << peerConnection->remote_streams()->count()
