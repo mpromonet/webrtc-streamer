@@ -96,10 +96,11 @@ class RTSPAudioSource : public webrtc::Notifier<webrtc::AudioSourceInterface>, p
 
 		// overide RTSPConnection::Callback
 		virtual bool onNewSession(const char* id, const char* media, const char* codec, const char* sdp) {
-			RTC_LOG(INFO) << "RTSPAudioSource::onNewSession " << media << "/" << codec << " " << sdp;
 			
 			bool success = false;
-			if (strcmp(media, "audio") == 0) {				
+			if (strcmp(media, "audio") == 0) {								
+				RTC_LOG(INFO) << "RTSPAudioSource::onNewSession " << media << "/" << codec << " " << sdp;
+				
 				// parse sdp to extract freq and channel
 				std::string fmt(sdp);
 				size_t pos = fmt.find(codec);

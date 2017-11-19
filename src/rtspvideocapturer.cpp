@@ -48,48 +48,51 @@ RTSPVideoCapturer::~RTSPVideoCapturer()
 
 bool RTSPVideoCapturer::onNewSession(const char* id,const char* media, const char* codec, const char* sdp)
 {
-	RTC_LOG(INFO) << "RTSPVideoCapturer::onNewSession " << media << "/" << codec << " " << sdp;
 	bool success = false;
-	if ( (strcmp(media, "video") == 0) && (strcmp(codec, "H264") == 0) )
-	{
-		m_codec = codec;
-		const char* pattern="sprop-parameter-sets=";
-		const char* sprop=strstr(sdp, pattern);
-		if (sprop)
+	if (strcmp(media, "video") == 0) {	
+		RTC_LOG(INFO) << "RTSPVideoCapturer::onNewSession " << media << "/" << codec << " " << sdp;
+		
+		if (strcmp(codec, "H264") == 0)
 		{
-			std::string sdpstr(sprop+strlen(pattern));
-			size_t pos = sdpstr.find_first_of(" ;\r\n");
-			if (pos != std::string::npos)
+			m_codec = codec;
+			const char* pattern="sprop-parameter-sets=";
+			const char* sprop=strstr(sdp, pattern);
+			if (sprop)
 			{
-				sdpstr.erase(pos);
-			}
-			webrtc::H264SpropParameterSets sprops;
-			if (sprops.DecodeSprop(sdpstr))
-			{
-				struct timeval presentationTime;
-				timerclear(&presentationTime);
+				std::string sdpstr(sprop+strlen(pattern));
+				size_t pos = sdpstr.find_first_of(" ;\r\n");
+				if (pos != std::string::npos)
+				{
+					sdpstr.erase(pos);
+				}
+				webrtc::H264SpropParameterSets sprops;
+				if (sprops.DecodeSprop(sdpstr))
+				{
+					struct timeval presentationTime;
+					timerclear(&presentationTime);
 
-				std::vector<uint8_t> sps;
-				sps.insert(sps.end(), marker, marker+sizeof(marker));
-				sps.insert(sps.end(), sprops.sps_nalu().begin(), sprops.sps_nalu().end());
-				onData(id, sps.data(), sps.size(), presentationTime);
+					std::vector<uint8_t> sps;
+					sps.insert(sps.end(), marker, marker+sizeof(marker));
+					sps.insert(sps.end(), sprops.sps_nalu().begin(), sprops.sps_nalu().end());
+					onData(id, sps.data(), sps.size(), presentationTime);
 
-				std::vector<uint8_t> pps;
-				pps.insert(pps.end(), marker, marker+sizeof(marker));
-				pps.insert(pps.end(), sprops.pps_nalu().begin(), sprops.pps_nalu().end());
-				onData(id, pps.data(), pps.size(), presentationTime);
+					std::vector<uint8_t> pps;
+					pps.insert(pps.end(), marker, marker+sizeof(marker));
+					pps.insert(pps.end(), sprops.pps_nalu().begin(), sprops.pps_nalu().end());
+					onData(id, pps.data(), pps.size(), presentationTime);
+				}
+				else
+				{
+					RTC_LOG(WARNING) << "Cannot decode SPS:" << sprop;
+				}
 			}
-			else
-			{
-				RTC_LOG(WARNING) << "Cannot decode SPS:" << sprop;
-			}
+			success = true;
 		}
-		success = true;
-	}
-	else if ( (strcmp(media, "video") == 0) && (strcmp(codec, "JPEG") == 0) )
-	{
-		m_codec = codec;
-		success = true;
+		else if (strcmp(codec, "JPEG") == 0) 
+		{
+			m_codec = codec;
+			success = true;
+		}
 	}
 	return success;
 }
