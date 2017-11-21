@@ -23,8 +23,6 @@ env:
       CFLAGS_EXTRA="-march=armv6 -mfpu=vfp -mfloat-abi=hard"
 addons:
   apt:
-    sources:
-    - ubuntu-toolchain-r-test
     packages:
     - git
 language: cpp
