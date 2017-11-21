@@ -12,15 +12,16 @@
 #include <utility>
 
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
+#include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "modules/video_capture/video_capture_factory.h"
 #include "media/engine/webrtcvideocapturerfactory.h"
 
 #include "PeerConnectionManager.h"
 #include "V4l2AlsaMap.h"
+#include "CivetServer.h"
 
 #ifdef HAVE_LIVE555
 #include "rtspvideocapturer.h"
-#include "CivetServer.h"
 #endif
 
 const char kAudioLabel[] = "audio_label";
