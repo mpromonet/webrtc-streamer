@@ -24,7 +24,7 @@ The WebRTC signaling is implemented throught HTTP requests:
 The list of HTTP API is available using /help.
 
 Nowdays there is 3 builds on [Travis CI](https://travis-ci.org/mpromonet/webrtc-streamer) :
- * for x86_64 on Ubuntu trusty
+ * for x86_64 on Ubuntu Xenial
  * for armv7 crosscompiling with gcc-linaro-arm-linux-gnueabihf-raspbian-x64 (this build is running on Raspberry Pi2 and NanoPi NEO)
  * for armv6+vfp crosscompiling with gcc-linaro-arm-linux-gnueabihf-raspbian-x64 (this build is running on Raspberry PiB and should run on a Raspberry Zero)
 
@@ -51,11 +51,11 @@ Build WebRTC with H264 support
 
 Build live555 to enable RTSP support(optional)
 -------
-	make SYSROOT=<path to WebRTC>/src/build/linux/debian_jessie_amd64-sysroot live555
+	make SYSROOT=<path to WebRTC>/src/build/linux/debian_stretch_amd64-sysroot live555
 
 Build WebRTC Streamer
 ------- 
-	make WEBRTCROOT=<path to WebRTC> WEBRTCBUILD=<Release or Debug> SYSROOT=<path to WebRTC>/src/build/linux/debian_jessie_amd64-sysroot
+	make WEBRTCROOT=<path to WebRTC> WEBRTCBUILD=<Release or Debug> SYSROOT=<path to WebRTC>/src/build/linux/debian_stretch_amd64-sysroot
 	
 where WEBRTCROOT and WEBRTCBUILD indicate how to point to WebRTC :
  - $WEBRTCROOT/src should contains source (default is ../webrtc) 
@@ -126,10 +126,10 @@ A short sample to publish WebRTC streams to Janus Video Room could be :
 
 	<html>
 	<head>
-	<script src="ajax.js" ></script>
+	<script src="request.min.js" ></script>
 	<script src="janusvideoroom.js" ></script>
 	<script>        
-		var janus = new JanusVideoRoom("https://janus.conf.meetecho.com/janus");
+		var janus = new JanusVideoRoom("https://janus.conf.meetecho.com/janus", null, null, request);
 		janus.join(1234, "rtsp://pi2.local:8554/unicast","pi2");
 		janus.join(1234, "rtsp://217.17.220.110/axis-media/media.amp","media");	    
 	</script>
