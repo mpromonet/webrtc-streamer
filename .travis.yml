@@ -7,10 +7,10 @@ env:
       GYP_GENERATOR_OUTPUT=x86_64     
       GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome"'
       SYSROOT=${TRAVIS_BUILD_DIR}/webrtc/src/build/linux/debian_stretch_amd64-sysroot
-#    - |
-#      GYP_GENERATOR_OUTPUT=x86_64-debug     
-#      GNARGS='is_debug=true rtc_use_h264=true ffmpeg_branding="Chrome"'
-#      SYSROOT=${TRAVIS_BUILD_DIR}/webrtc/src/build/linux/debian_stretch_amd64-sysroot
+    - |
+      GYP_GENERATOR_OUTPUT=x86_64-debug     
+      GNARGS='is_debug=true rtc_use_h264=true ffmpeg_branding="Chrome"'
+      SYSROOT=${TRAVIS_BUILD_DIR}/webrtc/src/build/linux/debian_stretch_amd64-sysroot
     - |
       GYP_GENERATOR_OUTPUT=rpi-armv7  
       GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" is_clang=false target_cpu="arm" treat_warnings_as_errors=false' 
