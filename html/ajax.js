@@ -43,11 +43,3 @@ function send(method,headers,data,onSuccess,onFailure,scope) {
 	return request;
 }
 
-function sendSync(method,headers,data) {
-	var answer = null;
-	var request = send(method, headers, data);
-	if (request.status === 200) {
-		answer = JSON.parse(request.responseText);
-	}
-	return answer;
-}

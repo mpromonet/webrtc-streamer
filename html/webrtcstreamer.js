@@ -26,9 +26,7 @@ function WebRtcStreamer (videoElement, srvurl) {
 		this.mediaConstraints = {'mandatory': {'OfferToReceiveVideo': true, 'OfferToReceiveAudio': true }}
 	}
 
-	// getIceServers
-	var iceServers = sendSync('/getIceServers');
-	this.pcConfig         = iceServers || {'iceServers': [] };
+	this.iceServers = null;
 }
  	
 /** 
@@ -38,9 +36,24 @@ function WebRtcStreamer (videoElement, srvurl) {
  * @param {string} options -  options of WebRTC call
  * @param {string} stream  -  local stream to send
 */
-WebRtcStreamer.prototype.connect = function(videourl, audiourl, options, stream) {
+WebRtcStreamer.prototype.connect = function(videourl, audiourl, options, localstream) {
 	this.disconnect();
 	
+	// getIceServers is not already received
+	if (!this.iceServers) {
+		trace("Get IceServers");
+		send(this.srvurl + "/getIceServers", null, null, function(iceServers) { this.onReceiveGetIceServers(iceServers, videourl, audiourl, options, localstream); } , null, this);
+	} else {
+		this.onGetIceServers(this.iceServers, videourl, audiourl, options, localstream);
+	}
+}
+
+/*
+* 
+*/
+WebRtcStreamer.prototype.onReceiveGetIceServers = function(iceServers, videourl, audiourl, options, stream) {
+	this.iceServers       = iceServers;
+	this.pcConfig         = iceServers || {'iceServers': [] };
 	try {            
 		this.pc = this.createPeerConnection();
 
@@ -84,7 +97,7 @@ WebRtcStreamer.prototype.connect = function(videourl, audiourl, options, stream)
 WebRtcStreamer.prototype.disconnect = function() {		
 	var videoElement = document.getElementById(this.videoElement);
 	if (videoElement) {
-		videoElement.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+		videoElement.src = ''
 	}
 	if (this.pc) {
 		send(this.srvurl + "/hangup?peerid="+this.pc.peerid);
