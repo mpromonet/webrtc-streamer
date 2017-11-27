@@ -1,4 +1,4 @@
 src/*.o
 *.a
 *.tgz
-webrtc-server
+webrtc-streamer
