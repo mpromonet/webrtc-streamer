@@ -6,9 +6,6 @@ function mysend(request,method,headers,data,onSuccess,onFailure,scope) {
 		verb = 'POST';
 		data = JSON.stringify(data);
 	}
-	if( typeof exports !== 'undefined' ) {
-		var request = require('then-request');
-	}
 	request(verb , method,
 		{	
 			body: data,
@@ -32,12 +29,11 @@ var JanusVideoRoom = (function() {
  * Interface with Janus Gateway Video Room and WebRTC-streamer API
  * @constructor
  * @param {string} janusUrl - url of Janus Gateway
- * @param {function} callback - callback to trig when state changes
  * @param {string} srvurl - url of WebRTC-streamer
 */
-var JanusVideoRoom = function JanusVideoRoom (janusUrl, callback, srvurl, request) {	
+var JanusVideoRoom = function JanusVideoRoom (janusUrl, srvurl, request) {	
 	this.janusUrl    = janusUrl;
-	this.callback    = callback || function() {};	
+	this.handlers    = [];
 	this.srvurl      = srvurl || location.protocol+"//"+window.location.hostname+":"+window.location.port;
 	this.connection  = [];
 	this.request  = request;
@@ -72,6 +68,25 @@ JanusVideoRoom.prototype.leave = function(janusroomid, url, name) {
 	}
 }
 
+/**
+* subscribeEvents
+ * @param {string} fn - funtcion to call
+*/
+JanusVideoRoom.prototype.subscribeEvents = function(fn) {
+	this.handlers.push(fn);
+}
+
+// ------------------------------------------
+// callback 
+// ------------------------------------------
+JanusVideoRoom.prototype.callback = function(name, state) {
+	this.handlers.forEach(function(item) { 
+		item(name,state);
+	})
+}
+
+// ------------------------------------------
+// Janus callback for Long Polling
 
 // ------------------------------------------
 // Janus callback for Session Creation
