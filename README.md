@@ -120,7 +120,7 @@ Connect to Janus Gateway Video Room
 ===============
 A simple way to publish WebRTC stream to a [Janus Gateway](https://janus.conf.meetecho.com) Video Room is to use the [JanusVideoRoom](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer/blob/master/jsdoc/JanusVideoRoom.html) interface
 
-        var janus = new JanusVideoRoom(<janus url>)
+        var janus = new JanusVideoRoom(<janus url>, <webrtc-streamer url>, <request interface>)
 
 A short sample to publish WebRTC streams to Janus Video Room could be :
 
@@ -129,7 +129,7 @@ A short sample to publish WebRTC streams to Janus Video Room could be :
 	<script src="request.min.js" ></script>
 	<script src="janusvideoroom.js" ></script>
 	<script>        
-		var janus = new JanusVideoRoom("https://janus.conf.meetecho.com/janus", null, null, request);
+		var janus = new JanusVideoRoom("https://janus.conf.meetecho.com/janus", null, request);
 		janus.join(1234, "rtsp://pi2.local:8554/unicast","pi2");
 		janus.join(1234, "rtsp://217.17.220.110/axis-media/media.amp","media");	    
 	</script>
@@ -143,8 +143,8 @@ This way the communication between [Janus API](https://janus.conf.meetecho.com/d
 The same logic could be implemented in NodeJS using the same JS API :
 
 	var request = require('then-request');
-	var JanusVideoRoom = require('./janusvideoroom.js'); 
-	var janus = new JanusVideoRoom("http://192.168.0.15:8088/janus", null, "http://192.168.0.15:8000", request)
+	var JanusVideoRoom = require('./html/janusvideoroom.js'); 
+	var janus = new JanusVideoRoom("http://192.168.0.15:8088/janus", "http://192.168.0.15:8000", request)
 	janus.join(1234,"mmal service 16.1","video")
 
 
