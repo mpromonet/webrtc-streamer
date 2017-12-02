@@ -29,6 +29,8 @@ int main(int argc, char* argv[])
 	const char* webroot       = "./html";
 	std::string sslCertificate;
 	webrtc::AudioDeviceModule::AudioLayer audioLayer = webrtc::AudioDeviceModule::kLinuxAlsaAudio;
+	std::string streamName;
+	std::map<std::string,std::string> urlList;
 
 	std::string httpAddress("0.0.0.0:");
 	std::string httpPort = "8000";
@@ -40,7 +42,7 @@ int main(int argc, char* argv[])
 	httpAddress.append(httpPort);
 
 	int c = 0;
-	while ((c = getopt (argc, argv, "hVv::" "c:H:w:" "t:S::s::a::")) != -1)
+	while ((c = getopt (argc, argv, "hVv::" "c:H:w:" "t:S::s::" "a::n:u:")) != -1)
 	{
 		switch (c)
 		{
@@ -51,8 +53,17 @@ int main(int argc, char* argv[])
 			case 't': turnurl = optarg; break;
 			case 'S': localstunurl = optarg ? optarg : defaultlocalstunurl; stunurl = localstunurl; break;
 			case 's': localstunurl = NULL; if (optarg) stunurl = optarg; break;
+			
 			case 'a': audioLayer = optarg ? (webrtc::AudioDeviceModule::AudioLayer)atoi(optarg) : webrtc::AudioDeviceModule::kDummyAudio; break;
-
+			case 'n': streamName = optarg; break;
+			case 'u': {
+				if (!streamName.empty()) {
+					urlList[streamName]=optarg;
+					streamName.clear();
+				}
+			}
+			break;
+			
 			case 'v': 
 				logLevel--; 
 				if (optarg) {
@@ -77,6 +88,7 @@ int main(int argc, char* argv[])
 				std::cout << "\t -t[username:password@]turn_address : use an external TURN relay server (default disabled)"       << std::endl;
 
 				std::cout << "\t -a[audio layer]    : spefify audio capture layer to use (default:" << audioLayer << ")"          << std::endl;
+				std::cout << "\t -n name -u url     : register a stream with name using url"                                      << std::endl;
 			
 				std::cout << "\t [url]              : url to register in the source list"                                         << std::endl;
 			
@@ -86,10 +98,10 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	std::list<std::string> urlList;
 	while (optind<argc)
 	{
-		urlList.push_back(argv[optind]);
+		std::string url(argv[optind]);
+		urlList[url]=url;
 		optind++;
 	}
 

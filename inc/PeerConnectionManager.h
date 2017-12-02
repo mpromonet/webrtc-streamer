@@ -235,7 +235,7 @@ class PeerConnectionManager {
 	};
 
 	public:
-		PeerConnectionManager(const std::string & stunurl, const std::string & turnurl, const std::list<std::string> & urlList, const webrtc::AudioDeviceModule::AudioLayer audioLayer);
+		PeerConnectionManager(const std::string & stunurl, const std::string & turnurl, const std::map<std::string,std::string> & urlList, const webrtc::AudioDeviceModule::AudioLayer audioLayer);
 		virtual ~PeerConnectionManager();
 
 		bool InitializePeerConnection();
@@ -271,7 +271,7 @@ class PeerConnectionManager {
 		std::string                                                               turnurl_;
 		std::string                                                               turnuser_;
 		std::string                                                               turnpass_;
-		const std::list<std::string>                                              urlList_;
+		const std::map<std::string,std::string>                                   urlList_;
 		std::map<std::string,std::string>                                         m_videoaudiomap;
 };
 
