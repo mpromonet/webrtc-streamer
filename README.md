@@ -85,7 +85,7 @@ Example
 				rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov
 
 
-![Screenshot](snapshot.png)
+[![Screenshot](snapshot.png)](https://webrtc-streamer.herokuapp.com/)
 
 [Live Demo](https://webrtc-streamer.herokuapp.com/)
 
