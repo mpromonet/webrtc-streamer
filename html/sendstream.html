@@ -1,10 +1,10 @@
 <html>
 <head>
-<script src="ajax.js" ></script>
+<script src="libs/request.min.js" ></script>
 <script src="webrtcstreamer.js" ></script>
 <script>        
     if (location.search.slice(1)) {
-	var webRtcServer      = new WebRtcStreamer("remotevideo");
+	var webRtcServer      = new WebRtcStreamer("remotevideo", null, request);
 	var url = { video:location.search.slice(1) };  
 	var options;
 	if (typeof URLSearchParams != 'undefined') {

@@ -36,7 +36,7 @@ footer {
     text-align: center; 
 }
 </style> 
-<script src="ajax.js" ></script>
+<script src="libs/request.min.js" ></script>
 <script src="webrtcstreamer.js" ></script>
 <script>
 	// ------------------------------------------
@@ -155,8 +155,8 @@ footer {
 		var videoelt = 	document.getElementById (videoTag);
 		
 		// connect video element to webrtc stream
-		var webRtcServer = new WebRtcStreamer(videoTag);
-		webRtcServer.connect(url.video, url.audio, argoptions);
+		var webRtcServer = new WebRtcStreamer(videoTag, null, request);
+		webRtcServer.connect(url.video, "dummy", argoptions);
 			
 		// highlight the navigation 
 		var navElt = 	document.getElementById ("nav_" + videoTag);
@@ -170,8 +170,8 @@ footer {
 	// load/unload callbacks
 	// ------------------------------------------	
 	window.onload         = function() { 
-		send("/getMediaList", null, null, onGetDeviceList); 
-		send("/version", null, null, onVersion); 
+		sendRequest(request, "/getMediaList", null, null, onGetDeviceList); 
+		sendRequest(request,"/version", null, null, onVersion); 
 	} 
 	window.onbeforeunload = function() { 
 		for (var url in webRtcServerList) { 

@@ -4,6 +4,7 @@
 <script src="libs/ag-grid.min.js"></script>
 <script src="janusvideoroom.json" ></script>
 <script src="janusvideoroom.js" ></script>
+<script src="webrtcstreamer.js" ></script>
 </head>
 <body> 
 	Janus Url:<input id="janusUrl" type="text" size="50" /> 
@@ -20,6 +21,7 @@
 	// columns
 	var columnDefs = [
 	    { headerName: "Url"    , field: "url"    },
+	    { headerName: "Video"  , field: "video",  cellRenderer: function(params) { return '<video width="144" height="120" id="' + params.data.url + '"/>'; } },
 	    { headerName: "Status" , field: "status", cellRenderer: function(params) { return '<b>' + params.value.toUpperCase() + '</b>'; } },
 	    { headerName: "RoomId" , field: "roomid" },
 	    { headerName: "Action" , 
@@ -91,6 +93,17 @@
 		});
 
 		gridOptions.api.addItems(rowData);
+		
+		// connect video
+		var updatedNodes = [];
+		gridOptions.api.forEachNode( function(node) {
+			var data = node.data;
+			node.webrtc = new WebRtcStreamer(data.url, null, request)
+			node.webrtc.connect(data.url);
+			updatedNodes.push(node);
+		});
+		gridOptions.api.refreshCells(updatedNodes, ['video']);
+		
 	}
 	
 	// load
