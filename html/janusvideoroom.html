@@ -21,7 +21,7 @@
 	// columns
 	var columnDefs = [
 	    { headerName: "Url"    , field: "url"    },
-	    { headerName: "Video"  , field: "video",  cellRenderer: function(params) { return '<video width="144" height="120" id="' + params.data.url + '"/>'; } },
+	    { headerName: "Video"  , field: "video",  cellRenderer: function(params) { return '<video width="72" height="60" id="' + params.data.url + '"/>'; } },
 	    { headerName: "Status" , field: "status", cellRenderer: function(params) { return '<b>' + params.value.toUpperCase() + '</b>'; } },
 	    { headerName: "RoomId" , field: "roomid" },
 	    { headerName: "Action" , 
@@ -57,7 +57,7 @@
 		enableSorting: true,
 		enableColResize: true,
 		columnDefs: columnDefs,
-		rowHeight: 30,
+		rowHeight: 60,
 		onGridReady: function($event) { $event.api.sizeColumnsToFit(); }
 	};
 	
