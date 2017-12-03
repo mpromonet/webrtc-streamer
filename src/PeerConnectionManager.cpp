@@ -459,6 +459,16 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 			{
 				peerConnection->SetRemoteDescription(SetSessionDescriptionObserver::Create(peerConnection), session_description);
 			}
+			
+			// waiting for remote description
+			int count=10;
+			while ( (peerConnection->remote_description() == NULL) && (--count > 0) )
+			{
+				usleep(1000);
+			}
+			if (peerConnection->remote_description() == NULL) {
+				RTC_LOG(WARNING) << "remote_description is NULL";
+			}
 
 			// add local stream
 			if (!this->AddStreams(peerConnection, videourl, audiourl, options))
@@ -477,7 +487,7 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 					<< " remoteDescription:" << peerConnection->remote_description();
 
 			// waiting for answer
-			int count=10;
+			count=10;
 			while ( (peerConnection->local_description() == NULL) && (--count > 0) )
 			{
 				usleep(1000);
