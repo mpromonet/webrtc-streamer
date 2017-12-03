@@ -20,8 +20,8 @@
 	
 	// columns
 	var columnDefs = [
+	    { headerName: "Video"  , field: "video",  width:72,  cellRenderer: function(params) { return '<center><video width="72" height="60" id="' + params.data.url + '"/></center>'; } },
 	    { headerName: "Url"    , field: "url"    },
-	    { headerName: "Video"  , field: "video",  cellRenderer: function(params) { return '<video width="72" height="60" id="' + params.data.url + '"/>'; } },
 	    { headerName: "Status" , field: "status", cellRenderer: function(params) { return '<b>' + params.value.toUpperCase() + '</b>'; } },
 	    { headerName: "RoomId" , field: "roomid" },
 	    { headerName: "Action" , 
@@ -79,7 +79,7 @@
 			    updatedNodes.push(node);
 			}
 		});
-		gridOptions.api.refreshCells(updatedNodes, ['status','action','roomid']);
+		gridOptions.api.refreshCells({rowNodes:updatedNodes, columns:['status','action','roomid']});
 	}
 	
 	// ------------------------------------------
@@ -91,19 +91,14 @@
 		remoteDeviceList.forEach(function(item) {
 			rowData.push({url: item , status:"down", action:"join" })
 		});
-
-		gridOptions.api.addItems(rowData);
+		gridOptions.api.setRowData(rowData);
 		
 		// connect video
-		var updatedNodes = [];
 		gridOptions.api.forEachNode( function(node) {
 			var data = node.data;
 			node.webrtc = new WebRtcStreamer(data.url, null, request)
 			node.webrtc.connect(data.url);
-			updatedNodes.push(node);
 		});
-		gridOptions.api.refreshCells(updatedNodes, ['video']);
-		
 	}
 	
 	// load
@@ -113,6 +108,16 @@
 				if (response.statusCode === 200) { onGetDeviceList(JSON.parse(response.body)) }
 			})
 	} 
+	
+	// unload
+	window.onbeforeunload = function() { 
+		gridOptions.api.forEachNode( function(node) {
+			if (node.webrtc) {
+				node.webrtc.disconnect();
+				node.webrtc = null;
+			}
+		});
+	}
 </script>
 </html>
 

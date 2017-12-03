@@ -21,7 +21,7 @@ function sendRequest(request,method,headers,data,onSuccess,onFailure,scope) {
 				onSuccess.call(scope,JSON.parse(response.body));
 			}
 			else if (onFailure) {
-				onFailure.call(scope,error);
+				onFailure.call(scope,response.statusCode);
 			}
 		}
 	)
