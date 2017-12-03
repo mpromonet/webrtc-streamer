@@ -156,7 +156,7 @@ footer {
 		
 		// connect video element to webrtc stream
 		var webRtcServer = new WebRtcStreamer(videoTag, null, request);
-		webRtcServer.connect(url.video, "dummy", argoptions);
+		webRtcServer.connect(url.video, url.audio, argoptions);
 			
 		// highlight the navigation 
 		var navElt = 	document.getElementById ("nav_" + videoTag);
