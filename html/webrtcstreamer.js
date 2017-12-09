@@ -7,9 +7,9 @@ URL = window.URL || window.webkitURL;
 function sendRequest(request,method,headers,data,onSuccess,onFailure,scope) {
 
 	console.log("HTTP call "+ method);
-	var verb = 'GET';
+	var verb = "GET";
 	if (data) {
-		verb = 'POST';
+		verb = "POST";
 		data = JSON.stringify(data);
 	}
 	request(verb , method,
@@ -42,7 +42,7 @@ function WebRtcStreamer (videoElement, srvurl, request) {
 
 	this.mediaConstraints = {};
 	if (navigator.userAgent.indexOf("Firefox") > 0) {
-		this.mediaConstraints = {'offerToReceiveVideo": true, "offerToReceiveAudio": true  };
+		this.mediaConstraints = {"offerToReceiveVideo": true, "offerToReceiveAudio": true  };
 	}
 	else {
 		this.mediaConstraints = {"mandatory": {"OfferToReceiveVideo": true, "OfferToReceiveAudio": true }}
@@ -77,7 +77,7 @@ WebRtcStreamer.prototype.connect = function(videourl, audiourl, options, localst
 WebRtcStreamer.prototype.disconnect = function() {		
 	var videoElement = document.getElementById(this.videoElement);
 	if (videoElement) {
-		videoElement.src = ''
+		videoElement.src = "";
 	}
 	if (this.pc) {
 		sendRequest(this.request, this.srvurl + "/hangup?peerid="+this.pc.peerid);
@@ -96,7 +96,7 @@ WebRtcStreamer.prototype.disconnect = function() {
 */
 WebRtcStreamer.prototype.onReceiveGetIceServers = function(iceServers, videourl, audiourl, options, stream) {
 	this.iceServers       = iceServers;
-	this.pcConfig         = iceServers || {'iceServers': [] };
+	this.pcConfig         = iceServers || {"iceServers": [] };
 	try {            
 		this.pc = this.createPeerConnection();
 
