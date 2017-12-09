@@ -29,5 +29,5 @@ request( 'GET',  webrtcstreamerurl + "/janusvideoroom.json" ).done(
 			console.log("HTTP code:"+ response.statusCode);
 		}
 	}
-)
+);
 

@@ -18,7 +18,7 @@ function mysend(request,method,headers,data,onSuccess,onFailure,scope) {
 				onFailure.call(scope,response.statusCode);
 			}
 		}
-	)
+	);
 }
 
 
@@ -48,7 +48,7 @@ var JanusVideoRoom = function JanusVideoRoom (janusUrl, srvurl, request) {
 JanusVideoRoom.prototype.join = function(janusroomid, url, name) {
 	// create a session
 	var createReq = {janus: "create", transaction: Math.random().toString() }
-	mysend(this.request, this.janusUrl, null, createReq, function(dataJson) { this.onCreateSession(dataJson, janusroomid, url, name) }, this.onError, this);		
+	mysend(this.request, this.janusUrl, null, createReq, function(dataJson) { this.onCreateSession(dataJson, janusroomid, url, name); }, this.onError, this);		
 }
 
 /**
@@ -119,7 +119,7 @@ JanusVideoRoom.prototype.onPluginsAttached = function(dataJson, janusroomid, url
 JanusVideoRoom.prototype.onJoinRoom = function(dataJson,janusroomid,name,url,sessionId,pluginid) {
 	console.log("onJoinRoom:" + JSON.stringify(dataJson))
 
-	mysend(this.request, this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.onJoinRoomResult(dataJson,janusroomid,name,url,sessionId,pluginid) }, this.onError, this);
+	mysend(this.request, this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.onJoinRoomResult(dataJson,janusroomid,name,url,sessionId,pluginid); }, this.onError, this);
 }
 
 // ------------------------------------------
@@ -167,7 +167,7 @@ JanusVideoRoom.prototype.onPublishStream = function(dataJson,name,peerid,session
 // Janus callback for WebRTC stream is published
 // ------------------------------------------
 JanusVideoRoom.prototype.onPublishStreamResult = function(dataJson,name,peerid,sessionId,pluginid) {
-	console.log("onPublishStreamResult:" + JSON.stringify(dataJson))	
+	console.log("onPublishStreamResult:" + JSON.stringify(dataJson));
 
 	if (dataJson.jsep) {
 		mysend(this.request, this.srvurl + "/setAnswer?peerid="+ peerid, null, dataJson.jsep, function(dataJson) { this.onSetAnswer(dataJson,name,peerid,sessionId,pluginid) }, this.onError, this); 						
@@ -180,7 +180,7 @@ JanusVideoRoom.prototype.onPublishStreamResult = function(dataJson,name,peerid,s
 // WebRTC streamer callback for Answer 
 // ------------------------------------------
 JanusVideoRoom.prototype.onSetAnswer = function(dataJson,name,peerid,sessionId,pluginid) {
-	console.log("onSetAnswer:" + JSON.stringify(dataJson))	
+	console.log("onSetAnswer:" + JSON.stringify(dataJson));
 	
 	mysend(this.request, this.srvurl + "/getIceCandidate?peerid="+peerid, null, null, function(dataJson) { this.onReceiveCandidate(dataJson,name,sessionId,pluginid) }, this.onError, this);		
 }
@@ -189,7 +189,7 @@ JanusVideoRoom.prototype.onSetAnswer = function(dataJson,name,peerid,sessionId,p
 // WebRTC streamer callback for ICE candidate 
 // ------------------------------------------
 JanusVideoRoom.prototype.onReceiveCandidate = function(dataJson,name,sessionId,pluginid) {
-	console.log("onReceiveCandidate answer:" + JSON.stringify(dataJson))	
+	console.log("onReceiveCandidate answer:" + JSON.stringify(dataJson));
 	
 	for (var i=0; i<dataJson.length; i++) {
 		// send ICE candidate to Janus
@@ -214,7 +214,7 @@ JanusVideoRoom.prototype.keepAlive = function(sessionId) {
 // ------------------------------------------
 JanusVideoRoom.prototype.longpoll = function(dataJson, name, sessionId) {
 	if (dataJson) {
-		console.log("poll evt:" + JSON.stringify(dataJson))		
+		console.log("poll evt:" + JSON.stringify(dataJson));
 	
 		if (dataJson.janus === "webrtcup") {
 			// notify connection
