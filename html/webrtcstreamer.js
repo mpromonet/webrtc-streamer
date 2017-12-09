@@ -38,14 +38,14 @@ function WebRtcStreamer (videoElement, srvurl, request) {
 	this.srvurl           = srvurl || location.protocol+"//"+window.location.hostname+":"+window.location.port;
 	this.pc               = null;    
 
-	this.pcOptions        = { 'optional': [{'DtlsSrtpKeyAgreement': true} ] };
+	this.pcOptions        = { "optional": [{"DtlsSrtpKeyAgreement": true} ] };
 
-	this.mediaConstraints = {}
+	this.mediaConstraints = {};
 	if (navigator.userAgent.indexOf("Firefox") > 0) {
-		this.mediaConstraints = {'offerToReceiveVideo': true, 'offerToReceiveAudio': true  };
+		this.mediaConstraints = {'offerToReceiveVideo": true, "offerToReceiveAudio": true  };
 	}
 	else {
-		this.mediaConstraints = {'mandatory': {'OfferToReceiveVideo': true, 'OfferToReceiveAudio': true }}
+		this.mediaConstraints = {"mandatory": {"OfferToReceiveVideo": true, "OfferToReceiveAudio": true }}
 	}
 
 	this.iceServers = null;
@@ -141,24 +141,24 @@ WebRtcStreamer.prototype.createPeerConnection = function() {
 	console.log("createPeerConnection  config: " + JSON.stringify(this.pcConfig) + " option:"+  JSON.stringify(this.pcOptions));
 	var pc = new RTCPeerConnection(this.pcConfig, this.pcOptions);
 	var streamer = this;
-	pc.onicecandidate = function(evt) { streamer.onIceCandidate.call(streamer, evt) };
+	pc.onicecandidate = function(evt) { streamer.onIceCandidate.call(streamer, evt); };
 	if (typeof pc.ontrack != "undefined") {
-		pc.ontrack        = function(evt) { streamer.onTrack.call(streamer,evt) };
+		pc.ontrack        = function(evt) { streamer.onTrack.call(streamer,evt); };
 	} 
 	else {
-		pc.onaddstream    = function(evt) { streamer.onTrack.call(streamer,evt) };
+		pc.onaddstream    = function(evt) { streamer.onTrack.call(streamer,evt); };
 	}
 	pc.oniceconnectionstatechange = function(evt) {  
 		console.log("oniceconnectionstatechange  state: " + pc.iceConnectionState);
 		var videoElement = document.getElementById(streamer.videoElement);
 		if (videoElement) {
-			if (pc.iceConnectionState == "connected") {
+			if (pc.iceConnectionState === "connected") {
 				videoElement.style.opacity = "1.0";
 			}			
-			else if (pc.iceConnectionState == "disconnected") {
+			else if (pc.iceConnectionState === "disconnected") {
 				videoElement.style.opacity = "0.25";
 			}			
-			else if ( (pc.iceConnectionState == "failed") || (pc.iceConnectionState == "closed") )  {
+			else if ( (pc.iceConnectionState === "failed") || (pc.iceConnectionState === "closed") )  {
 				videoElement.style.opacity = "0.5";
 			}			
 		}
@@ -206,6 +206,7 @@ WebRtcStreamer.prototype.onIceCandidate = function (event) {
 */
 WebRtcStreamer.prototype.onTrack = function(event) {
 	console.log("Remote track added:" +  JSON.stringify(event));
+        var stream;
 	if (event.streams) {
 		stream = event.streams[0];
 	} 

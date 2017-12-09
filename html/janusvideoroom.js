@@ -126,7 +126,7 @@ JanusVideoRoom.prototype.onJoinRoom = function(dataJson,janusroomid,name,url,ses
 // Janus callback for Video Room Joined
 // ------------------------------------------
 JanusVideoRoom.prototype.onJoinRoomResult = function(dataJson,janusroomid,name,url,sessionId,pluginid) {
-	console.log("onJoinRoomResult:" + JSON.stringify(dataJson))
+	console.log("onJoinRoomResult:" + JSON.stringify(dataJson));
 
 	if (dataJson.plugindata.data.videoroom === "joined") {	
 		// register connection
@@ -146,19 +146,19 @@ JanusVideoRoom.prototype.onJoinRoomResult = function(dataJson,janusroomid,name,u
 // WebRTC streamer callback for Offer 
 // ------------------------------------------
 JanusVideoRoom.prototype.onCreateOffer = function(dataJson,name,peerid,sessionId,pluginid) {
-	console.log("onCreateOffer:" + JSON.stringify(dataJson))
+	console.log("onCreateOffer:" + JSON.stringify(dataJson));
 	
 	this.callback(name, "publishing");
 	
 	var msg = { "janus": "message", "body": {"request": "publish", "video": true, "audio": true, "data": true}, "jsep": dataJson, "transaction": Math.random().toString() };		
-	mysend(this.request, this.janusUrl + "/" + sessionId + "/" + pluginid, null, msg,  function(dataJson) { this.onPublishStream(dataJson,name,peerid,sessionId,pluginid) }, this.onError, this);
+	mysend(this.request, this.janusUrl + "/" + sessionId + "/" + pluginid, null, msg,  function(dataJson) { this.onPublishStream(dataJson,name,peerid,sessionId,pluginid); }, this.onError, this);
 }
 
 // ------------------------------------------
 // Janus callback for WebRTC stream is published
 // ------------------------------------------
 JanusVideoRoom.prototype.onPublishStream = function(dataJson,name,peerid,sessionId,pluginid) {
-	console.log("onPublishStream:" + JSON.stringify(dataJson))	
+	console.log("onPublishStream:" + JSON.stringify(dataJson));
 
 	mysend(this.request, this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.onPublishStreamResult(dataJson,name,peerid,sessionId,pluginid); }, this.onError, this  );
 }
@@ -216,7 +216,7 @@ JanusVideoRoom.prototype.longpoll = function(dataJson, name, sessionId) {
 	if (dataJson) {
 		console.log("poll evt:" + JSON.stringify(dataJson))		
 	
-		if (dataJson.janus == "webrtcup") {
+		if (dataJson.janus === "webrtcup") {
 			// notify connection
 			this.callback(name, "up");
 			
@@ -224,7 +224,7 @@ JanusVideoRoom.prototype.longpoll = function(dataJson, name, sessionId) {
 			var bind = this;
 			setInterval( function() { bind.keepAlive(sessionId); }, 10000);	
 		}
-		else if (dataJson.janus == "hangup") {
+		else if (dataJson.janus === "hangup") {
 			// notify connection
 			this.callback(name, "down");
 		}

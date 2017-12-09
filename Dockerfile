@@ -1,8 +1,8 @@
 FROM heroku/heroku:16
-LABEL maintainer michel.promonet@free.fr
+MAINTAINER michel.promonet@free.fr
 
 WORKDIR /webrtc-streamer
-ADD . /webrtc-streamer
+COPY . /webrtc-streamer
 
 # Get tools for WebRTC
 RUN git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
