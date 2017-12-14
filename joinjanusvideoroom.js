@@ -9,13 +9,13 @@ if (process.argv.length <= 2) {
     process.exit(-1);
 }
 var webrtcstreamerurl = process.argv[2];
-console.log('webrtcstreamerurl: ' + webrtcstreamerurl);
+console.log("webrtcstreamerurl: " + webrtcstreamerurl);
 var videourl = process.argv[3];
-console.log('videourl: ' + videourl);
+console.log("videourl: " + videourl);
 
 // get configuration from webrtc-streamer using janusvideoroom.json
-var request = require('then-request');
-var JanusVideoRoom = require('./html/janusvideoroom.js'); 
+var request = require("then-request");
+var JanusVideoRoom = require("./html/janusvideoroom.js"); 
 
 request( 'GET',  webrtcstreamerurl + "/janusvideoroom.json" ).done(
 	function (response) { 

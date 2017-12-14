@@ -24,7 +24,7 @@ function sendRequest(request,method,headers,data,onSuccess,onFailure,scope) {
 				onFailure.call(scope,response.statusCode);
 			}
 		}
-	)
+	);
 }
 
 /** 
@@ -51,7 +51,7 @@ function WebRtcStreamer (videoElement, srvurl, request) {
 	this.iceServers = null;
 	this.request  = request;
 }
- 	
+
 /** 
  * Connect a WebRTC Stream to videoElement 
  * @param {string} videourl - id of WebRTC video stream
@@ -227,7 +227,7 @@ WebRtcStreamer.prototype.onReceiveCall = function(dataJson) {
 	var peerid = this.pc.peerid;
 	this.pc.setRemoteDescription(new RTCSessionDescription(dataJson)
 		, function()      { console.log ("setRemoteDescription ok") 
-			sendRequest(this.request, streamer.srvurl + "/getIceCandidate?peerid="+streamer.pc.peerid, null, null, streamer.onReceiveCandidate, null, streamer);
+			sendRequest(streamer.request, streamer.srvurl + "/getIceCandidate?peerid="+streamer.pc.peerid, null, null, streamer.onReceiveCandidate, null, streamer);
 		}
 		, function(error) { console.log ("setRemoteDescription error:" + JSON.stringify(error)); });
 }	
