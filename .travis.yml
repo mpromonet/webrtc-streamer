@@ -1,7 +1,7 @@
 dist: xenial
 env:
   global:
-    - GNARGSCOMMON='rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false' 
+    - GNARGSCOMMON='rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false rtc_build_examples=false' 
   matrix:
     - |
       GYP_GENERATOR_OUTPUT=x86_64     
@@ -36,8 +36,6 @@ script:
 - mkdir webrtc
 - pushd webrtc
 - travis_wait 30 fetch --no-history --nohooks webrtc
-# patch webrtc to not generate ninja files for examples (that depend on gtk)
-- sed -i -e 's|"examples",||' src/BUILD.gn
 # patch webrtc to not download chromium-webrtc-resources
 - sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
 - travis_wait 30 gclient sync
