@@ -1,9 +1,9 @@
 function mysend(request,method,headers,data,onSuccess,onFailure,scope) {
 
 	console.log("HTTP call "+ method);
-	var verb = 'GET';
+	var verb = "GET";
 	if (data) {
-		verb = 'POST';
+		verb = "POST";
 		data = JSON.stringify(data);
 	}
 	request(verb , method,
@@ -97,7 +97,7 @@ JanusVideoRoom.prototype.onCreateSession = function(dataJson, janusroomid, url, 
 	
 	// attach to video room plugin
 	var attach = { "janus": "attach", "plugin": "janus.plugin.videoroom", "transaction": Math.random().toString() };			
-	mysend(this.request, this.janusUrl + "/" + sessionId, null, attach, function(dataJson) { this.onPluginsAttached(dataJson, janusroomid, url, name, sessionId) }, this.onError, this );
+	mysend(this.request, this.janusUrl + "/" + sessionId, null, attach, function(dataJson) { this.onPluginsAttached(dataJson, janusroomid, url, name, sessionId); }, this.onError, this );
 }
 	
 // ------------------------------------------
@@ -230,7 +230,7 @@ JanusVideoRoom.prototype.longpoll = function(dataJson, name, sessionId) {
 		}
 	}
 	
-	mysend(this.request, this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.longpoll(dataJson, name, sessionId) }, function(dataJson) { this.longpoll(dataJson, name, sessionId) }, this);
+	mysend(this.request, this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.longpoll(dataJson, name, sessionId); }, function(dataJson) { this.longpoll(dataJson, name, sessionId); }, this);
 }
 
 return JanusVideoRoom;

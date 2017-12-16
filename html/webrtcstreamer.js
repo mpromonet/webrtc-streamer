@@ -45,7 +45,7 @@ function WebRtcStreamer (videoElement, srvurl, request) {
 		this.mediaConstraints = {"offerToReceiveVideo": true, "offerToReceiveAudio": true  };
 	}
 	else {
-		this.mediaConstraints = {"mandatory": {"OfferToReceiveVideo": true, "OfferToReceiveAudio": true }}
+		this.mediaConstraints = {"mandatory": {"OfferToReceiveVideo": true, "OfferToReceiveAudio": true }};
 	}
 
 	this.iceServers = null;

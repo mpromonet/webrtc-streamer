@@ -23,8 +23,8 @@ request( 'GET',  webrtcstreamerurl + "/janusvideoroom.json" ).done(
 			console.log("HTTP answer:"+ response.body);
 			eval("{" + response.body + "}");
 			console.log(JSON.stringify(request));
-			var janus = new JanusVideoRoom(janusRoomConfig.url, webrtcstreamerurl, request)
-			janus.join(janusRoomConfig.roomId,videourl,"video")
+			var janus = new JanusVideoRoom(janusRoomConfig.url, webrtcstreamerurl, request);
+			janus.join(janusRoomConfig.roomId,videourl,"video");
 		} else {
 			console.log("HTTP code:"+ response.statusCode);
 		}
