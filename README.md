@@ -96,18 +96,18 @@ You can access to the WebRTC stream coming from an RTSP url using [webrtcstream.
 
 Embed in a HTML page:
 ===============
-Instead of using the internal HTTP server, it is easy to display a WebRTC stream in a HTML page served by an external HTTP server. The URL of the webrtc-streamer to use should be given creating the [WebRtcStreamer](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer/blob/master/jsdoc/WebRtcStreamer.html) instance :
+Instead of using the internal HTTP server, it is easy to display a WebRTC stream in a HTML page served by another HTTP server. The URL of the webrtc-streamer to use should be given creating the [WebRtcStreamer](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer/blob/master/jsdoc/WebRtcStreamer.html) instance :
 
-	var webRtcServer      = new WebRtcStreamer(<video tag>, <url of webrtc-streamer>);
+	var webRtcServer      = new WebRtcStreamer(<video tag>, <webrtc-streamer url>, <request interface>);
 
-A short sample using webrtc-streamer running locally on port 8000 :
+A short sample HTML page using webrtc-streamer running locally on port 8000 :
 
 	<html>
 	<head>
-	<script src="ajax.js" ></script>
+	<script src="request.min.js" ></script>
 	<script src="webrtcstreamer.js" ></script>
 	<script>        
-	    var webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000");
+	    var webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000", request);
 	    window.onload         = function() { webRtcServer.connect("rtsp://pi2.local:8554/unicast") }
 	    window.onbeforeunload = function() { webRtcServer.disconnect() }
 	</script>
