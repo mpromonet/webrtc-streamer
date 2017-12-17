@@ -1,0 +1,46 @@
+<html>
+<head>
+<script src="libs/strophe.min.js" ></script>
+<script src="libs/strophe.muc.min.js" ></script>
+<script src="libs/strophe.jingle.js" ></script>
+<script>
+	var serverName = "jitsi.example.com";
+	var userName = "user" ;	
+	var roomName = "room" ;
+		
+	var connection = new Strophe.Connection(location.protocol+ "//" + serverName + "/http-bind");
+	var muc = "conference.jitsi.example.com";
+	var roomUrl = roomName + "@" + muc;
+	
+	function OnMessage(data)  {
+		console.log("OnMessage from:" + data.getAttribute("from") + " to:" + data.getAttribute("to")) 
+	}
+	function OnPresence(data) {
+		console.log("OnPresence from:" + data.getAttribute("from") + " to:" + data.getAttribute("to"));
+		var from = data.getAttribute('from');
+		if (from === (roomUrl + "/" + userName) ) {	
+			console.log("OnPresence initialized")		
+		}
+	}
+	
+	function onConnect(status)
+	{
+	    if (status === Strophe.Status.CONNECTING) {
+		console.log('Strophe is connecting.');
+	    } else if (status === Strophe.Status.CONNFAIL) {
+		console.log('Strophe failed to connect.');
+	    } else if (status === Strophe.Status.DISCONNECTING) {
+		console.log('Strophe is disconnecting.');
+	    } else if (status === Strophe.Status.DISCONNECTED) {
+		console.log('Strophe is disconnected.');
+	    } else if (status === Strophe.Status.CONNECTED) {
+		console.log('Strophe is connected.');
+			
+		connection.send($pres());
+		connection.muc.join(roomUrl, userName, OnMessage, OnPresence);		
+	    }
+	}
+
+	connection.connect(serverName, null, onConnect);
+</script>
+</html>
