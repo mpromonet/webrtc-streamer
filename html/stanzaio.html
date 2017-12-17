@@ -1,0 +1,28 @@
+<html>
+<head>
+<script src="libs/stanzaio.bundle.min.js"></script>
+<script>
+	var serverName = "jitsi.example.com";
+	var userName = "user" ;	
+	var roomName = "room" ;
+	var url = "rtsp://217.17.220.110/axis-media/media.amp"
+
+	var muc = "conference.jitsi.example.com";
+	var roomUrl = roomName + "@" + muc;
+
+        var client = XMPP.createClient({
+          jid: roomName + "@" + serverName,
+          boshURL: location.protocol+ "//" + serverName + "/http-bind",
+          transports: ['bosh']
+        });
+	
+	client.on('session:started', function () {
+	    console.log("session started")
+	    client.getRoster();
+	    client.sendPresence();
+	});
+	
+	client.connect();	
+	client.joinRoom(roomUrl, userName);
+</script>
+</html>
