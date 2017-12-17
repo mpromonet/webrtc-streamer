@@ -86,9 +86,6 @@ JanusVideoRoom.prototype.callback = function(name, state) {
 }
 
 // ------------------------------------------
-// Janus callback for Long Polling
-
-// ------------------------------------------
 // Janus callback for Session Creation
 // ------------------------------------------
 JanusVideoRoom.prototype.onCreateSession = function(dataJson, janusroomid, url, name) {

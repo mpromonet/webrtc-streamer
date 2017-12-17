@@ -5,6 +5,16 @@
 <script src="janusvideoroom.json" ></script>
 <script src="janusvideoroom.js" ></script>
 <script src="webrtcstreamer.js" ></script>
+<style media="screen" type="text/css">
+video {
+    display: block; 
+    margin: 0 auto;
+}
+button {
+    display: block; 
+    margin: 0 auto;
+}
+</style> 
 </head>
 <body> 
 	Janus Url:<input id="janusUrl" type="text" size="50" /> 
@@ -20,7 +30,7 @@
 	
 	// columns
 	var columnDefs = [
-	    { headerName: "Video"  , field: "video",  width:72,  cellRenderer: function(params) { return '<center><video width="72" height="60" id="' + params.data.url + '"/></center>'; } },
+	    { headerName: "Video"  , field: "video",  width:72,  cellRenderer: function(params) { return "<video onclick='window.open(\"/webrtcstream.html?video=" + params.data.url + "\")' width=\"72\" height=\"60\" id=\"" + params.data.url + "\"/>"; } },
 	    { headerName: "Url"    , field: "url"    },
 	    { headerName: "Status" , field: "status", cellRenderer: function(params) { return '<b>' + params.value.toUpperCase() + '</b>'; } },
 	    { headerName: "RoomId" , field: "roomid" },
@@ -28,8 +38,9 @@
 	      field: "action", 
 	      cellRenderer: function(params) { 
 	        var eDiv = document.createElement('div');
-		eDiv.innerHTML = '<button class="btn-simple">'+params.value+'</button>';
-		var eButton = eDiv.querySelectorAll('.btn-simple')[0];
+	        var eButton = document.createElement('button');
+		eButton.innerHTML = params.value;
+		eDiv.appendChild(eButton);
 		eButton.addEventListener('click', function() {
 			if (params.value === "join") {
 				params.data.roomid = document.querySelector('#janusRoom').value;
@@ -62,7 +73,7 @@
 	};
 	
 	// fill grid
-	var grid = new agGrid.Grid(document.querySelector('#myGrid'), gridOptions);	
+	new agGrid.Grid(document.querySelector('#myGrid'), gridOptions);	
 
 	function clientCallBack(name, status) {		
 		var updatedNodes = [];
