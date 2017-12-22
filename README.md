@@ -158,7 +158,7 @@ You can start the application using the docker image :
 
         docker run -p 8000:8000 -it mpromonet/webrtc-streamer
 
-You can expose V4L2 devices of the host using :
+You can expose V4L2 devices from your host using :
 
         docker run --device=/dev/video0 -p 8000:8000 -it mpromonet/webrtc-streamer
 
@@ -168,7 +168,7 @@ The container entry point is the webrtc-streamer application, then you can :
 
         docker run -p 8000:8000 -it mpromonet/webrtc-streamer -h
 
-* running the container registering an RTSP url :
+* run the container registering a RTSP url using :
 
         docker run -p 8000:8000 -it mpromonet/webrtc-streamer -n raspicam -u rtsp://pi2.local:8554/unicast
 
