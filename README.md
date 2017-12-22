@@ -137,6 +137,8 @@ A short sample to publish WebRTC streams to Janus Video Room could be :
 	</head>
 	</html>
 
+[![Screenshot](janusvideoroom.png)](https://webrtc-streamer.herokuapp.com/janusvideoroom.html)
+
 [Live Demo](https://webrtc-streamer.herokuapp.com/janusvideoroom.html)
 
 This way the communication between [Janus API](https://janus.conf.meetecho.com/docs/JS.html) and [WebRTC Streamer API](https://webrtc-streamer.herokuapp.com/help) is implemented in Javascript running in browser.
