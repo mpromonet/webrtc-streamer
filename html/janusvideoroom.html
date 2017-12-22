@@ -10,12 +10,16 @@
   display: flex;
   align-items: center;
 }
+footer {
+    text-align: center; 
+}
 </style> 
 </head>
 <body> 
 	Janus Url:<input id="janusUrl" type="text" size="50" /> 
 	Room id:<input id="janusRoom" type="number" />
 	<div id="myGrid" style="height: 80%;" class="ag-fresh"></div>
+	<footer id="footer"></footer>
 </body>
 <script>
 	// set default value
@@ -108,12 +112,24 @@
 		});
 	}
 	
+	// ------------------------------------------
+	// Fill version
+	// ------------------------------------------	
+	function onVersion(version) {
+		document.getElementById("footer").innerHTML = "<p><a href='https://github.com/mpromonet/webrtc-streamer'>WebRTC-Streamer</a>"
+							+ " " + version.split(" ")[0] + "</p>";
+	}
+		
 	// load
 	window.onload         = function() { 
 		request( 'GET',  "/getVideoDeviceList" ).done(
 			function (response) {
 				if (response.statusCode === 200) { onGetDeviceList(JSON.parse(response.body)) }
-			})
+			});
+		request( 'GET',  "/version" ).done(
+			function (response) {
+				if (response.statusCode === 200) { onVersion(response.body) }
+			});
 	} 
 	
 	// unload
