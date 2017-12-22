@@ -6,13 +6,9 @@
 <script src="janusvideoroom.js" ></script>
 <script src="webrtcstreamer.js" ></script>
 <style media="screen" type="text/css">
-video {
-    display: block; 
-    margin: 0 auto;
-}
-button {
-    display: block; 
-    margin: 0 auto;
+.cell {
+  display: flex;
+  align-items: center;
 }
 </style> 
 </head>
@@ -30,11 +26,11 @@ button {
 	
 	// columns
 	var columnDefs = [
-	    { headerName: "Video"  , field: "video",  width:72,  cellRenderer: function(params) { return "<video onclick='window.open(\"/webrtcstream.html?video=" + params.data.url + "\")' width=\"72\" height=\"60\" id=\"" + params.data.url + "\"/>"; } },
-	    { headerName: "Url"    , field: "url"    },
-	    { headerName: "Status" , field: "status", cellRenderer: function(params) { return '<b>' + params.value.toUpperCase() + '</b>'; } },
-	    { headerName: "RoomId" , field: "roomid" },
-	    { headerName: "Action" , 
+	    { headerName: "Video"  , field: "video" , cellClass: "cell" ,  width:72,  cellRenderer: function(params) { return "<video onclick='window.open(\"/webrtcstream.html?video=" + params.data.url + "\")' width=\"72\" height=\"60\" id=\"" + params.data.url + "\"/>"; } },
+	    { headerName: "Url"    , field: "url"   , cellClass: "cell" },
+	    { headerName: "Status" , field: "status", cellClass: "cell" , cellRenderer: function(params) { return '<b>' + params.value.toUpperCase() + '</b>'; } },
+	    { headerName: "RoomId" , field: "roomid", cellClass: "cell"  },
+	    { headerName: "Action" , cellClass: "cell", 
 	      field: "action", 
 	      cellRenderer: function(params) { 
 	        var eDiv = document.createElement('div');
