@@ -125,6 +125,8 @@ int main(int argc, char* argv[])
 		std::vector<std::string> options;
 		options.push_back("document_root");
 		options.push_back(webroot);
+		options.push_back("access_control_allow_origin");
+		options.push_back("*");
 		options.push_back("listening_ports");
 		options.push_back(httpAddress);
 		if (!sslCertificate.empty()) {
