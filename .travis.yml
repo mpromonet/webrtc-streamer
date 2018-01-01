@@ -38,6 +38,9 @@ script:
 - travis_wait 30 fetch --no-history --nohooks webrtc
 # patch webrtc to not download chromium-webrtc-resources
 - sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
+# patch webrtc for std::vector::erase with iterator
+- if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then sed -i -e "s|const auto iter = FindSourceInList(audio_source, &audio_source_list_);|const auto iter = std::find_if(audio_source_list_.begin(), audio_source_list_.end(), [audio_source](const std::unique_ptr<AudioMixerImpl::SourceStatus> \&p) { return p->audio_source == audio_source; });|" src/modules/audio_mixer/audio_mixer_impl.cc; fi
+# get WebRTC dependencies
 - travis_wait 30 gclient sync
 - popd
 # get, build and install live555 & alsa
