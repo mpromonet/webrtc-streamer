@@ -87,7 +87,7 @@ Example
 				rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov
 
 
-[![Screenshot](snapshot.png)](https://webrtc-streamer.herokuapp.com/)
+[![Screenshot](images/snapshot.png)](https://webrtc-streamer.herokuapp.com/)
 
 [Live Demo](https://webrtc-streamer.herokuapp.com/)
 
@@ -138,7 +138,7 @@ A short sample to publish WebRTC streams to Janus Video Room could be :
 	</head>
 	</html>
 
-[![Screenshot](janusvideoroom.png)](https://webrtc-streamer.herokuapp.com/janusvideoroom.html)
+[![Screenshot](images/janusvideoroom.png)](https://webrtc-streamer.herokuapp.com/janusvideoroom.html)
 
 [Live Demo](https://webrtc-streamer.herokuapp.com/janusvideoroom.html)
 
