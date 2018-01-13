@@ -55,7 +55,7 @@
 				type: "set", 
 				"jingle":{
 					"action":"session-initiate",
-					"initiator": roomUrl + "/" + userName,
+					"initiator": userName,
 					"contents":json
 				}
 		});
@@ -81,9 +81,6 @@
 			write("session:started")			
 	    		client.joinRoom(roomUrl, userName, {status:"available"});				
 			
-			client.getDiscoItems(roomUrl,'', (err, data) => {
-				write("err:"+ JSON.stringify(err) + " rooms:"  + JSON.stringify(data))
-			});
 			client.getDiscoInfo(roomUrl,'', (err, data) => {
 				write("err:"+ JSON.stringify(err) + " rooms:"  + JSON.stringify(data))
 			});
@@ -111,8 +108,8 @@
 		    if (pres.from.resource === userName) {
 			write("user joined");
 
-			client.sendMessage({ from: roomUrl + "/" + userName, to: roomUrl, type:"groupchat", "$body":{body:"Hello!"} });	
-			
+			client.sendMessage({ to: roomUrl, type:"groupchat", body:"Hello!" });	
+						
 			var peerid = "test"
 			mysend("/createOffer?peerid="+ peerid+"&url="+encodeURIComponent(webrtcStream), null, null, function(dataJson) { 
 				onCreateOffer(dataJson,peerid) }, onError, this); 
