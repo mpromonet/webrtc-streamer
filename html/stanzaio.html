@@ -2,27 +2,88 @@
 <head>
 <script src="libs/stanzaio.bundle.min.js"></script>
 <script>
-	var serverName = "jitsi.example.com";
-	var userName = "user" ;	
-	var roomName = "room" ;
-	var url = "rtsp://217.17.220.110/axis-media/media.amp"
-
-	var muc = "conference.jitsi.example.com";
-	var roomUrl = roomName + "@" + muc;
-
-        var client = XMPP.createClient({
-          jid: roomName + "@" + serverName,
-          boshURL: location.protocol+ "//" + serverName + "/http-bind",
-          transports: ['bosh']
-        });
+	function write(text) {
+		var textNode = document.createElement("li");
+		textNode.textContent = text;
+		document.body.appendChild(textNode);
+	}
 	
-	client.on('session:started', function () {
-	    console.log("session started")
-	    client.getRoster();
-	    client.sendPresence();
-	});
+	var client = null;
 	
-	client.connect();	
-	client.joinRoom(roomUrl, userName);
+	function connect() {
+		var serverName = document.querySelector('#xmppServer').value;
+		var userName = document.querySelector('#xmppUser').value;	
+		var roomName = document.querySelector('#xmppRoom').value;
+		var url = "rtsp://217.17.220.110/axis-media/media.amp"
+
+		var muc = "conference." + serverName;
+		var roomUrl = roomName + "@" + muc;
+	
+		client = XMPP.createClient({
+		  jid: roomName + "@" + serverName,
+		  boshURL: location.protocol+ "//" + serverName + "/http-bind",
+		  transports: ['bosh']
+		});
+		
+		client.on('session:started', function () {
+		    write("session:started")
+		    client.getRoster();
+		    client.sendPresence();
+		});
+		
+		client.on('jingle:remotestream:added', function (mediaStream) {
+		    write("jingle:remotestream:added from:" + mediaStream.peerID);
+		    write("jingle:remotestream:added remoteDescription:" + JSON.stringify(mediaStream.pc.pc.remoteDescription));
+
+		});
+
+		client.on('muc:available', function (pres) {
+		    write("muc:available from:" + pres.from)
+		});
+
+		client.on('muc:leave', function (pres) {
+		    write("muc:leave from:" + pres.from)
+		});
+
+		client.on('muc:join', function (pres) {
+		    write("muc:join from:" + pres.from)		    
+		});
+
+		client.on('presence', function (pres) {
+		    write("presence from:" + pres.from + " type:" + pres.type)
+		});
+
+		client.connect();			
+		client.joinRoom(roomUrl, userName, {status:"connected"});	
+		    
+/*		var session = client.jingle.createMediaSession("otheruser@"+ serverName +"/toto");
+		client.jingle.addSession(session);
+		session.start();*/
+	}
+	
+	function disconnect() {
+		var serverName = document.querySelector('#xmppServer').value;
+		var userName = document.querySelector('#xmppUser').value;	
+		var roomName = document.querySelector('#xmppRoom').value;
+		var muc = "conference." + serverName;
+		var roomUrl = roomName + "@" + muc;
+
+		if (client) {
+			client.leaveRoom(roomUrl, userName);
+			client = null;
+		}
+	}
+	
+	window.onbeforeunload = function() { 
+		disconnect();
+	};		
 </script>
+</head>
+<body> 
+	XMPP Url:<input id="xmppServer" type="text" size="50" value="jitsi.example.com" /> 
+	User id:<input id="xmppUser" type="text" value="user" />
+	Room id:<input id="xmppRoom" type="text" value="testroom" />
+	<input type="button" value="connect" onclick="connect()" />
+	<input type="button" value="disconnect" onclick="disconnect()" />
+</body>
 </html>
