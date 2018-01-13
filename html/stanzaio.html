@@ -1,20 +1,72 @@
 <html>
 <head>
 <script src="libs/stanzaio.bundle.min.js"></script>
+<script src="libs/request.min.js"></script>
+<script src="libs/sdp-jingle-json.bundle.min.js"></script>
 <script>
+	function mysend(method,headers,data,onSuccess,onFailure,scope) {
+
+		console.log("HTTP call "+ method);
+		var verb = "GET";
+		if (data) {
+			verb = "POST";
+			data = JSON.stringify(data);
+		}
+		request(verb , method,
+			{	
+				body: data,
+				headers: headers
+			}).done( function (response) { 
+				if ( (response.statusCode === 200) && onSuccess ) {
+					onSuccess.call(scope,JSON.parse(response.body));
+				}
+				else if (onFailure) {
+					onFailure.call(scope,response.statusCode);
+				}
+			}
+		);
+	}
+
 	function write(text) {
 		var textNode = document.createElement("li");
 		textNode.textContent = text;
 		document.body.appendChild(textNode);
 	}
 	
+	function onError (error) {
+		write("onError:" + error)
+	}
+	
 	var client = null;
+	
+	function onCreateOffer(sdp, peerid) {
+		write("onCreateOffer:" + JSON.stringify(sdp))
+		
+		var json = SJJ.toIncomingJSONOffer(sdp.sdp);
+		write("onCreateOffer:" +  JSON.stringify(json))
+		
+		var serverName = document.querySelector('#xmppServer').value;
+		var userName = document.querySelector('#xmppUser').value;	
+		var roomName = document.querySelector('#xmppRoom').value;
+		var muc = "conference." + serverName;
+		var roomUrl = roomName + "@" + muc;
+		
+		client.sendIq({ to: roomUrl, 
+				type: "set", 
+				"jingle":{
+					"action":"session-initiate",
+					"initiator": roomUrl + "/" + userName,
+					"contents":json
+				}
+		});
+	}
+	
 	
 	function connect() {
 		var serverName = document.querySelector('#xmppServer').value;
 		var userName = document.querySelector('#xmppUser').value;	
 		var roomName = document.querySelector('#xmppRoom').value;
-		var url = "rtsp://217.17.220.110/axis-media/media.amp"
+		var webrtcStream = "rtsp://217.17.220.110/axis-media/media.amp"
 
 		var muc = "conference." + serverName;
 		var roomUrl = roomName + "@" + muc;
@@ -25,40 +77,59 @@
 		  transports: ['bosh']
 		});
 		
-		client.on('session:started', function () {
-		    write("session:started")
-		    client.getRoster();
-		    client.sendPresence();
-		});
+		client.on('session:started', () => {
+			write("session:started")			
+	    		client.joinRoom(roomUrl, userName, {status:"available"});				
+			
+			client.getDiscoItems(roomUrl,'', (err, data) => {
+				write("err:"+ JSON.stringify(err) + " rooms:"  + JSON.stringify(data))
+			});
+			client.getDiscoInfo(roomUrl,'', (err, data) => {
+				write("err:"+ JSON.stringify(err) + " rooms:"  + JSON.stringify(data))
+			});
+		} );
 		
-		client.on('jingle:remotestream:added', function (mediaStream) {
-		    write("jingle:remotestream:added from:" + mediaStream.peerID);
-		    write("jingle:remotestream:added remoteDescription:" + JSON.stringify(mediaStream.pc.pc.remoteDescription));
+		client.on('roster:update', (data) => {write("roster:update:" + JSON.stringify(data))} )		
+		
+		client.on('nick', (data) => {write("nick:" + JSON.stringify(data))} )
+		
+		client.on('message', (data) => {write("message:" + JSON.stringify(data))} )
+		
+		client.on('jingle:created', () => {write("jingle:created")} )
+		client.on('jingle:incoming', () => {write("jingle:incoming")} )
+		client.on('jingle:outgoing', () => {write("jingle:outgoing")} )
+		client.on('jingle:accepted', () => {write("jingle:accepted")} )
+		client.on('jingle:terminated', () => {write("jingle:terminated")} )
+		client.on('jingle:ringing', () => {write("jingle:ringing")} )
+		client.on('jingle:remotestream:added', function (mediaStream) { write("jingle:remotestream:added from:" + mediaStream.peerID); });
 
-		});
-
-		client.on('muc:available', function (pres) {
-		    write("muc:available from:" + pres.from)
-		});
-
-		client.on('muc:leave', function (pres) {
-		    write("muc:leave from:" + pres.from)
-		});
-
+		client.on('muc:available', function (pres) { write("muc:available from:" + pres.from); });
+		client.on('muc:leave', function (pres) { write("muc:leave from:" + pres.from); });
 		client.on('muc:join', function (pres) {
-		    write("muc:join from:" + pres.from)		    
+		    write("muc:join from:" + pres.from)	
+
+		    if (pres.from.resource === userName) {
+			write("user joined");
+
+			client.sendMessage({ from: roomUrl + "/" + userName, to: roomUrl, type:"groupchat", "$body":{body:"Hello!"} });	
+			
+			var peerid = "test"
+			mysend("/createOffer?peerid="+ peerid+"&url="+encodeURIComponent(webrtcStream), null, null, function(dataJson) { 
+				onCreateOffer(dataJson,peerid) }, onError, this); 
+
+		    }
 		});
 
 		client.on('presence', function (pres) {
 		    write("presence from:" + pres.from + " type:" + pres.type)
 		});
+		
+		client.on('iq', function(iq) {
+			write("iq:" + JSON.stringify(iq));
+		});
 
 		client.connect();			
-		client.joinRoom(roomUrl, userName, {status:"connected"});	
-		    
-/*		var session = client.jingle.createMediaSession("otheruser@"+ serverName +"/toto");
-		client.jingle.addSession(session);
-		session.start();*/
+				
 	}
 	
 	function disconnect() {
