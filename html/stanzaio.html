@@ -51,11 +51,10 @@
 		var muc = "conference." + serverName;
 		var roomUrl = roomName + "@" + muc;
 		
-		client.sendIq({ to: roomUrl, 
-				type: "set", 
-				"jingle":{
+		client.sendIq({ type: "set", 
+				jingle:{
 					"action":"session-initiate",
-					"initiator": userName,
+					"initiator": roomUrl + "/" + userName,					
 					"contents":json
 				}
 		});
@@ -79,10 +78,11 @@
 		
 		client.on('session:started', () => {
 			write("session:started")			
-	    		client.joinRoom(roomUrl, userName, {status:"available"});				
+			
+	    		client.joinRoom(roomUrl, userName, {status:"available",nick:userName});				
 			
 			client.getDiscoInfo(roomUrl,'', (err, data) => {
-				write("err:"+ JSON.stringify(err) + " rooms:"  + JSON.stringify(data))
+				write("err:"+ JSON.stringify(err) + " info:"  + JSON.stringify(data))
 			});
 		} );
 		
@@ -91,6 +91,10 @@
 		client.on('nick', (data) => {write("nick:" + JSON.stringify(data))} )
 		
 		client.on('message', (data) => {write("message:" + JSON.stringify(data))} )
+		
+		client.on('stanza', (data) => {write("stanza:" + JSON.stringify(data))} )
+		
+		client.on('avatar', (data) => {write("avatar:" + JSON.stringify(data))} )
 		
 		client.on('jingle:created', () => {write("jingle:created")} )
 		client.on('jingle:incoming', () => {write("jingle:incoming")} )
