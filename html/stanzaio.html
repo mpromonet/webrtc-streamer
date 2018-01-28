@@ -3,30 +3,8 @@
 <script src="libs/stanzaio.bundle.min.js"></script>
 <script src="libs/request.min.js"></script>
 <script src="libs/sdp-jingle-json.bundle.min.js"></script>
+<script src="sendrequest.js" ></script>
 <script>
-	function mysend(method,headers,data,onSuccess,onFailure,scope) {
-
-		console.log("HTTP call "+ method);
-		var verb = "GET";
-		if (data) {
-			verb = "POST";
-			data = JSON.stringify(data);
-		}
-		request(verb , method,
-			{	
-				body: data,
-				headers: headers
-			}).done( function (response) { 
-				if ( (response.statusCode === 200) && onSuccess ) {
-					onSuccess.call(scope,JSON.parse(response.body));
-				}
-				else if (onFailure) {
-					onFailure.call(scope,response.statusCode);
-				}
-			}
-		);
-	}
-
 	function write(text) {
 		var textNode = document.createElement("li");
 		textNode.textContent = text;
@@ -51,6 +29,7 @@
 		var muc = "conference." + serverName;
 		var roomUrl = roomName + "@" + muc;
 		
+		/*
 		client.sendIq({ type: "set", 
 				jingle:{
 					"action":"session-initiate",
@@ -58,6 +37,11 @@
 					"contents":json
 				}
 		});
+		
+		var sess = client.jingle.createMediaSession(roomUrl + "/" + userName);
+		sess.addStream(stream);
+		sess.start();
+*/
 	}
 	
 	
@@ -115,7 +99,7 @@
 			client.sendMessage({ to: roomUrl, type:"groupchat", body:"Hello!" });	
 						
 			var peerid = "test"
-			mysend("/createOffer?peerid="+ peerid+"&url="+encodeURIComponent(webrtcStream), null, null, function(dataJson) { 
+			sendRequest("/createOffer?peerid="+ peerid+"&url="+encodeURIComponent(webrtcStream), null, null, function(dataJson) { 
 				onCreateOffer(dataJson,peerid) }, onError, this); 
 
 		    }
