@@ -17,7 +17,7 @@ console.log("videourl: " + videourl);
 var request = require("then-request");
 var JanusVideoRoom = require("./html/janusvideoroom.js"); 
 
-request( 'GET',  webrtcstreamerurl + "/janusvideoroom.json" ).done(
+request( "GET",  webrtcstreamerurl + "/janusvideoroom.json" ).done(
 	function (response) { 
 		if (response.statusCode === 200) {
 			console.log("HTTP answer:"+ response.body);
