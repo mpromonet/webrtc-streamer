@@ -10,7 +10,7 @@ jobs:
       SYSROOT: ${CIRCLE_WORKING_DIRECTORY}/webrtc/src/build/linux/debian_stretch_amd64-sysroot
     steps:
       - checkout
-      - run: sudo apt-get update; sudo apt-get install -y --no-install-recommends cmake autoconf automake libtool git make g++ tar
+      - run: apt-get update; sudo apt-get install -y --no-install-recommends cmake autoconf automake libtool git make g++ 
       - run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
       - run: echo 'export PATH=${CIRCLE_WORKING_DIRECTORY}/depot_tools:$PATH' >> $BASH_ENV
       - run: mkdir webrtc && pushd webrtc && fetch --no-history --nohooks webrtc && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS && popd
