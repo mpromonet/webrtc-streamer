@@ -8,7 +8,7 @@ jobs:
       GYP_GENERATOR_OUTPUT: "x86_64"
       GNARGS: 'is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome"'
       SYSROOT: ${CIRCLE_WORKING_DIRECTORY}/webrtc/src/build/linux/debian_stretch_amd64-sysroot
-      TAR_OPTIONS: --no-same-owners
+      TAR_OPTIONS: --no-same-owner
 
     steps:
       - checkout
