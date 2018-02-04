@@ -22,7 +22,7 @@ jobs:
       - run: pushd webrtc/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}" && ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc && popd
       - run: make WEBRTCROOT=${PWD}/webrtc all tgz SYSROOT=${PWD}/webrtc/src/build/linux/debian_stretch_amd64-sysroot
 
-      - run: mkdir /distrib && cp *.tgz
+      - run: mkdir /distrib && cp *.tgz /distrib
       - store_artifacts:      
           path: /distrib  
 
