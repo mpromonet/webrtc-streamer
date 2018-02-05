@@ -1,6 +1,7 @@
 version: 2
 jobs:
   build:
+    working_directory: ~/webrtc-streamer
     docker:
       - image: heroku/heroku:16
     environment:
