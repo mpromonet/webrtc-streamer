@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build:
+  build_x86_64:
     working_directory: ~/webrtc-streamer
     docker:
       - image: heroku/heroku:16
@@ -27,8 +27,15 @@ jobs:
       - store_artifacts:      
           path: /distrib  
 
-deployment:
-  staging:
-    branch: master
-    heroku:
-      appname: rtsp2webrtc
+    deployment:
+      staging:
+        branch: master
+        heroku:
+          appname: rtsp2webrtc
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build_x86_64
+
