@@ -99,7 +99,7 @@
 			client.sendMessage({ to: roomUrl, type:"groupchat", body:"Hello!" });	
 						
 			var peerid = "test"
-			sendRequest("/createOffer?peerid="+ peerid+"&url="+encodeURIComponent(webrtcStream), null, null, function(dataJson) { 
+			sendRequest(request,"/createOffer?peerid="+ peerid+"&url="+encodeURIComponent(webrtcStream), null, null, function(dataJson) { 
 				onCreateOffer(dataJson,peerid) }, onError, this); 
 
 		    }

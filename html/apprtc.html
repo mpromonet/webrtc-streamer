@@ -1,0 +1,112 @@
+<html>
+<head>
+<script src="libs/request.min.js"></script>
+<script src="sendrequest.js" ></script>
+<script>
+	var clientid = null;
+	var peerid = Math.random().toString();
+	var messages = null;
+	
+	function write(text) {
+		var textNode = document.createElement("li");
+		textNode.textContent = text;
+		document.body.appendChild(textNode);
+	}
+	
+	function onError (error) {
+		write("onError:" + error)
+	}
+	
+	function onJoin(answer) {
+		write("onJoin result:" + answer.result)
+		if (answer.params.client_id) {
+			write("onJoin client_id:" + answer.params.client_id)
+			clientid = answer.params.client_id;
+						
+			messages = answer.params.messages; 
+			for (var i=0; i < messages.length; i++) {
+				var msg = JSON.parse(messages[i]);
+				write("onJoin:" + msg.type)
+				if (msg.type === "offer") {
+					var webrtcStream = document.querySelector('#rtcstream').value;
+					sendRequest(request, "/call?peerid="+ peerid+"&url="+encodeURIComponent(webrtcStream), null, msg, onCall, onError, this); 		
+				}				
+			}			
+		}
+	}
+	
+	function onGetIceCandidate(dataJson) {
+		write("onGetIceCandidate:" + JSON.stringify(dataJson))
+		
+		var serverName = document.querySelector('#server').value;
+		var roomName = document.querySelector('#room').value;		
+
+		var candidates = [];
+		for (var i=0; i<dataJson.length; i++) {
+			// send ICE candidate to Janus
+			var msg = { "id": dataJson[i].sdpMid, "label": dataJson[i].sdpMLineIndex, "candidate": dataJson[i].candidate };
+			candidates.push(msg);
+		}
+		
+		var url = serverName + "/message/" + roomName + "/" + clientid;
+		var body = { messages: candidates };
+		sendRequest(request, url, null, body, null , onError, this); 	
+	}
+	
+	function onCall(sdp) {
+		write("onCall:" + JSON.stringify(sdp))
+
+		var serverName = document.querySelector('#server').value;
+		var roomName = document.querySelector('#room').value;
+
+		var body = { messages: [ sdp ] };
+		var url = serverName + "/message/" + roomName + "/" + clientid;
+		sendRequest(request, url, null, body, null , onError, this); 	
+
+
+		if (messages) {
+			for (var i=0; i < messages.length; i++) {
+				var msg = JSON.parse(messages[i]);
+				write("onJoin:" + msg.type)
+				if (msg.type === "candidate") {
+					var mymsg = { "sdpMid": msg.id, "sdpMLineIndex": msg.label, "candidate": msg.candidate };
+					sendRequest(request, "/addIceCandidate?peerid="+ peerid, null, mymsg, null, onError, this); 		
+				}				
+			}
+		}
+		sendRequest(request, "/getIceCandidate?peerid="+ peerid, null, null, onGetIceCandidate, onError, this); 		
+	}
+	
+	
+	function connect() {			
+		var serverName = document.querySelector('#server').value;
+		var roomName = document.querySelector('#room').value;
+
+		var body = { messages: [""] };
+		var url = serverName + "/join/" + roomName;
+		sendRequest(request, url, null, body, onJoin , onError, this); 	
+	}
+	
+	function disconnect() {
+		var serverName = document.querySelector('#server').value;
+		var roomName = document.querySelector('#room').value;
+		if (clientid) {
+			var body = { messages: [] };
+			var url = serverName + "/leave/" + roomName + "/" + clientid;
+			sendRequest(request, url, null, body, null , onError, this); 
+		}
+	}
+	
+	window.onbeforeunload = function() { 
+		disconnect();
+	};		
+</script>
+</head>
+<body> 
+	AppRTC Url:<input id="server" type="text" size="50" value="https://appr.tc" /></br>
+ 	Room id:<input id="room" type="text" value="638124504" /></br>
+ 	WebRTC stream:<input id="rtcstream" type="text" size="50" value="rtsp://217.17.220.110/axis-media/media.amp" /></br>
+	<input type="button" value="connect" onclick="connect()" />
+	<input type="button" value="disconnect" onclick="disconnect()" />
+</body>
+</html>
