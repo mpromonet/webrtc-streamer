@@ -28,12 +28,20 @@ jobs:
       - store_artifacts:      
           path: /distrib  
 
+      # deploy on heroku
+      - run: bash .circleci/setup-heroku.sh
       - add_ssh_keys:
           fingerprints:
             - "9d:ef:66:ee:e1:95:2b:e6:98:05:01:ac:48:5c:53:be"
       - deploy:
           name: "Deploy to Heroku"
           command: git push git@heroku.com:rtsp2webrtc.git
+
+      # deploy on AWS
+      - run:
+          name: "Deploy to S3"
+          command: aws s3 sync *.tgz s3://circlecibucket/ --delete
+
 
 workflows:
   version: 2
