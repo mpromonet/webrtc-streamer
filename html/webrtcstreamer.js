@@ -27,6 +27,7 @@ function WebRtcStreamer (videoElement, srvurl, request) {
 
 	this.iceServers = null;
 	this.request  = request;
+	this.earlyCandidates = [];
 }
 
 /** 
@@ -92,6 +93,9 @@ WebRtcStreamer.prototype.onReceiveGetIceServers = function(iceServers, videourl,
 		if (stream) {
 			this.pc.addStream(stream);
 		}
+
+                // clear early candidates
+		this.earlyCandidates.length = 0;
 		
 		// create Offer
 		this.pc.createOffer(function(sessionDescription) {
@@ -171,7 +175,11 @@ WebRtcStreamer.prototype.createPeerConnection = function() {
 */
 WebRtcStreamer.prototype.onIceCandidate = function (event) {
 	if (event.candidate) {
-		sendRequest(this.request, this.srvurl + "/addIceCandidate?peerid="+this.pc.peerid, null, event.candidate);
+                if (this.pc.currentRemoteDescription)  {
+			sendRequest(this.request, this.srvurl + "/addIceCandidate?peerid="+this.pc.peerid, null, event.candidate);
+		} else {
+			this.earlyCandidates.push(event.candidate);
+		}
 	} 
 	else {
 		console.log("End of candidates.");
@@ -201,9 +209,12 @@ WebRtcStreamer.prototype.onTrack = function(event) {
 WebRtcStreamer.prototype.onReceiveCall = function(dataJson) {
 	var streamer = this;
 	console.log("offer: " + JSON.stringify(dataJson));
-	var peerid = this.pc.peerid;
 	this.pc.setRemoteDescription(new RTCSessionDescription(dataJson)
 		, function()      { console.log ("setRemoteDescription ok") 
+                        while (streamer.earlyCandidates.length) {
+			        var candidate = streamer.earlyCandidates.shift();
+				sendRequest(streamer.request, streamer.srvurl + "/addIceCandidate?peerid="+streamer.pc.peerid, null, candidate);
+			}
 			sendRequest(streamer.request, streamer.srvurl + "/getIceCandidate?peerid="+streamer.pc.peerid, null, null, streamer.onReceiveCandidate, null, streamer);
 		}
 		, function(error) { console.log ("setRemoteDescription error:" + JSON.stringify(error)); });
