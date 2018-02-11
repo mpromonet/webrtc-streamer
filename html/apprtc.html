@@ -26,7 +26,6 @@
 			messages = answer.params.messages; 
 			for (var i=0; i < messages.length; i++) {
 				var msg = JSON.parse(messages[i]);
-				write("onJoin:" + msg.type)
 				if (msg.type === "offer") {
 					var webrtcStream = document.querySelector('#rtcstream').value;
 					sendRequest(request, "/call?peerid="+ peerid+"&url="+encodeURIComponent(webrtcStream), null, msg, onCall, onError, this); 		
@@ -67,7 +66,6 @@
 		if (messages) {
 			for (var i=0; i < messages.length; i++) {
 				var msg = JSON.parse(messages[i]);
-				write("onJoin:" + msg.type)
 				if (msg.type === "candidate") {
 					var mymsg = { "sdpMid": msg.id, "sdpMLineIndex": msg.label, "candidate": msg.candidate };
 					sendRequest(request, "/addIceCandidate?peerid="+ peerid, null, mymsg, null, onError, this); 		
