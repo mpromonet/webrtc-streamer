@@ -1,4 +1,3 @@
-version: 2
 jobs:
   build_x86_64:
     working_directory: ~/webrtc-streamer
@@ -39,7 +38,6 @@ jobs:
           appname: rtsp2webrtc
 
 workflows:
-  version: 2
   build:
     jobs:
       - build_x86_64
