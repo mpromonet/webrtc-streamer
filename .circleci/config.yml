@@ -1,3 +1,4 @@
+version: 2
 jobs:
   build_x86_64:
     working_directory: ~/webrtc-streamer
@@ -27,17 +28,15 @@ jobs:
       - store_artifacts:      
           path: /distrib  
 
+      - add_ssh_keys:
+          fingerprints:
+            - "9d:ef:66:ee:e1:95:2b:e6:98:05:01:ac:48:5c:53:be"
       - deploy:
           name: "Deploy to Heroku"
           command: git push git@heroku.com:rtsp2webrtc.git
 
-    deployment:
-      staging:
-        branch: master
-        heroku:
-          appname: rtsp2webrtc
-
 workflows:
+  version: 2
   build:
     jobs:
       - build_x86_64
