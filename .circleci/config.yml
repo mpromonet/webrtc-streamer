@@ -28,7 +28,7 @@ jobs:
       - store_artifacts:      
           path: /distrib  
 
-        deploy: git push git@heroku.com:rtsp2webrtc.git
+      - deploy: git push git@heroku.com:rtsp2webrtc.git
 
     deployment:
       staging:
