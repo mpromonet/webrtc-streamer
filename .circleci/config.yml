@@ -14,17 +14,17 @@ jobs:
       - checkout
       
       - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make g++ xz-utils
-      - run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
-      - run: echo 'export PATH=${PWD}/depot_tools:$PATH' >> $BASH_ENV
-      - run: mkdir webrtc && pushd webrtc && fetch --no-history --nohooks webrtc && popd
-      - run: pushd webrtc && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS && popd
-      - run: pushd webrtc && gclient sync && popd
-      - run: make WEBRTCROOT=${PWD}/webrtc live555 alsa-lib SYSROOT=${PWD}/webrtc/src/build/linux/debian_stretch_amd64-sysroot
-      - run: pushd webrtc/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}" && ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc && popd
-      - run: make WEBRTCROOT=${PWD}/webrtc all tgz SYSROOT=${PWD}/webrtc/src/build/linux/debian_stretch_amd64-sysroot
+      - run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git ${HOME}/depot_tools
+      - run: echo 'export PATH=${HOME}/depot_tools:$PATH' >> $BASH_ENV
+      - run: cd webrtc && pushd webrtc && fetch --no-history --nohooks webrtc 
+      - run: cd webrtc && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS 
+      - run: cd webrtc && gclient sync 
+      - run: make WEBRTCROOT=${HOME}/webrtc live555 alsa-lib SYSROOT=${HOME}/webrtc/src/build/linux/debian_stretch_amd64-sysroot
+      - run: cd webrtc/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}" && ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc 
+      - run: make WEBRTCROOT=${HOME}/webrtc all tgz SYSROOT=${HOME}/webrtc/src/build/linux/debian_stretch_amd64-sysroot
 
+      # archive artifacts
       - run: mkdir /distrib && cp *.tgz /distrib
-
       - store_artifacts:      
           path: /distrib  
 
@@ -35,13 +35,7 @@ jobs:
             - "9d:ef:66:ee:e1:95:2b:e6:98:05:01:ac:48:5c:53:be"
       - deploy:
           name: "Deploy to Heroku"
-          command: git push --force git@heroku.com:rtsp2webrtc.git HEAD:refs/heads/master
-
-      # deploy on AWS
-      - run:
-          name: "Deploy to S3"
-          command: aws s3 sync *.tgz s3://circlecibucket/ --delete
-
+          command: rm .gitignore && git commit -m 'remove .gitignore for heroku deployement' .gitignore && git push --force git@heroku.com:rtsp2webrtc.git HEAD:refs/heads/master
 
 workflows:
   version: 2
