@@ -35,7 +35,7 @@ jobs:
             - "9d:ef:66:ee:e1:95:2b:e6:98:05:01:ac:48:5c:53:be"
       - deploy:
           name: "Deploy to Heroku"
-          command: git push git@heroku.com:rtsp2webrtc.git
+          command: git push --force git@heroku.com:rtsp2webrtc.git HEAD:refs/heads/master
 
       # deploy on AWS
       - run:
