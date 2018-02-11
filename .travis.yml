@@ -1,5 +1,4 @@
 dist: xenial
-sudo: false
 env:
   global:
     - GNARGSCOMMON='rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false rtc_build_examples=false' 
