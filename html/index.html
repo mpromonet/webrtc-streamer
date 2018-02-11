@@ -16,15 +16,20 @@
 	// decode URL arguments
 	// ------------------------------------------	
 	var argurl = { video:location.search.slice(1) };
-	var argoptions;
+	var argoptions = "rtptransport=tcp";
+	var layout = null;
 	if (typeof URLSearchParams != 'undefined') {
 		var params = new URLSearchParams(location.search.slice(1));
 		argurl = { video:params.get("video"), audio:params.get("audio") };
 		argoptions = params.get("options");
+		layout = params.get("layout");
 	} else {
 		console.log("URLSearchParams not supported then no argument could be used");
 	}
 		
+	// ------------------------------------------
+	// get text from url object (video,audio)
+	// ------------------------------------------	
 	function getText(url) {
 		var text;
 		if (url.video) {
@@ -34,6 +39,25 @@
 			text += url.audio + " ";
 		}
 		return text;
+	}
+	
+	// ------------------------------------------
+	// get the div where to insert a video
+	// ------------------------------------------	
+	function getContentDiv() {
+		var contentDiv = null;
+		if (document.getElementById("layout")) {
+			var divList = document.getElementsByTagName("div");
+			for (var i=0; i<divList.length; i++) {
+				if (divList[i].childNodes.length == 0) {
+					contentDiv = divList[i];
+					break;
+				}
+			}
+		} else {
+			contentDiv = document.getElementById("content");
+		}
+		return contentDiv;
 	}
 	
 	// ------------------------------------------
@@ -66,9 +90,17 @@
 			}
 			urllist.appendChild(option);
 		}
-		if (deviceList.length > 0) {
-			add(deviceList[0]);
+		
+		var nbVideos = 1;
+		if (layout) {
+			var splitLayout = layout.split("x");
+			var nbrow = parseInt(splitLayout[0]);
+			var nbcol = parseInt(splitLayout[1]);
+			nbVideos = nbrow*nbcol;
 		}
+		for (var i=0; i<deviceList.length && i<nbVideos ; i++) {			
+			add(deviceList[i]);
+		}		
 	}
 	
 	// ------------------------------------------
@@ -94,7 +126,7 @@
 		
 		// remove the video element and its tile
 		var divElt = 	document.getElementById ("div_" + videoTag);
-		document.getElementById("content").removeChild(divElt); 
+		divElt.parentElement.removeChild(divElt);
 				
 		// unhighlight the navigation
 		var navElt = 	document.getElementById ("nav_" + videoTag);
@@ -109,35 +141,55 @@
 		
 		// add a video element to display webrtc stream
 		if (document.getElementById (videoTag) === null) {
-			var divelt = document.createElement("div");
-			divelt.id = "div_" + videoTag
-			var nameelt = document.createElement("h2");
-			nameelt.id = "title_" + videoTag
-			nameelt.innerHTML = getText(url);
-			divelt.appendChild(nameelt);
-			var videoelt = document.createElement("video");
-			videoelt.id = videoTag;
-			divelt.appendChild(videoelt);
-			document.getElementById("content").appendChild(divelt);
+			var contentDiv = getContentDiv();
+			if (contentDiv) {
+				var divelt = document.createElement("div");
+				divelt.id = "div_" + videoTag
+				var nameelt = document.createElement("h2");
+				nameelt.id = "title_" + videoTag
+				nameelt.innerHTML = getText(url);
+				divelt.appendChild(nameelt);
+				var videoelt = document.createElement("video");
+				videoelt.id = videoTag;
+				videoelt.title = getText(url);
+				divelt.appendChild(videoelt);
+				contentDiv.appendChild(divelt);
+			}			
 		}
-		var videoelt = 	document.getElementById (videoTag);
 		
-		// connect video element to webrtc stream
-		var webRtcServer = new WebRtcStreamer(videoTag, null, request);
-		webRtcServer.connect(url.video, url.audio, argoptions);
-			
-		// highlight the navigation 
-		var navElt = 	document.getElementById ("nav_" + videoTag);
-		navElt.className = "active";
+		var videoelt = 	document.getElementById (videoTag);		
+		if (videoelt) {		
+			// connect video element to webrtc stream
+			var webRtcServer = new WebRtcStreamer(videoTag, null, request);
+			webRtcServer.connect(url.video, url.audio, argoptions);
+				
+			// highlight the navigation 
+			var navElt = 	document.getElementById ("nav_" + videoTag);
+			navElt.className = "active";
 
-		// register webrtc streamer connection
-		webRtcServerList[videoTag] = webRtcServer;		
+			// register webrtc streamer connection
+			webRtcServerList[videoTag] = webRtcServer;		
+		}
 	}
 	
 	// ------------------------------------------
 	// load/unload callbacks
 	// ------------------------------------------	
 	window.onload         = function() { 
+		if (layout) {
+			var splitLayout = layout.split("x");
+			var nbrow = parseInt(splitLayout[0]);
+			var nbcol = parseInt(splitLayout[1]);
+			var tableelt = document.createElement("table");
+			tableelt.id = "layout";
+			for (var irow=0; irow<nbrow; irow++) {
+				var row = tableelt.insertRow(0);
+				for (var icol=0; icol<nbcol; icol++) {
+					row.insertCell(0).appendChild(document.createElement("div"));
+				}
+			}			
+			document.getElementById("content").appendChild(tableelt);
+		}
 		sendRequest(request, "/getMediaList", null, null, onGetDeviceList); 
 		sendRequest(request,"/version", null, null, onVersion); 
 	} 
