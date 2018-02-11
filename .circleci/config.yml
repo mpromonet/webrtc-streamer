@@ -24,8 +24,11 @@ jobs:
       - run: make WEBRTCROOT=${PWD}/webrtc all tgz SYSROOT=${PWD}/webrtc/src/build/linux/debian_stretch_amd64-sysroot
 
       - run: mkdir /distrib && cp *.tgz /distrib
+
       - store_artifacts:      
           path: /distrib  
+
+        deploy: git push git@heroku.com:rtsp2webrtc.git
 
     deployment:
       staging:
