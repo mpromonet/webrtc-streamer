@@ -8,6 +8,11 @@
 <script src="webrtcstreamer.js" ></script>
 <script>
 	// ------------------------------------------
+	// WebRTC Streamer URL
+	// ------------------------------------------	
+	var webrtcstreamerurl = "";
+	
+	// ------------------------------------------
 	// WebRTC connections
 	// ------------------------------------------	
 	var webRtcServerList = {};
@@ -155,6 +160,7 @@
 				var videoelt = document.createElement("video");
 				videoelt.id = videoTag;
 				videoelt.title = getText(url);
+				videoelt.onclick = function() { window.open(webrtcstreamerurl + "/webrtcstream.html?video=" + url.video + "&audio=" + url.audio); }
 				divelt.appendChild(videoelt);
 				contentDiv.appendChild(divelt);
 			}			
@@ -163,7 +169,7 @@
 		var videoelt = 	document.getElementById (videoTag);		
 		if (videoelt) {		
 			// connect video element to webrtc stream
-			var webRtcServer = new WebRtcStreamer(videoTag, null, request);
+			var webRtcServer = new WebRtcStreamer(videoTag, webrtcstreamerurl, request);
 			webRtcServer.connect(url.video, url.audio, argoptions);
 				
 			// highlight the navigation 
@@ -193,8 +199,8 @@
 			}			
 			document.getElementById("content").appendChild(tableelt);
 		}
-		sendRequest(request, "/getMediaList", null, null, onGetDeviceList); 
-		sendRequest(request,"/version", null, null, onVersion); 
+		sendRequest(request, webrtcstreamerurl + "/getMediaList", null, null, onGetDeviceList); 
+		sendRequest(request, webrtcstreamerurl + "/version", null, null, onVersion); 
 	} 
 	window.onbeforeunload = function() { 
 		for (var url in webRtcServerList) { 
