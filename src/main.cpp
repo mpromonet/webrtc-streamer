@@ -31,6 +31,8 @@ int main(int argc, char* argv[])
 	webrtc::AudioDeviceModule::AudioLayer audioLayer = webrtc::AudioDeviceModule::kLinuxAlsaAudio;
 	std::string streamName;
 	std::map<std::string,std::string> urlList;
+	std::string nbthreads;
+	std::string passwdFile;
 
 	std::string httpAddress("0.0.0.0:");
 	std::string httpPort = "8000";
@@ -42,13 +44,15 @@ int main(int argc, char* argv[])
 	httpAddress.append(httpPort);
 
 	int c = 0;
-	while ((c = getopt (argc, argv, "hVv::" "c:H:w:" "t:S::s::" "a::n:u:")) != -1)
+	while ((c = getopt (argc, argv, "hVv::" "c:H:w:T:A:" "t:S::s::" "a::n:u:")) != -1)
 	{
 		switch (c)
 		{
 			case 'H': httpAddress = optarg; break;
 			case 'c': sslCertificate = optarg; break;
 			case 'w': webroot = optarg; break;
+			case 'T': nbthreads = optarg; break;
+			case 'A': passwdFile = optarg; break;
 
 			case 't': turnurl = optarg; break;
 			case 'S': localstunurl = optarg ? optarg : defaultlocalstunurl; stunurl = localstunurl; break;
@@ -82,6 +86,8 @@ int main(int argc, char* argv[])
 				std::cout << "\t -H hostname:port   : HTTP server binding (default "   << httpAddress    << ")"                   << std::endl;
 				std::cout << "\t -w webroot         : path to get files"                                                          << std::endl;
 				std::cout << "\t -c sslkeycert      : path to private key and certificate for HTTPS"                              << std::endl;
+				std::cout << "\t -T nbthreads       : number of threads for HTTP server"                                          << std::endl;
+				std::cout << "\t -A passwd          : passworf file for HTTP server access"                                          << std::endl;
 			
 				std::cout << "\t -S[stun_address]   : start embeded STUN server bind to address (default " << defaultlocalstunurl << ")" << std::endl;
 				std::cout << "\t -s[stun_address]   : use an external STUN server (default " << stunurl << ")"                    << std::endl;
@@ -132,6 +138,14 @@ int main(int argc, char* argv[])
 		if (!sslCertificate.empty()) {
 			options.push_back("ssl_certificate");
 			options.push_back(sslCertificate);
+		}
+		if (!nbthreads.empty()) {
+			options.push_back("num_threads");
+			options.push_back(nbthreads);
+		}
+		if (!passwdFile.empty()) {
+			options.push_back("global_auth_file");
+			options.push_back(passwdFile);
 		}
 
 		try {
