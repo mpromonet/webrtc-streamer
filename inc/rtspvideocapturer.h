@@ -12,6 +12,10 @@
 
 #include <string.h>
 #include <vector>
+#include <queue>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 #include "environment.h"
 #include "rtspconnectionclient.h"
@@ -22,6 +26,16 @@
 #include "media/engine/internaldecoderfactory.h"
 
 #include "h264_stream.h"
+
+class Frame
+{
+	public:
+		Frame(): m_timestamp_ms(0) {}
+		Frame(std::vector<uint8_t> && content, uint64_t timestamp_ms) : m_content(content), m_timestamp_ms(timestamp_ms) {}
+	
+		std::vector<uint8_t> m_content;
+		uint64_t m_timestamp_ms;
+};
 
 class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::Callback, public rtc::Thread, public webrtc::DecodedImageCallback
 {
@@ -55,6 +69,8 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 		virtual bool GetPreferredFourccs(std::vector<unsigned int>* fourccs);
 		virtual bool IsScreencast() const { return false; };
 		virtual bool IsRunning() { return this->capture_state() == cricket::CS_RUNNING; }
+		
+		void DecoderThread();
 
 
 	private:
@@ -65,6 +81,10 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 		std::vector<uint8_t>                  m_cfg;
 		std::string                           m_codec;
                 h264_stream_t*                        m_h264;
+		std::queue<Frame>                     m_queue;
+		std::mutex                            m_queuemutex;
+		std::condition_variable               m_queuecond;
+		std::thread                           m_decoderthread;
 };
 
 
