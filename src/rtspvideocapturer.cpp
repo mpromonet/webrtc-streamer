@@ -9,6 +9,8 @@
 
 #ifdef HAVE_LIVE555
 
+#include <chrono>
+
 #include "rtc_base/timeutils.h"
 #include "rtc_base/logging.h"
 
@@ -35,7 +37,8 @@ int decodeRTPTransport(const std::string & rtpTransportString)
 	return rtptransport;
 }
 
-RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, int timeout, const std::string & rtptransport) : m_connection(m_env, this, uri.c_str(), timeout, decodeRTPTransport(rtptransport), 1)
+RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, int timeout, const std::string & rtptransport) 
+	: m_connection(m_env, this, uri.c_str(), timeout, decodeRTPTransport(rtptransport), 1)
 {
 	RTC_LOG(INFO) << "RTSPVideoCapturer" << uri ;
 	m_h264 = h264_new();
@@ -142,21 +145,21 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			m_cfg.insert(m_cfg.end(), buffer, buffer+size);
 		}
 		else if (m_decoder.get()) {
+			std::vector<uint8_t> content;
 			if (m_h264->nal->nal_unit_type == NAL_UNIT_TYPE_CODED_SLICE_IDR) {
-				RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData IDR";
-				uint8_t buf[m_cfg.size() + size];
-				memcpy(buf, m_cfg.data(), m_cfg.size());
-				memcpy(buf+m_cfg.size(), buffer, size);
-				webrtc::EncodedImage input_image(buf, sizeof(buf), sizeof(buf) + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264));
-				input_image._timeStamp = ts*1000;
-				res = m_decoder->Decode(input_image, false, NULL);
+				RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData IDR";				
+				content.insert(content.end(), m_cfg.begin(), m_cfg.end());
 			}
 			else {
 				RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData SLICE NALU:" << m_h264->nal->nal_unit_type;
-				webrtc::EncodedImage input_image(buffer, size, size + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264));
-				input_image._timeStamp = ts*1000;
-				res = m_decoder->Decode(input_image, false, NULL);
 			}
+			content.insert(content.end(), buffer, buffer+size);
+			Frame frame(std::move(content), ts);			
+			{
+				std::unique_lock<std::mutex> lock(m_queuemutex);
+				m_queue.push(frame);
+			}
+			m_queuecond.notify_all();
 		} else {
 			RTC_LOG(LS_ERROR) << "RTSPVideoCapturer:onData no decoder";
 			res = -1;
@@ -179,7 +182,7 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 							libyuv::kRotate0, ::libyuv::FOURCC_MJPG);									
 									
 			if (conversionResult >= 0) {
-				webrtc::VideoFrame frame(I420buffer, 0, ts*1000, webrtc::kVideoRotation_0);
+				webrtc::VideoFrame frame(I420buffer, 0, ts, webrtc::kVideoRotation_0);
 				this->Decoded(frame);
 			} else {
 				RTC_LOG(LS_ERROR) << "RTSPVideoCapturer:onData decoder error:" << conversionResult;
@@ -193,6 +196,31 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 	}
 
 	return (res == 0);
+}
+
+void RTSPVideoCapturer::DecoderThread() 
+{
+	while (IsRunning()) {
+		std::unique_lock<std::mutex> mlock(m_queuemutex);
+		while (m_queue.empty())
+		{
+			m_queuecond.wait(mlock);
+		}
+		Frame frame = m_queue.front();
+		m_queue.pop();		
+		mlock.unlock();
+		
+		RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:DecoderThread size:" << frame.m_content.size() << " ts:" << frame.m_timestamp_ms;
+		uint8_t* data = frame.m_content.data();
+		ssize_t size = frame.m_content.size();
+		
+		uint8_t buf[size];
+                memcpy( buf, data, size );
+
+		webrtc::EncodedImage input_image(buf, size, size + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264));		
+		input_image._timeStamp = frame.m_timestamp_ms; // store time in ms that overflow the 32bits
+		m_decoder->Decode(input_image, false, NULL);
+	}
 }
 
 ssize_t RTSPVideoCapturer::onNewBuffer(unsigned char* buffer, ssize_t size)
@@ -210,11 +238,25 @@ ssize_t RTSPVideoCapturer::onNewBuffer(unsigned char* buffer, ssize_t size)
 
 int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 {
-	if (decodedImage.timestamp_us() == 0) {
-		decodedImage.set_timestamp_us(decodedImage.timestamp());
-	}
-	RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer::Decoded " << decodedImage.size() << " " << decodedImage.timestamp_us() << " " << decodedImage.timestamp() << " " << decodedImage.ntp_time_ms() << " " << decodedImage.render_time_ms();
+	int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
+
+	RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer::Decoded size:" << decodedImage.size() 
+				<< " decode ts:" << decodedImage.timestamp() 
+				<< " source ts:" << ts;
+				
 	this->OnFrame(decodedImage, decodedImage.height(), decodedImage.width());
+
+	
+	static int64_t previmagets = 0;	
+	static int64_t prevts = 0;
+	int64_t periodSource = decodedImage.timestamp() - previmagets;
+	int64_t periodDecode = ts-prevts;
+	
+	RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer::Decoded decode:" << periodDecode << " source:" << (periodSource);
+	
+	previmagets = decodedImage.timestamp();
+	prevts = ts;
+	
 	return true;
 }
 
@@ -223,6 +265,7 @@ cricket::CaptureState RTSPVideoCapturer::Start(const cricket::VideoFormat& forma
 	SetCaptureFormat(&format);
 	SetCaptureState(cricket::CS_RUNNING);
 	rtc::Thread::Start();
+	m_decoderthread = std::thread(&RTSPVideoCapturer::DecoderThread, this);
 	return cricket::CS_RUNNING;
 }
 
@@ -232,6 +275,7 @@ void RTSPVideoCapturer::Stop()
 	rtc::Thread::Stop();
 	SetCaptureFormat(NULL);
 	SetCaptureState(cricket::CS_STOPPED);
+	m_decoderthread.join();
 }
 
 void RTSPVideoCapturer::Run()
