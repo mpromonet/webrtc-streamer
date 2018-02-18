@@ -15,7 +15,8 @@ env:
       GYP_GENERATOR_OUTPUT=rpi-armv7  
       GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" is_clang=false target_cpu="arm" treat_warnings_as_errors=false' 
       CROSS=arm-linux-gnueabihf- 
-      SYSROOT=${TRAVIS_BUILD_DIR}/webrtc/src/build/linux/debian_stretch_arm-sysroot GYP_DEFINES="target_arch=arm"
+      SYSROOT=${TRAVIS_BUILD_DIR}/webrtc/src/build/linux/debian_stretch_arm-sysroot 
+      GYP_DEFINES="target_arch=arm"
     - |
       GYP_GENERATOR_OUTPUT=rpi-armv6  
       GNARGS='is_debug=false is_clang=false target_cpu="arm" treat_warnings_as_errors=false arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false' 
