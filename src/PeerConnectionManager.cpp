@@ -552,7 +552,6 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 		peer_connectionobs_map_.erase(it);
 
 		rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
-		Json::Value streams;
 		for (unsigned int i = 0; i<localstreams->count(); i++)
 		{
 			std::string streamLabel = localstreams->at(i)->label();
@@ -561,22 +560,25 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 			if (!stillUsed)
 			{
 				RTC_LOG(LS_ERROR) << "Close PeerConnection no more used " << streamLabel;
+				
+				std::lock_guard<std::mutex> mlock(m_streamMapMutex);
 				std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(streamLabel);
 				if (it != stream_map_.end())
 				{
+					rtc::scoped_refptr<webrtc::MediaStreamInterface> mediaStream = it->second;
+					stream_map_.erase(it);
+					
 					// remove video tracks
-					while (it->second->GetVideoTracks().size() > 0)
+					while (mediaStream->GetVideoTracks().size() > 0)
 					{
-						it->second->RemoveTrack(it->second->GetVideoTracks().at(0));
+						mediaStream->RemoveTrack(mediaStream->GetVideoTracks().at(0));
 					}
 					// remove audio tracks
-					while (it->second->GetAudioTracks().size() > 0)
+					while (mediaStream->GetAudioTracks().size() > 0)
 					{
-						it->second->RemoveTrack(it->second->GetAudioTracks().at(0));
+						mediaStream->RemoveTrack(mediaStream->GetAudioTracks().at(0));
 					}
-
-					it->second.release();
-					stream_map_.erase(it);
+					mediaStream.release();
 				}
 			}
 		}
@@ -678,6 +680,7 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 ** -------------------------------------------------------------------------*/
 const Json::Value PeerConnectionManager::getStreamList()
 {
+	std::lock_guard<std::mutex> mlock(m_streamMapMutex);
 	Json::Value value(Json::arrayValue);
 	for (auto it : stream_map_)
 	{
@@ -851,6 +854,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 	std::string streamLabel = video;
 	streamLabel.erase(std::remove_if(streamLabel.begin(), streamLabel.end(), isspace), streamLabel.end());
 
+	std::lock_guard<std::mutex> mlock(m_streamMapMutex);
 	std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(streamLabel);
 	if (it == stream_map_.end())
 	{

@@ -11,6 +11,7 @@
 #define PEERCONNECTIONMANAGER_H_
 
 #include <string>
+#include <mutex>
 
 #include "api/peerconnectioninterface.h"
 #include "api/test/fakeconstraints.h"
@@ -267,6 +268,7 @@ class PeerConnectionManager {
 		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>                peer_connection_factory_;
 		std::map<std::string, PeerConnectionObserver* >                           peer_connectionobs_map_;
 		std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >  stream_map_;
+	        std::mutex                                                                m_streamMapMutex;
 		std::string                                                               stunurl_;
 		std::string                                                               turnurl_;
 		std::string                                                               turnuser_;
