@@ -16,7 +16,6 @@ env:
       GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" is_clang=false target_cpu="arm" treat_warnings_as_errors=false' 
       CROSS=arm-linux-gnueabihf- 
       SYSROOT=${TRAVIS_BUILD_DIR}/webrtc/src/build/linux/debian_stretch_arm-sysroot 
-      GYP_DEFINES="target_arch=arm"
     - |
       GYP_GENERATOR_OUTPUT=rpi-armv6  
       GNARGS='is_debug=false is_clang=false target_cpu="arm" treat_warnings_as_errors=false arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false' 
@@ -41,6 +40,7 @@ script:
 - sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
 # patch webrtc for std::vector::erase with iterator
 - if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then sed -i -e "s|const auto iter = FindSourceInList(audio_source, &audio_source_list_);|const auto iter = std::find_if(audio_source_list_.begin(), audio_source_list_.end(), [audio_source](const std::unique_ptr<AudioMixerImpl::SourceStatus> \&p) { return p->audio_source == audio_source; });|" src/modules/audio_mixer/audio_mixer_impl.cc; fi
+- if [ "$CROSS" == "arm-linux-gnueabihf-" ] && [ "$SYSROOT" != "" ] ; then src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm; fi
 # get WebRTC dependencies
 - travis_wait 30 gclient sync
 - popd
