@@ -27,8 +27,10 @@ jobs:
 
       # archive artifacts
       - run: mkdir /distrib && cp *.tgz /distrib
-      - store_artifacts:      
-          path: /distrib  
+      - persist_to_workspace:
+          root: /
+          paths:
+            - distrib 
 
       # deploy on heroku
       - run: bash .circleci/setup-heroku.sh
@@ -71,8 +73,10 @@ jobs:
 
       # archive artifacts
       - run: mkdir /distrib && cp *.tgz /distrib
-      - store_artifacts:      
-          path: /distrib  
+      - persist_to_workspace:
+          root: /
+          paths:
+            - distrib 
 
   build_rpi_armv6:
     working_directory: ~/webrtc-streamer
@@ -100,13 +104,26 @@ jobs:
       - run: sed -i -e "s|const auto iter = FindSourceInList(audio_source, &audio_source_list_);|const auto iter = std::find_if(audio_source_list_.begin(), audio_source_list_.end(), [audio_source](const std::unique_ptr<AudioMixerImpl::SourceStatus> \&p) { return p->audio_source == audio_source; });|" ${WEBRTCROOT}/src/modules/audio_mixer/audio_mixer_impl.cc
       - run: cd ${WEBRTCROOT} && gclient sync 
       - run: make live555 alsa-lib
-      - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}" && ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release -j 1 jsoncpp rtc_json webrtc 
+      - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}" && ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc 
       - run: make all tgz 
 
       # archive artifacts
       - run: mkdir /distrib && cp *.tgz /distrib
-      - store_artifacts:      
-          path: /distrib  
+      - persist_to_workspace:
+          root: /
+          paths:
+            - distrib 
+
+
+  build_artifact:
+    working_directory: ~/webrtc-streamer
+    docker:
+      - image: heroku/heroku:16
+    steps:
+      - attach_workspace:
+          at: /
+      - store_artifacts:
+          path: /distrib
 
 
 workflows:
@@ -116,4 +133,8 @@ workflows:
       - build_x86_64
       - build_rpi_armv7
       - build_rpi_armv6
-
+      - build_artifact:
+          requires:
+            - build_x86_64
+            - build_rpi_armv7
+            - build_rpi_armv6
