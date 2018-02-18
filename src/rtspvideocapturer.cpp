@@ -214,12 +214,14 @@ void RTSPVideoCapturer::DecoderThread()
 		uint8_t* data = frame.m_content.data();
 		ssize_t size = frame.m_content.size();
 		
-		uint8_t buf[size];
-                memcpy( buf, data, size );
+		if (size) {
+			uint8_t buf[size];
+			memcpy( buf, data, size );
 
-		webrtc::EncodedImage input_image(buf, size, size + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264));		
-		input_image._timeStamp = frame.m_timestamp_ms; // store time in ms that overflow the 32bits
-		m_decoder->Decode(input_image, false, NULL);
+			webrtc::EncodedImage input_image(buf, size, size + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264));		
+			input_image._timeStamp = frame.m_timestamp_ms; // store time in ms that overflow the 32bits
+			m_decoder->Decode(input_image, false, NULL);
+		}
 	}
 }
 
@@ -275,6 +277,12 @@ void RTSPVideoCapturer::Stop()
 	rtc::Thread::Stop();
 	SetCaptureFormat(NULL);
 	SetCaptureState(cricket::CS_STOPPED);
+	Frame frame;			
+	{
+		std::unique_lock<std::mutex> lock(m_queuemutex);
+		m_queue.push(frame);
+	}
+	m_queuecond.notify_all();
 	m_decoderthread.join();
 }
 
