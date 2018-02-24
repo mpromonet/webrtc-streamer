@@ -5,6 +5,7 @@
 <script src="sendrequest.js" ></script>
 <script src="janusvideoroom.json" ></script>
 <script src="janusvideoroom.js" ></script>
+<script src="webrtcstreamer.json" ></script>
 <script src="webrtcstreamer.js" ></script>
 <style type="text/css">
 .cell {
@@ -108,8 +109,8 @@ footer {
 		// connect video
 		gridOptions.api.forEachNode( function(node) {
 			var data = node.data;
-			node.webrtc = new WebRtcStreamer(data.url, null, request)
-			node.webrtc.connect(data.url);
+			node.webrtc = new WebRtcStreamer(data.url, webrtcConfig.url, request)
+			node.webrtc.connect(data.url, webrtcConfig.options);
 		});
 	}
 	
@@ -123,11 +124,11 @@ footer {
 		
 	// load
 	window.onload         = function() { 
-		request( 'GET',  "/getVideoDeviceList" ).done(
+		request( 'GET',  webrtcConfig.url + "/getVideoDeviceList" ).done(
 			function (response) {
 				if (response.statusCode === 200) { onGetDeviceList(JSON.parse(response.body)) }
 			});
-		request( 'GET',  "/version" ).done(
+		request( 'GET',  webrtcConfig.url + "/version" ).done(
 			function (response) {
 				if (response.statusCode === 200) { onVersion(response.body) }
 			});

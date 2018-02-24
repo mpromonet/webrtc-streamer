@@ -1,0 +1,4 @@
+var webrtcConfig = {
+	url: "",
+	options: "rtptransport=tcp&timeout=60"
+}

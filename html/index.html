@@ -5,13 +5,9 @@
 <link rel="stylesheet" type="text/css" href="styles.css">
 <script src="libs/request.min.js" ></script>
 <script src="sendrequest.js" ></script>
+<script src="webrtcstreamer.json" ></script>
 <script src="webrtcstreamer.js" ></script>
 <script>
-	// ------------------------------------------
-	// WebRTC Streamer URL
-	// ------------------------------------------	
-	var webrtcstreamerurl = "";
-	
 	// ------------------------------------------
 	// WebRTC connections
 	// ------------------------------------------	
@@ -28,7 +24,7 @@
 		argurl = { video:params.get("video"), audio:params.get("audio") };
 		argoptions = params.get("options");
 		if (!argoptions) {
-			argoptions = "rtptransport=tcp&timeout=60"
+			argoptions = webrtcConfig.options; 
 		}
 		layout = params.get("layout");
 	} else {
@@ -169,7 +165,7 @@
 		var videoelt = 	document.getElementById (videoTag);		
 		if (videoelt) {		
 			// connect video element to webrtc stream
-			var webRtcServer = new WebRtcStreamer(videoTag, webrtcstreamerurl, request);
+			var webRtcServer = new WebRtcStreamer(videoTag, webrtcConfig.url, request);
 			webRtcServer.connect(url.video, url.audio, argoptions);
 				
 			// highlight the navigation 
@@ -199,8 +195,8 @@
 			}			
 			document.getElementById("content").appendChild(tableelt);
 		}
-		sendRequest(request, webrtcstreamerurl + "/getMediaList", null, null, onGetDeviceList); 
-		sendRequest(request, webrtcstreamerurl + "/version", null, null, onVersion); 
+		sendRequest(request, webrtcConfig.url + "/getMediaList", null, null, onGetDeviceList); 
+		sendRequest(request, webrtcConfig.url + "/version", null, null, onVersion); 
 	} 
 	window.onbeforeunload = function() { 
 		for (var url in webRtcServerList) { 
