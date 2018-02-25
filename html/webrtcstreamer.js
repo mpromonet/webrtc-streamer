@@ -1,7 +1,4 @@
 
-RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-RTCSessionDescription = window.RTCSessionDescription || window.mozRTCSessionDescription || window.webkitRTCSessionDescription;
-RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate || window.webkitRTCIceCandidate;
 URL = window.URL || window.webkitURL;
 
 /** 
@@ -17,13 +14,7 @@ function WebRtcStreamer (videoElement, srvurl, request) {
 
 	this.pcOptions        = { "optional": [{"DtlsSrtpKeyAgreement": true} ] };
 
-	this.mediaConstraints = {};
-	if (navigator.userAgent.indexOf("Firefox") > 0) {
-		this.mediaConstraints = {"offerToReceiveVideo": true, "offerToReceiveAudio": true  };
-	}
-	else {
-		this.mediaConstraints = {"mandatory": {"OfferToReceiveVideo": true, "OfferToReceiveAudio": true }};
-	}
+	this.mediaConstraints = { offerToReceiveAudio: true, offerToReceiveVideo: true };
 
 	this.iceServers = null;
 	this.request  = request;
@@ -98,7 +89,7 @@ WebRtcStreamer.prototype.onReceiveGetIceServers = function(iceServers, videourl,
 		this.earlyCandidates.length = 0;
 		
 		// create Offer
-		this.pc.createOffer(function(sessionDescription) {
+		this.pc.createOffer(this.mediaConstraints).then(function(sessionDescription) {
 			console.log("Create offer:" + JSON.stringify(sessionDescription));
 			
 			streamer.pc.setLocalDescription(sessionDescription
@@ -107,7 +98,7 @@ WebRtcStreamer.prototype.onReceiveGetIceServers = function(iceServers, videourl,
 			
 		}, function(error) { 
 			alert("Create offer error:" + JSON.stringify(error));
-		}, this.mediaConstraints); 															
+		});
 
 	} catch (e) {
 		this.disconnect();
@@ -200,6 +191,7 @@ WebRtcStreamer.prototype.onTrack = function(event) {
 	}
 	var videoElement = document.getElementById(this.videoElement);
 	videoElement.src = URL.createObjectURL(stream);
+	videoElement.setAttribute("playsinline", true);
 	videoElement.play();
 }
 		
