@@ -32,7 +32,7 @@ footer {
 	
 	// columns
 	var columnDefs = [
-	    { headerName: "Video"  , field: "video" , cellClass: "cell" ,  width:72,  cellRenderer: function(params) { return "<video onclick='window.open(\"/webrtcstreamer.html?video=" + params.data.url + "\")' width=\"72\" height=\"60\" id=\"" + params.data.url + "\"/>"; } },
+	    { headerName: "Video"  , field: "video" , cellClass: "cell" ,  width:72,  cellRenderer: function(params) { return "<video onclick='window.open(\""+ webrtcConfig.url + "/webrtcstreamer.html?video=" + params.data.url + "\")' width=\"72\" height=\"60\" id=\"" + params.data.url + "\"/>"; } },
 	    { headerName: "Url"    , field: "url"   , cellClass: "cell" },
 	    { headerName: "Status" , field: "status", cellClass: "cell" , cellRenderer: function(params) { return '<b>' + params.value.toUpperCase() + '</b>'; } },
 	    { headerName: "RoomId" , field: "roomid", cellClass: "cell"  },
