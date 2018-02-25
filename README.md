@@ -8,7 +8,7 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/mpromonet/webrtc-streamer.svg)](https://hub.docker.com/r/mpromonet/webrtc-streamer/)
 
 [![Heroku](https://heroku-badge.herokuapp.com/?app=webrtc-streamer)](https://webrtc-streamer.herokuapp.com/)
-[![Heroku](https://heroku-badge.herokuapp.com/?app=rtsp2webrtc)](https://rtcp2webrtc.herokuapp.com/)
+[![Heroku](https://heroku-badge.herokuapp.com/?app=rtsp2webrtc)](https://rtsp2webrtc.herokuapp.com/)
 
 WebRTC-streamer
 ===============
