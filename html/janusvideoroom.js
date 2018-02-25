@@ -109,7 +109,7 @@ JanusVideoRoom.prototype.onJoinRoomResult = function(dataJson,janusroomid,name,u
 		this.callback(name, "joined");
 		
 		var peerid = Math.random().toString();
-		sendRequest(this.request, this.srvurl + "/createOffer?peerid="+ peerid+"&url="+encodeURIComponent(url), null, null, function(dataJson) { this.onCreateOffer(dataJson,name,peerid,sessionId,pluginid); }, this.onError, this); 
+		sendRequest(this.request, this.srvurl + "/api/createOffer?peerid="+ peerid+"&url="+encodeURIComponent(url), null, null, function(dataJson) { this.onCreateOffer(dataJson,name,peerid,sessionId,pluginid); }, this.onError, this); 
 	} else {
 		this.callback(name, "joining room failed");
 	}
@@ -143,7 +143,7 @@ JanusVideoRoom.prototype.onPublishStreamResult = function(dataJson,name,peerid,s
 	console.log("onPublishStreamResult:" + JSON.stringify(dataJson));
 
 	if (dataJson.jsep) {
-		sendRequest(this.request, this.srvurl + "/setAnswer?peerid="+ peerid, null, dataJson.jsep, function(dataJson) { this.onSetAnswer(dataJson,name,peerid,sessionId,pluginid); }, this.onError, this); 						
+		sendRequest(this.request, this.srvurl + "/api/setAnswer?peerid="+ peerid, null, dataJson.jsep, function(dataJson) { this.onSetAnswer(dataJson,name,peerid,sessionId,pluginid); }, this.onError, this); 						
 	} else {
 		this.callback(name, "publishing failed (no SDP)");
 	}
@@ -155,7 +155,7 @@ JanusVideoRoom.prototype.onPublishStreamResult = function(dataJson,name,peerid,s
 JanusVideoRoom.prototype.onSetAnswer = function(dataJson,name,peerid,sessionId,pluginid) {
 	console.log("onSetAnswer:" + JSON.stringify(dataJson));
 	
-	sendRequest(this.request, this.srvurl + "/getIceCandidate?peerid="+peerid, null, null, function(dataJson) { this.onReceiveCandidate(dataJson,name,sessionId,pluginid); }, this.onError, this);		
+	sendRequest(this.request, this.srvurl + "/api/getIceCandidate?peerid="+peerid, null, null, function(dataJson) { this.onReceiveCandidate(dataJson,name,sessionId,pluginid); }, this.onError, this);		
 }
 
 // ------------------------------------------

@@ -114,23 +114,23 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 	: CivetServer(options, getCivetCallbacks()), m_webRtcServer(webRtcServer)
 {
 	// http api callbacks
-	m_func["/getMediaList"]          = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+	m_func["/api/getMediaList"]          = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		return m_webRtcServer->getMediaList();
 	};
 	
-	m_func["/getVideoDeviceList"]    = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+	m_func["/api/getVideoDeviceList"]    = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		return m_webRtcServer->getVideoDeviceList();
 	};
 
-	m_func["/getAudioDeviceList"]    = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+	m_func["/api/getAudioDeviceList"]    = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		return m_webRtcServer->getAudioDeviceList();
 	};
 
-	m_func["/getIceServers"]         = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+	m_func["/api/getIceServers"]         = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		return m_webRtcServer->getIceServers(req_info->remote_addr);
 	};
 
-	m_func["/call"]                  = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+	m_func["/api/call"]                  = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		std::string peerid;
 		std::string url;
 		std::string audiourl;
@@ -144,7 +144,7 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 		return m_webRtcServer->call(peerid, url, audiourl, options, in);
 	};
 
-	m_func["/hangup"]                = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+	m_func["/api/hangup"]                = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		std::string peerid;
 		if (req_info->query_string) {
             CivetServer::getParam(req_info->query_string, "peerid", peerid);
@@ -152,7 +152,7 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 		return m_webRtcServer->hangUp(peerid);
 	};
 
-	m_func["/createOffer"]           = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+	m_func["/api/createOffer"]           = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		std::string peerid;
 		std::string url;
 		std::string audiourl;
@@ -165,7 +165,7 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
         }
 		return m_webRtcServer->createOffer(peerid, url, audiourl, options);
 	};
-	m_func["/setAnswer"]             = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+	m_func["/api/setAnswer"]             = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		std::string peerid;
 		if (req_info->query_string) {
             CivetServer::getParam(req_info->query_string, "peerid", peerid);
@@ -175,7 +175,7 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 		return answer;
 	};
 
-	m_func["/getIceCandidate"]       = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+	m_func["/api/getIceCandidate"]       = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		std::string peerid;
 		if (req_info->query_string) {
             CivetServer::getParam(req_info->query_string, "peerid", peerid);
@@ -183,7 +183,7 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 		return m_webRtcServer->getIceCandidateList(peerid);
 	};
 
-	m_func["/addIceCandidate"]       = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+	m_func["/api/addIceCandidate"]       = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		std::string peerid;
 		if (req_info->query_string) {
             CivetServer::getParam(req_info->query_string, "peerid", peerid);
@@ -191,15 +191,15 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 		return m_webRtcServer->addIceCandidate(peerid, in);
 	};
 
-	m_func["/getPeerConnectionList"] = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+	m_func["/api/getPeerConnectionList"] = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		return m_webRtcServer->getPeerConnectionList();
 	};
 
-	m_func["/getStreamList"] = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+	m_func["/api/getStreamList"] = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		return m_webRtcServer->getStreamList();
 	};
 
-	m_func["/help"]                  = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+	m_func["/api/help"]                  = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		Json::Value answer;
 		for (auto it : m_func) {
 			answer.append(it.first);
@@ -207,12 +207,12 @@ HttpServerRequestHandler::HttpServerRequestHandler(PeerConnectionManager* webRtc
 		return answer;
 	};
 
-	m_func["/version"]                  = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+	m_func["/api/version"]                  = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		Json::Value answer(VERSION);
 		return answer;
 	};
 
-	m_func["/log"]                      = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+	m_func["/api/log"]                      = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 		std::string loglevel;
 		if (req_info->query_string) {
 			CivetServer::getParam(req_info->query_string, "level", loglevel);

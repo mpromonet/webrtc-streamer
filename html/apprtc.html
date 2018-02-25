@@ -1,8 +1,19 @@
 <html>
-<head>
+<body> 
+	AppRTC Url:<input id="server" type="text" size="50" /></br>
+ 	Room id:<input id="room" type="text" /></br>
+ 	WebRTC stream:<input id="rtcstream" type="text" size="50" value="rtsp://217.17.220.110/axis-media/media.amp" /></br>
+	<input type="button" value="connect" onclick="connect()" />
+	<input type="button" value="disconnect" onclick="disconnect()" />
+</body>
 <script src="libs/request.min.js"></script>
 <script src="sendrequest.js" ></script>
+<script src="apprtc.json" ></script>
 <script>
+	// set default value
+	document.querySelector('#server').value  = apprtcConfig.url;
+	document.querySelector('#room').value = apprtcConfig.roomId;
+
 	var clientid = null;
 	var peerid = Math.random().toString();
 	var messages = null;
@@ -28,7 +39,7 @@
 				var msg = JSON.parse(messages[i]);
 				if (msg.type === "offer") {
 					var webrtcStream = document.querySelector('#rtcstream').value;
-					sendRequest(request, "/call?peerid="+ peerid+"&url="+encodeURIComponent(webrtcStream), null, msg, onCall, onError, this); 		
+					sendRequest(request, "/api/call?peerid="+ peerid+"&url="+encodeURIComponent(webrtcStream), null, msg, onCall, onError, this); 		
 				}				
 			}			
 		}
@@ -68,11 +79,11 @@
 				var msg = JSON.parse(messages[i]);
 				if (msg.type === "candidate") {
 					var mymsg = { "sdpMid": msg.id, "sdpMLineIndex": msg.label, "candidate": msg.candidate };
-					sendRequest(request, "/addIceCandidate?peerid="+ peerid, null, mymsg, null, onError, this); 		
+					sendRequest(request, "/api/addIceCandidate?peerid="+ peerid, null, mymsg, null, onError, this); 		
 				}				
 			}
 		}
-		sendRequest(request, "/getIceCandidate?peerid="+ peerid, null, null, onGetIceCandidate, onError, this); 		
+		sendRequest(request, "/api/getIceCandidate?peerid="+ peerid, null, null, onGetIceCandidate, onError, this); 		
 	}
 	
 	
@@ -99,12 +110,4 @@
 		disconnect();
 	};		
 </script>
-</head>
-<body> 
-	AppRTC Url:<input id="server" type="text" size="50" value="https://appr.tc" /></br>
- 	Room id:<input id="room" type="text" value="638124504" /></br>
- 	WebRTC stream:<input id="rtcstream" type="text" size="50" value="rtsp://217.17.220.110/axis-media/media.amp" /></br>
-	<input type="button" value="connect" onclick="connect()" />
-	<input type="button" value="disconnect" onclick="disconnect()" />
-</body>
 </html>

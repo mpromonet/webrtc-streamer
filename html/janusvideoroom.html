@@ -50,7 +50,7 @@ footer {
 				params.api.refreshCells([params.node], ['roomid']);
 				
 				if (!janus) {
-					janus = new JanusVideoRoom(document.querySelector('#janusUrl').value, null, request);
+					janus = new JanusVideoRoom(document.querySelector('#janusUrl').value, webrtcConfig.url, request);
 					janus.subscribeEvents(clientCallBack);
 				}
 				janus.join(parseInt(params.data.roomid), params.data.url, params.data.url);
@@ -125,13 +125,13 @@ footer {
 		
 	// load
 	window.onload         = function() { 
-		request( 'GET',  webrtcConfig.url + "/getVideoDeviceList" ).done(
+		request( 'GET',  webrtcConfig.url + "/api/getVideoDeviceList" ).done(
 			function (response) {
 				if (response.statusCode === 200) { onGetDeviceList(JSON.parse(response.body)) }
 			});
-		request( 'GET',  webrtcConfig.url + "/version" ).done(
+		request( 'GET',  webrtcConfig.url + "/api/version" ).done(
 			function (response) {
-				if (response.statusCode === 200) { onVersion(response.body) }
+				if (response.statusCode === 200) { onVersion(JSON.parse(response.body)) }
 			});
 	} 
 	

@@ -8,6 +8,7 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/mpromonet/webrtc-streamer.svg)](https://hub.docker.com/r/mpromonet/webrtc-streamer/)
 
 [![Heroku](https://heroku-badge.herokuapp.com/?app=webrtc-streamer)](https://webrtc-streamer.herokuapp.com/)
+[![Heroku](https://heroku-badge.herokuapp.com/?app=rtsp2webrtc)](https://rtcp2webrtc.herokuapp.com/)
 
 WebRTC-streamer
 ===============
@@ -18,13 +19,13 @@ It embeds a HTTP server that implements API and serve a simple HTML page that us
 
 The WebRTC signaling is implemented throught HTTP requests:
 
- - /call   : send offer and get answer
- - /hangup : close a call
+ - /api/call   : send offer and get answer
+ - /api/hangup : close a call
 
- - /addIceCandidate : add a candidate
- - /getIceCandidate : get the list of candidates
+ - /api/addIceCandidate : add a candidate
+ - /api/getIceCandidate : get the list of candidates
 
-The list of HTTP API is available using /help.
+The list of HTTP API is available using /api/help.
 
 Nowdays there is 3 builds on [Travis CI](https://travis-ci.org/mpromonet/webrtc-streamer) :
  * for x86_64 on Ubuntu Xenial

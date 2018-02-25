@@ -196,8 +196,8 @@
 			}			
 			document.getElementById("content").appendChild(tableelt);
 		}
-		sendRequest(request, webrtcConfig.url + "/getMediaList", null, null, onGetDeviceList); 
-		sendRequest(request, webrtcConfig.url + "/version", null, null, onVersion); 
+		sendRequest(request, webrtcConfig.url + "/api/getMediaList", null, null, onGetDeviceList); 
+		sendRequest(request, webrtcConfig.url + "/api/version", null, null, onVersion); 
 	} 
 	window.onbeforeunload = function() { 
 		for (var url in webRtcServerList) { 
