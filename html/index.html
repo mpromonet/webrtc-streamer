@@ -156,7 +156,7 @@
 				var videoelt = document.createElement("video");
 				videoelt.id = videoTag;
 				videoelt.title = getText(url);
-				videoelt.onclick = function() { window.open(webrtcstreamerurl + "/webrtcstream.html?video=" + url.video + "&audio=" + url.audio); }
+				videoelt.onclick = function() { window.open(webrtcstreamerurl + "/webrtcstreamer.html?video=" + url.video + "&audio=" + url.audio); }
 				divelt.appendChild(videoelt);
 				contentDiv.appendChild(divelt);
 			}			
