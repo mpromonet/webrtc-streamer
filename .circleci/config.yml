@@ -115,7 +115,7 @@ jobs:
             - distrib 
 
 
-  build_artifact:
+  store_artifact:
     working_directory: ~/webrtc-streamer
     docker:
       - image: heroku/heroku:16
@@ -125,16 +125,48 @@ jobs:
       - store_artifacts:
           path: /distrib
 
-
+  github_release:
+    working_directory: ~/webrtc-streamer
+    docker:
+      - image: heroku/heroku:16
+    steps:
+      - attach_workspace:
+          at: /
+      - run: curl https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+      - run: echo 'export PATH=/usr/local/go/bin:/root/go/bin:$PATH' >> $BASH_ENV      
+      - run: go get github.com/tcnksm/ghr
+      - deploy:
+          name: "Deploy to Github"
+          command: ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME $CIRCLE_TAG /distrib
+          
 workflows:
   version: 2
   build:
     jobs:
-      - build_x86_64
-      - build_rpi_armv7
-      - build_rpi_armv6
-      - build_artifact:
+      - build_x86_64:
+          filters:
+            tags:
+              only: /.*/            
+      - build_rpi_armv7:
+          filters:
+            tags:
+              only: /.*/            
+      - build_rpi_armv6:
+          filters:
+            tags:
+              only: /.*/            
+      - store_artifact:
           requires:
             - build_x86_64
             - build_rpi_armv7
             - build_rpi_armv6
+      - github_release:
+          requires:
+            - build_x86_64
+            - build_rpi_armv7
+            - build_rpi_armv6
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /.*/
