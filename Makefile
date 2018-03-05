@@ -16,7 +16,7 @@ all: $(TARGET)
 
 # webrtc
 VERSION+=webrtc@$(shell git -C $(WEBRTCROOT)/src describe --tags --always --dirty)
-WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
+WEBRTCLIBPATH=$(WEBRTCROOT)/src/out/$(WEBRTCBUILD)
 
 CFLAGS += -DWEBRTC_POSIX -fno-rtti -DHAVE_JPEG
 CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/third_party/jsoncpp/source/include -I $(WEBRTCROOT)/src/third_party/libyuv/include
@@ -87,8 +87,8 @@ h264bitstream/.libs/libh264bitstream.a: h264bitstream/Makefile
 	cd h264bitstream && CC=$(CXX) ./configure --host=$(shell $(CXX) -dumpmachine)
 	make -C h264bitstream 
 
-CFLAGS += -I h264bitstream
-LDFLAGS += h264bitstream/.libs/libh264bitstream.a
+CFLAGS += -I h264bitstream $(shell pkg-config --cflags libvncclient)
+LDFLAGS += h264bitstream/.libs/libh264bitstream.a $(shell pkg-config --libs libvncclient)
 
 src/%.o: src/%.cpp $(LIBS)
 	$(CXX) -o $@ -c $< $(CFLAGS) -DVERSION="\"$(VERSION)\""

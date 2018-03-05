@@ -24,6 +24,8 @@
 #include "rtspvideocapturer.h"
 #endif
 
+#include "VNCVideoCapturer.h"
+
 const char kAudioLabel[] = "audio_label";
 const char kVideoLabel[] = "video_label";
 
@@ -751,6 +753,11 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 		capturer.reset(new RTSPVideoCapturer(videourl, timeout, rtptransport));
 #endif
 	}
+	else if (videourl.find("vnc://") == 0)
+	{
+		RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " Starting VNC URL:" << videourl;
+		capturer.reset(new VNCVideoCapturer(videourl));
+	}
 	else
 	{
 		std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo());
@@ -801,6 +808,9 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 		rtc::scoped_refptr<RTSPAudioSource> audioSource = RTSPAudioSource::Create(audioDecoderfactory_, audiourl);
 		audio_track = peer_connection_factory_->CreateAudioTrack(kAudioLabel, audioSource);
 #endif
+	}
+	else if (audiourl.find("vnc://") == 0) {
+		RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " Starting VNC URL:" << audiourl;
 	}
 	else
 	{
