@@ -1,5 +1,6 @@
 #include <rfb/rfbclient.h>
 #include <signal.h>
+#include <time.h>
 #include "VNCVideoCapturer.h"
 
 #include "rtc_base/thread.h"
@@ -7,7 +8,9 @@
 #include "api/video_codecs/video_decoder.h"
 #include "media/base/videocapturer.h"
 #include "media/engine/internaldecoderfactory.h"
-
+#include "api/video/i420_buffer.h"
+#include "libyuv/video_common.h"
+#include "libyuv/convert.h"
 
 char *host = "127.0.0.1";
 int port = 5900;
@@ -46,25 +49,53 @@ void VNCVideoCapturer::onFrameBufferUpdate() {
 
 	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Parsing Frame with BPP: " << bpp;
 	/* assert bpp=4 */
-	if(bpp!=4 && bpp!=2) {
-		onError("Got back VNC frame with bpp !== 2 or 4");
+	if(bpp!=4) {
+		onError("Got back VNC frame with bpp !== 4");
 		return;
 	}
+	struct timespec now;
+	clock_gettime(CLOCK_REALTIME, &now);
+	int64_t ts = now.tv_sec * 1000;
 
-	for(j=0;j<client->height*row_stride;j+=row_stride) {
-		for(i=0;i<client->width*bpp;i+=bpp) {
-			unsigned char* p = client->frameBuffer+j+i;
-			unsigned int v;
-			if(bpp==4)
-				v=*(unsigned int*)p;
-			else if(bpp==2)
-				v=*(unsigned short*)p;
-			else
-				v=*(unsigned char*)p;
-			// parse frame ...
+	size_t size = row_stride * client->height;
+
+	uint8_t * rgba_buffer = new uint8_t[client->width * client->height * 3];
+
+	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Parsing Height:Width - " << client->height << ":" << client->width;
+
+	for(int j = 0, k = 0; j < client->height*row_stride; k += 1, j += row_stride) {
+		for (int l = 0, i = 0; i < client->width * bpp; i += bpp, l+=3) {
+			// It's assumed here that the pixls are 32 bits (bpp == 4), with 3 bytes
+			// for RGB and the shift values for RGB are 16/8/0
+			// https://tools.ietf.org/html/rfc6143#section-7.4
+			int index = (k * client->width * 3) + l;
+			rgba_buffer[index + 0] = client->frameBuffer[j + i + 0];
+			rgba_buffer[index + 1] = client->frameBuffer[j + i + 1];
+			rgba_buffer[index + 2] = client->frameBuffer[j + i + 2];
 		}
 	}
-	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Captured Frame!!!";
+
+
+	rtc::scoped_refptr<webrtc::I420Buffer> I420buffer = webrtc::I420Buffer::Create(client->width, client->height);
+	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Transcoding frame ...";
+	const int conversionResult = libyuv::RGB24ToI420(rgba_buffer, client->width * 3,
+		(uint8*)I420buffer->DataY(), I420buffer->StrideY(),
+		(uint8*)I420buffer->DataU(), I420buffer->StrideU(),
+		(uint8*)I420buffer->DataV(), I420buffer->StrideV(),
+		client->width, client->height
+	);				
+	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Finished Transcoding Frame!!! :D";
+					
+	if (conversionResult >= 0) {
+		webrtc::VideoFrame frame(I420buffer, 0, ts, webrtc::kVideoRotation_0);
+		RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Sending Frame!!! :D";
+		this->OnFrame(frame, frame.height(), frame.width());
+	} else {
+		RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "got back error decoding data" << conversionResult;
+		onError("Got back Error Handling Frame!!");
+	}
+
+	delete[] rgba_buffer;
 }
 
 VNCVideoCapturer::VNCVideoCapturer(const std::string & uri): client(rfbGetClient(8,3,4)) 
