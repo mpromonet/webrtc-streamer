@@ -12,16 +12,8 @@ char *host = "127.0.0.1";
 int port = 5900;
 
 static char * get_password (rfbClient *client) {
-  VNCVideoCapturer* that = (VNCVideoCapturer *) rfbClientGetClientData(client, "this");
+  VNCVideoCapturer* that = (VNCVideoCapturer *) rfbClientGetClientData(client, (void *) "this");
   return that->onGetPassword();
-}
-
-static rfbBool rfbInitClientWrapper(rfbClient* client, char *progname) {
-  char *connect;
-  asprintf(&connect, "%s:%i", host, port);
-  char *args[] = { progname, connect };
-  int len = 2;
-  return rfbInitClient(client, &len, args);
 }
 
 char* VNCVideoCapturer::onGetPassword() {
@@ -35,17 +27,24 @@ char* VNCVideoCapturer::onGetPassword() {
 
 VNCVideoCapturer::VNCVideoCapturer(const std::string & uri): client(rfbGetClient(8,3,4)) 
 {
-	if (!rfbInitClientWrapper(client, uri.c_str)) {
-		fprintf(stderr, "Something went wrong");
-		exit(EXIT_FAILURE);
-	}
-	rfbClientSetClientData(client, "this", this);
 	client->GetPassword = get_password;
-	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "uri: " << uri;
+
+	// remove vnc:// prefix from uri before passing along
+	std::string url = uri.substr(6, std::string::npos);
+	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Trying to initialize VNC with: " << url;
+
+	const char *args[] = { "VNCVideoCapture", url.c_str() };
+	int len = 2;
+	if (!rfbInitClient(client, &len, (char **) args)) {
+		onError("Something went wrong in initializing RFB client ");
+		return;
+	}
+	rfbClientSetClientData(client, (void *) "this", (void *) this);
+	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Initialized VNC Successfully: " << url;
 }
 
-VNCVideoCapturer::onError(char[] string) {
-	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << string;
+void VNCVideoCapturer::onError(char str[]) {
+	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << str;
 	exit(EXIT_FAILURE);
 }
 

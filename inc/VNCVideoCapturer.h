@@ -2,7 +2,7 @@
 #ifndef VNCVIDEOCAPTURER_H_
 #define VNCVIDEOCAPTURER_H_
 
-
+#include <rfb/rfbclient.h>
 #include "rtc_base/thread.h"
 #include "api/video_codecs/video_decoder.h"
 #include "media/base/videocapturer.h"
@@ -24,10 +24,10 @@ class VNCVideoCapturer : public cricket::VideoCapturer, public rtc::Thread {
 		virtual bool IsRunning() { return this->capture_state() == cricket::CS_RUNNING; };
 
 		// libvncclient callbacks
-		char* VNCVideoCapturer::onGetPassword();
-		void VNCVideoCapturer::onFrameBufferUpdate();
+		char* onGetPassword();
+		void onFrameBufferUpdate();
 
-		void onError(char[] error);
+		void onError(char error[]);
 	private:
 		rfbClient* client;
 };
