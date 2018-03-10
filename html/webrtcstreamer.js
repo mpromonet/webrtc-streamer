@@ -1,6 +1,4 @@
 
-URL = window.URL || window.webkitURL;
-
 /** 
  * Interface with WebRTC-streamer API
  * @constructor
@@ -190,7 +188,7 @@ WebRtcStreamer.prototype.onTrack = function(event) {
 		stream = event.stream;
 	}
 	var videoElement = document.getElementById(this.videoElement);
-	videoElement.src = URL.createObjectURL(stream);
+	videoElement.srcObject = stream;
 	videoElement.setAttribute("playsinline", true);
 	videoElement.play();
 }
@@ -202,9 +200,10 @@ WebRtcStreamer.prototype.onReceiveCall = function(dataJson) {
 	var streamer = this;
 	console.log("offer: " + JSON.stringify(dataJson));
 	this.pc.setRemoteDescription(new RTCSessionDescription(dataJson)
-		, function()      { console.log ("setRemoteDescription ok") 
+		, function()      { 
+                        console.log ("setRemoteDescription ok");
                         while (streamer.earlyCandidates.length) {
-			        var candidate = streamer.earlyCandidates.shift();
+				var candidate = streamer.earlyCandidates.shift();
 				sendRequest(streamer.request, streamer.srvurl + "/api/addIceCandidate?peerid="+streamer.pc.peerid, null, candidate);
 			}
 			sendRequest(streamer.request, streamer.srvurl + "/api/getIceCandidate?peerid="+streamer.pc.peerid, null, null, streamer.onReceiveCandidate, null, streamer);
