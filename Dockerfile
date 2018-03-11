@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf au
 	&& cd /webrtc-streamer \
 	&& make all \
 	&& rm -rf /webrtc \
-	&& apt-get clean
+	&& apt-get clean && rm -rf /var/lib/apt/lists/
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
