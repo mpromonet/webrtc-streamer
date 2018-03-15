@@ -10,7 +10,7 @@
 
 class VNCVideoCapturer : public cricket::VideoCapturer, public rtc::Thread {
 	public:
-		VNCVideoCapturer(const std::string & uri);
+		VNCVideoCapturer(const std::string uri);
 		virtual ~VNCVideoCapturer();
 
 		// overide rtc::Thread
@@ -29,6 +29,7 @@ class VNCVideoCapturer : public cricket::VideoCapturer, public rtc::Thread {
 
 		void onError(char error[]);
 	private:
+		std::string uri;
 		rfbClient* client;
 };
 

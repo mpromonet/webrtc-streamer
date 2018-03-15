@@ -11,6 +11,7 @@
 #include "api/video/i420_buffer.h"
 #include "libyuv/video_common.h"
 #include "libyuv/convert.h"
+#include <iostream>
 
 char *host = "127.0.0.1";
 int port = 5900;
@@ -31,8 +32,39 @@ static void signal_handler(int sig) {
 	exit(EXIT_FAILURE);
   }
 }
-
+/*
 char* VNCVideoCapturer::onGetPassword() {
+  std::cout<< "Starting to get PASSWORD!!!" << std::endl;
+  // remove vnc:// prefix from uri before passing along
+  std::string url = uri.substr(6, std::string::npos);
+  // if it contains password, remove it from the URL
+  auto index = url.find('@');
+  if (index != std::string::npos) {
+  	auto password = url.substr(1, index - 1);
+	std::cout<< "Parsed Password: " << password << std::endl;
+
+	const std::string::size_type size = password.size();
+	char *buffer = new char[size + 1];   //we need extra char for NUL
+	memcpy(buffer, password.c_str(), size + 1);
+	return buffer;
+  }
+
+  this->onError("No password defined");
+  return NULL;
+}
+*/
+char* VNCVideoCapturer::onGetPassword() {
+  std::cout<< "Starting to get PASSWORD!!!" << std::endl;
+  // remove vnc:// prefix from uri before passing along
+  std::string url = uri.substr(6, std::string::npos);
+  // if it contains password, remove it from the URL
+  int index = url.find('@');
+  if (index != std::string::npos) {
+  	std::string password = url.substr(1, index - 1);
+	std::cout<< "Parsed Password: " << password << std::endl;
+    return strdup((char* )password.c_str());
+  }
+
   if (getenv("VNCPASS") != NULL) {
     return strdup(getenv("VNCPASS"));
   }
@@ -98,22 +130,27 @@ void VNCVideoCapturer::onFrameBufferUpdate() {
 	delete[] rgba_buffer;
 }
 
-VNCVideoCapturer::VNCVideoCapturer(const std::string & uri): client(rfbGetClient(8,3,4)) 
+VNCVideoCapturer::VNCVideoCapturer(const std::string u): client(rfbGetClient(8,3,4)), uri(u)
 {
 	client->GetPassword = get_password;
 	client->FinishedFrameBufferUpdate = get_frame;
 
 	// remove vnc:// prefix from uri before passing along
 	std::string url = uri.substr(6, std::string::npos);
+	// if it contains password, remove it from the URL
+	auto index = url.find('@');
+	if (index != std::string::npos) {
+		url = url.substr(index + 1);
+	}
 	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Trying to initialize VNC with: " << url;
 
 	const char *args[] = { "VNCVideoCapture", url.c_str() };
 	int len = 2;
+	rfbClientSetClientData(client, (void *) "this", (void *) this);
 	if (!rfbInitClient(client, &len, (char **) args)) {
 		onError("Something went wrong in initializing RFB client ");
 		return;
 	}
-	rfbClientSetClientData(client, (void *) "this", (void *) this);
 	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Initialized VNC Successfully: " << url;
 }
 
