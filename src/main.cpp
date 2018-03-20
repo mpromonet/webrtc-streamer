@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
 	const char* defaultlocalstunurl  = "0.0.0.0:3478";
 	const char* localstunurl  = NULL;
 	const char* stunurl       = "stun.l.google.com:19302";
-	int logLevel              = rtc::LS_ERROR;
+	int logLevel              = rtc::LERROR;
 	const char* webroot       = "./html";
 	std::string sslCertificate;
 	webrtc::AudioDeviceModule::AudioLayer audioLayer = webrtc::AudioDeviceModule::kLinuxAlsaAudio;

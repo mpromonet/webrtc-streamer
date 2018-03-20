@@ -28,7 +28,7 @@ static void get_frame(rfbClient* client) {
 
 static void signal_handler(int sig) {
   if (sig == SIGINT) {
-	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Recieved SIGINT, exiting ...";
+	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Recieved SIGINT, exiting ...";
 	exit(EXIT_FAILURE);
   }
 }
@@ -79,7 +79,7 @@ void VNCVideoCapturer::onFrameBufferUpdate() {
 	int bpp = pf->bitsPerPixel/8;
 	int row_stride = client->width*bpp;
 
-	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Parsing Frame with BPP: " << bpp;
+	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Parsing Frame with BPP: " << bpp;
 	/* assert bpp=4 */
 	if(bpp!=4) {
 		onError("Got back VNC frame with bpp !== 4");
@@ -93,7 +93,7 @@ void VNCVideoCapturer::onFrameBufferUpdate() {
 
 	uint8_t * rgba_buffer = new uint8_t[client->width * client->height * 3];
 
-	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Parsing Height:Width - " << client->height << ":" << client->width;
+	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Parsing Height:Width - " << client->height << ":" << client->width;
 
 	for(int j = 0, k = 0; j < client->height*row_stride; k += 1, j += row_stride) {
 		for (int l = 0, i = 0; i < client->width * bpp; i += bpp, l+=3) {
@@ -109,21 +109,21 @@ void VNCVideoCapturer::onFrameBufferUpdate() {
 
 
 	rtc::scoped_refptr<webrtc::I420Buffer> I420buffer = webrtc::I420Buffer::Create(client->width, client->height);
-	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Transcoding frame ...";
+	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Transcoding frame ...";
 	const int conversionResult = libyuv::RGB24ToI420(rgba_buffer, client->width * 3,
 		(uint8*)I420buffer->DataY(), I420buffer->StrideY(),
 		(uint8*)I420buffer->DataU(), I420buffer->StrideU(),
 		(uint8*)I420buffer->DataV(), I420buffer->StrideV(),
 		client->width, client->height
 	);				
-	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Finished Transcoding Frame!!! :D";
+	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Finished Transcoding Frame!!! :D";
 					
 	if (conversionResult >= 0) {
 		webrtc::VideoFrame frame(I420buffer, 0, ts, webrtc::kVideoRotation_0);
-		RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Sending Frame!!! :D";
+		RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Sending Frame!!! :D";
 		this->OnFrame(frame, frame.height(), frame.width());
 	} else {
-		RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "got back error decoding data" << conversionResult;
+		RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "got back error decoding data" << conversionResult;
 		onError("Got back Error Handling Frame!!");
 	}
 
@@ -142,7 +142,7 @@ VNCVideoCapturer::VNCVideoCapturer(const std::string u): client(rfbGetClient(8,3
 	if (index != std::string::npos) {
 		url = url.substr(index + 1);
 	}
-	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Trying to initialize VNC with: " << url;
+	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Trying to initialize VNC with: " << url;
 
 	const char *args[] = { "VNCVideoCapture", url.c_str() };
 	int len = 2;
@@ -151,26 +151,26 @@ VNCVideoCapturer::VNCVideoCapturer(const std::string u): client(rfbGetClient(8,3
 		onError("Something went wrong in initializing RFB client ");
 		return;
 	}
-	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Initialized VNC Successfully: " << url;
+	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Initialized VNC Successfully: " << url;
 }
 
 void VNCVideoCapturer::onError(char str[]) {
-	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << str;
+	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << str;
 	exit(EXIT_FAILURE);
 }
 
 VNCVideoCapturer::~VNCVideoCapturer()
 {
-	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "~~~VNCVideoCapturer";
+	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "~~~VNCVideoCapturer";
 }
 
 // overide rtc::Thread
 void VNCVideoCapturer::Run()
 {
-	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "VNCVideoCapturer Running ...";
+	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "VNCVideoCapturer Running ...";
 	signal(SIGINT, signal_handler);
 	while (IsRunning()) {
-		RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "Capturing Frame ...";
+		RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Capturing Frame ...";
 		SendFramebufferUpdateRequest(client, 0, 0, client->width, client->height, FALSE);
 		if (WaitForMessage(client, 50) < 0)
 			break;
@@ -181,7 +181,7 @@ void VNCVideoCapturer::Run()
 
 cricket::CaptureState VNCVideoCapturer::Start(const cricket::VideoFormat& format)
 {
-	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "VNCVideoCapturer Capture Start ...";
+	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "VNCVideoCapturer Capture Start ...";
 	SetCaptureFormat(&format);
 	SetCaptureState(cricket::CS_RUNNING);
 	rtc::Thread::Start();
@@ -190,7 +190,7 @@ cricket::CaptureState VNCVideoCapturer::Start(const cricket::VideoFormat& format
 
 void VNCVideoCapturer::Stop()
 {
-	RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << "VNCVideoCapturer Capture Stop ...";
+	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "VNCVideoCapturer Capture Stop ...";
 	rtc::Thread::Stop();
 	SetCaptureFormat(NULL);
 	SetCaptureState(cricket::CS_STOPPED);
