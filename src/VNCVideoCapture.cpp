@@ -32,27 +32,7 @@ static void signal_handler(int sig) {
 	exit(EXIT_FAILURE);
   }
 }
-/*
-char* VNCVideoCapturer::onGetPassword() {
-  std::cout<< "Starting to get PASSWORD!!!" << std::endl;
-  // remove vnc:// prefix from uri before passing along
-  std::string url = uri.substr(6, std::string::npos);
-  // if it contains password, remove it from the URL
-  auto index = url.find('@');
-  if (index != std::string::npos) {
-  	auto password = url.substr(1, index - 1);
-	std::cout<< "Parsed Password: " << password << std::endl;
 
-	const std::string::size_type size = password.size();
-	char *buffer = new char[size + 1];   //we need extra char for NUL
-	memcpy(buffer, password.c_str(), size + 1);
-	return buffer;
-  }
-
-  this->onError("No password defined");
-  return NULL;
-}
-*/
 char* VNCVideoCapturer::onGetPassword() {
   std::cout<< "Starting to get PASSWORD!!!" << std::endl;
   // remove vnc:// prefix from uri before passing along
@@ -110,7 +90,7 @@ void VNCVideoCapturer::onFrameBufferUpdate() {
 
 	rtc::scoped_refptr<webrtc::I420Buffer> I420buffer = webrtc::I420Buffer::Create(client->width, client->height);
 	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Transcoding frame ...";
-	const int conversionResult = libyuv::RGB24ToI420(rgba_buffer, client->width * 3,
+	const int conversionResult = libyuv::RAWToI420(rgba_buffer, client->width * 3,
 		(uint8*)I420buffer->DataY(), I420buffer->StrideY(),
 		(uint8*)I420buffer->DataU(), I420buffer->StrideU(),
 		(uint8*)I420buffer->DataV(), I420buffer->StrideV(),
