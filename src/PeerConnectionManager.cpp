@@ -525,7 +525,7 @@ bool PeerConnectionManager::streamStillUsed(const std::string & streamLabel)
 		rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
 		for (unsigned int i = 0; i<localstreams->count(); i++)
 		{
-			if (localstreams->at(i)->label() == streamLabel)
+			if (localstreams->at(i)->id() == streamLabel)
 			{
 				stillUsed = true;
 				break;
@@ -554,7 +554,7 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 		rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
 		for (unsigned int i = 0; i<localstreams->count(); i++)
 		{
-			std::string streamLabel = localstreams->at(i)->label();
+			std::string streamLabel = localstreams->at(i)->id();
 
 			bool stillUsed = this->streamStillUsed(streamLabel);
 			if (!stillUsed)
@@ -656,7 +656,7 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 						}
 						
 						Json::Value stream;
-						stream[localstreams->at(i)->label()] = tracks;
+						stream[localstreams->at(i)->id()] = tracks;
 						
 						streams.append(stream);						
 					}
