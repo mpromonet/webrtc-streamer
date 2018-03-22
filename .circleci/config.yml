@@ -170,6 +170,7 @@ workflows:
             - build_x86_64
             - build_rpi_armv7
             - build_rpi_armv6
+          filters:
             tags:
               only: /.*/            
       - github_release:
