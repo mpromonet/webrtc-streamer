@@ -10,7 +10,6 @@ jobs:
       GNARGS: 'is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome"'      
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
-      SYSROOT: /webrtc/src/build/linux/debian_sid_amd64-sysroot
 
     steps:
       - checkout
@@ -62,7 +61,6 @@ jobs:
       GYP_GENERATOR_OUTPUT: "rpi-armv7"  
       GNARGS: 'is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" is_clang=false target_cpu="arm" treat_warnings_as_errors=false' 
       CROSS: arm-linux-gnueabihf- 
-      SYSROOT: /webrtc/src/build/linux/debian_sid_arm-sysroot 
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
 
@@ -172,6 +170,8 @@ workflows:
             - build_x86_64
             - build_rpi_armv7
             - build_rpi_armv6
+            tags:
+              only: /.*/            
       - github_release:
           requires:
             - build_x86_64

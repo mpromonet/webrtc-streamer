@@ -55,16 +55,15 @@ Build WebRTC with H264 support
 
 Build live555 to enable RTSP support(optional)
 -------
-	make SYSROOT=<path to WebRTC>/src/build/linux/debian_stretch_amd64-sysroot live555
+	make live555
 
 Build WebRTC Streamer
 ------- 
-	make WEBRTCROOT=<path to WebRTC> WEBRTCBUILD=<Release or Debug> SYSROOT=<path to WebRTC>/src/build/linux/debian_stretch_amd64-sysroot
+	make WEBRTCROOT=<path to WebRTC> WEBRTCBUILD=<Release or Debug>
 	
 where WEBRTCROOT and WEBRTCBUILD indicate how to point to WebRTC :
  - $WEBRTCROOT/src should contains source (default is ../webrtc) 
  - $WEBRTCROOT/src/out/$WEBRTCBUILD should contains libraries (default is Release)
- - $SYSROOT should point to sysroot used to build WebRTC (default is /)
 
 Usage
 ===============

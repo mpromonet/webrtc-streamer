@@ -1,15 +1,14 @@
 CC=$(CROSS)gcc 
 CXX=$(CROSS)g++
 AR=$(CROSS)ar
-SYSROOT?=$(shell $(CC) -print-sysroot)
-SYSROOTOPT=--sysroot=$(SYSROOT)
-CFLAGS = -Wall -pthread -g -std=c++11 -Iinc $(SYSROOTOPT) $(CFLAGS_EXTRA)
-LDFLAGS = -pthread $(SYSROOTOPT)
+CFLAGS = -Wall -pthread -g -std=c++11 -Iinc 
+LDFLAGS = -pthread 
 WEBRTCROOT?=../webrtc
 WEBRTCBUILD?=Release
 PREFIX?=/usr
 GITVERSION=$(shell git describe --tags --always --dirty)
 VERSION=$(GITVERSION)
+
 
 TARGET = $(notdir $(CURDIR))
 all: $(TARGET)
@@ -17,6 +16,16 @@ all: $(TARGET)
 # webrtc
 VERSION+=webrtc@$(shell git -C $(WEBRTCROOT)/src describe --tags --always --dirty)
 WEBRTCLIBPATH=$(WEBRTCROOT)/src/$(GYP_GENERATOR_OUTPUT)/out/$(WEBRTCBUILD)
+WEBRTCSYSROOT=$(shell grep -Po 'sysroot=\K[^ ]*' $(WEBRTCLIBPATH)/obj/webrtc_common.ninja)
+ifeq ($(WEBRTCSYSROOT),)
+	SYSROOT?=$(shell $(CC) -print-sysroot)
+else
+	SYSROOT?=$(WEBRTCROOT)/src/build/linux/$(WEBRTCSYSROOT)
+endif
+$(info SYSROOT=$(SYSROOT))
+SYSROOTOPT=--sysroot=$(SYSROOT)
+CFLAGS += $(SYSROOTOPT) $(CFLAGS_EXTRA)
+LDFLAGS += $(SYSROOTOPT)
 
 CFLAGS += -DWEBRTC_POSIX -fno-rtti -DHAVE_JPEG
 CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/third_party/jsoncpp/source/include -I $(WEBRTCROOT)/src/third_party/libyuv/include
