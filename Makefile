@@ -3,7 +3,7 @@ CXX=$(CROSS)g++
 AR=$(CROSS)ar
 CFLAGS = -Wall -pthread -g -std=c++11 -Iinc 
 LDFLAGS = -pthread 
-WEBRTCROOT?=../webrtc
+WEBRTCROOT?=$(CURDIR)/../webrtc
 WEBRTCBUILD?=Release
 PREFIX?=/usr
 GITVERSION=$(shell git describe --tags --always --dirty)
@@ -20,7 +20,7 @@ WEBRTCSYSROOT=$(shell grep -Po 'sysroot=\K[^ ]*' $(WEBRTCLIBPATH)/obj/webrtc_com
 ifeq ($(WEBRTCSYSROOT),)
 	SYSROOT?=$(shell $(CC) -print-sysroot)
 else
-	SYSROOT?=$(WEBRTCROOT)/src/build/linux/$(WEBRTCSYSROOT)
+	SYSROOT?=$(WEBRTCLIBPATH)/$(WEBRTCSYSROOT)
 endif
 $(info SYSROOT=$(SYSROOT))
 SYSROOTOPT=--sysroot=$(SYSROOT)
