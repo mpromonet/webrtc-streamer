@@ -3,7 +3,7 @@
 ** support, and with no warranty, express or implied, as to its usefulness for
 ** any purpose.
 **
-** rtspvideocapturer.h
+** screencapturer.h
 **
 ** -------------------------------------------------------------------------*/
 
@@ -23,11 +23,8 @@
 class ScreenCapturer : public cricket::VideoCapturer, public rtc::Thread, public webrtc::DesktopCapturer::Callback 
 {
 	public:
-		ScreenCapturer() {
-			m_capturer = webrtc::DesktopCapturer::CreateScreenCapturer(webrtc::DesktopCaptureOptions::CreateDefault());
-		}
+		ScreenCapturer() : m_capturer(webrtc::DesktopCapturer::CreateScreenCapturer(webrtc::DesktopCaptureOptions::CreateDefault()))  {}
 		virtual ~ScreenCapturer() {}
-
 
 		// overide webrtc::DesktopCapturer::Callback
 		virtual void OnCaptureResult(webrtc::DesktopCapturer::Result result, std::unique_ptr<webrtc::DesktopFrame> frame) {
@@ -54,7 +51,7 @@ class ScreenCapturer : public cricket::VideoCapturer, public rtc::Thread, public
 				}				
 
 			} else {
-				RTC_LOG(LS_ERROR) << "ScreenCapturer:OnCaptureResult capture error:" << result;
+				RTC_LOG(LS_ERROR) << "ScreenCapturer:OnCaptureResult capture error:" << (int)result;
 			}
 
 		}
@@ -86,8 +83,7 @@ class ScreenCapturer : public cricket::VideoCapturer, public rtc::Thread, public
 		virtual bool IsRunning() { return this->capture_state() == cricket::CS_RUNNING; }
 	
 	private:
-		std::unique_ptr<webrtc::DesktopCapturer> m_capturer;
-		
+		std::unique_ptr<webrtc::DesktopCapturer> m_capturer;		
 };
 
 

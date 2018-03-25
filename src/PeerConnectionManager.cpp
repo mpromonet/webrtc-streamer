@@ -24,6 +24,10 @@
 #include "rtspvideocapturer.h"
 #endif
 
+#ifdef USE_X11
+#include "screencapturer.h"
+#endif
+
 const char kAudioLabel[] = "audio_label";
 const char kVideoLabel[] = "video_label";
 
@@ -750,6 +754,12 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 		CivetServer::getParam(options, "rtptransport", rtptransport);
 		capturer.reset(new RTSPVideoCapturer(videourl, timeout, rtptransport));
 #endif
+	}
+	else if (videourl.find("screen://") == 0)
+	{
+#ifdef USE_X11
+		capturer.reset(new ScreenCapturer());
+#endif	
 	}
 	else
 	{

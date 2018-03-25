@@ -38,6 +38,12 @@ else
 endif
 LDFLAGS += -ldl -lrt 
 
+# desktop capture
+ifneq ($(wildcard $(WEBRTCLIBPATH)/obj/modules/desktop_capture/desktop_capture.ninja),)
+CFLAGS += -DUSE_X11
+LDFLAGS += -lX11 -lXext -lXdamage -lXfixes -lXcomposite
+endif
+
 WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj -name '*.o')
 LIBS+=libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a
 libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
