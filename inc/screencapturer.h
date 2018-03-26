@@ -20,14 +20,41 @@
 #include "modules/desktop_capture/desktop_capture_options.h"
 
 
-class ScreenCapturer : public cricket::VideoCapturer, public rtc::Thread, public webrtc::DesktopCapturer::Callback 
-{
+class ScreenCapturer : public cricket::VideoCapturer, public rtc::Thread, public webrtc::DesktopCapturer::Callback  {
 	public:
-		ScreenCapturer() : m_capturer(webrtc::DesktopCapturer::CreateScreenCapturer(webrtc::DesktopCaptureOptions::CreateDefault()))  {}
+		ScreenCapturer(const std::string & url) : m_capturer()  {
+			const std::string windowprefix("window://");
+			if (url.find(windowprefix) == 0) {				
+				m_capturer = webrtc::DesktopCapturer::CreateWindowCapturer(webrtc::DesktopCaptureOptions::CreateDefault());
+				
+				webrtc::DesktopCapturer::SourceList sourceList;
+				if (m_capturer->GetSourceList(&sourceList)) {
+					bool selected = false;
+					const std::string windowtitle(url.substr(windowprefix.length()));
+					for (auto source : sourceList) {
+						RTC_LOG(LS_ERROR) << "ScreenCapturer source:" << source.id << " title:"<< source.title;
+						if (windowtitle == source.title) {
+							m_capturer->SelectSource(source.id);
+							selected = true;
+							break;
+						}
+					}
+					if (!selected && !sourceList.empty()) {
+						m_capturer->SelectSource(sourceList[0].id);
+					}
+				}
+				
+			} else {
+				m_capturer = webrtc::DesktopCapturer::CreateScreenCapturer(webrtc::DesktopCaptureOptions::CreateDefault());
+			}			
+		}
+		
 		virtual ~ScreenCapturer() {}
 
 		// overide webrtc::DesktopCapturer::Callback
 		virtual void OnCaptureResult(webrtc::DesktopCapturer::Result result, std::unique_ptr<webrtc::DesktopFrame> frame) {
+			
+			RTC_LOG(INFO) << "ScreenCapturer:OnCaptureResult";
 			
 			if (result == webrtc::DesktopCapturer::Result::SUCCESS) {
 				int width = frame->rect().width();
@@ -53,14 +80,15 @@ class ScreenCapturer : public cricket::VideoCapturer, public rtc::Thread, public
 			} else {
 				RTC_LOG(LS_ERROR) << "ScreenCapturer:OnCaptureResult capture error:" << (int)result;
 			}
-
 		}
 		
 		// overide rtc::Thread
 		virtual void Run() {
+			RTC_LOG(INFO) << "ScreenCapturer:Run start";
 			while (IsRunning()) {
 				m_capturer->CaptureFrame();
 			}
+			RTC_LOG(INFO) << "ScreenCapturer:Run exit";
 		}
 
 		// overide cricket::VideoCapturer
@@ -73,9 +101,9 @@ class ScreenCapturer : public cricket::VideoCapturer, public rtc::Thread, public
 		}
 		
 		virtual void Stop() {
+			SetCaptureState(cricket::CS_STOPPED);			
 			rtc::Thread::Stop();
 			SetCaptureFormat(NULL);
-			SetCaptureState(cricket::CS_STOPPED);			
 		}
 		
 		virtual bool GetPreferredFourccs(std::vector<unsigned int>* fourccs) { return true; }

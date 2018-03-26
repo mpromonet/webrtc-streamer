@@ -755,10 +755,10 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 		capturer.reset(new RTSPVideoCapturer(videourl, timeout, rtptransport));
 #endif
 	}
-	else if (videourl.find("screen://") == 0)
+	else if ( (videourl.find("screen://") == 0) || (videourl.find("window://") == 0) )
 	{
 #ifdef USE_X11
-		capturer.reset(new ScreenCapturer());
+		capturer.reset(new ScreenCapturer(videourl));
 #endif	
 	}
 	else
