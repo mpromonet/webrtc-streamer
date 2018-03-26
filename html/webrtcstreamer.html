@@ -5,27 +5,57 @@
 <script src="sendrequest.js" ></script>
 <script src="webrtcstreamer.json" ></script>
 <script src="webrtcstreamer.js" ></script>
-<script>        
-    if (location.search.slice(1)) {
-	var webRtcServer      = new WebRtcStreamer("video", webrtcConfig.url, request);
-	var url = { video:location.search.slice(1) };  
-	var options;
-	if (typeof URLSearchParams != 'undefined') {
-		var params = new URLSearchParams(location.search.slice(1));
-		if (params.has("video") || params.has("audio")) {
-			url = { video:params.get("video"), audio:params.get("audio") };
+<script>
+	(function init() {
+		if (!location.search.slice(1)) {
+			if (typeof URLSearchParams != 'undefined') {
+				alert("WebRTC stream name to connect is missing\n\nUsage :" + window.location + "?video=<WebRTC video stream name>&audio=<WebRTC audio stream name>&options=<WebRTC options>")
+			} else {
+				alert("WebRTC stream name to connect is missing\n\nUsage :" + window.location + "?<WebRTC video stream name>")
+			}
+			return;
 		}
-		options = params.get("options");
-	} 	    
-        window.onload         = function() { webRtcServer.connect(url.video,url.audio,options) }
-        window.onbeforeunload = function() { webRtcServer.disconnect() }
-    } else {
-	if (typeof URLSearchParams != 'undefined') {
-		alert("WebRTC stream name to connect is missing\n\nUsage :" + window.location + "?video=<WebRTC video stream name>&audio=<WebRTC audio stream name>&options=<WebRTC options>")
-	} else {
-		alert("WebRTC stream name to connect is missing\n\nUsage :" + window.location + "?<WebRTC video stream name>")
-	}
-    }
+		let webRtcServer      = new WebRtcStreamer("video", webrtcConfig.url, request);
+		let url = { video:location.search.slice(1) };  
+		let options;
+		if (typeof URLSearchParams != 'undefined') {
+			let params = new URLSearchParams(location.search.slice(1));
+			if (params.has("video") || params.has("audio")) {
+				url = { video:params.get("video"), audio:params.get("audio") };
+			}
+			options = params.get("options");
+		}
+		function onEvent(obj) {
+			const message = JSON.stringify(obj);
+			if (!webRtcServer.dc) {
+				console.log('ignoring message: ', message);
+				return;
+			}
+			console.log('sending message: ', message);
+			webRtcServer.dc.send(message);
+		}
+
+		function setupEventHandlers(elem) {
+			elem.addEventListener("contextmenu", event => event.preventDefault());
+			const handleMouseEv = ev => onEvent({
+				type: 'pointer',
+				x: Math.floor(1000 * (ev.x / ev.target.clientWidth)),
+				y: Math.floor(1000 * (ev.y / ev.target.clientHeight)),
+				button: ev.buttons,
+			});
+			elem.addEventListener("mousedown", handleMouseEv);
+			elem.addEventListener("mouseup", handleMouseEv);
+			elem.addEventListener("mousemove", handleMouseEv);
+		} 	    
+
+		window.onload = function() {
+			webRtcServer.connect(url.video,url.audio,options)
+			setupEventHandlers(document.getElementById('video'));
+		}
+		window.onbeforeunload = function() {
+			webRtcServer.disconnect()
+		}
+	})();
 </script>
 </head>
 <body> 

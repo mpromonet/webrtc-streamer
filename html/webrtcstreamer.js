@@ -19,6 +19,7 @@ function WebRtcStreamer (videoElement, srvurl, request) {
 	this.iceServers = null;
 	this.request  = request;
 	this.earlyCandidates = [];
+	this.dc = null;
 }
 
 /** 
@@ -57,6 +58,7 @@ WebRtcStreamer.prototype.disconnect = function() {
 			console.log ("Failure close peer connection:" + e);
 		}
 		this.pc = null;
+		this.dc = null;
 	}
 }    
 
@@ -147,12 +149,12 @@ WebRtcStreamer.prototype.createPeerConnection = function() {
 		}
 	}
 
-	var dataChannel = pc.createDataChannel("ClientDataChannel");
-	dataChannel.onopen = function() {
+	this.dc = pc.createDataChannel("client_data");
+	this.dc.onopen = function() {
 		console.log("local datachannel open");
 		this.send("local channel openned");
 	}
-	dataChannel.onmessage = function(evt) {
+	this.dc.onmessage = function(evt) {
 		console.log("local datachannel recv:"+JSON.stringify(evt.data));
 	}
 	

@@ -28,6 +28,7 @@
 
 const char kAudioLabel[] = "audio_label";
 const char kVideoLabel[] = "video_label";
+const char kVNCVideoLabel[] = "vnc_video_label";
 
 // Names used for a IceCandidate JSON object.
 const char kCandidateSdpMidName[] = "sdpMid";
@@ -738,9 +739,11 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 {
 	RTC_LOG(INFO) << "videourl:" << videourl << " options:" << options;
 	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
+	bool isVNC = videourl.find("vnc://") == 0;
+	bool isRTSP = videourl.find("rtsp://") == 0;
 
 	std::unique_ptr<cricket::VideoCapturer> capturer;
-	if (videourl.find("rtsp://") == 0)
+	if (isRTSP)
 	{
 #ifdef HAVE_LIVE555
 		int timeout = 10;
@@ -753,7 +756,7 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 		capturer.reset(new RTSPVideoCapturer(videourl, timeout, rtptransport));
 #endif
 	}
-	else if (videourl.find("vnc://") == 0)
+	else if (isVNC)
 	{
 		RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " Starting VNC URL:" << videourl;
 		capturer.reset(new VNCVideoCapturer(videourl));
@@ -790,7 +793,10 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 	else
 	{
 		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = peer_connection_factory_->CreateVideoSource(std::move(capturer), NULL);
-		video_track = peer_connection_factory_->CreateVideoTrack(kVideoLabel, videoSource);
+		video_track = peer_connection_factory_->CreateVideoTrack(
+			isVNC ? kVNCVideoLabel : kVideoLabel,
+			videoSource
+		);
 	}
 	return video_track;
 }

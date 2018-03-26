@@ -20,7 +20,9 @@
 
 #include "rtc_base/logging.h"
 #include "rtc_base/json.h"
+#include "VNCVideoCapturer.h"
 
+extern const char kVNCVideoLabel[];
 
 class PeerConnectionManager {
 	class VideoSink : public rtc::VideoSinkInterface<webrtc::VideoFrame> {
@@ -120,7 +122,7 @@ class PeerConnectionManager {
 
 	class DataChannelObserver : public webrtc::DataChannelObserver  {
 		public:
-			DataChannelObserver(rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel): m_dataChannel(dataChannel) {
+			DataChannelObserver(rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel, webrtc::PeerConnectionInterface* conn): m_dataChannel(dataChannel), pc(conn) {
 				m_dataChannel->RegisterObserver(this);
 			
 			}
@@ -137,11 +139,30 @@ class PeerConnectionManager {
 			}
 			virtual void OnMessage(const webrtc::DataBuffer& buffer) {
 				std::string msg((const char*)buffer.data.data(),buffer.data.size());
+				auto streams = pc->local_streams();
+				webrtc::VideoTrackInterface *vncMediaTrack = streams->FindVideoTrack(kVNCVideoLabel);
 				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " channel:" << m_dataChannel->label() << " msg:" << msg;
+				if (!vncMediaTrack) {
+					RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " cant find VNC video stream!";
+					returnwebrtc::VideoSourceInterface;
+				}
+
+				auto vncSource = vncMediaTrack->GetSource();
+				if (!vncSource) {
+					RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " cant get VNC source from stream!";
+					return;
+				}
+				VNCVideoCapturer *vncCapturer = dynamic_cast<VNCVideoCapturer *>(vncSource->GetVideoCapturer());
+				if (!vncCapturer) {
+					RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " cant get capturer from source!!!!";
+					return;
+				}
+				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " got back video capturer!!! :D :D \o/";
 			}
 
 		protected:
 			rtc::scoped_refptr<webrtc::DataChannelInterface>    m_dataChannel;
+			webrtc::PeerConnectionInterface* pc;
 	};
 
 	class PeerConnectionObserver : public webrtc::PeerConnectionObserver {
@@ -161,7 +182,7 @@ class PeerConnectionManager {
 				m_statsCallback = new rtc::RefCountedObject<PeerConnectionStatsCollectorCallback>();
 				
 				rtc::scoped_refptr<webrtc::DataChannelInterface>   channel = m_pc->CreateDataChannel("ServerDataChannel", NULL);
-				m_localChannel = new DataChannelObserver(channel);
+				m_localChannel = new DataChannelObserver(channel, this->getPeerConnection());
 			};
 
 			virtual ~PeerConnectionObserver() {
@@ -199,7 +220,7 @@ class PeerConnectionManager {
 			}
 			virtual void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
 				RTC_LOG(LERROR) << __PRETTY_FUNCTION__;
-				m_remoteChannel = new DataChannelObserver(channel);
+				m_remoteChannel = new DataChannelObserver(channel, this->getPeerConnection());
 			}
 			virtual void OnRenegotiationNeeded()                              {
 				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " peerid:" << m_peerid;;
