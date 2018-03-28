@@ -41,7 +41,7 @@ LDFLAGS += -ldl -lrt
 # desktop capture
 ifneq ($(wildcard $(WEBRTCLIBPATH)/obj/modules/desktop_capture/desktop_capture.ninja),)
 CFLAGS += -DUSE_X11
-LDFLAGS += -lX11 -lXext -lXdamage -lXfixes -lXcomposite
+LDFLAGS += -lX11 -lXext -lXdamage -lXfixes -lXcomposite 
 endif
 
 WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj -name '*.o')
@@ -116,7 +116,7 @@ clean:
 	rm -f src/*.o libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a $(TARGET)
 	make -C civetweb clean
 	make -C h264bitstream clean
-	make -k -C live555helper clean
+	make -k -C live555helper clean PREFIX=$(PREFIX) SYSROOT=$(SYSROOT)
 
 install: $(TARGET)
 	install -m 0755 $(TARGET) /usr/local/bin
