@@ -215,10 +215,11 @@ void RTSPVideoCapturer::DecoderThread()
 		ssize_t size = frame.m_content.size();
 		
 		if (size) {
-			uint8_t buf[size];
+			size_t allocsize = size + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264);
+			uint8_t buf[allocsize];
 			memcpy( buf, data, size );
 
-			webrtc::EncodedImage input_image(buf, size, size + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264));		
+			webrtc::EncodedImage input_image(buf, size, allocsize);		
 			input_image._timeStamp = frame.m_timestamp_ms; // store time in ms that overflow the 32bits
 			m_decoder->Decode(input_image, false, NULL);
 		}
