@@ -28,6 +28,7 @@ class VNCVideoCapturer : public cricket::VideoCapturer, public rtc::Thread {
 		void onFrameBufferUpdate();
 
 		void onError(char error[]);
+		void onClick(int x, int y, int button);
 	private:
 		std::string uri;
 		rfbClient* client;

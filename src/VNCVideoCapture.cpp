@@ -53,6 +53,10 @@ char* VNCVideoCapturer::onGetPassword() {
   return NULL;
 }
 
+void VNCVideoCapturer::onClick(int x, int y, int buttonMask) {
+	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Sending click!!! (" << x << ',' << y << ") with click: " << buttonMask;
+}
+
 void VNCVideoCapturer::onFrameBufferUpdate() {
 	int i, j;
 	rfbPixelFormat* pf = &client->format;

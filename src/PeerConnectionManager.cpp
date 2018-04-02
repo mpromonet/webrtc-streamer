@@ -28,7 +28,6 @@
 
 const char kAudioLabel[] = "audio_label";
 const char kVideoLabel[] = "video_label";
-const char kVNCVideoLabel[] = "vnc_video_label";
 
 // Names used for a IceCandidate JSON object.
 const char kCandidateSdpMidName[] = "sdpMid";
@@ -334,7 +333,7 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 			RTC_LOG(WARNING) << "set bitrate:" << bitrate;
 		}			
 		
-		if (!this->AddStreams(peerConnectionObserver->getPeerConnection(), videourl, audiourl, options))
+		if (!this->AddStreams(peerConnectionObserver->getPeerConnection(), videourl, audiourl, peerid, options))
 		{
 			RTC_LOG(WARNING) << "Can't add stream";
 		}
@@ -474,7 +473,7 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 			}
 
 			// add local stream
-			if (!this->AddStreams(peerConnection, videourl, audiourl, options))
+			if (!this->AddStreams(peerConnection, videourl, audiourl, peerid, options))
 			{
 				RTC_LOG(WARNING) << "Can't add stream";
 			}
@@ -553,6 +552,7 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 		PeerConnectionObserver* pcObserver = it->second;
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = pcObserver->getPeerConnection();
 		peer_connectionobs_map_.erase(it);
+		vnc_map_.erase(peerid);
 
 		rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
 		for (unsigned int i = 0; i<localstreams->count(); i++)
@@ -735,7 +735,7 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 /* ---------------------------------------------------------------------------
 **  get the capturer from its URL
 ** -------------------------------------------------------------------------*/
-rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVideoTrack(const std::string & videourl, const std::string & options)
+rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVideoTrack(const std::string & videourl, const std::string & peerid, const std::string & options)
 {
 	RTC_LOG(INFO) << "videourl:" << videourl << " options:" << options;
 	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
@@ -758,8 +758,10 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 	}
 	else if (isVNC)
 	{
+		auto vncCapturer = new VNCVideoCapturer(videourl);
 		RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " Starting VNC URL:" << videourl;
-		capturer.reset(new VNCVideoCapturer(videourl));
+		vnc_map_[peerid] = vncCapturer;
+		capturer.reset(vncCapturer);
 	}
 	else
 	{
@@ -794,7 +796,7 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 	{
 		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = peer_connection_factory_->CreateVideoSource(std::move(capturer), NULL);
 		video_track = peer_connection_factory_->CreateVideoTrack(
-			isVNC ? kVNCVideoLabel : kVideoLabel,
+			kVideoLabel,
 			videoSource
 		);
 	}
@@ -850,7 +852,7 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 /* ---------------------------------------------------------------------------
 **  Add a stream to a PeerConnection
 ** -------------------------------------------------------------------------*/
-bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & videourl, const std::string & audiourl, const std::string & options)
+bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & videourl, const std::string & audiourl, const std::string &peerid, const std::string & options)
 {
 	bool ret = false;
 
@@ -887,7 +889,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 		}
 
 		// need to create the stream
-		rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(this->CreateVideoTrack(video, options));
+		rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(this->CreateVideoTrack(video, peerid, options));
 		rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(this->CreateAudioTrack(audio, options));
 		rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(streamLabel);
 		if (!stream.get())

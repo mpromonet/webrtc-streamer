@@ -122,7 +122,7 @@ class PeerConnectionManager {
 
 	class DataChannelObserver : public webrtc::DataChannelObserver  {
 		public:
-			DataChannelObserver(rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel, webrtc::PeerConnectionInterface* conn): m_dataChannel(dataChannel), pc(conn) {
+			DataChannelObserver(rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel, const std::string peerid, PeerConnectionManager* pm): m_peerid(peerid), m_manager(pm) {
 				m_dataChannel->RegisterObserver(this);
 			
 			}
@@ -139,30 +139,51 @@ class PeerConnectionManager {
 			}
 			virtual void OnMessage(const webrtc::DataBuffer& buffer) {
 				std::string msg((const char*)buffer.data.data(),buffer.data.size());
-				auto streams = pc->local_streams();
-				webrtc::VideoTrackInterface *vncMediaTrack = streams->FindVideoTrack(kVNCVideoLabel);
-				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " channel:" << m_dataChannel->label() << " msg:" << msg;
-				if (!vncMediaTrack) {
-					RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " cant find VNC video stream!";
-					returnwebrtc::VideoSourceInterface;
+				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Got back Data Channel message!!";
+				Json::Value  jmessage;
+				// parse in
+				Json::Reader reader;
+				if (!reader.parse(msg, jmessage))
+				{
+					RTC_LOG(WARNING) << "Received non-json message:" << msg;
+					return;
 				}
 
-				auto vncSource = vncMediaTrack->GetSource();
-				if (!vncSource) {
-					RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " cant get VNC source from stream!";
+				std::vector<Json::Value> clicks;
+				std::vector<Json::Value> presses;
+
+				if (!jmessage["clicks"] || !rtc::JsonArrayToValueVector(jmessage["clicks"], &clicks)) {
+					RTC_LOG(WARNING) << "msg didnt contain any clicks:" << msg;
 					return;
 				}
-				VNCVideoCapturer *vncCapturer = dynamic_cast<VNCVideoCapturer *>(vncSource->GetVideoCapturer());
-				if (!vncCapturer) {
-					RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " cant get capturer from source!!!!";
+
+				if (!jmessage["presses"] || !rtc::JsonArrayToValueVector(jmessage["presses"], &presses)) {
+					RTC_LOG(WARNING) << "msg didnt contain any presses:" << msg;
 					return;
 				}
-				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " got back video capturer!!! :D :D \o/";
+				VNCVideoCapturer* capturer = m_manager->vnc_map_[m_peerid];
+				if (!capturer) {
+					RTC_LOG(WARNING) << "This stream can not support vnc events!!!";
+					return;
+				}
+				for (auto &click : clicks) {
+					int x, y, buttonMask;
+					if (!rtc::GetIntFromJsonObject(click, "x", &x)
+						|| !rtc::GetIntFromJsonObject(click, "y", &y)
+						|| !rtc::GetIntFromJsonObject(click, "button", &buttonMask)
+					) {
+						RTC_LOG(WARNING) << "Can not parse clicks!!";
+						break;
+					}
+
+					capturer->onClick(x, y, buttonMask);
+				}
 			}
 
 		protected:
 			rtc::scoped_refptr<webrtc::DataChannelInterface>    m_dataChannel;
-			webrtc::PeerConnectionInterface* pc;
+			PeerConnectionManager* m_manager;
+			const std::string m_peerid;
 	};
 
 	class PeerConnectionObserver : public webrtc::PeerConnectionObserver {
@@ -182,7 +203,7 @@ class PeerConnectionManager {
 				m_statsCallback = new rtc::RefCountedObject<PeerConnectionStatsCollectorCallback>();
 				
 				rtc::scoped_refptr<webrtc::DataChannelInterface>   channel = m_pc->CreateDataChannel("ServerDataChannel", NULL);
-				m_localChannel = new DataChannelObserver(channel, this->getPeerConnection());
+				m_localChannel = new DataChannelObserver(channel, m_peerid, m_peerConnectionManager);
 			};
 
 			virtual ~PeerConnectionObserver() {
@@ -220,7 +241,7 @@ class PeerConnectionManager {
 			}
 			virtual void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
 				RTC_LOG(LERROR) << __PRETTY_FUNCTION__;
-				m_remoteChannel = new DataChannelObserver(channel, this->getPeerConnection());
+				m_remoteChannel = new DataChannelObserver(channel, m_peerid, m_peerConnectionManager);
 			}
 			virtual void OnRenegotiationNeeded()                              {
 				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " peerid:" << m_peerid;;
@@ -278,8 +299,8 @@ class PeerConnectionManager {
 
 	protected:
 		PeerConnectionObserver*                 CreatePeerConnection(const std::string& peerid);
-		bool                                    AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & videourl, const std::string & audiourl, const std::string & options);
-		rtc::scoped_refptr<webrtc::VideoTrackInterface> CreateVideoTrack(const std::string & videourl, const std::string & options);
+		bool                                    AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & videourl, const std::string & audiourl, const std::string & peer_id, const std::string & options);
+		rtc::scoped_refptr<webrtc::VideoTrackInterface> CreateVideoTrack(const std::string & videourl, const std::string & peerid, const std::string & options);
 		rtc::scoped_refptr<webrtc::AudioTrackInterface> CreateAudioTrack(const std::string & audiourl, const std::string & options);
 		bool                                    streamStillUsed(const std::string & streamLabel);
 
@@ -289,6 +310,7 @@ class PeerConnectionManager {
 		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>                peer_connection_factory_;
 		std::map<std::string, PeerConnectionObserver* >                           peer_connectionobs_map_;
 		std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >  stream_map_;
+		std::map<std::string, VNCVideoCapturer* >  vnc_map_;
 	        std::mutex                                                                m_streamMapMutex;
 		std::string                                                               stunurl_;
 		std::string                                                               turnurl_;
