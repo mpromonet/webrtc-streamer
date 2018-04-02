@@ -5,7 +5,7 @@
  * @param {string} videoElement - id of the video element tag
  * @param {string} srvurl -  url of webrtc-streamer (default is current location)
 */
-function WebRtcStreamer (videoElement, srvurl, request) {
+function WebRtcStreamer (videoElement, srvurl) {
 	this.videoElement     = videoElement;	
 	this.srvurl           = srvurl || location.protocol+"//"+window.location.hostname+":"+window.location.port;
 	this.pc               = null;    
@@ -15,7 +15,6 @@ function WebRtcStreamer (videoElement, srvurl, request) {
 	this.mediaConstraints = { offerToReceiveAudio: true, offerToReceiveVideo: true };
 
 	this.iceServers = null;
-	this.request  = request;
 	this.earlyCandidates = [];
 }
 
@@ -32,9 +31,20 @@ WebRtcStreamer.prototype.connect = function(videourl, audiourl, options, localst
 	// getIceServers is not already received
 	if (!this.iceServers) {
 		console.log("Get IceServers");
-		sendRequest(this.request, this.srvurl + "/api/getIceServers", null, null, function(iceServers) { this.onReceiveGetIceServers(iceServers, videourl, audiourl, options, localstream); } , null, this);
+		
+		var bind = this;
+		request("GET" , this.srvurl + "/api/getIceServers")
+			.done( function (response) { 
+				if (response.statusCode === 200) {
+					bind.onReceiveGetIceServers.call(bind,JSON.parse(response.body), videourl, audiourl, options, localstream);
+				}
+				else {
+					bind.onError(response.statusCode);
+				}
+			}
+		);		
 	} else {
-		this.onGetIceServers(this.iceServers, videourl, audiourl, options, localstream);
+		this.onReceiveGetIceServers(this.iceServers, videourl, audiourl, options, localstream);
 	}
 }
 
@@ -47,7 +57,8 @@ WebRtcStreamer.prototype.disconnect = function() {
 		videoElement.src = "";
 	}
 	if (this.pc) {
-		sendRequest(this.request, this.srvurl + "/api/hangup?peerid="+this.pc.peerid);
+		request("GET" , this.srvurl + "/api/hangup?peerid="+this.pc.peerid);
+		
 		try {
 			this.pc.close();
 		}
@@ -70,7 +81,6 @@ WebRtcStreamer.prototype.onReceiveGetIceServers = function(iceServers, videourl,
 		var peerid = Math.random();			
 		this.pc.peerid = peerid;
 		
-		var streamer = this;
 		var callurl = this.srvurl + "/api/call?peerid="+ peerid+"&url="+encodeURIComponent(videourl);
 		if (audiourl) {
 			callurl += "&audiourl="+encodeURIComponent(audiourl);
@@ -87,11 +97,23 @@ WebRtcStreamer.prototype.onReceiveGetIceServers = function(iceServers, videourl,
 		this.earlyCandidates.length = 0;
 		
 		// create Offer
+		var bind = this;
 		this.pc.createOffer(this.mediaConstraints).then(function(sessionDescription) {
 			console.log("Create offer:" + JSON.stringify(sessionDescription));
 			
-			streamer.pc.setLocalDescription(sessionDescription
-				, function() { sendRequest(streamer.request, callurl, null, sessionDescription, streamer.onReceiveCall, null, streamer); }
+			bind.pc.setLocalDescription(sessionDescription
+				, function() {
+					request("POST" , callurl, { body: JSON.stringify(sessionDescription) })
+						.done( function (response) { 
+							if (response.statusCode === 200) {
+								bind.onReceiveCall.call(bind,JSON.parse(response.body));
+							}
+							else {
+								bind.onError(response.statusCode);
+							}
+						}
+					);					
+				}
 				, function() {} );
 			
 		}, function(error) { 
@@ -165,7 +187,17 @@ WebRtcStreamer.prototype.createPeerConnection = function() {
 WebRtcStreamer.prototype.onIceCandidate = function (event) {
 	if (event.candidate) {
                 if (this.pc.currentRemoteDescription)  {
-			sendRequest(this.request, this.srvurl + "/api/addIceCandidate?peerid="+this.pc.peerid, null, event.candidate);
+			var bind = this;
+			request("POST" , this.srvurl + "/api/addIceCandidate?peerid="+this.pc.peerid, { body: JSON.stringify(event.candidate) })
+				.done( function (response) { 
+					if (response.statusCode === 200) {
+						console.log("addIceCandidate ok:" + response.body);
+					}
+					else {
+						bind.onError(response.statusCode);
+					}
+				}
+			);					
 		} else {
 			this.earlyCandidates.push(event.candidate);
 		}
@@ -197,16 +229,37 @@ WebRtcStreamer.prototype.onTrack = function(event) {
 * AJAX /call callback
 */
 WebRtcStreamer.prototype.onReceiveCall = function(dataJson) {
-	var streamer = this;
+	var bind = this;
 	console.log("offer: " + JSON.stringify(dataJson));
 	this.pc.setRemoteDescription(new RTCSessionDescription(dataJson)
 		, function()      { 
                         console.log ("setRemoteDescription ok");
-                        while (streamer.earlyCandidates.length) {
-				var candidate = streamer.earlyCandidates.shift();
-				sendRequest(streamer.request, streamer.srvurl + "/api/addIceCandidate?peerid="+streamer.pc.peerid, null, candidate);
+                        while (bind.earlyCandidates.length) {
+				var candidate = bind.earlyCandidates.shift();
+				
+				request("POST" , bind.srvurl + "/api/addIceCandidate?peerid=" + bind.pc.peerid, { body: JSON.stringify(candidate) })
+					.done( function (response) { 
+						if (response.statusCode === 200) {
+							console.log("addIceCandidate ok:" + response.body);
+						}
+						else {
+							bind.onError(response.statusCode);
+						}
+					}
+				);
 			}
-			sendRequest(streamer.request, streamer.srvurl + "/api/getIceCandidate?peerid="+streamer.pc.peerid, null, null, streamer.onReceiveCandidate, null, streamer);
+			
+			request("GET" , bind.srvurl + "/api/getIceCandidate?peerid=" + bind.pc.peerid)
+				.done( function (response) { 
+					if (response.statusCode === 200) {
+						bind.onReceiveCandidate.call(bind,JSON.parse(response.body));
+					}
+					else {
+						bind.onError(response.statusCode);
+					}
+				}
+			);
+				
 		}
 		, function(error) { console.log ("setRemoteDescription error:" + JSON.stringify(error)); });
 }	
@@ -226,4 +279,12 @@ WebRtcStreamer.prototype.onReceiveCandidate = function(dataJson) {
 				, function(error) { console.log ("addIceCandidate error:" + JSON.stringify(error)); } );
 		}
 	}
+}
+
+
+/*
+* AJAX callback for Error
+*/
+WebRtcStreamer.prototype.onError = function(status) {
+	console.log("onError:" + status);
 }

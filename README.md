@@ -101,7 +101,7 @@ Embed in a HTML page:
 ===============
 Instead of using the internal HTTP server, it is easy to display a WebRTC stream in a HTML page served by another HTTP server. The URL of the webrtc-streamer to use should be given creating the [WebRtcStreamer](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer/blob/master/jsdoc/WebRtcStreamer.html) instance :
 
-	var webRtcServer      = new WebRtcStreamer(<video tag>, <webrtc-streamer url>, <request interface>);
+	var webRtcServer      = new WebRtcStreamer(<video tag>, <webrtc-streamer url>);
 
 A short sample HTML page using webrtc-streamer running locally on port 8000 :
 
@@ -110,7 +110,7 @@ A short sample HTML page using webrtc-streamer running locally on port 8000 :
 	<script src="request.min.js" ></script>
 	<script src="webrtcstreamer.js" ></script>
 	<script>        
-	    var webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000", request);
+	    var webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000");
 	    window.onload         = function() { webRtcServer.connect("rtsp://pi2.local:8554/unicast") }
 	    window.onbeforeunload = function() { webRtcServer.disconnect() }
 	</script>
@@ -124,7 +124,7 @@ Connect to Janus Gateway Video Room
 ===============
 A simple way to publish WebRTC stream to a [Janus Gateway](https://janus.conf.meetecho.com) Video Room is to use the [JanusVideoRoom](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer/blob/master/jsdoc/JanusVideoRoom.html) interface
 
-        var janus = new JanusVideoRoom(<janus url>, <webrtc-streamer url>, <request interface>)
+        var janus = new JanusVideoRoom(<janus url>, <webrtc-streamer url>)
 
 A short sample to publish WebRTC streams to Janus Video Room could be :
 
@@ -133,7 +133,7 @@ A short sample to publish WebRTC streams to Janus Video Room could be :
 	<script src="request.min.js" ></script>
 	<script src="janusvideoroom.js" ></script>
 	<script>        
-		var janus = new JanusVideoRoom("https://janus.conf.meetecho.com/janus", null, request);
+		var janus = new JanusVideoRoom("https://janus.conf.meetecho.com/janus", null);
 		janus.join(1234, "rtsp://pi2.local:8554/unicast","pi2");
 		janus.join(1234, "rtsp://217.17.220.110/axis-media/media.amp","media");	    
 	</script>
@@ -148,9 +148,9 @@ This way the communication between [Janus API](https://janus.conf.meetecho.com/d
 
 The same logic could be implemented in NodeJS using the same JS API :
 
-	var request = require('then-request');
+	global.request = require('then-request');
 	var JanusVideoRoom = require('./html/janusvideoroom.js'); 
-	var janus = new JanusVideoRoom("http://192.168.0.15:8088/janus", "http://192.168.0.15:8000", request)
+	var janus = new JanusVideoRoom("http://192.168.0.15:8088/janus", "http://192.168.0.15:8000")
 	janus.join(1234,"mmal service 16.1","video")
 
 
