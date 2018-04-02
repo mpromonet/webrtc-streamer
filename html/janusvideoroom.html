@@ -50,7 +50,7 @@ footer {
 				params.api.refreshCells([params.node], ['roomid']);
 				
 				if (!janus) {
-					janus = new JanusVideoRoom(document.querySelector('#janusUrl').value, webrtcConfig.url, request);
+					janus = new JanusVideoRoom(document.querySelector('#janusUrl').value, webrtcConfig.url);
 					janus.subscribeEvents(clientCallBack);
 				}
 				janus.join(parseInt(params.data.roomid), params.data.url, params.data.url);

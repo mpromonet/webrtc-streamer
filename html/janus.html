@@ -1,7 +1,6 @@
 <html>
 <head>
 <script src="libs/request.min.js" ></script>
-<script src="sendrequest.js" ></script>
 <script src="janusvideoroom.json" ></script>
 <script src="janusvideoroom.js" ></script>
 <script>        
@@ -18,7 +17,7 @@
 		document.body.appendChild(textNode);
 	}
 	
-	var janus = new JanusVideoRoom(janusRoomConfig.url, null, request);
+	var janus = new JanusVideoRoom(janusRoomConfig.url, null);
 	janus.subscribeEvents(writeStatus);
 	janus.join(janusRoomConfig.roomId, "rtsp://pi2.local:8554/unicast","pi2");
 	janus.join(janusRoomConfig.roomId, "rtsp://217.17.220.110/axis-media/media.amp","media");

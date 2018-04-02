@@ -7,12 +7,11 @@ var JanusVideoRoom = (function() {
  * @param {string} janusUrl - url of Janus Gateway
  * @param {string} srvurl - url of WebRTC-streamer
 */
-var JanusVideoRoom = function JanusVideoRoom (janusUrl, srvurl, request) {	
+var JanusVideoRoom = function JanusVideoRoom (janusUrl, srvurl) {	
 	this.janusUrl    = janusUrl;
 	this.handlers    = [];
 	this.srvurl      = srvurl || location.protocol+"//"+window.location.hostname+":"+window.location.port;
 	this.connection  = [];
-	this.request  = request;
 };
 	
 /** 
@@ -24,7 +23,20 @@ var JanusVideoRoom = function JanusVideoRoom (janusUrl, srvurl, request) {
 JanusVideoRoom.prototype.join = function(janusroomid, url, name) {
 	// create a session
 	var createReq = {janus: "create", transaction: Math.random().toString() };
-	sendRequest(this.request, this.janusUrl, null, createReq, function(dataJson) { this.onCreateSession(dataJson, janusroomid, url, name); }, this.onError, this);		
+
+		var bind = this;
+		request("POST" , this.janusUrl,
+			{	
+				body: JSON.stringify(createReq),
+			}).done( function (response) { 
+				if (response.statusCode === 200) {
+					bind.onCreateSession(JSON.parse(response.body), janusroomid, url, name);
+				}
+				else {
+					bind.onError(response.statusCode);
+				}
+			}
+		);
 }
 
 /**
@@ -39,8 +51,21 @@ JanusVideoRoom.prototype.leave = function(janusroomid, url, name) {
 		var sessionId = connection.sessionId;
 		var pluginid  = connection.pluginId;
 		
-		var msg = { "janus": "message", "body": {"request": "unpublish"}, "transaction": Math.random().toString() };		
-		sendRequest(this.request, this.janusUrl + "/" + sessionId + "/" + pluginid, null, msg,  null, this.onError, this);
+		var leaveReq = { "janus": "message", "body": {"request": "unpublish"}, "transaction": Math.random().toString() };
+		
+		var bind = this;
+		request("POST" , this.janusUrl + "/" + sessionId + "/" + pluginid,
+			{	
+				body: JSON.stringify(leaveReq),
+			}).done( function (response) { 
+				if (response.statusCode === 200) {
+					console.log("leave janus room answer:" + response.body);
+				}
+				else {
+					bind.onError(response.statusCode);
+				}
+			}
+		);
 	}
 }
 
@@ -69,8 +94,21 @@ JanusVideoRoom.prototype.onCreateSession = function(dataJson, janusroomid, url, 
 	console.log("onCreateSession sessionId:" + sessionId);
 	
 	// attach to video room plugin
-	var attach = { "janus": "attach", "plugin": "janus.plugin.videoroom", "transaction": Math.random().toString() };			
-	sendRequest(this.request, this.janusUrl + "/" + sessionId, null, attach, function(dataJson) { this.onPluginsAttached(dataJson, janusroomid, url, name, sessionId); }, this.onError, this );
+	var attachReq = { "janus": "attach", "plugin": "janus.plugin.videoroom", "transaction": Math.random().toString() };			
+	
+	var bind = this;
+	request("POST" , this.janusUrl + "/" + sessionId,
+		{	
+			body: JSON.stringify(attachReq),
+		}).done( function (response) { 
+			if (response.statusCode === 200) {
+				bind.onPluginsAttached(JSON.parse(response.body), janusroomid, url, name, sessionId);
+			}
+			else {
+				bind.onError(response.statusCode);
+			}
+		}
+	);
 }
 	
 // ------------------------------------------
@@ -82,23 +120,46 @@ JanusVideoRoom.prototype.onPluginsAttached = function(dataJson, janusroomid, url
 	
 	this.callback(name, "joining");
 
-	var join = {"janus":"message","body":{"request":"join","room":janusroomid,"ptype":"publisher","display":name},"transaction":Math.random().toString()};
-	sendRequest(this.request, this.janusUrl + "/" + sessionId + "/" + pluginid, null, join, function(dataJson) { this.onJoinRoom(dataJson,janusroomid,name,url,sessionId,pluginid); }, this.onError, this );		
+	var joinReq = {"janus":"message","body":{"request":"join","room":janusroomid,"ptype":"publisher","display":name},"transaction":Math.random().toString()};
+	
+	var bind = this;
+	request("POST" , this.janusUrl + "/" + sessionId + "/" + pluginid,
+		{	
+			body: JSON.stringify(joinReq),
+		}).done( function (response) { 
+			if (response.statusCode === 200) {
+				bind.onJoinRoom(JSON.parse(response.body), janusroomid, url, name, sessionId, pluginid);
+			}
+			else {
+				bind.onError(response.statusCode);
+			}
+		}
+	);
 }
 
 // ------------------------------------------
 // Janus callback for Video Room Joined
 // ------------------------------------------
-JanusVideoRoom.prototype.onJoinRoom = function(dataJson,janusroomid,name,url,sessionId,pluginid) {
+JanusVideoRoom.prototype.onJoinRoom = function(dataJson,janusroomid,url,name,sessionId,pluginid) {
 	console.log("onJoinRoom:" + JSON.stringify(dataJson));
 
-	sendRequest(this.request, this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.onJoinRoomResult(dataJson,janusroomid,name,url,sessionId,pluginid); }, this.onError, this);
+	var bind = this;
+	request("GET" , this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1")
+		.done( function (response) { 
+			if (response.statusCode === 200) {
+				bind.onJoinRoomResult(JSON.parse(response.body), janusroomid, url, name, sessionId, pluginid);
+			}
+			else {
+				bind.onError(response.statusCode);
+			}
+		}
+	);
 }
 
 // ------------------------------------------
 // Janus callback for Video Room Joined
 // ------------------------------------------
-JanusVideoRoom.prototype.onJoinRoomResult = function(dataJson,janusroomid,name,url,sessionId,pluginid) {
+JanusVideoRoom.prototype.onJoinRoomResult = function(dataJson,janusroomid,url,name,sessionId,pluginid) {
 	console.log("onJoinRoomResult:" + JSON.stringify(dataJson));
 
 	if (dataJson.plugindata.data.videoroom === "joined") {	
@@ -109,7 +170,18 @@ JanusVideoRoom.prototype.onJoinRoomResult = function(dataJson,janusroomid,name,u
 		this.callback(name, "joined");
 		
 		var peerid = Math.random().toString();
-		sendRequest(this.request, this.srvurl + "/api/createOffer?peerid="+ peerid+"&url="+encodeURIComponent(url), null, null, function(dataJson) { this.onCreateOffer(dataJson,name,peerid,sessionId,pluginid); }, this.onError, this); 
+		
+		var bind = this;
+		request("GET" , this.srvurl + "/api/createOffer?peerid="+ peerid+"&url="+encodeURIComponent(url))
+			.done( function (response) { 
+				if (response.statusCode === 200) {
+					bind.onCreateOffer(JSON.parse(response.body), name, sessionId, pluginid, peerid);
+				}
+				else {
+					bind.onError(response.statusCode);
+				}
+			}
+		);		
 	} else {
 		this.callback(name, "joining room failed");
 	}
@@ -118,32 +190,66 @@ JanusVideoRoom.prototype.onJoinRoomResult = function(dataJson,janusroomid,name,u
 // ------------------------------------------
 // WebRTC streamer callback for Offer 
 // ------------------------------------------
-JanusVideoRoom.prototype.onCreateOffer = function(dataJson,name,peerid,sessionId,pluginid) {
+JanusVideoRoom.prototype.onCreateOffer = function(dataJson,name,sessionId,pluginid,peerid) {
 	console.log("onCreateOffer:" + JSON.stringify(dataJson));
 	
 	this.callback(name, "publishing");
 	
-	var msg = { "janus": "message", "body": {"request": "publish", "video": true, "audio": true, "data": true}, "jsep": dataJson, "transaction": Math.random().toString() };		
-	sendRequest(this.request, this.janusUrl + "/" + sessionId + "/" + pluginid, null, msg,  function(dataJson) { this.onPublishStream(dataJson,name,peerid,sessionId,pluginid); }, this.onError, this);
+	var publishReq = { "janus": "message", "body": {"request": "publish", "video": true, "audio": true, "data": true}, "jsep": dataJson, "transaction": Math.random().toString() };		
+	var bind = this;
+	request("POST" , this.janusUrl + "/" + sessionId + "/" + pluginid,
+		{	
+			body: JSON.stringify(publishReq),
+		}).done( function (response) { 
+			if (response.statusCode === 200) {
+				bind.onPublishStream(JSON.parse(response.body), name, sessionId, pluginid, peerid);
+			}
+			else {
+				bind.onError(response.statusCode);
+			}
+		}
+	);		
 }
 
 // ------------------------------------------
 // Janus callback for WebRTC stream is published
 // ------------------------------------------
-JanusVideoRoom.prototype.onPublishStream = function(dataJson,name,peerid,sessionId,pluginid) {
+JanusVideoRoom.prototype.onPublishStream = function(dataJson,name,sessionId,pluginid,peerid) {
 	console.log("onPublishStream:" + JSON.stringify(dataJson));
 
-	sendRequest(this.request, this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.onPublishStreamResult(dataJson,name,peerid,sessionId,pluginid); }, this.onError, this  );
+	var bind = this;
+	request("GET" , this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1")
+		.done( function (response) { 
+			if (response.statusCode === 200) {
+				bind.onPublishStreamResult(JSON.parse(response.body), name, sessionId, pluginid, peerid);
+			}
+			else {
+				bind.onError(response.statusCode);
+			}
+		}
+	);		
 }
 
 // ------------------------------------------
 // Janus callback for WebRTC stream is published
 // ------------------------------------------
-JanusVideoRoom.prototype.onPublishStreamResult = function(dataJson,name,peerid,sessionId,pluginid) {
+JanusVideoRoom.prototype.onPublishStreamResult = function(dataJson,name,sessionId,pluginid,peerid) {
 	console.log("onPublishStreamResult:" + JSON.stringify(dataJson));
 
 	if (dataJson.jsep) {
-		sendRequest(this.request, this.srvurl + "/api/setAnswer?peerid="+ peerid, null, dataJson.jsep, function(dataJson) { this.onSetAnswer(dataJson,name,peerid,sessionId,pluginid); }, this.onError, this); 						
+		var bind = this;
+		request("POST" , this.srvurl + "/api/setAnswer?peerid="+ peerid,
+			{	
+				body: JSON.stringify(dataJson.jsep),
+			}).done( function (response) { 
+				if (response.statusCode === 200) {
+					bind.onSetAnswer(JSON.parse(response.body), name, sessionId, pluginid, peerid);
+				}
+				else {
+					bind.onError(response.statusCode);
+				}
+			}
+		);		
 	} else {
 		this.callback(name, "publishing failed (no SDP)");
 	}
@@ -152,10 +258,20 @@ JanusVideoRoom.prototype.onPublishStreamResult = function(dataJson,name,peerid,s
 // ------------------------------------------
 // WebRTC streamer callback for Answer 
 // ------------------------------------------
-JanusVideoRoom.prototype.onSetAnswer = function(dataJson,name,peerid,sessionId,pluginid) {
+JanusVideoRoom.prototype.onSetAnswer = function(dataJson,name,sessionId,pluginid,peerid) {
 	console.log("onSetAnswer:" + JSON.stringify(dataJson));
 	
-	sendRequest(this.request, this.srvurl + "/api/getIceCandidate?peerid="+peerid, null, null, function(dataJson) { this.onReceiveCandidate(dataJson,name,sessionId,pluginid); }, this.onError, this);		
+	var bind = this;
+	request("GET" , this.srvurl + "/api/getIceCandidate?peerid="+peerid)
+		.done( function (response) { 
+			if (response.statusCode === 200) {
+				bind.onReceiveCandidate(JSON.parse(response.body), name, sessionId, pluginid);
+			}
+			else {
+				bind.onError(response.statusCode);
+			}
+		}
+	);		
 }
 
 // ------------------------------------------
@@ -166,8 +282,21 @@ JanusVideoRoom.prototype.onReceiveCandidate = function(dataJson,name,sessionId,p
 	
 	for (var i=0; i<dataJson.length; i++) {
 		// send ICE candidate to Janus
-		var msg = { "janus": "trickle", "candidate": dataJson[i], "transaction": Math.random().toString()  };
-		sendRequest(this.request, this.janusUrl + "/" + sessionId + "/" + pluginid, null, msg);		
+		var candidateReq = { "janus": "trickle", "candidate": dataJson[i], "transaction": Math.random().toString()  };
+		
+		var bind = this;
+		request("POST" , this.janusUrl + "/" + sessionId + "/" + pluginid,
+			{	
+				body: JSON.stringify(candidateReq),
+			}).done( function (response) { 
+				if (response.statusCode === 200) {
+					console.log("onReceiveCandidate janus answer:" + response.body);
+				}
+				else {
+					bind.onError(response.statusCode);
+				}
+			}
+		);		
 	}
 	
 	// start long polling
@@ -178,8 +307,21 @@ JanusVideoRoom.prototype.onReceiveCandidate = function(dataJson,name,sessionId,p
 // Janus callback for keepAlive Session
 // ------------------------------------------
 JanusVideoRoom.prototype.keepAlive = function(sessionId) {
-	var msg = { "janus": "keepalive", "session_id": sessionId, "transaction": Math.random().toString()  };
-	sendRequest(this.request, this.janusUrl + "/" + sessionId, null, msg, function(dataJson) { console.log("keepAlive :" + JSON.stringify(dataJson)); }, this.onError, this);	
+	var keepAliveReq = { "janus": "keepalive", "session_id": sessionId, "transaction": Math.random().toString()  };
+	
+	var bind = this;
+	request("POST" , this.janusUrl + "/" + sessionId,
+		{	
+			body: JSON.stringify(keepAliveReq),
+		}).done( function (response) { 
+			if (response.statusCode === 200) {
+				console.log("keepAlive:" + response.body);
+			}
+			else {
+				bind.onError(response.statusCode);
+			}
+		}
+	);		
 }
 
 // ------------------------------------------
@@ -203,8 +345,21 @@ JanusVideoRoom.prototype.longpoll = function(dataJson, name, sessionId) {
 		}
 	}
 	
-	sendRequest(this.request, this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1", null, null, function(dataJson) { this.longpoll(dataJson, name, sessionId); }, function(dataJson) { this.longpoll(dataJson, name, sessionId); }, this);
+	var bind = this;
+	request("GET" , this.janusUrl + "/" + sessionId + "?rid=" + new Date().getTime() + "&maxev=1")
+		.done( function (response) { 
+			bind.longpoll( JSON.parse(response.body), name, sessionId);
+		}
+	);		
 }
+
+// ------------------------------------------
+// Janus callback for Error
+// ------------------------------------------
+JanusVideoRoom.prototype.onError = function(status) {
+	console.log("onError:" + status);
+}
+
 
 return JanusVideoRoom;
 })();
