@@ -89,13 +89,13 @@ Example
 				rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov
 
 
-[![Screenshot](images/snapshot.png)](https://webrtc-streamer.herokuapp.com/)
+[![Screenshot](images/snapshot.png)](https://rtsp2webrtc.herokuapp.com/)
 
-[Live Demo](https://webrtc-streamer.herokuapp.com/)
+[Live Demo](https://rtsp2webrtc.herokuapp.com/)
 
 You can access to the WebRTC stream coming from an RTSP url using [webrtcstreamer.html](html/webrtcstreamer.html) page with the RTSP url as argument, something like:
 
-   https://webrtc-streamer.herokuapp.com/webrtcstreamer.html?rtsp://217.17.220.110/axis-media/media.amp
+   https://rtsp2webrtc.herokuapp.com/webrtcstreamer.html?rtsp://217.17.220.110/axis-media/media.amp
 
 Embed in a HTML page:
 ===============
@@ -140,11 +140,11 @@ A short sample to publish WebRTC streams to Janus Video Room could be :
 	</head>
 	</html>
 
-[![Screenshot](images/janusvideoroom.png)](https://webrtc-streamer.herokuapp.com/janusvideoroom.html)
+[![Screenshot](images/janusvideoroom.png)](https://rtsp2webrtc.herokuapp.com/janusvideoroom.html)
 
-[Live Demo](https://webrtc-streamer.herokuapp.com/janusvideoroom.html)
+[Live Demo](https://rtsp2webrtc.herokuapp.com/janusvideoroom.html)
 
-This way the communication between [Janus API](https://janus.conf.meetecho.com/docs/JS.html) and [WebRTC Streamer API](https://webrtc-streamer.herokuapp.com/help) is implemented in Javascript running in browser.
+This way the communication between [Janus API](https://janus.conf.meetecho.com/docs/JS.html) and [WebRTC Streamer API](https://rtsp2webrtc.herokuapp.com/help) is implemented in Javascript running in browser.
 
 The same logic could be implemented in NodeJS using the same JS API :
 
