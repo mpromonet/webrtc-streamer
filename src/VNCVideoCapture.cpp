@@ -55,6 +55,7 @@ char* VNCVideoCapturer::onGetPassword() {
 
 void VNCVideoCapturer::onClick(int x, int y, int buttonMask) {
 	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Sending click!!! (" << x << ',' << y << ") with click: " << buttonMask;
+	SendPointerEvent(client, (int) client->width * (x / 1000.0), (int) client->height * (y / 1000.0), buttonMask);
 }
 
 void VNCVideoCapturer::onFrameBufferUpdate() {

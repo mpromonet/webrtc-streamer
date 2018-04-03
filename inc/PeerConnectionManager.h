@@ -122,7 +122,7 @@ class PeerConnectionManager {
 
 	class DataChannelObserver : public webrtc::DataChannelObserver  {
 		public:
-			DataChannelObserver(rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel, const std::string peerid, PeerConnectionManager* pm): m_peerid(peerid), m_manager(pm) {
+			DataChannelObserver(rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel, const std::string &peerid, PeerConnectionManager* pm): m_dataChannel(dataChannel), m_peerid(peerid), m_manager(pm) {
 				m_dataChannel->RegisterObserver(this);
 			
 			}
@@ -139,7 +139,7 @@ class PeerConnectionManager {
 			}
 			virtual void OnMessage(const webrtc::DataBuffer& buffer) {
 				std::string msg((const char*)buffer.data.data(),buffer.data.size());
-				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Got back Data Channel message!!";
+				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Got back Data Channel message!!" << msg;
 				Json::Value  jmessage;
 				// parse in
 				Json::Reader reader;
@@ -166,6 +166,7 @@ class PeerConnectionManager {
 					RTC_LOG(WARNING) << "This stream can not support vnc events!!!";
 					return;
 				}
+				RTC_LOG(WARNING) << "Got back clicks: " << clicks.size();
 				for (auto &click : clicks) {
 					int x, y, buttonMask;
 					if (!rtc::GetIntFromJsonObject(click, "x", &x)
@@ -175,6 +176,7 @@ class PeerConnectionManager {
 						RTC_LOG(WARNING) << "Can not parse clicks!!";
 						break;
 					}
+					RTC_LOG(WARNING) << "Processing a click!!!";
 
 					capturer->onClick(x, y, buttonMask);
 				}
@@ -183,7 +185,7 @@ class PeerConnectionManager {
 		protected:
 			rtc::scoped_refptr<webrtc::DataChannelInterface>    m_dataChannel;
 			PeerConnectionManager* m_manager;
-			const std::string m_peerid;
+			const std::string &m_peerid;
 	};
 
 	class PeerConnectionObserver : public webrtc::PeerConnectionObserver {
