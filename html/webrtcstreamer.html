@@ -38,10 +38,12 @@
 		function setupEventHandlers(elem) {
 			elem.addEventListener("contextmenu", event => event.preventDefault());
 			const handleMouseEv = ev => onEvent({
-				type: 'pointer',
-				x: Math.floor(1000 * (ev.x / ev.target.clientWidth)),
-				y: Math.floor(1000 * (ev.y / ev.target.clientHeight)),
-				button: ev.buttons,
+				presses: [],
+				clicks: [{
+					x: Math.floor(1000 * (ev.x / ev.target.clientWidth)),
+                    y: Math.floor(1000 * (ev.y / ev.target.clientHeight)),
+					button: ev.buttons,
+				}]
 			});
 			elem.addEventListener("mousedown", handleMouseEv);
 			elem.addEventListener("mouseup", handleMouseEv);

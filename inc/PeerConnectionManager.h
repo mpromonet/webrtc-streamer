@@ -140,43 +140,48 @@ class PeerConnectionManager {
 			virtual void OnMessage(const webrtc::DataBuffer& buffer) {
 				std::string msg((const char*)buffer.data.data(),buffer.data.size());
 				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Got back Data Channel message!!" << msg;
+				VNCVideoCapturer* capturer = m_manager->vnc_map_[m_peerid];
+				if (!capturer) {
+					RTC_LOG(LERROR) << "This stream can not support vnc events!!!";
+					return;
+				}
+				RTC_LOG(LERROR) << "Got VNC STream!!";
+
 				Json::Value  jmessage;
 				// parse in
 				Json::Reader reader;
 				if (!reader.parse(msg, jmessage))
 				{
-					RTC_LOG(WARNING) << "Received non-json message:" << msg;
+					RTC_LOG(LERROR) << "Received non-json message:" << msg;
 					return;
 				}
 
 				std::vector<Json::Value> clicks;
 				std::vector<Json::Value> presses;
 
+				RTC_LOG(LERROR) << "Got JSON properly!!";
 				if (!jmessage["clicks"] || !rtc::JsonArrayToValueVector(jmessage["clicks"], &clicks)) {
-					RTC_LOG(WARNING) << "msg didnt contain any clicks:" << msg;
+					RTC_LOG(LERROR) << "msg didnt contain any clicks:" << msg;
 					return;
 				}
+				RTC_LOG(LERROR) << "Got back clicks: " << clicks.size();
 
 				if (!jmessage["presses"] || !rtc::JsonArrayToValueVector(jmessage["presses"], &presses)) {
-					RTC_LOG(WARNING) << "msg didnt contain any presses:" << msg;
+					RTC_LOG(LERROR)  << "msg didnt contain any presses:" << msg;
 					return;
 				}
-				VNCVideoCapturer* capturer = m_manager->vnc_map_[m_peerid];
-				if (!capturer) {
-					RTC_LOG(WARNING) << "This stream can not support vnc events!!!";
-					return;
-				}
-				RTC_LOG(WARNING) << "Got back clicks: " << clicks.size();
+				RTC_LOG(LERROR) << "Got presses: " << presses.size();
+				
 				for (auto &click : clicks) {
 					int x, y, buttonMask;
 					if (!rtc::GetIntFromJsonObject(click, "x", &x)
 						|| !rtc::GetIntFromJsonObject(click, "y", &y)
 						|| !rtc::GetIntFromJsonObject(click, "button", &buttonMask)
 					) {
-						RTC_LOG(WARNING) << "Can not parse clicks!!";
+						RTC_LOG(LERROR) << "Can not parse clicks!!";
 						break;
 					}
-					RTC_LOG(WARNING) << "Processing a click!!!";
+					RTC_LOG(LERROR) << "Processing a click!!!";
 
 					capturer->onClick(x, y, buttonMask);
 				}

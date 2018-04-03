@@ -54,8 +54,9 @@ char* VNCVideoCapturer::onGetPassword() {
 }
 
 void VNCVideoCapturer::onClick(int x, int y, int buttonMask) {
-	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Sending click!!! (" << x << ',' << y << ") with click: " << buttonMask;
-	SendPointerEvent(client, (int) client->width * (x / 1000.0), (int) client->height * (y / 1000.0), buttonMask);
+	double xRatio = x / 1000.0, yRatio = y / 1000.0;
+	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Sending click!!! (" << xRatio << ',' << yRatio << ") with click: " << buttonMask;
+	SendPointerEvent(client, (int) client->width * xRatio, (int) client->height * yRatio, buttonMask);
 }
 
 void VNCVideoCapturer::onFrameBufferUpdate() {
