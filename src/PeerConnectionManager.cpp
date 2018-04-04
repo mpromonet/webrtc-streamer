@@ -158,11 +158,6 @@ const Json::Value PeerConnectionManager::getVideoDeviceList()
 		}
 	}
 
-	for (auto url : urlList_)
-	{
-		value.append(url.first);
-	}
-
 	return value;
 }
 
@@ -176,7 +171,6 @@ const Json::Value PeerConnectionManager::getAudioDeviceList()
 	int16_t num_audioDevices = audioDeviceModule_->RecordingDevices();
 	RTC_LOG(INFO) << "nb audio devices:" << num_audioDevices;
 
-	std::map<std::string,std::string> deviceMap;
 	for (int i = 0; i < num_audioDevices; ++i)
 	{
 		char name[webrtc::kAdmMaxDeviceNameSize] = {0};
@@ -184,11 +178,8 @@ const Json::Value PeerConnectionManager::getAudioDeviceList()
 		if (audioDeviceModule_->RecordingDeviceName(i, name, id) != -1)
 		{
 			RTC_LOG(INFO) << "audio device name:" << name << " id:" << id;
-			deviceMap[name]=id;
+			value.append(name);
 		}
-	}
-	for (auto& pair : deviceMap) {
-		value.append(pair.first);
 	}
 
 	return value;
