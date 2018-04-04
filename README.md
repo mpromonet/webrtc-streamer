@@ -62,7 +62,7 @@ Build WebRTC Streamer
 	make WEBRTCROOT=<path to WebRTC> WEBRTCBUILD=<Release or Debug>
 	
 where WEBRTCROOT and WEBRTCBUILD indicate how to point to WebRTC :
- - $WEBRTCROOT/src should contains source (default is ../webrtc) 
+ - $WEBRTCROOT/src should contains source (default is $(pwd)/../webrtc) 
  - $WEBRTCROOT/src/out/$WEBRTCBUILD should contains libraries (default is Release)
 
 Usage
