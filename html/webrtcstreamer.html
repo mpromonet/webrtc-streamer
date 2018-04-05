@@ -5,6 +5,7 @@
 <script src="sendrequest.js" ></script>
 <script src="webrtcstreamer.json" ></script>
 <script src="webrtcstreamer.js" ></script>
+<script src="build/index.js"></script>
 <script>
 	(function init() {
 		if (!location.search.slice(1)) {
@@ -25,34 +26,9 @@
 			}
 			options = params.get("options");
 		}
-		function onEvent(obj) {
-			const message = JSON.stringify(obj);
-			if (!webRtcServer.dc) {
-				console.log('ignoring message: ', message);
-				return;
-			}
-			console.log('sending message: ', message);
-			webRtcServer.dc.send(message);
-		}
-
-		function setupEventHandlers(elem) {
-			elem.addEventListener("contextmenu", event => event.preventDefault());
-			const handleMouseEv = ev => onEvent({
-				presses: [],
-				clicks: [{
-					x: Math.floor(1000 * (ev.x / ev.target.clientWidth)),
-                    y: Math.floor(1000 * (ev.y / ev.target.clientHeight)),
-					button: ev.buttons,
-				}]
-			});
-			elem.addEventListener("mousedown", handleMouseEv);
-			elem.addEventListener("mouseup", handleMouseEv);
-			elem.addEventListener("mousemove", handleMouseEv);
-		} 	    
-
 		window.onload = function() {
 			webRtcServer.connect(url.video,url.audio,options)
-			setupEventHandlers(document.getElementById('video'));
+			window.setupElement(document.getElementById('video'), webRtcServerl);
 		}
 		window.onbeforeunload = function() {
 			webRtcServer.disconnect()
