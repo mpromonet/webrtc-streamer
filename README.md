@@ -79,7 +79,7 @@ Usage
         	-v[v[v]]           : verbosity
         	-V                 : print version
 
-Arguments of '-H' is forwarded to option 'listening_ports' of civetweb, then it is possible to use the civetweb syntax like '-H8000,9000' or '-H8080r,8443'.
+Arguments of '-H' is forwarded to option [listening_ports](https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md#listening_ports-8080) of civetweb, then it is possible to use the civetweb syntax like '-H8000,9000' or '-H8080r,8443s'.
 
 Example
 -----
