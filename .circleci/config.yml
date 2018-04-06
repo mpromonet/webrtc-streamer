@@ -2,10 +2,6 @@ defaults: &defaults
   working_directory: ~/webrtc-streamer
   docker:
     - image: heroku/heroku:16
-  environment:
-    GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false rtc_build_examples=false' 
-    TAR_OPTIONS: --no-same-owner
-    WEBRTCROOT: /webrtc 
     
 version: 2
 jobs:
@@ -13,6 +9,9 @@ jobs:
     <<: *defaults
     
     environment:
+      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false rtc_build_examples=false' 
+      TAR_OPTIONS: --no-same-owner
+      WEBRTCROOT: /webrtc 
       GYP_GENERATOR_OUTPUT: "x86_64"
       GNARGS: 'is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome"'      
 
@@ -63,6 +62,9 @@ jobs:
     
     environment:
       GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false rtc_build_examples=false' 
+      TAR_OPTIONS: --no-same-owner
+      WEBRTCROOT: /webrtc 
+      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false rtc_build_examples=false' 
       GYP_GENERATOR_OUTPUT: "rpi-armv7"  
       GNARGS: 'is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" is_clang=false target_cpu="arm" treat_warnings_as_errors=false' 
       CROSS: arm-linux-gnueabihf- 
@@ -95,6 +97,9 @@ jobs:
     <<: *defaults
     
     environment:
+      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false rtc_build_examples=false' 
+      TAR_OPTIONS: --no-same-owner
+      WEBRTCROOT: /webrtc 
       GYP_GENERATOR_OUTPUT: "rpi-armv6"  
       GNARGS: 'is_debug=false is_clang=false target_cpu="arm" treat_warnings_as_errors=false arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false' 
       CROSS: arm-linux-gnueabihf- 
