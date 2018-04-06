@@ -1,5 +1,5 @@
-import Keyboard from 'novnc/core/input/keyboard';
-import Mouse from 'noVNC/core/input/mouse';
+import Keyboard from '@novnc/novnc/core/input/keyboard';
+import Mouse from '@novnc/novnc/core/input/mouse';
 
 window.setupElement = function setupElement(elem, webrtcServer) {
     function onEvent(obj) {
@@ -19,7 +19,7 @@ window.setupElement = function setupElement(elem, webrtcServer) {
             presses: [{
                 down,
                 code,
-                keysym, 
+                keysym,
             }],
         });
     };
@@ -45,4 +45,7 @@ window.setupElement = function setupElement(elem, webrtcServer) {
             }]
         });
     };
+
+    mouse.grab();
+    keyboard.grab();
 }

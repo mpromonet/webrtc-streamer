@@ -8,5 +8,9 @@
   },
   "dependencies": {
     "@novnc/novnc": "^1.0.0"
+  },
+  "devDependencies": {
+    "webpack": "^4.5.0",
+    "webpack-cli": "^2.0.14"
   }
 }
