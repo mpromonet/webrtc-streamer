@@ -27,6 +27,7 @@ window.setupElement = function setupElement(elem, webrtcServer) {
 
     const mouse = new Mouse(elem);
     mouse.onmousebutton = (x, y, down, bmask) => {
+        console.log('got back mouse button: ', x, y, down, bmask);
         onEvent({
             presses: [],
             clicks: [{
@@ -37,6 +38,7 @@ window.setupElement = function setupElement(elem, webrtcServer) {
         });
     };
     mouse.onmousemove = (x, y) => {
+        console.log('on mouse move: ', x, y);
         onEvent({
             presses: [],
             clicks: [{
