@@ -19,7 +19,7 @@ const onMouseEvent = (webrtcServer, clickEvent) => onEvent(webrtcServer, {
 const onKeyboardEvent = (webrtcServer, keyEvent) => onEvent(webrtcServer, {
     clicks: [],
     presses: [keyEvent],
-})
+});
 
 window.setupElement = function setupElement(elem, webrtcServer) {
     console.log('setting up webrtc element!', elem, webrtcServer);
@@ -28,6 +28,7 @@ window.setupElement = function setupElement(elem, webrtcServer) {
 
     const keyboard = new Keyboard(elem);
     keyboard.onkeyevent = (keysym, code, down) => {
+        console.log('got back keyboard event: ', keysym, code, down);
         onKeyboardEvent(webrtcServer, {
             down,
             code,
@@ -59,4 +60,5 @@ window.setupElement = function setupElement(elem, webrtcServer) {
 
     mouse.grab();
     keyboard.grab();
+    console.log('grabbed keyboard successfully!: ', keyboard);
 }

@@ -59,6 +59,11 @@ void VNCVideoCapturer::onClick(int x, int y, int buttonMask) {
 	SendPointerEvent(client, (int) client->width * xRatio, (int) client->height * yRatio, buttonMask);
 }
 
+void VNCVideoCapturer::onPress(unsigned int code, bool down) {
+	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Sending key!!! (" << code << ',' << down << ")";
+	SendKeyEvent(client, code, down);
+}
+
 void VNCVideoCapturer::onFrameBufferUpdate() {
 	int i, j;
 	rfbPixelFormat* pf = &client->format;

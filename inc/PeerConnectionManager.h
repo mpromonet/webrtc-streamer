@@ -170,7 +170,22 @@ class PeerConnectionManager {
 					RTC_LOG(LERROR)  << "msg didnt contain any presses:" << msg;
 					return;
 				}
+
 				RTC_LOG(LERROR) << "Got presses: " << presses.size();
+
+				for (auto &press : presses) {
+					unsigned int code;
+					bool down;
+					if (!rtc::GetBoolFromJsonObject(press, "down", &down)
+						|| !rtc::GetUIntFromJson(press, "code", &code)
+					) {
+						RTC_LOG(LERROR) << "Can not parse presses!!";
+						break;
+					}
+					RTC_LOG(LERROR) << "Processing a press!!!";
+
+					capturer->onPress(code, down);
+				}
 				
 				for (auto &click : clicks) {
 					int x, y, buttonMask;
