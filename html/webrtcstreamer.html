@@ -16,8 +16,8 @@
 			}
 			return;
 		}
-		let webRtcServer      = new WebRtcStreamer("video", webrtcConfig.url, request);
-		let url = { video:location.search.slice(1) };  
+		let webrtcServer      = new WebRtcStreamer("video", webrtcConfig.url, request);
+		let url = { video:location.search.slice(1) };
 		let options;
 		if (typeof URLSearchParams != 'undefined') {
 			let params = new URLSearchParams(location.search.slice(1));
@@ -27,16 +27,17 @@
 			options = params.get("options");
 		}
 		window.onload = function() {
-			webRtcServer.connect(url.video,url.audio,options)
-			window.setupElement(document.getElementById('video'), webRtcServerl);
+			webrtcServer.connect(url.video,url.audio,options)
+      console.log('calling window setupElement', window.setupElement);
+			window.setupElement(document.getElementById('video'), webrtcServer);
 		}
 		window.onbeforeunload = function() {
-			webRtcServer.disconnect()
+			webrtcServer.disconnect()
 		}
 	})();
 </script>
 </head>
-<body> 
+<body>
     <video id="video" />
 </body>
 </html>

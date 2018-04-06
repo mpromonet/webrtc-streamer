@@ -2,6 +2,7 @@ import Keyboard from '@novnc/novnc/core/input/keyboard';
 import Mouse from '@novnc/novnc/core/input/mouse';
 
 window.setupElement = function setupElement(elem, webrtcServer) {
+    console.log('setting up webrtc element!', elem, webrtcServer);
     function onEvent(obj) {
         const message = JSON.stringify(obj);
         if (!webrtcServer.dc) {
