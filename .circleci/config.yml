@@ -1,15 +1,20 @@
+defaults: &defaults
+  working_directory: ~/webrtc-streamer
+  docker:
+    - image: heroku/heroku:16
+  environment:
+    GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false rtc_build_examples=false' 
+    TAR_OPTIONS: --no-same-owner
+    WEBRTCROOT: /webrtc 
+    
 version: 2
 jobs:
   build_x86_64:
-    working_directory: ~/webrtc-streamer
-    docker:
-      - image: heroku/heroku:16
+    <<: *defaults
+    
     environment:
-      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false rtc_build_examples=false' 
       GYP_GENERATOR_OUTPUT: "x86_64"
       GNARGS: 'is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome"'      
-      TAR_OPTIONS: --no-same-owner
-      WEBRTCROOT: /webrtc 
 
     steps:
       - checkout
@@ -54,16 +59,13 @@ jobs:
           command: git add -f webrtc-streamer && git -c user.name='ci' -c user.email='ci@email.org' commit -m 'force add for heroku deployement' && git push --force git@heroku.com:rtsp2webrtc.git HEAD:refs/heads/master
 
   build_rpi_armv7:
-    working_directory: ~/webrtc-streamer
-    docker:
-      - image: heroku/heroku:16
+    <<: *defaults
+    
     environment:
       GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false rtc_build_examples=false' 
       GYP_GENERATOR_OUTPUT: "rpi-armv7"  
       GNARGS: 'is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" is_clang=false target_cpu="arm" treat_warnings_as_errors=false' 
       CROSS: arm-linux-gnueabihf- 
-      TAR_OPTIONS: --no-same-owner
-      WEBRTCROOT: /webrtc 
 
     steps:
       - checkout
@@ -71,11 +73,10 @@ jobs:
       - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make g++ xz-utils
       - run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
-      - run: git clone --depth 1 https://github.com/raspberrypi/tools.git /rpi_tools 
-      - run: echo 'export PATH=/rpi_tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin:$PATH' >> $BASH_ENV 
+      - run: wget -qO- https://releases.linaro.org/components/toolchain/binaries/latest-6/arm-linux-gnueabihf/gcc-linaro-6.4.1-2017.11-x86_64_arm-linux-gnueabihf.tar.xz  | sudo tar xJ -C /opt 
+      - run: echo 'export PATH=/opt/gcc-linaro-6.4.1-2017.11-x86_64_arm-linux-gnueabihf/bin:$PATH' >> $BASH_ENV
       - run: mkdir ${WEBRTCROOT} && cd ${WEBRTCROOT} && fetch --no-history --nohooks webrtc 
       - run: sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" ${WEBRTCROOT}/src/DEPS 
-      - run: sed -i -e "s|const auto iter = FindSourceInList(audio_source, &audio_source_list_);|const auto iter = std::find_if(audio_source_list_.begin(), audio_source_list_.end(), [audio_source](const std::unique_ptr<AudioMixerImpl::SourceStatus> \&p) { return p->audio_source == audio_source; });|" ${WEBRTCROOT}/src/modules/audio_mixer/audio_mixer_impl.cc
       - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
       - run: cd ${WEBRTCROOT} && gclient sync 
       - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}"
@@ -91,16 +92,12 @@ jobs:
             - distrib 
 
   build_rpi_armv6:
-    working_directory: ~/webrtc-streamer
-    docker:
-      - image: heroku/heroku:16
+    <<: *defaults
+    
     environment:
-      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false rtc_build_examples=false' 
       GYP_GENERATOR_OUTPUT: "rpi-armv6"  
       GNARGS: 'is_debug=false is_clang=false target_cpu="arm" treat_warnings_as_errors=false arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false' 
       CROSS: arm-linux-gnueabihf- 
-      TAR_OPTIONS: --no-same-owner
-      WEBRTCROOT: /webrtc 
       CFLAGS_EXTRA: "-march=armv6 -mfpu=vfp -mfloat-abi=hard"
 
     steps:
@@ -109,11 +106,10 @@ jobs:
       - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make g++ xz-utils
       - run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
-      - run: git clone --depth 1 https://github.com/raspberrypi/tools.git /rpi_tools 
-      - run: echo 'export PATH=/rpi_tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin:$PATH' >> $BASH_ENV 
+      - run: wget -qO- https://releases.linaro.org/components/toolchain/binaries/latest-6/arm-linux-gnueabihf/gcc-linaro-6.4.1-2017.11-x86_64_arm-linux-gnueabihf.tar.xz  | sudo tar xJ -C /opt 
+      - run: echo 'export PATH=/opt/gcc-linaro-6.4.1-2017.11-x86_64_arm-linux-gnueabihf/bin:$PATH' >> $BASH_ENV
       - run: mkdir ${WEBRTCROOT} && cd ${WEBRTCROOT} && fetch --no-history --nohooks webrtc 
       - run: sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" ${WEBRTCROOT}/src/DEPS 
-      - run: sed -i -e "s|const auto iter = FindSourceInList(audio_source, &audio_source_list_);|const auto iter = std::find_if(audio_source_list_.begin(), audio_source_list_.end(), [audio_source](const std::unique_ptr<AudioMixerImpl::SourceStatus> \&p) { return p->audio_source == audio_source; });|" ${WEBRTCROOT}/src/modules/audio_mixer/audio_mixer_impl.cc
       - run: cd ${WEBRTCROOT} && gclient sync 
       - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}"
       - run: make live555 alsa-lib
@@ -129,9 +125,8 @@ jobs:
 
 
   store_artifact:
-    working_directory: ~/webrtc-streamer
-    docker:
-      - image: heroku/heroku:16
+    <<: *defaults
+    
     steps:
       - attach_workspace:
           at: /
@@ -139,9 +134,8 @@ jobs:
           path: /distrib
 
   github_release:
-    working_directory: ~/webrtc-streamer
-    docker:
-      - image: heroku/heroku:16
+    <<: *defaults
+    
     steps:
       - attach_workspace:
           at: /
