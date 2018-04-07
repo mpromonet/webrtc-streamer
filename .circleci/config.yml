@@ -56,7 +56,31 @@ jobs:
       - persist_to_workspace:
           root: /
           paths:
-            - distrib 
+
+  # -------------------------------------
+  # build x86_64
+  # -------------------------------------
+  build_heroku:
+    <<: *defaults
+    
+    environment:
+      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false' 
+      TAR_OPTIONS: --no-same-owner
+      WEBRTCROOT: /webrtc 
+      GYP_GENERATOR_OUTPUT: "x86_64"
+      GNARGS: 'is_debug=false use_ozone=true rtc_use_h264=true ffmpeg_branding="Chrome"'      
+
+    steps:
+      - attach_workspace:
+          at: /          
+      - checkout
+      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make g++ xz-utils
+      - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
+      - run: cd ${WEBRTCROOT} && gclient sync 
+      - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}" 
+      - run: make live555 alsa-lib
+      - run: cd ${WEBRTCROOT}/src && ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory
+      - run: make all tgz 
 
       # deploy on heroku
       - run:
@@ -193,6 +217,12 @@ workflows:
           filters:
             tags:
               only: /.*/            
+      - build_heroku:
+          requires:
+            - setup
+          filters:
+            tags:
+              only: /.*/            
       - build_rpi_armv7:
           requires:
             - setup
@@ -208,6 +238,7 @@ workflows:
       - store_artifact:
           requires:
             - build_x86_64
+            - build_heroku
             - build_rpi_armv7
             - build_rpi_armv6
           filters:

@@ -32,6 +32,13 @@ Nowdays there is 3 builds on [CircleCI](https://circleci.com/gh/mpromonet/webrtc
  * for armv7 crosscompiling with gcc-linaro-arm-linux-gnueabihf-raspbian-x64 (this build is running on Raspberry Pi2 and NanoPi NEO)
  * for armv6+vfp crosscompiling with gcc-linaro-arm-linux-gnueabihf-raspbian-x64 (this build is running on Raspberry PiB and should run on a Raspberry Zero)
 
+The webrtc stream name could be :
+ * an alias defined using -n argument then the corresponding -u argument will be used to create the capturer
+ * an "rtsp://" url that will be openned using an RTSP capturer based on live555
+ * an "screen://" url that will be openned by webrtc::DesktopCapturer::CreateScreenCapturer 
+ * an "window://" url that will be openned by webrtc::DesktopCapturer::CreateWindowCapturer 
+ * a V4L2 capture device name
+
 Dependencies :
 -------------
 It is based on :
@@ -70,14 +77,18 @@ Usage
 	./webrtc-streamer [-H http port] [-S[embeded stun address]] -[v[v]]  [url1]...[urln]
 	./webrtc-streamer [-H http port] [-s[external stun address]] -[v[v]] [url1]...[urln]
 	./webrtc-streamer -V
+        	-v[v[v]]           : verbosity
+        	-V                 : print version
          	-H [hostname:]port : HTTP server binding (default 0.0.0.0:8000)
+
          	-S[stun_address]   : start embeded STUN server bind to address (default 0.0.0.0:3478)
          	-s[stun_address]   : use an external STUN server (default stun.l.google.com:19302)
          	-t[username:password@]turn_address : use an external TURN relay server (default disabled)		
+
         	-a[audio layer]    : spefify audio capture layer to use (default:3)		
+
+		-n name -u url     : register a name for an url
          	[url]              : url to register in the source list
-        	-v[v[v]]           : verbosity
-        	-V                 : print version
 
 Arguments of '-H' is forwarded to option [listening_ports](https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md#listening_ports-8080) of civetweb, then it is possible to use the civetweb syntax like '-H8000,9000' or '-H8080r,8443s'.
 
