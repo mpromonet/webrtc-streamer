@@ -5,6 +5,9 @@ defaults: &defaults
     
 version: 2
 jobs:
+  # -------------------------------------
+  # dowload common tools & checkout
+  # -------------------------------------
   setup:
     <<: *defaults
     
@@ -24,7 +27,10 @@ jobs:
           root: /
           paths:
             - depot_tools 
-
+            
+  # -------------------------------------
+  # build x86_64
+  # -------------------------------------
   build_x86_64:
     <<: *defaults
     
@@ -45,7 +51,6 @@ jobs:
       - run: make live555 alsa-lib
       - run: make all tgz 
 
-      # archive artifacts
       - run: mkdir /distrib && cp *.tgz /distrib
       - persist_to_workspace:
           root: /
@@ -73,6 +78,9 @@ jobs:
           name: "Deploy to Heroku"
           command: git add -f webrtc-streamer && git -c user.name='ci' -c user.email='ci@email.org' commit -m 'force add for heroku deployement' && git push --force git@heroku.com:rtsp2webrtc.git HEAD:refs/heads/master
 
+  # -------------------------------------
+  # build for RPI2
+  # -------------------------------------
   build_rpi_armv7:
     <<: *defaults
     
@@ -98,13 +106,15 @@ jobs:
       - run: make live555 alsa-lib
       - run: make all tgz 
 
-      # archive artifacts
       - run: mkdir /distrib && cp *.tgz /distrib
       - persist_to_workspace:
           root: /
           paths:
             - distrib 
 
+  # -------------------------------------
+  # build for RPI1/B
+  # -------------------------------------
   build_rpi_armv6:
     <<: *defaults
     
@@ -129,7 +139,6 @@ jobs:
       - run: make live555 alsa-lib
       - run: make all tgz 
 
-      # archive artifacts
       - run: mkdir /distrib && cp *.tgz /distrib
       - persist_to_workspace:
           root: /
@@ -137,6 +146,9 @@ jobs:
             - distrib 
 
 
+  # -------------------------------------
+  # store artifact in circleci
+  # -------------------------------------
   store_artifact:
     <<: *defaults
     
@@ -145,7 +157,10 @@ jobs:
           at: /
       - store_artifacts:
           path: /distrib
-
+          
+  # -------------------------------------
+  # publish artifact on github
+  # -------------------------------------
   github_release:
     <<: *defaults
     
@@ -163,6 +178,10 @@ workflows:
   version: 2
   build:
     jobs:
+      - setup:
+          filters:
+            tags:
+              only: /.*/            
       - build_x86_64:
           requires:
             - setup
