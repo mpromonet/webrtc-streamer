@@ -17,7 +17,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf au
 	&& sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
 	&& gclient sync \
 	&& cd src \
-	&& gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false' \
+	&& gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false use_sysroot=false' \
 	&& ninja -C out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory \
 	&& make -C /webrtc-streamer live555 \
 	&& make -C /webrtc-streamer all \
