@@ -1,5 +1,5 @@
 defaults: &defaults
-  working_directory: ~/webrtc-streamer
+  working_directory: /webrtc-streamer
   docker:
     - image: heroku/heroku:16
     
@@ -28,6 +28,7 @@ jobs:
           paths:
             - depot_tools 
             - webrtc
+            - webrtc-streamer
             
   # -------------------------------------
   # build x86_64
@@ -45,12 +46,12 @@ jobs:
     steps:
       - attach_workspace:
           at: /
-      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make g++ xz-utils libgtk-3-dev  
+      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make g++ xz-utils libgtk-3-dev libasound2-dev
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: cd ${WEBRTCROOT} && gclient sync 
       - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}" 
       - run: cd ${WEBRTCROOT}/src && ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory
-      - run: make live555 alsa-lib
+      - run: make live555
       - run: make all tgz 
 
       - run: mkdir /distrib && cp *.tgz /distrib
@@ -138,8 +139,8 @@ jobs:
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: cd ${WEBRTCROOT} && gclient sync 
       - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}"
-      - run: cd ${WEBRTCROOT}/src && ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory
-      - run: make live555 alsa-lib
+      - run: cd ${WEBRTCROOT}/src && ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc
+      - run: make live555
       - run: make all tgz 
 
       - run: mkdir /distrib && cp *.tgz /distrib
