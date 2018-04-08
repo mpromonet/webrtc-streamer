@@ -120,6 +120,31 @@ const Json::Value PeerConnectionManager::getMediaList()
 				value.append(media);
 			}
 		}
+		
+
+#ifdef USE_X11
+		std::unique_ptr<webrtc::DesktopCapturer> capturer = webrtc::DesktopCapturer::CreateWindowCapturer(webrtc::DesktopCaptureOptions::CreateDefault());		
+		webrtc::DesktopCapturer::SourceList sourceList;
+		if (capturer->GetSourceList(&sourceList)) {
+			for (auto source : sourceList) {
+				std::ostringstream os;
+				os << "window://" << source.title;
+				Json::Value media;
+				media["video"] = os.str();
+				value.append(media);
+			}
+		}
+		capturer = webrtc::DesktopCapturer::CreateScreenCapturer(webrtc::DesktopCaptureOptions::CreateDefault());		
+		if (capturer->GetSourceList(&sourceList)) {
+			for (auto source : sourceList) {
+				std::ostringstream os;
+				os << "screen://" << source.id;
+				Json::Value media;
+				media["video"] = os.str();
+				value.append(media);
+			}
+		}
+#endif		
 	}
 
 	for (auto url : urlList_)
