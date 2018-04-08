@@ -31,8 +31,7 @@ window.setupElement = function setupElement(elem, webrtcServer) {
         console.log('got back keyboard event: ', keysym, code, down);
         onKeyboardEvent(webrtcServer, {
             down,
-            code,
-            keysym,
+            code: keysym,
         });
     };
 
