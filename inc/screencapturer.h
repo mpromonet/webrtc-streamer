@@ -27,23 +27,24 @@ class ScreenCapturer : public cricket::VideoCapturer, public rtc::Thread, public
 			if (url.find(windowprefix) == 0) {				
 				m_capturer = webrtc::DesktopCapturer::CreateWindowCapturer(webrtc::DesktopCaptureOptions::CreateDefault());
 				
-				webrtc::DesktopCapturer::SourceList sourceList;
-				if (m_capturer->GetSourceList(&sourceList)) {
-					bool selected = false;
-					const std::string windowtitle(url.substr(windowprefix.length()));
-					for (auto source : sourceList) {
-						RTC_LOG(LS_ERROR) << "ScreenCapturer source:" << source.id << " title:"<< source.title;
-						if (windowtitle == source.title) {
-							m_capturer->SelectSource(source.id);
-							selected = true;
-							break;
+				if (m_capturer) {
+					webrtc::DesktopCapturer::SourceList sourceList;
+					if (m_capturer->GetSourceList(&sourceList)) {
+						bool selected = false;
+						const std::string windowtitle(url.substr(windowprefix.length()));
+						for (auto source : sourceList) {
+							RTC_LOG(LS_ERROR) << "ScreenCapturer source:" << source.id << " title:"<< source.title;
+							if (windowtitle == source.title) {
+								m_capturer->SelectSource(source.id);
+								selected = true;
+								break;
+							}
+						}
+						if (!selected && !sourceList.empty()) {
+							m_capturer->SelectSource(sourceList[0].id);
 						}
 					}
-					if (!selected && !sourceList.empty()) {
-						m_capturer->SelectSource(sourceList[0].id);
-					}
-				}
-				
+				}				
 			} else {
 				m_capturer = webrtc::DesktopCapturer::CreateScreenCapturer(webrtc::DesktopCaptureOptions::CreateDefault());
 			}			
