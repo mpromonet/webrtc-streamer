@@ -26,7 +26,7 @@ window.setupElement = function setupElement(elem, webrtcServer) {
     // Mouse button state
     let buttonMask = 0;
 
-    const keyboard = new Keyboard(elem);
+    const keyboard = new Keyboard(document);
     keyboard.onkeyevent = (keysym, code, down) => {
         console.log('got back keyboard event: ', keysym, code, down);
         onKeyboardEvent(webrtcServer, {
