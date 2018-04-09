@@ -139,13 +139,13 @@ class PeerConnectionManager {
 			}
 			virtual void OnMessage(const webrtc::DataBuffer& buffer) {
 				std::string msg((const char*)buffer.data.data(),buffer.data.size());
-				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Got back Data Channel message!!" << msg;
+				RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Got back Data Channel message!!" << msg;
 				VNCVideoCapturer* capturer = m_manager->vnc_map_[m_peerid];
 				if (!capturer) {
 					RTC_LOG(LERROR) << "This stream can not support vnc events!!!";
 					return;
 				}
-				RTC_LOG(LERROR) << "Got VNC STream!!";
+				RTC_LOG(LS_VERBOSE) << "Got VNC STream!!";
 
 				Json::Value  jmessage;
 				// parse in
@@ -158,19 +158,19 @@ class PeerConnectionManager {
 
 				std::vector<Json::Value> events;
 
-				RTC_LOG(LERROR) << "Got JSON properly!!";
+				RTC_LOG(LS_VERBOSE) << "Got JSON properly!!";
 				if (!jmessage["events"] || !rtc::JsonArrayToValueVector(jmessage["events"], &events)) {
 					RTC_LOG(LERROR) << "msg didnt contain any events:" << msg;
 					return;
 				}
-				RTC_LOG(LERROR) << "Got back events: " << events.size();
+				RTC_LOG(LS_VERBOSE) << "Got back events: " << events.size();
 
 				for (auto &event : events) {
 					int x, y, buttonMask;
 					unsigned int code;
 					bool down, isPress, isClick;
 					if (rtc::GetBoolFromJsonObject(event, "isPress", &isPress) && isPress) {
-						RTC_LOG(LERROR) << "Processing a press!!!";
+						RTC_LOG(LS_VERBOSE) << "Processing a press!!!";
 						if (!rtc::GetBoolFromJsonObject(event, "down", &down)
 							|| !rtc::GetUIntFromJsonObject(event, "code", &code)
 						) {
@@ -190,7 +190,7 @@ class PeerConnectionManager {
 							RTC_LOG(LERROR) << "Can not parse clicks!! - " << msg;
 							continue;
 						}
-						RTC_LOG(LERROR) << "Processing a click!!!";
+						RTC_LOG(LS_VERBOSE) << "Processing a click!!!";
 
 						capturer->onClick(x, y, buttonMask);
 						continue;

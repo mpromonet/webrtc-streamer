@@ -22,14 +22,35 @@ function flushEvents(webrtcServer) {
     webrtcServer.dc.send(message);
 }
 
+/*
+    Filter out all the mouse move events in between mouse button states.
+    e.g if first starts from (10, 20) then hovers to (10, 30), then clicks and drags
+    until (10, 40) then the filteredEvents will only keep events:
+    1. (10, 20) with button state static
+    2. (10, 30) with button state static
+    3. (10, 30) with button state dragged
+    4. (10, 40) with button state dragged
+*/
 function filteredEvents(pendingEvents) {
+    let skippedEvs = 0;
     const { currentClick, events: evs } = pendingEvents.reduce(({ currentClick, events }, ev) => {
+        let newEvents = events;
         if (ev.isClick) {
+            if (!currentClick) {
+                newEvents = [...newEvents, ev];
+            }
+            else if (currentClick.button !== ev.button) {
+                if (skippedEvs) {
+                    newEvents = [...newEvents, currentClick];
+                }
+            }
+            else {
+                skippedEvs++;
+            }
+
             return {
                 currentClick: ev,
-                events: (
-                    currentClick && currentClick.button !== ev.button
-                ) ? [...events, currentClick] : events,
+                events: newEvents,
             }
         }
 

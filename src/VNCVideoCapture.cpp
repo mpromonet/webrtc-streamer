@@ -55,12 +55,12 @@ char* VNCVideoCapturer::onGetPassword() {
 
 void VNCVideoCapturer::onClick(int x, int y, int buttonMask) {
 	double xRatio = x / 1000.0, yRatio = y / 1000.0;
-	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Sending click!!! (" << xRatio << ',' << yRatio << ") with click: " << buttonMask;
+	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Sending click!!! (" << xRatio << ',' << yRatio << ") with click: " << buttonMask;
 	SendPointerEvent(client, (int) client->width * xRatio, (int) client->height * yRatio, buttonMask);
 }
 
 void VNCVideoCapturer::onPress(unsigned int code, bool down) {
-	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Sending key!!! (" << code << ',' << down << ")";
+	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Sending key!!! (" << code << ',' << down << ")";
 	SendKeyEvent(client, code, down);
 }
 
