@@ -177,7 +177,7 @@ class PeerConnectionManager {
 					unsigned int code;
 					bool down;
 					if (!rtc::GetBoolFromJsonObject(press, "down", &down)
-						|| !rtc::GetUIntFromJson(press, "code", &code)
+						|| !rtc::GetUIntFromJsonObject(press, "code", &code)
 					) {
 						RTC_LOG(LERROR) << "Can not parse presses!!";
 						break;
