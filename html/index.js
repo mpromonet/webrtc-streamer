@@ -1,24 +1,59 @@
 import Keyboard from '@novnc/novnc/core/input/keyboard';
 import Mouse from '@novnc/novnc/core/input/mouse';
 
-function onEvent(webrtcServer, obj) {
-    const message = JSON.stringify(obj);
+let pendingEvents = [];
+let sendEventTimeout = null;
+function flushEvents(webrtcServer) {
+    clearTimeout(sendEventTimeout);
+    sendEventTimeout = setTimeout(flushEvents.bind(null, webrtcServer), 200);
+    const events = filteredEvents(pendingEvents);
+    pendingEvents = [];
+    if (!events.length) {
+        console.log('no pending events in this time slot');
+        return;
+    }
+    const message = JSON.stringify({ events });
     if (!webrtcServer.dc) {
         console.log('ignoring message: ', message);
         return;
     }
+    
     console.log('sending message: ', message);
     webrtcServer.dc.send(message);
 }
 
+function filteredEvents(pendingEvents) {
+    const { currentClick, events: evs } = pendingEvents.reduce(({ currentClick, events }, ev) => {
+        if (ev.isClick) {
+            return {
+                currentClick: ev,
+                events: (
+                    currentClick && currentClick.button !== ev.button
+                ) ? [...events, currentClick] : events,
+            }
+        }
+
+        return { currentClick, events: [...events, ev] };
+    }, { currentClick: null, events: [] });
+    return currentClick ? [...evs, currentClick] : evs;
+}
+
+function onEvent(webrtcServer, event) {
+    pendingEvents.push(event);
+    // respond instantly when a keyboard press, mouse button press or initial event
+    if (event.isPress || !sendEventTimeout || event.button) {
+        flushEvents(webrtcServer);
+    }
+}
+
 const onMouseEvent = (webrtcServer, clickEvent) => onEvent(webrtcServer, {
-    presses: [],
-    clicks: [clickEvent],
+    ...clickEvent,
+    isClick: true,
 });
 
 const onKeyboardEvent = (webrtcServer, keyEvent) => onEvent(webrtcServer, {
-    clicks: [],
-    presses: [keyEvent],
+    ...keyEvent,
+    isPress: true,
 });
 
 window.setupElement = function setupElement(elem, webrtcServer) {

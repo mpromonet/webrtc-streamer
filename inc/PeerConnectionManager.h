@@ -156,49 +156,47 @@ class PeerConnectionManager {
 					return;
 				}
 
-				std::vector<Json::Value> clicks;
-				std::vector<Json::Value> presses;
+				std::vector<Json::Value> events;
 
 				RTC_LOG(LERROR) << "Got JSON properly!!";
-				if (!jmessage["clicks"] || !rtc::JsonArrayToValueVector(jmessage["clicks"], &clicks)) {
-					RTC_LOG(LERROR) << "msg didnt contain any clicks:" << msg;
+				if (!jmessage["events"] || !rtc::JsonArrayToValueVector(jmessage["events"], &events)) {
+					RTC_LOG(LERROR) << "msg didnt contain any events:" << msg;
 					return;
 				}
-				RTC_LOG(LERROR) << "Got back clicks: " << clicks.size();
+				RTC_LOG(LERROR) << "Got back events: " << events.size();
 
-				if (!jmessage["presses"] || !rtc::JsonArrayToValueVector(jmessage["presses"], &presses)) {
-					RTC_LOG(LERROR)  << "msg didnt contain any presses:" << msg;
-					return;
-				}
-
-				RTC_LOG(LERROR) << "Got presses: " << presses.size();
-
-				for (auto &press : presses) {
-					unsigned int code;
-					bool down;
-					if (!rtc::GetBoolFromJsonObject(press, "down", &down)
-						|| !rtc::GetUIntFromJsonObject(press, "code", &code)
-					) {
-						RTC_LOG(LERROR) << "Can not parse presses!!";
-						break;
-					}
-					RTC_LOG(LERROR) << "Processing a press!!!";
-
-					capturer->onPress(code, down);
-				}
-				
-				for (auto &click : clicks) {
+				for (auto &event : events) {
 					int x, y, buttonMask;
-					if (!rtc::GetIntFromJsonObject(click, "x", &x)
-						|| !rtc::GetIntFromJsonObject(click, "y", &y)
-						|| !rtc::GetIntFromJsonObject(click, "button", &buttonMask)
-					) {
-						RTC_LOG(LERROR) << "Can not parse clicks!!";
-						break;
-					}
-					RTC_LOG(LERROR) << "Processing a click!!!";
+					unsigned int code;
+					bool down, isPress, isClick;
+					if (rtc::GetBoolFromJsonObject(event, "isPress", &isPress) && isPress) {
+						RTC_LOG(LERROR) << "Processing a press!!!";
+						if (!rtc::GetBoolFromJsonObject(event, "down", &down)
+							|| !rtc::GetUIntFromJsonObject(event, "code", &code)
+						) {
+							RTC_LOG(LERROR) << "Can not parse presses - " << msg;
+							continue;
+						}
 
-					capturer->onClick(x, y, buttonMask);
+						capturer->onPress(code, down);
+						continue;
+					}
+
+					if (rtc::GetBoolFromJsonObject(event, "isClick", &isClick) && isClick) {
+						if (!rtc::GetIntFromJsonObject(event, "x", &x)
+							|| !rtc::GetIntFromJsonObject(event, "y", &y)
+							|| !rtc::GetIntFromJsonObject(event, "button", &buttonMask)
+						) {
+							RTC_LOG(LERROR) << "Can not parse clicks!! - " << msg;
+							continue;
+						}
+						RTC_LOG(LERROR) << "Processing a click!!!";
+
+						capturer->onClick(x, y, buttonMask);
+						continue;
+					}
+
+					RTC_LOG(LERROR) << "Skipping unknown msg: " << msg;
 				}
 			}
 
