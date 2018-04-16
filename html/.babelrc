@@ -1,0 +1,13 @@
+{
+  "plugins": [
+    ["transform-object-rest-spread", { "useBuiltIns": true }],
+    "transform-class-properties"
+  ],
+  "presets": [
+    ["env", {
+      "targets": {
+        "node": "8"
+      }
+    }]
+  ]
+}
