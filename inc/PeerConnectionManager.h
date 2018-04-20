@@ -271,8 +271,6 @@ class PeerConnectionManager {
 	        std::mutex                                                                m_streamMapMutex;
 		std::string                                                               stunurl_;
 		std::string                                                               turnurl_;
-		std::string                                                               turnuser_;
-		std::string                                                               turnpass_;
 		const std::map<std::string,std::string>                                   urlList_;
 		std::map<std::string,std::string>                                         m_videoaudiomap;
 };

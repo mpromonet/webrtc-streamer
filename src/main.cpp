@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
 				std::cout << "\t -w webroot         : path to get files"                                                          << std::endl;
 				std::cout << "\t -c sslkeycert      : path to private key and certificate for HTTPS"                              << std::endl;
 				std::cout << "\t -T nbthreads       : number of threads for HTTP server"                                          << std::endl;
-				std::cout << "\t -A passwd          : passworf file for HTTP server access"                                          << std::endl;
+				std::cout << "\t -A passwd          : password file for HTTP server access"                                          << std::endl;
 			
 				std::cout << "\t -S[stun_address]   : start embeded STUN server bind to address (default " << defaultlocalstunurl << ")" << std::endl;
 				std::cout << "\t -s[stun_address]   : use an external STUN server (default " << stunurl << ")"                    << std::endl;
