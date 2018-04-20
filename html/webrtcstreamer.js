@@ -134,12 +134,7 @@ WebRtcStreamer.prototype.createPeerConnection = function() {
 	var pc = new RTCPeerConnection(this.pcConfig, this.pcOptions);
 	var streamer = this;
 	pc.onicecandidate = function(evt) { streamer.onIceCandidate.call(streamer, evt); };
-	if (typeof pc.ontrack != "undefined") {
-		pc.ontrack        = function(evt) { streamer.onTrack.call(streamer,evt); };
-	} 
-	else {
-		pc.onaddstream    = function(evt) { streamer.onTrack.call(streamer,evt); };
-	}
+	pc.onaddstream    = function(evt) { streamer.onAddStream.call(streamer,evt); };
 	pc.oniceconnectionstatechange = function(evt) {  
 		console.log("oniceconnectionstatechange  state: " + pc.iceConnectionState);
 		var videoElement = document.getElementById(streamer.videoElement);
@@ -210,17 +205,11 @@ WebRtcStreamer.prototype.onIceCandidate = function (event) {
 /*
 * RTCPeerConnection AddTrack callback
 */
-WebRtcStreamer.prototype.onTrack = function(event) {
+WebRtcStreamer.prototype.onAddStream = function(event) {
 	console.log("Remote track added:" +  JSON.stringify(event));
-        var stream;
-	if (event.streams) {
-		stream = event.streams[0];
-	} 
-	else {
-		stream = event.stream;
-	}
+	
 	var videoElement = document.getElementById(this.videoElement);
-	videoElement.srcObject = stream;
+	videoElement.srcObject = event.stream;
 	videoElement.setAttribute("playsinline", true);
 	videoElement.play();
 }

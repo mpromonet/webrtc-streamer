@@ -250,7 +250,9 @@ std::string getServerIpFromClientIp(int clientip)
 ** -------------------------------------------------------------------------*/
 const Json::Value PeerConnectionManager::getIceServers(const std::string& clientIp)
 {
-	Json::Value url;
+	Json::Value urls;
+	
+	Json::Value stunserver;
 	std::string stunurl("stun:");
 	if (stunurl_.find("0.0.0.0:") == 0) {
 		// answer with ip that is on same network as client
@@ -259,18 +261,20 @@ const Json::Value PeerConnectionManager::getIceServers(const std::string& client
 	} else {
 		stunurl += stunurl_;
 	}
-	url["url"] = stunurl;
-
-	Json::Value urls;
-	urls.append(url);
+	Json::Value urlList(Json::arrayValue);
+	urlList.append(stunurl);
+	stunserver["urls"] = urlList;
+	urls.append(stunserver);
 
 	if (turnurl_.length() > 0)
 	{
-		Json::Value turn;
-		turn["url"] = "turn:" + turnurl_;
-		if (turnuser_.length() > 0) turn["username"] = turnuser_;
-		if (turnpass_.length() > 0) turn["credential"] = turnpass_;
-		urls.append(turn);
+		Json::Value turnserver;
+		Json::Value urlList(Json::arrayValue);
+		urlList.append("turn:" + turnurl_);
+		turnserver["urls"] = urlList;
+		if (turnuser_.length() > 0) turnserver["username"] = turnuser_;
+		if (turnpass_.length() > 0) turnserver["credential"] = turnpass_;
+		urls.append(turnserver);
 	}
 
 	Json::Value iceServers;
