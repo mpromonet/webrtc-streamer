@@ -22,6 +22,7 @@
 
 #ifdef HAVE_LIVE555
 #include "rtspvideocapturer.h"
+#include "rtspaudiocapturer.h"
 #endif
 
 #ifdef USE_X11
