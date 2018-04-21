@@ -176,8 +176,7 @@ const Json::Value PeerConnectionManager::getMediaList()
 	}
 
 #ifdef USE_X11
-	std::regex exp(m_publishFilter);	
-	if (std::regex_match("window://",exp)) {
+	if (std::regex_match("window://",m_publishFilter)) {
 		std::unique_ptr<webrtc::DesktopCapturer> capturer = webrtc::DesktopCapturer::CreateWindowCapturer(webrtc::DesktopCaptureOptions::CreateDefault());	
 		if (capturer) {
 			webrtc::DesktopCapturer::SourceList sourceList;
@@ -192,7 +191,7 @@ const Json::Value PeerConnectionManager::getMediaList()
 			}
 		}
 	}
-	if (std::regex_match("screen://",exp)) {
+	if (std::regex_match("screen://",m_publishFilter)) {
 		std::unique_ptr<webrtc::DesktopCapturer> capturer = webrtc::DesktopCapturer::CreateScreenCapturer(webrtc::DesktopCaptureOptions::CreateDefault());		
 		if (capturer) {
 			webrtc::DesktopCapturer::SourceList sourceList;
@@ -213,7 +212,6 @@ const Json::Value PeerConnectionManager::getMediaList()
 	{
 		Json::Value media;
 		media["video"] = url.first;
-
 		value.append(media);
 	}
 
@@ -227,8 +225,7 @@ const std::list<std::string> PeerConnectionManager::getVideoCaptureDeviceList()
 {
 	std::list<std::string> videoDeviceList;
 
-	std::regex exp(m_publishFilter);	
-	if (std::regex_match("videocap://",exp)) {
+	if (std::regex_match("videocap://",m_publishFilter)) {
 		std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo());
 		if (info)
 		{
@@ -273,8 +270,7 @@ const Json::Value PeerConnectionManager::getAudioDeviceList()
 {
 	Json::Value value(Json::arrayValue);
 
-	std::regex exp(m_publishFilter);		
-	if (std::regex_match("audiocap://",exp)) {		
+	if (std::regex_match("audiocap://",m_publishFilter)) {		
 		int16_t num_audioDevices = audioDeviceModule_->RecordingDevices();
 		RTC_LOG(INFO) << "nb audio devices:" << num_audioDevices;
 
@@ -793,10 +789,9 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVideoTrack(const std::string & videourl, const std::string & options)
 {
 	RTC_LOG(INFO) << "videourl:" << videourl << " options:" << options;
-	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
 
 	std::unique_ptr<cricket::VideoCapturer> capturer;
-	if (videourl.find("rtsp://") == 0)
+	if ( (videourl.find("rtsp://") == 0) && (std::regex_match("rtsp://",m_publishFilter)) ) 
 	{
 #ifdef HAVE_LIVE555
 		int timeout = 10;
@@ -809,18 +804,24 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 		capturer.reset(new RTSPVideoCapturer(videourl, timeout, rtptransport));
 #endif
 	}
-	else if ( (videourl.find("screen://") == 0) || (videourl.find("window://") == 0) )
+	else if ( (videourl.find("screen://") == 0) && (std::regex_match("screen://",m_publishFilter)) )
 	{
 #ifdef USE_X11
-		capturer.reset(new ScreenCapturer(videourl));
+		capturer.reset(new ScreenCapturer(videourl));			
 #endif	
 	}
-	else
+	else if ( (videourl.find("window://") == 0) && (std::regex_match("window://",m_publishFilter)) )
 	{
+#ifdef USE_X11
+		capturer.reset(new ScreenCapturer(videourl));			
+#endif	
+	}
+	else if (std::regex_match("videocap://",m_publishFilter)) {		
 		cricket::WebRtcVideoDeviceCapturerFactory factory;
 		capturer = factory.Create(cricket::Device(videourl, 0));
 	}
 
+	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
 	if (!capturer)
 	{
 		RTC_LOG(LS_ERROR) << "Cannot create capturer video:" << videourl;
@@ -839,7 +840,7 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 	RTC_LOG(INFO) << "audiourl:" << audiourl << " options:" << options;
 
 	rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track;
-	if (audiourl.find("rtsp://") == 0)
+	if ( (audiourl.find("rtsp://") == 0) && (std::regex_match("rtsp://",m_publishFilter)) )
 	{
 #ifdef HAVE_LIVE555
 		audioDeviceModule_->Terminate();
@@ -847,7 +848,7 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 		audio_track = peer_connection_factory_->CreateAudioTrack(kAudioLabel, audioSource);
 #endif
 	}
-	else
+	else if (std::regex_match("audiocap://",m_publishFilter)) 
 	{
 		audioDeviceModule_->Init();
 		int16_t num_audioDevices = audioDeviceModule_->RecordingDevices();

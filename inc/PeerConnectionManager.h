@@ -273,7 +273,7 @@ class PeerConnectionManager {
 		std::list<std::string>                                                              iceServerList_;
 		const std::map<std::string,std::string>                                   urlList_;
 		std::map<std::string,std::string>                                         m_videoaudiomap;
-		const std::string                                                         m_publishFilter;
+		const std::regex                                                          m_publishFilter;
 };
 
 #endif
