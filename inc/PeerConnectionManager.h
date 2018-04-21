@@ -12,6 +12,7 @@
 
 #include <string>
 #include <mutex>
+#include <regex>
 
 #include "api/peerconnectioninterface.h"
 #include "api/test/fakeconstraints.h"
@@ -236,7 +237,7 @@ class PeerConnectionManager {
 	};
 
 	public:
-		PeerConnectionManager(const std::list<std::string> & iceServerList, const std::map<std::string,std::string> & urlList, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter);
+		PeerConnectionManager(const std::list<std::string> & iceServerList, const std::map<std::string,std::string> & urlVideoList, const std::map<std::string,std::string> & urlAudioList, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter);
 		virtual ~PeerConnectionManager();
 
 		bool InitializePeerConnection();
@@ -271,7 +272,8 @@ class PeerConnectionManager {
 		std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >  stream_map_;
 	        std::mutex                                                                m_streamMapMutex;
 		std::list<std::string>                                                              iceServerList_;
-		const std::map<std::string,std::string>                                   urlList_;
+		const std::map<std::string,std::string>                                   m_urlVideoList;
+		const std::map<std::string,std::string>                                   m_urlAudioList;
 		std::map<std::string,std::string>                                         m_videoaudiomap;
 		const std::regex                                                          m_publishFilter;
 };

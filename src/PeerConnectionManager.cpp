@@ -10,7 +10,6 @@
 #include <iostream>
 #include <fstream>
 #include <utility>
-#include <regex>
 
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
@@ -129,7 +128,11 @@ IceServer getIceServerFromUrl(const std::string & url, const std::string& client
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionManager(const std::list<std::string> & iceServerList, const std::map<std::string,std::string> & urlList, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter)
+PeerConnectionManager::PeerConnectionManager( const std::list<std::string> & iceServerList
+					    , const std::map<std::string,std::string> & urlVideoList
+					    , const std::map<std::string,std::string> & urlAudioList
+					    , const webrtc::AudioDeviceModule::AudioLayer audioLayer
+                                            , const std::string& publishFilter)
 	: audioDeviceModule_(webrtc::AudioDeviceModule::Create(0, audioLayer))
 	, audioDecoderfactory_(webrtc::CreateBuiltinAudioDecoderFactory())
 	, peer_connection_factory_(webrtc::CreatePeerConnectionFactory(NULL,
@@ -141,7 +144,8 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> & iceS
                                                                     NULL,
                                                                     NULL))
 	, iceServerList_(iceServerList)
-	, urlList_(urlList)
+	, m_urlVideoList(urlVideoList)
+	, m_urlAudioList(urlAudioList)
 	, m_publishFilter(publishFilter)
 {
 	// build video audio map
@@ -208,10 +212,15 @@ const Json::Value PeerConnectionManager::getMediaList()
 	}
 #endif		
 
-	for (auto url : urlList_)
+	for (auto url : m_urlVideoList)
 	{
 		Json::Value media;
 		media["video"] = url.first;
+		auto audioIt = m_urlAudioList.find(url.first);
+		if (audioIt != m_urlAudioList.end()) 
+		{
+			media["audio"] = audioIt->first;			
+		}
 		value.append(media);
 	}
 
@@ -886,13 +895,13 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 
 	// look in urlmap
 	std::string video = videourl;
-	auto videoit = urlList_.find(video);
-	if (videoit != urlList_.end()) {
+	auto videoit = m_urlVideoList.find(video);
+	if (videoit != m_urlVideoList.end()) {
 		video = videoit->second;
 	}
 	std::string audio = audiourl;
-	auto audioit = urlList_.find(audio);
-	if (audioit != urlList_.end()) {
+	auto audioit = m_urlAudioList.find(audio);
+	if (audioit != m_urlAudioList.end()) {
 		audio = audioit->second;
 	}
 		
