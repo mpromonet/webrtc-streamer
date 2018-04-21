@@ -43,7 +43,7 @@ const char kSessionDescriptionSdpName[] = "sdp";
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionManager(const std::string & stunurl, const std::string & turnurl, const std::map<std::string,std::string> & urlList, const webrtc::AudioDeviceModule::AudioLayer audioLayer)
+PeerConnectionManager::PeerConnectionManager(const std::list<std::string> & iceServerList, const std::map<std::string,std::string> & urlList, const webrtc::AudioDeviceModule::AudioLayer audioLayer)
 	: audioDeviceModule_(webrtc::AudioDeviceModule::Create(0, audioLayer))
 	, audioDecoderfactory_(webrtc::CreateBuiltinAudioDecoderFactory())
 	, peer_connection_factory_(webrtc::CreatePeerConnectionFactory(NULL,
@@ -54,8 +54,7 @@ PeerConnectionManager::PeerConnectionManager(const std::string & stunurl, const 
                                                                     audioDecoderfactory_,
                                                                     NULL,
                                                                     NULL))
-	, stunurl_(stunurl)
-	, turnurl_(turnurl)
+	, iceServerList_(iceServerList)
 	, urlList_(urlList)
 {
 	// build video audio map
@@ -231,16 +230,33 @@ struct IceServer {
 	std::string pass;
 };
 
-IceServer getIceServerFromUrl(const std::string & url) {
+IceServer getIceServerFromUrl(const std::string & url, const std::string& clientIp = "") {
 	IceServer srv;
-
-	if (url.length() > 0)
+	srv.url = url;
+	
+	std::size_t pos = url.find_first_of(':');
+	if (pos != std::string::npos)
 	{
-		std::size_t pos = url.find('@');
+		std::string protocol = url.substr(0, pos);
+		std::string uri = url.substr(pos + 1);		
+		std::string credentials;			
+		
+		std::size_t pos = uri.find('@');
 		if (pos != std::string::npos)
 		{
-			std::string credentials = url.substr(0, pos);
-			srv.url = url.substr(pos + 1);
+			credentials = uri.substr(0, pos);			
+			uri = uri.substr(pos + 1);
+		}
+		
+		if (uri.find("0.0.0.0:") == 0) {
+			// answer with ip that is on same network as client
+			std::string clienturl = getServerIpFromClientIp(inet_addr(clientIp.c_str()));
+			clienturl += uri.substr(uri.find_first_of(':'));
+			uri = clienturl;
+		}
+		srv.url = protocol + ":" + uri;
+
+		if (!credentials.empty()) {
 			pos = credentials.find(':');
 			if (pos == std::string::npos)
 			{
@@ -251,11 +267,9 @@ IceServer getIceServerFromUrl(const std::string & url) {
 				srv.user = credentials.substr(0, pos);
 				srv.pass = credentials.substr(pos + 1);
 			}
-		} else {
-			srv.url = url;
 		}
-	}
-	
+	}		
+			
 	return srv;
 }
 
@@ -266,35 +280,17 @@ const Json::Value PeerConnectionManager::getIceServers(const std::string& client
 {
 	Json::Value urls;
 	
-	Json::Value stunserver;
-	std::string stunurl;
-	if (stunurl_.find("0.0.0.0:") == 0) {
-		// answer with ip that is on same network as client
-		stunurl += getServerIpFromClientIp(inet_addr(clientIp.c_str()));
-		stunurl += stunurl_.substr(stunurl_.find_first_of(':'));
-	} else {
-		stunurl += stunurl_;
-	}
-	IceServer srv = getIceServerFromUrl(stunurl);
-	Json::Value urlList(Json::arrayValue);
-	urlList.append("stun:" + srv.url);
-	stunserver["urls"] = urlList;
-	if (srv.user.length() > 0) stunserver["username"] = srv.user;
-	if (srv.pass.length() > 0) stunserver["credential"] = srv.pass;
-	urls.append(stunserver);
-
-	if (turnurl_.length() > 0)
-	{
-		Json::Value turnserver;
+	for (auto iceServer : iceServerList_) {
+		Json::Value server;
 		Json::Value urlList(Json::arrayValue);
-		IceServer srv = getIceServerFromUrl(turnurl_);
-		urlList.append("turn:" + srv.url);
-		turnserver["urls"] = urlList;
-		if (srv.user.length() > 0) turnserver["username"] = srv.user;
-		if (srv.pass.length() > 0) turnserver["credential"] = srv.pass;
-		urls.append(turnserver);
-	}
-
+		IceServer srv = getIceServerFromUrl(iceServer, clientIp);
+		urlList.append(srv.url);
+		server["urls"] = urlList;
+		if (srv.user.length() > 0) server["username"] = srv.user;
+		if (srv.pass.length() > 0) server["credential"] = srv.pass;
+		urls.append(server);
+	}	
+	
 	Json::Value iceServers;
 	iceServers["iceServers"] = urls;
 
@@ -750,21 +746,14 @@ bool PeerConnectionManager::InitializePeerConnection()
 PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeerConnection(const std::string& peerid)
 {
 	webrtc::PeerConnectionInterface::RTCConfiguration config;
-	webrtc::PeerConnectionInterface::IceServer server;
-	IceServer srv = getIceServerFromUrl(stunurl_);
-	server.uri = "stun:" + srv.url;
-	server.username = srv.user;
-	server.password = srv.pass;
-	config.servers.push_back(server);
-
-	if (turnurl_.length() > 0)
-	{
-		webrtc::PeerConnectionInterface::IceServer turnserver;
-		IceServer srv = getIceServerFromUrl(turnurl_);
-		turnserver.uri = "turn:" + srv.url;
-		turnserver.username = srv.user;
-		turnserver.password = srv.pass;
-		config.servers.push_back(turnserver);
+	
+	for (auto iceServer : iceServerList_) {
+		webrtc::PeerConnectionInterface::IceServer server;
+		IceServer srv = getIceServerFromUrl(iceServer);
+		server.uri = srv.url;
+		server.username = srv.user;
+		server.password = srv.pass;
+		config.servers.push_back(server);
 	}
 
 	webrtc::FakeConstraints constraints;

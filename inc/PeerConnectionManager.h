@@ -236,7 +236,7 @@ class PeerConnectionManager {
 	};
 
 	public:
-		PeerConnectionManager(const std::string & stunurl, const std::string & turnurl, const std::map<std::string,std::string> & urlList, const webrtc::AudioDeviceModule::AudioLayer audioLayer);
+		PeerConnectionManager(const std::list<std::string> & iceServerList, const std::map<std::string,std::string> & urlList, const webrtc::AudioDeviceModule::AudioLayer audioLayer);
 		virtual ~PeerConnectionManager();
 
 		bool InitializePeerConnection();
@@ -269,8 +269,7 @@ class PeerConnectionManager {
 		std::map<std::string, PeerConnectionObserver* >                           peer_connectionobs_map_;
 		std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >  stream_map_;
 	        std::mutex                                                                m_streamMapMutex;
-		std::string                                                               stunurl_;
-		std::string                                                               turnurl_;
+		std::list<std::string>                                                              iceServerList_;
 		const std::map<std::string,std::string>                                   urlList_;
 		std::map<std::string,std::string>                                         m_videoaudiomap;
 };
