@@ -50,7 +50,7 @@ class RequestHandler : public CivetHandler
 
 					nlen += rlen;
 				}
-				std::cout << "body:" << body << std::endl;
+				RTC_LOG(INFO) << "body:" << body;
 
 				// parse in
 				Json::Reader reader;
@@ -67,7 +67,7 @@ class RequestHandler : public CivetHandler
 			if (out.isNull() == false)
 			{
 				std::string answer(Json::StyledWriter().write(out));
-				std::cout << "answer:" << answer << std::endl;
+				RTC_LOG(INFO) << "answer:" << answer;
 
 				mg_printf(conn,"HTTP/1.1 200 OK\r\n");
 				mg_printf(conn,"Access-Control-Allow-Origin: *\r\n");

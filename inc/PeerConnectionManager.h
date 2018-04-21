@@ -261,6 +261,7 @@ class PeerConnectionManager {
 		rtc::scoped_refptr<webrtc::VideoTrackInterface> CreateVideoTrack(const std::string & videourl, const std::string & options);
 		rtc::scoped_refptr<webrtc::AudioTrackInterface> CreateAudioTrack(const std::string & audiourl, const std::string & options);
 		bool                                    streamStillUsed(const std::string & streamLabel);
+		const std::list<std::string>            getVideoCaptureDeviceList();
 
 	protected:
 		rtc::scoped_refptr<webrtc::AudioDeviceModule>                             audioDeviceModule_;

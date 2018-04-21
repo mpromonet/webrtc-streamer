@@ -41,159 +41,10 @@ const char kCandidateSdpName[] = "candidate";
 const char kSessionDescriptionTypeName[] = "type";
 const char kSessionDescriptionSdpName[] = "sdp";
 
-/* ---------------------------------------------------------------------------
-**  Constructor
-** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionManager(const std::list<std::string> & iceServerList, const std::map<std::string,std::string> & urlList, const webrtc::AudioDeviceModule::AudioLayer audioLayer)
-	: audioDeviceModule_(webrtc::AudioDeviceModule::Create(0, audioLayer))
-	, audioDecoderfactory_(webrtc::CreateBuiltinAudioDecoderFactory())
-	, peer_connection_factory_(webrtc::CreatePeerConnectionFactory(NULL,
-                                                                    rtc::Thread::Current(),
-                                                                    NULL,
-                                                                    audioDeviceModule_,
-                                                                    webrtc::CreateBuiltinAudioEncoderFactory(),
-                                                                    audioDecoderfactory_,
-                                                                    NULL,
-                                                                    NULL))
-	, iceServerList_(iceServerList)
-	, urlList_(urlList)
-{
-	// build video audio map
-	m_videoaudiomap = getV4l2AlsaMap();
-}
 
 /* ---------------------------------------------------------------------------
-**  Destructor
+**  helpers that should be moved somewhere else
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::~PeerConnectionManager()
-{
-}
-
-
-/* ---------------------------------------------------------------------------
-**  return deviceList as JSON vector
-** -------------------------------------------------------------------------*/
-const Json::Value PeerConnectionManager::getMediaList()
-{
-	Json::Value value(Json::arrayValue);
-
-	std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo());
-	if (info)
-	{
-		int num_videoDevices = info->NumberOfDevices();
-		RTC_LOG(INFO) << "nb video devices:" << num_videoDevices;
-		for (int i = 0; i < num_videoDevices; ++i)
-		{
-			const uint32_t kSize = 256;
-			char name[kSize] = {0};
-			char id[kSize] = {0};
-			if (info->GetDeviceName(i, name, kSize, id, kSize) != -1)
-			{
-				RTC_LOG(INFO) << "video device name:" << name << " id:" << id;
-				Json::Value media;
-				media["video"] = name;
-				
-				std::map<std::string,std::string>::iterator it = m_videoaudiomap.find(name);
-				if (it != m_videoaudiomap.end()) {
-					media["audio"] = it->second;
-				}				
-				value.append(media);
-			}
-		}
-		
-
-#ifdef USE_X11
-		std::unique_ptr<webrtc::DesktopCapturer> capturer = webrtc::DesktopCapturer::CreateWindowCapturer(webrtc::DesktopCaptureOptions::CreateDefault());	
-		if (capturer) {
-			webrtc::DesktopCapturer::SourceList sourceList;
-			if (capturer->GetSourceList(&sourceList)) {
-				for (auto source : sourceList) {
-					std::ostringstream os;
-					os << "window://" << source.title;
-					Json::Value media;
-					media["video"] = os.str();
-					value.append(media);
-				}
-			}
-		}
-		capturer = webrtc::DesktopCapturer::CreateScreenCapturer(webrtc::DesktopCaptureOptions::CreateDefault());		
-		if (capturer) {
-			webrtc::DesktopCapturer::SourceList sourceList;
-			if (capturer->GetSourceList(&sourceList)) {
-				for (auto source : sourceList) {
-					std::ostringstream os;
-					os << "screen://" << source.id;
-					Json::Value media;
-					media["video"] = os.str();
-					value.append(media);
-				}
-			}
-		}
-#endif		
-	}
-
-	for (auto url : urlList_)
-	{
-		Json::Value media;
-		media["video"] = url.first;
-
-		value.append(media);
-	}
-
-	return value;
-}
-
-/* ---------------------------------------------------------------------------
-**  return deviceList as JSON vector
-** -------------------------------------------------------------------------*/
-const Json::Value PeerConnectionManager::getVideoDeviceList()
-{
-	Json::Value value(Json::arrayValue);
-
-	std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo());
-	if (info)
-	{
-		int num_videoDevices = info->NumberOfDevices();
-		RTC_LOG(INFO) << "nb video devices:" << num_videoDevices;
-		for (int i = 0; i < num_videoDevices; ++i)
-		{
-			const uint32_t kSize = 256;
-			char name[kSize] = {0};
-			char id[kSize] = {0};
-			if (info->GetDeviceName(i, name, kSize, id, kSize) != -1)
-			{
-				RTC_LOG(INFO) << "video device name:" << name << " id:" << id;
-				value.append(name);
-			}
-		}
-	}
-
-	return value;
-}
-
-/* ---------------------------------------------------------------------------
-**  return deviceList as JSON vector
-** -------------------------------------------------------------------------*/
-const Json::Value PeerConnectionManager::getAudioDeviceList()
-{
-	Json::Value value(Json::arrayValue);
-
-	int16_t num_audioDevices = audioDeviceModule_->RecordingDevices();
-	RTC_LOG(INFO) << "nb audio devices:" << num_audioDevices;
-
-	for (int i = 0; i < num_audioDevices; ++i)
-	{
-		char name[webrtc::kAdmMaxDeviceNameSize] = {0};
-		char id[webrtc::kAdmMaxGuidSize] = {0};
-		if (audioDeviceModule_->RecordingDeviceName(i, name, id) != -1)
-		{
-			RTC_LOG(INFO) << "audio device name:" << name << " id:" << id;
-			value.append(name);
-		}
-	}
-
-	return value;
-}
 
 #include <net/if.h>
 #include <ifaddrs.h>
@@ -272,6 +123,163 @@ IceServer getIceServerFromUrl(const std::string & url, const std::string& client
 	}		
 			
 	return srv;
+}
+
+/* ---------------------------------------------------------------------------
+**  Constructor
+** -------------------------------------------------------------------------*/
+PeerConnectionManager::PeerConnectionManager(const std::list<std::string> & iceServerList, const std::map<std::string,std::string> & urlList, const webrtc::AudioDeviceModule::AudioLayer audioLayer)
+	: audioDeviceModule_(webrtc::AudioDeviceModule::Create(0, audioLayer))
+	, audioDecoderfactory_(webrtc::CreateBuiltinAudioDecoderFactory())
+	, peer_connection_factory_(webrtc::CreatePeerConnectionFactory(NULL,
+                                                                    rtc::Thread::Current(),
+                                                                    NULL,
+                                                                    audioDeviceModule_,
+                                                                    webrtc::CreateBuiltinAudioEncoderFactory(),
+                                                                    audioDecoderfactory_,
+                                                                    NULL,
+                                                                    NULL))
+	, iceServerList_(iceServerList)
+	, urlList_(urlList)
+{
+	// build video audio map
+	m_videoaudiomap = getV4l2AlsaMap();
+}
+
+/* ---------------------------------------------------------------------------
+**  Destructor
+** -------------------------------------------------------------------------*/
+PeerConnectionManager::~PeerConnectionManager()
+{
+}
+
+
+/* ---------------------------------------------------------------------------
+**  return deviceList as JSON vector
+** -------------------------------------------------------------------------*/
+const Json::Value PeerConnectionManager::getMediaList()
+{
+	Json::Value value(Json::arrayValue);
+
+	
+	const std::list<std::string> videoCaptureDevice = this->getVideoCaptureDeviceList();
+	for (auto videoDevice : videoCaptureDevice) {
+		Json::Value media;
+		media["video"] = videoDevice;
+		
+		std::map<std::string,std::string>::iterator it = m_videoaudiomap.find(videoDevice);
+		if (it != m_videoaudiomap.end()) {
+			media["audio"] = it->second;
+		}				
+		value.append(media);
+	}
+	
+
+#ifdef USE_X11
+	std::unique_ptr<webrtc::DesktopCapturer> capturer = webrtc::DesktopCapturer::CreateWindowCapturer(webrtc::DesktopCaptureOptions::CreateDefault());	
+	if (capturer) {
+		webrtc::DesktopCapturer::SourceList sourceList;
+		if (capturer->GetSourceList(&sourceList)) {
+			for (auto source : sourceList) {
+				std::ostringstream os;
+				os << "window://" << source.title;
+				Json::Value media;
+				media["video"] = os.str();
+				value.append(media);
+			}
+		}
+	}
+	capturer = webrtc::DesktopCapturer::CreateScreenCapturer(webrtc::DesktopCaptureOptions::CreateDefault());		
+	if (capturer) {
+		webrtc::DesktopCapturer::SourceList sourceList;
+		if (capturer->GetSourceList(&sourceList)) {
+			for (auto source : sourceList) {
+				std::ostringstream os;
+				os << "screen://" << source.id;
+				Json::Value media;
+				media["video"] = os.str();
+				value.append(media);
+			}
+		}
+	}
+#endif		
+
+	for (auto url : urlList_)
+	{
+		Json::Value media;
+		media["video"] = url.first;
+
+		value.append(media);
+	}
+
+	return value;
+}
+
+/* ---------------------------------------------------------------------------
+**  return video capture device list 
+** -------------------------------------------------------------------------*/
+const std::list<std::string> PeerConnectionManager::getVideoCaptureDeviceList()
+{
+	std::list<std::string> videoDeviceList;
+
+	std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo());
+	if (info)
+	{
+		int num_videoDevices = info->NumberOfDevices();
+		RTC_LOG(INFO) << "nb video devices:" << num_videoDevices;
+		for (int i = 0; i < num_videoDevices; ++i)
+		{
+			const uint32_t kSize = 256;
+			char name[kSize] = {0};
+			char id[kSize] = {0};
+			if (info->GetDeviceName(i, name, kSize, id, kSize) != -1)
+			{
+				RTC_LOG(INFO) << "video device name:" << name << " id:" << id;
+				videoDeviceList.push_back(name);
+			}
+		}
+	}
+
+	return videoDeviceList;
+}
+
+/* ---------------------------------------------------------------------------
+**  return video device List as JSON vector
+** -------------------------------------------------------------------------*/
+const Json::Value PeerConnectionManager::getVideoDeviceList()
+{
+	Json::Value value(Json::arrayValue);
+
+	const std::list<std::string> videoCaptureDevice = this->getVideoCaptureDeviceList();
+	for (auto videoDevice : videoCaptureDevice) {
+		value.append(videoDevice);
+	}
+
+	return value;
+}
+
+/* ---------------------------------------------------------------------------
+**  return audio device List as JSON vector
+** -------------------------------------------------------------------------*/
+const Json::Value PeerConnectionManager::getAudioDeviceList()
+{
+	Json::Value value(Json::arrayValue);
+
+	int16_t num_audioDevices = audioDeviceModule_->RecordingDevices();
+	RTC_LOG(INFO) << "nb audio devices:" << num_audioDevices;
+
+	for (int i = 0; i < num_audioDevices; ++i)
+	{
+		char name[webrtc::kAdmMaxDeviceNameSize] = {0};
+		char id[webrtc::kAdmMaxGuidSize] = {0};
+		if (audioDeviceModule_->RecordingDeviceName(i, name, id) != -1)
+		{
+			RTC_LOG(INFO) << "audio device name:" << name << " id:" << id;
+			value.append(name);
+		}
+	}
+
+	return value;
 }
 
 /* ---------------------------------------------------------------------------
@@ -798,27 +806,8 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 	}
 	else
 	{
-		std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo());
-		if (info)
-		{
-			int num_devices = info->NumberOfDevices();
-			for (int i = 0; i < num_devices; ++i)
-			{
-				const uint32_t kSize = 256;
-				char name[kSize] = {0};
-				char id[kSize] = {0};
-				if (info->GetDeviceName(i, name, kSize, id, kSize) != -1)
-				{
-					if (videourl == name)
-					{
-						cricket::WebRtcVideoDeviceCapturerFactory factory;
-						capturer = factory.Create(cricket::Device(name, 0));
-						break;
-					}
-				}
-			}
-		}
-
+		cricket::WebRtcVideoDeviceCapturerFactory factory;
+		capturer = factory.Create(cricket::Device(videourl, 0));
 	}
 
 	if (!capturer)
