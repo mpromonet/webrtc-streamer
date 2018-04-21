@@ -226,19 +226,6 @@ void RTSPVideoCapturer::DecoderThread()
 	}
 }
 
-ssize_t RTSPVideoCapturer::onNewBuffer(unsigned char* buffer, ssize_t size)
-{
-	ssize_t markerSize = 0;
-	if (m_codec == "H264") {
-		if (size > sizeof(marker))
-		{
-			memcpy( buffer, marker, sizeof(marker) );
-			markerSize = sizeof(marker);
-		}
-	}
-	return 	markerSize;
-}
-
 int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 {
 	int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
