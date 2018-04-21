@@ -162,14 +162,18 @@ WebRtcStreamer.prototype.createPeerConnection = function() {
 		}
 	}
 
-	var dataChannel = pc.createDataChannel("ClientDataChannel");
-	dataChannel.onopen = function() {
-		console.log("local datachannel open");
-		this.send("local channel openned");
-	}
-	dataChannel.onmessage = function(evt) {
-		console.log("local datachannel recv:"+JSON.stringify(evt.data));
-	}
+	try {
+		var dataChannel = pc.createDataChannel("ClientDataChannel");
+		dataChannel.onopen = function() {
+			console.log("local datachannel open");
+			this.send("local channel openned");
+		}
+		dataChannel.onmessage = function(evt) {
+			console.log("local datachannel recv:"+JSON.stringify(evt.data));
+		}
+	} catch (e) {
+		console.log("Cannor create datachannel error: " + e);
+	}	
 	
 	console.log("Created RTCPeerConnnection with config: " + JSON.stringify(this.pcConfig) + "option:"+  JSON.stringify(this.pcOptions) );
 	return pc;
