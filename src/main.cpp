@@ -33,6 +33,7 @@ int main(int argc, char* argv[])
 	std::map<std::string,std::string> urlList;
 	std::string nbthreads;
 	std::string passwdFile;
+	std::string publishFilter(".*");
 
 	std::string httpAddress("0.0.0.0:");
 	std::string httpPort = "8000";
@@ -44,7 +45,7 @@ int main(int argc, char* argv[])
 	httpAddress.append(httpPort);
 
 	int c = 0;
-	while ((c = getopt (argc, argv, "hVv::" "c:H:w:T:A:" "t:S::s::" "a::n:u:")) != -1)
+	while ((c = getopt (argc, argv, "hVv::" "c:H:w:T:A:" "t:S::s::" "a::q:" "n:u:")) != -1)
 	{
 		switch (c)
 		{
@@ -59,6 +60,8 @@ int main(int argc, char* argv[])
 			case 's': localstunurl = NULL; stunurl = optarg ? optarg : defaultlocalstunurl; break;
 			
 			case 'a': audioLayer = optarg ? (webrtc::AudioDeviceModule::AudioLayer)atoi(optarg) : webrtc::AudioDeviceModule::kDummyAudio; break;
+			case 'q': publishFilter = optarg ; break;
+				
 			case 'n': streamName = optarg; break;
 			case 'u': {
 				if (!streamName.empty()) {
@@ -125,7 +128,7 @@ int main(int argc, char* argv[])
 	if (strlen(turnurl)) {
 		iceServerList.push_back(std::string("turn:")+turnurl);
 	}
-	PeerConnectionManager webRtcServer(iceServerList, urlList, audioLayer);
+	PeerConnectionManager webRtcServer(iceServerList, urlList, audioLayer, publishFilter);
 	if (!webRtcServer.InitializePeerConnection())
 	{
 		std::cout << "Cannot Initialize WebRTC server" << std::endl;

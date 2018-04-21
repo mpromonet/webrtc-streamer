@@ -236,7 +236,7 @@ class PeerConnectionManager {
 	};
 
 	public:
-		PeerConnectionManager(const std::list<std::string> & iceServerList, const std::map<std::string,std::string> & urlList, const webrtc::AudioDeviceModule::AudioLayer audioLayer);
+		PeerConnectionManager(const std::list<std::string> & iceServerList, const std::map<std::string,std::string> & urlList, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter);
 		virtual ~PeerConnectionManager();
 
 		bool InitializePeerConnection();
@@ -273,6 +273,7 @@ class PeerConnectionManager {
 		std::list<std::string>                                                              iceServerList_;
 		const std::map<std::string,std::string>                                   urlList_;
 		std::map<std::string,std::string>                                         m_videoaudiomap;
+		const std::string                                                         m_publishFilter;
 };
 
 #endif
