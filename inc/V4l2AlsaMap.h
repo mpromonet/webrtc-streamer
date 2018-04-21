@@ -9,7 +9,7 @@
 
 #pragma once
 
-#if HAVE_ALSA
+#ifdef HAVE_ALSA
 #include <dirent.h>
 #include <alsa/asoundlib.h>
 
