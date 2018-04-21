@@ -35,11 +35,12 @@ class RequestHandler : public CivetHandler
 			{
 				std::string body;
 				long long nlen = 0;
-				char buf[1024];
+				long long bufSize = 1024;
+				char buf[bufSize];
 				while (nlen < tlen) {
 					long long rlen = tlen - nlen;
-					if (rlen > sizeof(buf)) {
-						rlen = sizeof(buf);
+					if (rlen > bufSize) {
+						rlen = bufSize;
 					}
 					rlen = mg_read(conn, buf, (size_t)rlen);
 					if (rlen <= 0) {
@@ -74,7 +75,7 @@ class RequestHandler : public CivetHandler
 				mg_printf(conn,"Content-Length: %zd\r\n", answer.size());
 				mg_printf(conn,"Connection: close\r\n");
 				mg_printf(conn,"\r\n");
-				mg_printf(conn,answer.c_str());
+				mg_printf(conn,"%s",answer.c_str());
 
 				ret = true;
 			}
