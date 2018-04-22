@@ -40,7 +40,7 @@ class Frame
 class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::Callback, public rtc::Thread, public webrtc::DecodedImageCallback
 {
 	public:
-		RTSPVideoCapturer(const std::string & uri, int timeout, const std::string & rtptransport);
+		RTSPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts);
 		virtual ~RTSPVideoCapturer();
 
 		// overide RTSPConnection::Callback

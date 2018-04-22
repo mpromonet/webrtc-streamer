@@ -24,8 +24,19 @@
 
 uint8_t marker[] = { 0, 0, 0, 1};
 
-int decodeRTPTransport(const std::string & rtpTransportString) 
+int decodeTimeoutOption(const std::map<std::string,std::string> & opts) {
+	int timeout = 10;
+	if (opts.find("timeout") != opts.end()) 
+	{
+		std::string timeoutString = opts.at("timeout");
+		timeout = std::stoi(timeoutString);
+	}
+	return timeout;
+}
+
+int decodeRTPTransport(const std::map<std::string,std::string> & opts) 
 {
+	std::string rtpTransportString = opts.at("rtptransport");
 	int rtptransport = RTSPConnection::RTPUDPUNICAST;
 	if (rtpTransportString == "tcp") {
 		rtptransport = RTSPConnection::RTPOVERTCP;
@@ -37,8 +48,8 @@ int decodeRTPTransport(const std::string & rtpTransportString)
 	return rtptransport;
 }
 
-RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, int timeout, const std::string & rtptransport) 
-	: m_connection(m_env, this, uri.c_str(), timeout, decodeRTPTransport(rtptransport), 1)
+RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
+	: m_connection(m_env, this, uri.c_str(), decodeTimeoutOption(opts), decodeRTPTransport(opts), 1)
 {
 	RTC_LOG(INFO) << "RTSPVideoCapturer" << uri ;
 	m_h264 = h264_new();

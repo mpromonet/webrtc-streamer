@@ -18,7 +18,6 @@
 
 #include "PeerConnectionManager.h"
 #include "V4l2AlsaMap.h"
-#include "CivetServer.h"
 
 #ifdef HAVE_LIVE555
 #include "rtspvideocapturer.h"
@@ -373,8 +372,8 @@ const Json::Value PeerConnectionManager::addIceCandidate(const std::string& peer
 ** -------------------------------------------------------------------------*/
 const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, const std::string & videourl, const std::string & audiourl, const std::string & options)
 {
+	RTC_LOG(INFO) << __FUNCTION__ << " video:" << videourl << " audio:" << audiourl << " options:" << options ;
 	Json::Value offer;
-	RTC_LOG(INFO) << __FUNCTION__;
 
 	PeerConnectionObserver* peerConnectionObserver = this->CreatePeerConnection(peerid);
 	if (!peerConnectionObserver)
@@ -384,20 +383,6 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 	else
 	{
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = peerConnectionObserver->getPeerConnection();
-		
-		// set bandwidth
-		std::string tmp;
-		if (CivetServer::getParam(options, "bitrate", tmp)) {
-			int bitrate = std::stoi(tmp);
-			
-			webrtc::PeerConnectionInterface::BitrateParameters bitrateParam;
-			bitrateParam.min_bitrate_bps = rtc::Optional<int>(bitrate/2);
-			bitrateParam.current_bitrate_bps = rtc::Optional<int>(bitrate);
-			bitrateParam.max_bitrate_bps = rtc::Optional<int>(bitrate*2);
-			peerConnection->SetBitrate(bitrateParam);			
-			
-			RTC_LOG(WARNING) << "set bitrate:" << bitrate;
-		}			
 		
 		if (!this->AddStreams(peerConnectionObserver->getPeerConnection(), videourl, audiourl, options))
 		{
@@ -475,7 +460,8 @@ void PeerConnectionManager::setAnswer(const std::string &peerid, const Json::Val
 ** -------------------------------------------------------------------------*/
 const Json::Value PeerConnectionManager::call(const std::string & peerid, const std::string & videourl, const std::string & audiourl, const std::string & options, const Json::Value& jmessage)
 {
-	RTC_LOG(INFO) << __FUNCTION__;
+	RTC_LOG(INFO) << __FUNCTION__ << " video:" << videourl << " audio:" << audiourl << " options:" << options ;
+
 	Json::Value answer;
 
 	std::string type;
@@ -496,22 +482,6 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 		else
 		{
 			rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = peerConnectionObserver->getPeerConnection();
-			
-			// set bandwidth
-			std::string tmp;
-			if (CivetServer::getParam(options, "bitrate", tmp)) {
-				int bitrate = std::stoi(tmp);
-				
-				webrtc::PeerConnectionInterface::BitrateParameters bitrateParam;
-				bitrateParam.min_bitrate_bps = rtc::Optional<int>(bitrate/2);
-				bitrateParam.current_bitrate_bps = rtc::Optional<int>(bitrate);
-				bitrateParam.max_bitrate_bps = rtc::Optional<int>(bitrate*2);
-				peerConnection->SetBitrate(bitrateParam);			
-				
-				RTC_LOG(WARNING) << "set bitrate:" << bitrate;
-			}			
-			
-			
 			RTC_LOG(INFO) << "nbStreams local:" << peerConnection->local_streams()->count() << " remote:" << peerConnection->remote_streams()->count() << " localDescription:" << peerConnection->local_description();
 
 			// register peerid
@@ -795,34 +765,28 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 /* ---------------------------------------------------------------------------
 **  get the capturer from its URL
 ** -------------------------------------------------------------------------*/
-rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVideoTrack(const std::string & videourl, const std::string & options)
+rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVideoTrack(const std::string & videourl, const std::map<std::string,std::string> & opts)
 {
-	RTC_LOG(INFO) << "videourl:" << videourl << " options:" << options;
+	RTC_LOG(INFO) << "videourl:" << videourl;
+
 
 	std::unique_ptr<cricket::VideoCapturer> capturer;
 	if ( (videourl.find("rtsp://") == 0) && (std::regex_match("rtsp://",m_publishFilter)) ) 
 	{
 #ifdef HAVE_LIVE555
-		int timeout = 10;
-		std::string tmp;
-		if (CivetServer::getParam(options, "timeout", tmp)) {
-			timeout = std::stoi(tmp);
-		}
-		std::string rtptransport;
-		CivetServer::getParam(options, "rtptransport", rtptransport);
-		capturer.reset(new RTSPVideoCapturer(videourl, timeout, rtptransport));
+		capturer.reset(new RTSPVideoCapturer(videourl, opts));
 #endif
 	}
 	else if ( (videourl.find("screen://") == 0) && (std::regex_match("screen://",m_publishFilter)) )
 	{
 #ifdef USE_X11
-		capturer.reset(new ScreenCapturer(videourl));			
+		capturer.reset(new ScreenCapturer(videourl, opts));			
 #endif	
 	}
 	else if ( (videourl.find("window://") == 0) && (std::regex_match("window://",m_publishFilter)) )
 	{
 #ifdef USE_X11
-		capturer.reset(new ScreenCapturer(videourl));			
+		capturer.reset(new WindowCapturer(videourl, opts));			
 #endif	
 	}
 	else if (std::regex_match("videocap://",m_publishFilter)) {		
@@ -844,9 +808,9 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 }
 
 
-rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAudioTrack(const std::string & audiourl, const std::string & options)
+rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAudioTrack(const std::string & audiourl, const std::map<std::string,std::string> & opts)
 {
-	RTC_LOG(INFO) << "audiourl:" << audiourl << " options:" << options;
+	RTC_LOG(INFO) << "audiourl:" << audiourl;
 
 	rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track;
 	if ( (audiourl.find("rtsp://") == 0) && (std::regex_match("rtsp://",m_publishFilter)) )
@@ -875,7 +839,7 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 				}
 			}
 		}
-		RTC_LOG(LS_ERROR) << "audiourl:" << audiourl << " options:" << options << " idx_audioDevice:" << idx_audioDevice;
+		RTC_LOG(LS_ERROR) << "audiourl:" << audiourl << " idx_audioDevice:" << idx_audioDevice;
 		if ( (idx_audioDevice >= 0) && (idx_audioDevice < num_audioDevices) )
 		{
 			audioDeviceModule_->SetRecordingDevice(idx_audioDevice);
@@ -925,9 +889,30 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 			}
 		}
 
+		// convert options string into map
+		std::istringstream is(options);
+		std::map<std::string,std::string> opts;
+		std::string key, value;
+		while(std::getline(std::getline(is, key, '='), value,'&')) {
+			opts[key] = value;	
+		}
+
+		// set bandwidth
+		if (opts.find("bitrate") != opts.end()) {
+			int bitrate = std::stoi(opts.at("bitrate"));
+			
+			webrtc::PeerConnectionInterface::BitrateParameters bitrateParam;
+			bitrateParam.min_bitrate_bps = rtc::Optional<int>(bitrate/2);
+			bitrateParam.current_bitrate_bps = rtc::Optional<int>(bitrate);
+			bitrateParam.max_bitrate_bps = rtc::Optional<int>(bitrate*2);
+			peer_connection->SetBitrate(bitrateParam);			
+			
+			RTC_LOG(WARNING) << "set bitrate:" << bitrate;
+		}					
+		
 		// need to create the stream
-		rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(this->CreateVideoTrack(video, options));
-		rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(this->CreateAudioTrack(audio, options));
+		rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(this->CreateVideoTrack(video, opts));
+		rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(this->CreateAudioTrack(audio, opts));
 		rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = peer_connection_factory_->CreateLocalMediaStream(streamLabel);
 		if (!stream.get())
 		{

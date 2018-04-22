@@ -20,37 +20,9 @@
 #include "modules/desktop_capture/desktop_capture_options.h"
 
 
-class ScreenCapturer : public cricket::VideoCapturer, public rtc::Thread, public webrtc::DesktopCapturer::Callback  {
+class DesktopCapturer : public cricket::VideoCapturer, public rtc::Thread, public webrtc::DesktopCapturer::Callback  {
 	public:
-		ScreenCapturer(const std::string & url) : m_capturer()  {
-			const std::string windowprefix("window://");
-			if (url.find(windowprefix) == 0) {				
-				m_capturer = webrtc::DesktopCapturer::CreateWindowCapturer(webrtc::DesktopCaptureOptions::CreateDefault());
-				
-				if (m_capturer) {
-					webrtc::DesktopCapturer::SourceList sourceList;
-					if (m_capturer->GetSourceList(&sourceList)) {
-						bool selected = false;
-						const std::string windowtitle(url.substr(windowprefix.length()));
-						for (auto source : sourceList) {
-							RTC_LOG(LS_ERROR) << "ScreenCapturer source:" << source.id << " title:"<< source.title;
-							if (windowtitle == source.title) {
-								m_capturer->SelectSource(source.id);
-								selected = true;
-								break;
-							}
-						}
-						if (!selected && !sourceList.empty()) {
-							m_capturer->SelectSource(sourceList[0].id);
-						}
-					}
-				}				
-			} else {
-				m_capturer = webrtc::DesktopCapturer::CreateScreenCapturer(webrtc::DesktopCaptureOptions::CreateDefault());
-			}			
-		}
-		
-		virtual ~ScreenCapturer() {}
+		virtual ~DesktopCapturer() {}
 
 		// overide webrtc::DesktopCapturer::Callback
 		virtual void OnCaptureResult(webrtc::DesktopCapturer::Result result, std::unique_ptr<webrtc::DesktopFrame> frame) {
@@ -111,8 +83,44 @@ class ScreenCapturer : public cricket::VideoCapturer, public rtc::Thread, public
 		virtual bool IsScreencast() const { return false; };
 		virtual bool IsRunning() { return this->capture_state() == cricket::CS_RUNNING; }
 	
-	private:
+	protected:
 		std::unique_ptr<webrtc::DesktopCapturer> m_capturer;		
 };
 
+
+class ScreenCapturer : public DesktopCapturer {
+	public:
+		ScreenCapturer(const std::string & url, const std::map<std::string,std::string> & opts) {
+			m_capturer = webrtc::DesktopCapturer::CreateScreenCapturer(webrtc::DesktopCaptureOptions::CreateDefault());
+		}
+};
+
+class WindowCapturer : public DesktopCapturer {
+	public:
+		WindowCapturer(const std::string & url, const std::map<std::string,std::string> & opts) {
+			const std::string windowprefix("window://");
+			if (url.find(windowprefix) == 0) {	
+				m_capturer = webrtc::DesktopCapturer::CreateWindowCapturer(webrtc::DesktopCaptureOptions::CreateDefault());
+			
+				if (m_capturer) {
+					webrtc::DesktopCapturer::SourceList sourceList;
+					if (m_capturer->GetSourceList(&sourceList)) {
+						bool selected = false;
+						const std::string windowtitle(url.substr(windowprefix.length()));
+						for (auto source : sourceList) {
+							RTC_LOG(LS_ERROR) << "ScreenCapturer source:" << source.id << " title:"<< source.title;
+							if (windowtitle == source.title) {
+								m_capturer->SelectSource(source.id);
+								selected = true;
+								break;
+							}
+						}
+						if (!selected && !sourceList.empty()) {
+							m_capturer->SelectSource(sourceList[0].id);
+						}
+					}
+				}
+			}			
+		}
+};
 

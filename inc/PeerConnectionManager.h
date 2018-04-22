@@ -259,8 +259,8 @@ class PeerConnectionManager {
 	protected:
 		PeerConnectionObserver*                 CreatePeerConnection(const std::string& peerid);
 		bool                                    AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & videourl, const std::string & audiourl, const std::string & options);
-		rtc::scoped_refptr<webrtc::VideoTrackInterface> CreateVideoTrack(const std::string & videourl, const std::string & options);
-		rtc::scoped_refptr<webrtc::AudioTrackInterface> CreateAudioTrack(const std::string & audiourl, const std::string & options);
+		rtc::scoped_refptr<webrtc::VideoTrackInterface> CreateVideoTrack(const std::string & videourl, const std::map<std::string,std::string> & opts);
+		rtc::scoped_refptr<webrtc::AudioTrackInterface> CreateAudioTrack(const std::string & audiourl, const std::map<std::string,std::string> & opts);
 		bool                                    streamStillUsed(const std::string & streamLabel);
 		const std::list<std::string>            getVideoCaptureDeviceList();
 
