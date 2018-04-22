@@ -121,7 +121,7 @@ clean:
 install: $(TARGET)
 	install -m 0755 $(TARGET) /usr/local/bin
 
-tgz: $(TARGET)
+tgz: $(TARGET) html/index.html
 	tar cvzf $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).tgz $(TARGET) html
 
 live555:
@@ -135,3 +135,6 @@ alsa-lib:
 	wget ftp://ftp.alsa-project.org/pub/lib/alsa-lib-$(ALSAVERSION).tar.bz2 -O - | tar xjf -
 	cd alsa-lib-$(ALSAVERSION) && CC=$(CC) ./configure --disable-python --disable-shared --enable-static --host=$(shell $(CC) -dumpmachine) --prefix=$(SYSROOT)$(PREFIX) && make && make install
 	rm -rf alsa-lib-$(ALSAVERSION)
+
+html/index.html:
+	git submodule update --init html
