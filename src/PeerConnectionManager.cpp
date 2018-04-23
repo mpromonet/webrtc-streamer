@@ -873,9 +873,13 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 	std::string streamLabel = video;
 	streamLabel.erase(std::remove_if(streamLabel.begin(), streamLabel.end(), isspace), streamLabel.end());
 
-	std::lock_guard<std::mutex> mlock(m_streamMapMutex);
-	std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(streamLabel);
-	if (it == stream_map_.end())
+	bool existingStream = false;
+	{
+		std::lock_guard<std::mutex> mlock(m_streamMapMutex);
+	        existingStream = (stream_map_.find(streamLabel) != stream_map_.end());
+	}
+	
+	if (!existingStream)
 	{
 		// compute audiourl if not set
 		if (audio.empty()) {
@@ -931,27 +935,31 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 			}
 
 			RTC_LOG(INFO) << "Adding Stream to map";
+			std::lock_guard<std::mutex> mlock(m_streamMapMutex);
 			stream_map_[streamLabel] = stream;
 		}
 	}
 
 
-	it = stream_map_.find(streamLabel);
-	if (it != stream_map_.end())
 	{
-		if (!peer_connection->AddStream(it->second))
+		std::lock_guard<std::mutex> mlock(m_streamMapMutex);
+		std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(streamLabel);
+		if (it != stream_map_.end())
 		{
-			RTC_LOG(LS_ERROR) << "Adding stream to PeerConnection failed";
+			if (!peer_connection->AddStream(it->second))
+			{
+				RTC_LOG(LS_ERROR) << "Adding stream to PeerConnection failed";
+			}
+			else
+			{
+				RTC_LOG(INFO) << "stream added to PeerConnection";
+				ret = true;
+			}
 		}
 		else
 		{
-			RTC_LOG(INFO) << "stream added to PeerConnection";
-			ret = true;
+			RTC_LOG(LS_ERROR) << "Cannot find stream";
 		}
-	}
-	else
-	{
-		RTC_LOG(LS_ERROR) << "Cannot find stream";
 	}
 
 	return ret;
