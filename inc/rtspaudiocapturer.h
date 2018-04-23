@@ -44,7 +44,9 @@ class RTSPAudioSource : public webrtc::Notifier<webrtc::AudioSourceInterface>, p
 		virtual bool onData(const char* id, unsigned char* buffer, ssize_t size, struct timeval presentationTime);
 		
 	protected:
-		RTSPAudioSource(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri) : m_connection(m_env, this, uri.c_str()), m_factory(audioDecoderFactory), m_sink(NULL), m_freq(8000), m_channel(1) { rtc::Thread::Start(); }
+		RTSPAudioSource(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri) 
+				: m_connection(m_env, this, uri.c_str(), 5, RTSPConnection::RTPUDPUNICAST, rtc::LogMessage::GetLogToDebug()<=3)
+				, m_factory(audioDecoderFactory), m_sink(NULL), m_freq(8000), m_channel(1) { rtc::Thread::Start(); }
 		virtual ~RTSPAudioSource() override { m_env.stop(); rtc::Thread::Stop(); }
 
 

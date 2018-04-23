@@ -599,13 +599,19 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 			{
 				RTC_LOG(LS_ERROR) << "Close PeerConnection no more used " << streamLabel;
 				
-				std::lock_guard<std::mutex> mlock(m_streamMapMutex);
-				std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(streamLabel);
-				if (it != stream_map_.end())
+				rtc::scoped_refptr<webrtc::MediaStreamInterface> mediaStream;
 				{
-					rtc::scoped_refptr<webrtc::MediaStreamInterface> mediaStream = it->second;
-					stream_map_.erase(it);
-					
+					std::lock_guard<std::mutex> mlock(m_streamMapMutex);
+					std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >::iterator it = stream_map_.find(streamLabel);
+					if (it != stream_map_.end())
+					{
+						mediaStream = it->second;
+						stream_map_.erase(it);
+					}
+				}
+				RTC_LOG(LS_ERROR) << "Close PeerConnection removed " << streamLabel;
+				
+				if (mediaStream.get() != NULL) {
 					// remove video tracks
 					while (mediaStream->GetVideoTracks().size() > 0)
 					{

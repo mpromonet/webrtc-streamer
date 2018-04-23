@@ -53,7 +53,7 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
                         connection.start();
                 }
                 virtual void    onError(RTSPConnection& connection,const char* erro)       {
-                        connection.start();
+                        connection.start(1);
                 }		
 
 		// overide webrtc::DecodedImageCallback

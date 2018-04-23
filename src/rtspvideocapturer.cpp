@@ -49,7 +49,7 @@ int decodeRTPTransport(const std::map<std::string,std::string> & opts)
 }
 
 RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
-	: m_connection(m_env, this, uri.c_str(), decodeTimeoutOption(opts), decodeRTPTransport(opts), 1)
+	: m_connection(m_env, this, uri.c_str(), decodeTimeoutOption(opts), decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=3)
 {
 	RTC_LOG(INFO) << "RTSPVideoCapturer" << uri ;
 	m_h264 = h264_new();
@@ -252,9 +252,10 @@ int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 		int64_t periodSource = decodedImage.timestamp() - previmagets;
 		int64_t periodDecode = ts-prevts;
 			
-		RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer::Decoded interframe decode:" << periodDecode << " source:" << (periodSource);
-		if (periodDecode < periodSource) {
-			usleep((periodSource-periodDecode)*1000);
+		RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer::Decoded interframe decode:" << periodDecode << " source:" << periodSource;
+		int64_t delayms = periodSource-periodDecode;
+		if ( (delayms > 0) && (delayms < 1000) ) {
+			usleep(delayms*1000);
 		}
 	}
 	
