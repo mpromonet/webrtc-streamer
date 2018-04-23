@@ -244,19 +244,24 @@ int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 	RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer::Decoded size:" << decodedImage.size() 
 				<< " decode ts:" << decodedImage.timestamp() 
 				<< " source ts:" << ts;
-				
-	this->OnFrame(decodedImage, decodedImage.height(), decodedImage.width());
 
-	
+	// avoid to block the encoder that drop frames when sent too quickly
 	static int64_t previmagets = 0;	
 	static int64_t prevts = 0;
-	int64_t periodSource = decodedImage.timestamp() - previmagets;
-	int64_t periodDecode = ts-prevts;
+	if (prevts != 0) {
+		int64_t periodSource = decodedImage.timestamp() - previmagets;
+		int64_t periodDecode = ts-prevts;
+			
+		RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer::Decoded interframe decode:" << periodDecode << " source:" << (periodSource);
+		if (periodDecode < periodSource) {
+			usleep((periodSource-periodDecode)*1000);
+		}
+	}
 	
-	RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer::Decoded decode:" << periodDecode << " source:" << (periodSource);
+	this->OnFrame(decodedImage, decodedImage.height(), decodedImage.width());
 	
 	previmagets = decodedImage.timestamp();
-	prevts = ts;
+	prevts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
 	
 	return true;
 }
