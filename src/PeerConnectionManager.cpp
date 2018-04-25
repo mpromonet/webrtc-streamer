@@ -13,20 +13,15 @@
 
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
-#include "modules/video_capture/video_capture_factory.h"
-#include "media/engine/webrtcvideocapturerfactory.h"
 
 #include "PeerConnectionManager.h"
 #include "V4l2AlsaMap.h"
+#include "CapturerFactory.h"
 
 #ifdef HAVE_LIVE555
-#include "rtspvideocapturer.h"
 #include "rtspaudiocapturer.h"
 #endif
 
-#ifdef USE_X11
-#include "screencapturer.h"
-#endif
 
 const char kAudioLabel[] = "audio_label";
 const char kVideoLabel[] = "video_label";
@@ -166,7 +161,7 @@ const Json::Value PeerConnectionManager::getMediaList()
 {
 	Json::Value value(Json::arrayValue);
 
-	const std::list<std::string> videoCaptureDevice = this->getVideoCaptureDeviceList();
+	const std::list<std::string> videoCaptureDevice = CapturerFactory::GetVideoCaptureDeviceList(m_publishFilter);
 	for (auto videoDevice : videoCaptureDevice) {
 		Json::Value media;
 		media["video"] = videoDevice;
@@ -178,38 +173,12 @@ const Json::Value PeerConnectionManager::getMediaList()
 		value.append(media);
 	}
 
-#ifdef USE_X11
-	if (std::regex_match("window://",m_publishFilter)) {
-		std::unique_ptr<webrtc::DesktopCapturer> capturer = webrtc::DesktopCapturer::CreateWindowCapturer(webrtc::DesktopCaptureOptions::CreateDefault());	
-		if (capturer) {
-			webrtc::DesktopCapturer::SourceList sourceList;
-			if (capturer->GetSourceList(&sourceList)) {
-				for (auto source : sourceList) {
-					std::ostringstream os;
-					os << "window://" << source.title;
-					Json::Value media;
-					media["video"] = os.str();
-					value.append(media);
-				}
-			}
-		}
+	const std::list<std::string> videoList = CapturerFactory::GetVideoSourceList(m_publishFilter);
+	for (auto videoSource : videoList) {
+		Json::Value media;
+		media["video"] = videoSource;
+		value.append(media);
 	}
-	if (std::regex_match("screen://",m_publishFilter)) {
-		std::unique_ptr<webrtc::DesktopCapturer> capturer = webrtc::DesktopCapturer::CreateScreenCapturer(webrtc::DesktopCaptureOptions::CreateDefault());		
-		if (capturer) {
-			webrtc::DesktopCapturer::SourceList sourceList;
-			if (capturer->GetSourceList(&sourceList)) {
-				for (auto source : sourceList) {
-					std::ostringstream os;
-					os << "screen://" << source.id;
-					Json::Value media;
-					media["video"] = os.str();
-					value.append(media);
-				}
-			}
-		}
-	}
-#endif		
 
 	for (auto url : m_urlVideoList)
 	{
@@ -227,43 +196,13 @@ const Json::Value PeerConnectionManager::getMediaList()
 }
 
 /* ---------------------------------------------------------------------------
-**  return video capture device list 
-** -------------------------------------------------------------------------*/
-const std::list<std::string> PeerConnectionManager::getVideoCaptureDeviceList()
-{
-	std::list<std::string> videoDeviceList;
-
-	if (std::regex_match("videocap://",m_publishFilter)) {
-		std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo());
-		if (info)
-		{
-			int num_videoDevices = info->NumberOfDevices();
-			RTC_LOG(INFO) << "nb video devices:" << num_videoDevices;
-			for (int i = 0; i < num_videoDevices; ++i)
-			{
-				const uint32_t kSize = 256;
-				char name[kSize] = {0};
-				char id[kSize] = {0};
-				if (info->GetDeviceName(i, name, kSize, id, kSize) != -1)
-				{
-					RTC_LOG(INFO) << "video device name:" << name << " id:" << id;
-					videoDeviceList.push_back(name);
-				}
-			}
-		}
-	}
-
-	return videoDeviceList;
-}
-
-/* ---------------------------------------------------------------------------
 **  return video device List as JSON vector
 ** -------------------------------------------------------------------------*/
 const Json::Value PeerConnectionManager::getVideoDeviceList()
 {
 	Json::Value value(Json::arrayValue);
 
-	const std::list<std::string> videoCaptureDevice = this->getVideoCaptureDeviceList();
+	const std::list<std::string> videoCaptureDevice = CapturerFactory::GetVideoCaptureDeviceList(m_publishFilter);
 	for (auto videoDevice : videoCaptureDevice) {
 		value.append(videoDevice);
 	}
@@ -776,30 +715,7 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 	RTC_LOG(INFO) << "videourl:" << videourl;
 
 
-	std::unique_ptr<cricket::VideoCapturer> capturer;
-	if ( (videourl.find("rtsp://") == 0) && (std::regex_match("rtsp://",m_publishFilter)) ) 
-	{
-#ifdef HAVE_LIVE555
-		capturer.reset(new RTSPVideoCapturer(videourl, opts));
-#endif
-	}
-	else if ( (videourl.find("screen://") == 0) && (std::regex_match("screen://",m_publishFilter)) )
-	{
-#ifdef USE_X11
-		capturer.reset(new ScreenCapturer(videourl, opts));			
-#endif	
-	}
-	else if ( (videourl.find("window://") == 0) && (std::regex_match("window://",m_publishFilter)) )
-	{
-#ifdef USE_X11
-		capturer.reset(new WindowCapturer(videourl, opts));			
-#endif	
-	}
-	else if (std::regex_match("videocap://",m_publishFilter)) {		
-		cricket::WebRtcVideoDeviceCapturerFactory factory;
-		capturer = factory.Create(cricket::Device(videourl, 0));
-	}
-
+	std::unique_ptr<cricket::VideoCapturer> capturer = CapturerFactory::CreateVideoCapturer(videourl, opts, m_publishFilter);
 	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
 	if (!capturer)
 	{
@@ -818,13 +734,12 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 {
 	RTC_LOG(INFO) << "audiourl:" << audiourl;
 
-	rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track;
+	rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource;
 	if ( (audiourl.find("rtsp://") == 0) && (std::regex_match("rtsp://",m_publishFilter)) )
 	{
 #ifdef HAVE_LIVE555
 		audioDeviceModule_->Terminate();
-		rtc::scoped_refptr<RTSPAudioSource> audioSource = RTSPAudioSource::Create(audioDecoderfactory_, audiourl);
-		audio_track = peer_connection_factory_->CreateAudioTrack(kAudioLabel, audioSource);
+		audioSource = RTSPAudioSource::Create(audioDecoderfactory_, audiourl);
 #endif
 	}
 	else if (std::regex_match("audiocap://",m_publishFilter)) 
@@ -849,10 +764,17 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 		if ( (idx_audioDevice >= 0) && (idx_audioDevice < num_audioDevices) )
 		{
 			audioDeviceModule_->SetRecordingDevice(idx_audioDevice);
-			rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource = peer_connection_factory_->CreateAudioSource(NULL);
-			audio_track = peer_connection_factory_->CreateAudioTrack(kAudioLabel, audioSource);
+			audioSource = peer_connection_factory_->CreateAudioSource(NULL);
 		}
 	}
+	
+	rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track;
+	if (!audioSource) {
+		RTC_LOG(LS_ERROR) << "Cannot create capturer audio:" << audiourl;
+	} else {
+		audio_track = peer_connection_factory_->CreateAudioTrack(kAudioLabel, audioSource);
+	}
+	
 	return audio_track;
 }
   

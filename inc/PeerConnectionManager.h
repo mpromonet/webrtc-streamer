@@ -7,8 +7,7 @@
 **
 ** -------------------------------------------------------------------------*/
 
-#ifndef PEERCONNECTIONMANAGER_H_
-#define PEERCONNECTIONMANAGER_H_
+#pragma once
 
 #include <string>
 #include <mutex>
@@ -278,4 +277,3 @@ class PeerConnectionManager {
 		const std::regex                                                          m_publishFilter;
 };
 
-#endif
