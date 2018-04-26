@@ -36,14 +36,17 @@ int decodeTimeoutOption(const std::map<std::string,std::string> & opts) {
 
 int decodeRTPTransport(const std::map<std::string,std::string> & opts) 
 {
-	std::string rtpTransportString = opts.at("rtptransport");
 	int rtptransport = RTSPConnection::RTPUDPUNICAST;
-	if (rtpTransportString == "tcp") {
-		rtptransport = RTSPConnection::RTPOVERTCP;
-	} else if (rtpTransportString == "http") {
-		rtptransport = RTSPConnection::RTPOVERHTTP;
-	} else if (rtpTransportString == "multicast") {
-		rtptransport = RTSPConnection::RTPUDPMULTICAST;
+	if (opts.find("rtptransport") != opts.end()) 
+	{
+		std::string rtpTransportString = opts.at("rtptransport");
+		if (rtpTransportString == "tcp") {
+			rtptransport = RTSPConnection::RTPOVERTCP;
+		} else if (rtpTransportString == "http") {
+			rtptransport = RTSPConnection::RTPOVERHTTP;
+		} else if (rtpTransportString == "multicast") {
+			rtptransport = RTSPConnection::RTPUDPMULTICAST;
+		}
 	}
 	return rtptransport;
 }
