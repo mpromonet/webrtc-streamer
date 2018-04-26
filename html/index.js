@@ -10,7 +10,6 @@ import setupWebRTCProxy from 'webrtc-proxy-client';
         return;
     }
 
-    let webrtcServer      = new WebRtcStreamer("video", webrtcConfig.url, request);
     let url = { video:location.search.slice(1) };
     let options;
     if (typeof URLSearchParams != 'undefined') {
@@ -20,6 +19,8 @@ import setupWebRTCProxy from 'webrtc-proxy-client';
         }
         options = params.get("options");
     }
-    setupWebRTCProxy({ elemId: 'video', videoUrl: url.video, audioUrl: url.audio, proxyUrl: '', options });
+    window.onload = function() {
+      setupWebRTCProxy({ elemId: 'video', videoUrl: url.video, audioUrl: url.audio, proxyUrl: '', options });
+    }
 })();
 
