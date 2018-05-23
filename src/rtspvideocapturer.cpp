@@ -235,7 +235,7 @@ void RTSPVideoCapturer::DecoderThread()
 
 			webrtc::EncodedImage input_image(buf, size, allocsize);		
 			input_image._timeStamp = frame.m_timestamp_ms; // store time in ms that overflow the 32bits
-			m_decoder->Decode(input_image, false, NULL);
+			m_decoder->Decode(input_image, false, NULL,0);
 		}
 	}
 }
