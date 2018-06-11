@@ -764,7 +764,8 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 		if ( (idx_audioDevice >= 0) && (idx_audioDevice < num_audioDevices) )
 		{
 			audioDeviceModule_->SetRecordingDevice(idx_audioDevice);
-			audioSource = peer_connection_factory_->CreateAudioSource(NULL);
+			cricket::AudioOptions opt;
+			audioSource = peer_connection_factory_->CreateAudioSource(opt);
 		}
 	}
 	
@@ -798,7 +799,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 	}
 		
 	// compute stream label removing space because SDP use label
-	std::string streamLabel = video;
+	std::string streamLabel = video + "|" + audio;
 	streamLabel.erase(std::remove_if(streamLabel.begin(), streamLabel.end(), isspace), streamLabel.end());
 
 	bool existingStream = false;
