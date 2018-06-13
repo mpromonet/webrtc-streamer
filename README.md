@@ -25,6 +25,7 @@ Build
 ===============
 
 1- Install Toolchain (https://chromium.googlesource.com/chromium/src/+/lkgr/docs/linux_build_instructions_prerequisites.md)
+
 2- Install Depot Tools (https://dev.chromium.org/developers/how-tos/install-depot-tools)
 
 Then:
