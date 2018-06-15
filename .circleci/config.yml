@@ -5,127 +5,32 @@ jobs:
     docker:
       - image: heroku/heroku:16
     environment:
-      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false rtc_build_examples=false' 
+      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false rtc_build_examples=false'
       GYP_GENERATOR_OUTPUT: "x86_64"
-      GNARGS: 'is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome"'      
+      GNARGS: 'is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome"'
       TAR_OPTIONS: --no-same-owner
-      WEBRTCROOT: /webrtc 
+      WEBRTCROOT: /webrtc
       SYSROOT: /webrtc/src/build/linux/debian_sid_amd64-sysroot
 
     steps:
       - checkout
-      
+
       - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make g++ xz-utils
       - run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
-      - run: mkdir ${WEBRTCROOT} && cd ${WEBRTCROOT} && fetch --no-history --nohooks webrtc 
-      - run: cd ${WEBRTCROOT} && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS 
-      - run: cd ${WEBRTCROOT} && gclient sync 
+      - run: mkdir ${WEBRTCROOT} && cd ${WEBRTCROOT} && fetch --no-history --nohooks webrtc
+      - run: cd ${WEBRTCROOT} && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
+      - run: cd ${WEBRTCROOT} && gclient sync
       - run: make live555 alsa-lib
-      - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}" && ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc 
-      - run: make all tgz 
+      - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}" && ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc
+      - run: make all tgz
 
       # archive artifacts
       - run: mkdir /distrib && cp *.tgz /distrib
       - persist_to_workspace:
           root: /
           paths:
-            - distrib 
-
-      # deploy on heroku
-      - run:
-          name: Setup Heroku
-          command: |  
-            ssh-keyscan -H heroku.com >> ~/.ssh/known_hosts
-            cat > ~/.netrc << EOF
-            machine api.heroku.com
-              login $HEROKU_LOGIN
-              password $HEROKU_API_KEY
-            EOF
-            cat >> ~/.ssh/config << EOF
-            VerifyHostKeyDNS yes
-            StrictHostKeyChecking no
-            EOF
-      - add_ssh_keys:
-          fingerprints:
-            - "9d:ef:66:ee:e1:95:2b:e6:98:05:01:ac:48:5c:53:be"
-      - deploy:
-          name: "Deploy to Heroku"
-          command: git add -f webrtc-streamer && git -c user.name='ci' -c user.email='ci@email.org' commit -m 'force add for heroku deployement' && git push --force git@heroku.com:rtsp2webrtc.git HEAD:refs/heads/master
-
-  build_rpi_armv7:
-    working_directory: ~/webrtc-streamer
-    docker:
-      - image: heroku/heroku:16
-    environment:
-      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false rtc_build_examples=false' 
-      GYP_GENERATOR_OUTPUT: "rpi-armv7"  
-      GNARGS: 'is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" is_clang=false target_cpu="arm" treat_warnings_as_errors=false' 
-      CROSS: arm-linux-gnueabihf- 
-      SYSROOT: /webrtc/src/build/linux/debian_sid_arm-sysroot 
-      TAR_OPTIONS: --no-same-owner
-      WEBRTCROOT: /webrtc 
-
-    steps:
-      - checkout
-      
-      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make g++ xz-utils
-      - run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools
-      - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
-      - run: git clone --depth 1 https://github.com/raspberrypi/tools.git /rpi_tools 
-      - run: echo 'export PATH=/rpi_tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin:$PATH' >> $BASH_ENV 
-      - run: mkdir ${WEBRTCROOT} && cd ${WEBRTCROOT} && fetch --no-history --nohooks webrtc 
-      - run: sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" ${WEBRTCROOT}/src/DEPS 
-      - run: sed -i -e "s|const auto iter = FindSourceInList(audio_source, &audio_source_list_);|const auto iter = std::find_if(audio_source_list_.begin(), audio_source_list_.end(), [audio_source](const std::unique_ptr<AudioMixerImpl::SourceStatus> \&p) { return p->audio_source == audio_source; });|" ${WEBRTCROOT}/src/modules/audio_mixer/audio_mixer_impl.cc
-      - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
-      - run: cd ${WEBRTCROOT} && gclient sync 
-      - run: make live555 alsa-lib
-      - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}" && ( ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc )
-      - run: make all tgz 
-
-      # archive artifacts
-      - run: mkdir /distrib && cp *.tgz /distrib
-      - persist_to_workspace:
-          root: /
-          paths:
-            - distrib 
-
-  build_rpi_armv6:
-    working_directory: ~/webrtc-streamer
-    docker:
-      - image: heroku/heroku:16
-    environment:
-      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false rtc_build_examples=false' 
-      GYP_GENERATOR_OUTPUT: "rpi-armv6"  
-      GNARGS: 'is_debug=false is_clang=false target_cpu="arm" treat_warnings_as_errors=false arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false' 
-      CROSS: arm-linux-gnueabihf- 
-      TAR_OPTIONS: --no-same-owner
-      WEBRTCROOT: /webrtc 
-      CFLAGS_EXTRA: "-march=armv6 -mfpu=vfp -mfloat-abi=hard"
-
-    steps:
-      - checkout
-      
-      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make g++ xz-utils
-      - run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools
-      - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
-      - run: git clone --depth 1 https://github.com/raspberrypi/tools.git /rpi_tools 
-      - run: echo 'export PATH=/rpi_tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian-x64/bin:$PATH' >> $BASH_ENV 
-      - run: mkdir ${WEBRTCROOT} && cd ${WEBRTCROOT} && fetch --no-history --nohooks webrtc 
-      - run: sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" ${WEBRTCROOT}/src/DEPS 
-      - run: sed -i -e "s|const auto iter = FindSourceInList(audio_source, &audio_source_list_);|const auto iter = std::find_if(audio_source_list_.begin(), audio_source_list_.end(), [audio_source](const std::unique_ptr<AudioMixerImpl::SourceStatus> \&p) { return p->audio_source == audio_source; });|" ${WEBRTCROOT}/src/modules/audio_mixer/audio_mixer_impl.cc
-      - run: cd ${WEBRTCROOT} && gclient sync 
-      - run: make live555 alsa-lib
-      - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}" && ( ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc )
-      - run: make all tgz 
-
-      # archive artifacts
-      - run: mkdir /distrib && cp *.tgz /distrib
-      - persist_to_workspace:
-          root: /
-          paths:
-            - distrib 
-
+            - distrib
 
   store_artifact:
     working_directory: ~/webrtc-streamer
@@ -137,48 +42,11 @@ jobs:
       - store_artifacts:
           path: /distrib
 
-  github_release:
-    working_directory: ~/webrtc-streamer
-    docker:
-      - image: heroku/heroku:16
-    steps:
-      - attach_workspace:
-          at: /
-      - run: curl https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz | tar -C /usr/local -xzf -
-      - run: echo 'export PATH=/usr/local/go/bin:/root/go/bin:$PATH' >> $BASH_ENV      
-      - run: go get github.com/tcnksm/ghr
-      - deploy:
-          name: "Deploy to Github"
-          command: ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME $CIRCLE_TAG /distrib
-          
 workflows:
   version: 2
   build:
     jobs:
       - build_x86_64:
           filters:
-            tags:
-              only: /.*/            
-      - build_rpi_armv7:
-          filters:
-            tags:
-              only: /.*/            
-      - build_rpi_armv6:
-          filters:
-            tags:
-              only: /.*/            
-      - store_artifact:
-          requires:
-            - build_x86_64
-            - build_rpi_armv7
-            - build_rpi_armv6
-      - github_release:
-          requires:
-            - build_x86_64
-            - build_rpi_armv7
-            - build_rpi_armv6
-          filters:
-            branches:
-              ignore: /.*/
             tags:
               only: /.*/
