@@ -28,7 +28,7 @@ CFLAGS += $(SYSROOTOPT) $(CFLAGS_EXTRA)
 LDFLAGS += $(SYSROOTOPT)
 
 CFLAGS += -DWEBRTC_POSIX -fno-rtti -DHAVE_JPEG
-CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/third_party/jsoncpp/source/include -I $(WEBRTCROOT)/src/third_party/libyuv/include
+CFLAGS += -I $(WEBRTCROOT)/src -I $(WEBRTCROOT)/src/third_party/jsoncpp/source/include -I $(WEBRTCROOT)/src/third_party/libyuv/include  -I $(WEBRTCROOT)/src/third_party/abseil-cpp
 #detect debug vs release
 TESTDEBUG=$(shell nm $(wildcard $(WEBRTCLIBPATH)/obj/rtc_base/librtc_base_generic.a) | c++filt | grep std::__debug::vector >/dev/null && echo debug)
 ifeq ($(TESTDEBUG),debug)
@@ -118,8 +118,11 @@ clean:
 	make -C h264bitstream clean
 	make -k -C live555helper clean PREFIX=$(PREFIX) SYSROOT=$(SYSROOT)
 
-install: $(TARGET)
-	install -m 0755 $(TARGET) /usr/local/bin
+install: $(TARGET) html/index.html
+	mkdir -p $(PREFIX)/bin
+	install -m 0755 $(TARGET) $(PREFIX)/bin/
+	mkdir -p $(PREFIX)/etc/$(TARGET)
+	find html -type f -exec install -m 0422 {} $(PREFIX)/etc/$(TARGET)/ \;
 
 tgz: $(TARGET) html/index.html
 	tar cvzf $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).tgz $(TARGET) html
