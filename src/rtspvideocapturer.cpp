@@ -24,21 +24,35 @@
 
 uint8_t marker[] = { 0, 0, 0, 1};
 
-int decodeRTPTransport(const std::string & rtpTransportString) 
+int decodeTimeoutOption(const std::map<std::string,std::string> & opts) {
+	int timeout = 10;
+	if (opts.find("timeout") != opts.end()) 
+	{
+		std::string timeoutString = opts.at("timeout");
+		timeout = std::stoi(timeoutString);
+	}
+	return timeout;
+}
+
+int decodeRTPTransport(const std::map<std::string,std::string> & opts) 
 {
 	int rtptransport = RTSPConnection::RTPUDPUNICAST;
-	if (rtpTransportString == "tcp") {
-		rtptransport = RTSPConnection::RTPOVERTCP;
-	} else if (rtpTransportString == "http") {
-		rtptransport = RTSPConnection::RTPOVERHTTP;
-	} else if (rtpTransportString == "multicast") {
-		rtptransport = RTSPConnection::RTPUDPMULTICAST;
+	if (opts.find("rtptransport") != opts.end()) 
+	{
+		std::string rtpTransportString = opts.at("rtptransport");
+		if (rtpTransportString == "tcp") {
+			rtptransport = RTSPConnection::RTPOVERTCP;
+		} else if (rtpTransportString == "http") {
+			rtptransport = RTSPConnection::RTPOVERHTTP;
+		} else if (rtpTransportString == "multicast") {
+			rtptransport = RTSPConnection::RTPUDPMULTICAST;
+		}
 	}
 	return rtptransport;
 }
 
-RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, int timeout, const std::string & rtptransport) 
-	: m_connection(m_env, this, uri.c_str(), timeout, decodeRTPTransport(rtptransport), 1)
+RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
+	: m_connection(m_env, this, uri.c_str(), decodeTimeoutOption(opts), decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=3)
 {
 	RTC_LOG(INFO) << "RTSPVideoCapturer" << uri ;
 	m_h264 = h264_new();
@@ -215,27 +229,15 @@ void RTSPVideoCapturer::DecoderThread()
 		ssize_t size = frame.m_content.size();
 		
 		if (size) {
-			uint8_t buf[size];
+			size_t allocsize = size + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264);
+			uint8_t buf[allocsize];
 			memcpy( buf, data, size );
 
-			webrtc::EncodedImage input_image(buf, size, size + webrtc::EncodedImage::GetBufferPaddingBytes(webrtc::VideoCodecType::kVideoCodecH264));		
+			webrtc::EncodedImage input_image(buf, size, allocsize);		
 			input_image._timeStamp = frame.m_timestamp_ms; // store time in ms that overflow the 32bits
-			m_decoder->Decode(input_image, false, NULL);
+			m_decoder->Decode(input_image, false, NULL,0);
 		}
 	}
-}
-
-ssize_t RTSPVideoCapturer::onNewBuffer(unsigned char* buffer, ssize_t size)
-{
-	ssize_t markerSize = 0;
-	if (m_codec == "H264") {
-		if (size > sizeof(marker))
-		{
-			memcpy( buffer, marker, sizeof(marker) );
-			markerSize = sizeof(marker);
-		}
-	}
-	return 	markerSize;
 }
 
 int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
@@ -245,19 +247,25 @@ int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 	RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer::Decoded size:" << decodedImage.size() 
 				<< " decode ts:" << decodedImage.timestamp() 
 				<< " source ts:" << ts;
-				
-	this->OnFrame(decodedImage, decodedImage.height(), decodedImage.width());
 
-	
+	// avoid to block the encoder that drop frames when sent too quickly
 	static int64_t previmagets = 0;	
 	static int64_t prevts = 0;
-	int64_t periodSource = decodedImage.timestamp() - previmagets;
-	int64_t periodDecode = ts-prevts;
+	if (prevts != 0) {
+		int64_t periodSource = decodedImage.timestamp() - previmagets;
+		int64_t periodDecode = ts-prevts;
+			
+		RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer::Decoded interframe decode:" << periodDecode << " source:" << periodSource;
+		int64_t delayms = periodSource-periodDecode;
+		if ( (delayms > 0) && (delayms < 1000) ) {
+			usleep(delayms*1000);
+		}
+	}
 	
-	RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer::Decoded decode:" << periodDecode << " source:" << (periodSource);
+	this->OnFrame(decodedImage, decodedImage.height(), decodedImage.width());
 	
 	previmagets = decodedImage.timestamp();
-	prevts = ts;
+	prevts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
 	
 	return true;
 }

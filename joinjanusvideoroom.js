@@ -14,7 +14,7 @@ var videourl = process.argv[3];
 console.log("videourl: " + videourl);
 
 // get configuration from webrtc-streamer using janusvideoroom.json
-var request = require("then-request");
+global.request = require("then-request");
 var JanusVideoRoom = require("./html/janusvideoroom.js"); 
 
 request( "GET",  webrtcstreamerurl + "/janusvideoroom.json" ).done(
@@ -22,8 +22,8 @@ request( "GET",  webrtcstreamerurl + "/janusvideoroom.json" ).done(
 		if (response.statusCode === 200) {
 			console.log("HTTP answer:"+ response.body);
 			eval("{" + response.body + "}");
-			console.log(JSON.stringify(request));
-			var janus = new JanusVideoRoom(janusRoomConfig.url, webrtcstreamerurl, request);
+			
+			var janus = new JanusVideoRoom(janusRoomConfig.url, webrtcstreamerurl);
 			janus.join(janusRoomConfig.roomId,videourl,"video");
 		} else {
 			console.log("HTTP code:"+ response.statusCode);

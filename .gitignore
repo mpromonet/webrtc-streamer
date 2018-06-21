@@ -2,3 +2,4 @@ src/*.o
 *.a
 *.tgz
 webrtc-streamer
+/node_modules/

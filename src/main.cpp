@@ -30,9 +30,11 @@ int main(int argc, char* argv[])
 	std::string sslCertificate;
 	webrtc::AudioDeviceModule::AudioLayer audioLayer = webrtc::AudioDeviceModule::kLinuxAlsaAudio;
 	std::string streamName;
-	std::map<std::string,std::string> urlList;
+	std::map<std::string,std::string> urlVideoList;
+	std::map<std::string,std::string> urlAudioList;
 	std::string nbthreads;
 	std::string passwdFile;
+	std::string publishFilter(".*");
 
 	std::string httpAddress("0.0.0.0:");
 	std::string httpPort = "8000";
@@ -44,7 +46,7 @@ int main(int argc, char* argv[])
 	httpAddress.append(httpPort);
 
 	int c = 0;
-	while ((c = getopt (argc, argv, "hVv::" "c:H:w:T:A:" "t:S::s::" "a::n:u:")) != -1)
+	while ((c = getopt (argc, argv, "hVv::" "c:H:w:T:A:" "t:S::s::" "a::q:" "n:u:U:")) != -1)
 	{
 		switch (c)
 		{
@@ -56,14 +58,21 @@ int main(int argc, char* argv[])
 
 			case 't': turnurl = optarg; break;
 			case 'S': localstunurl = optarg ? optarg : defaultlocalstunurl; stunurl = localstunurl; break;
-			case 's': localstunurl = NULL; if (optarg) stunurl = optarg; break;
+			case 's': localstunurl = NULL; stunurl = optarg ? optarg : defaultlocalstunurl; break;
 			
 			case 'a': audioLayer = optarg ? (webrtc::AudioDeviceModule::AudioLayer)atoi(optarg) : webrtc::AudioDeviceModule::kDummyAudio; break;
+			case 'q': publishFilter = optarg ; break;
+				
 			case 'n': streamName = optarg; break;
 			case 'u': {
 				if (!streamName.empty()) {
-					urlList[streamName]=optarg;
-					streamName.clear();
+					urlVideoList[streamName]=optarg;
+				}
+			}
+			break;
+			case 'U': {
+				if (!streamName.empty()) {
+					urlAudioList[streamName]=optarg;
 				}
 			}
 			break;
@@ -87,14 +96,14 @@ int main(int argc, char* argv[])
 				std::cout << "\t -w webroot         : path to get files"                                                          << std::endl;
 				std::cout << "\t -c sslkeycert      : path to private key and certificate for HTTPS"                              << std::endl;
 				std::cout << "\t -T nbthreads       : number of threads for HTTP server"                                          << std::endl;
-				std::cout << "\t -A passwd          : passworf file for HTTP server access"                                          << std::endl;
+				std::cout << "\t -A passwd          : password file for HTTP server access"                                          << std::endl;
 			
 				std::cout << "\t -S[stun_address]   : start embeded STUN server bind to address (default " << defaultlocalstunurl << ")" << std::endl;
 				std::cout << "\t -s[stun_address]   : use an external STUN server (default " << stunurl << ")"                    << std::endl;
 				std::cout << "\t -t[username:password@]turn_address : use an external TURN relay server (default disabled)"       << std::endl;
 
 				std::cout << "\t -a[audio layer]    : spefify audio capture layer to use (default:" << audioLayer << ")"          << std::endl;
-				std::cout << "\t -n name -u url     : register a stream with name using url"                                      << std::endl;
+				std::cout << "\t -n name -u videourl -U audiourl : register a stream with name using url"                         << std::endl;
 			
 				std::cout << "\t [url]              : url to register in the source list"                                         << std::endl;
 			
@@ -107,7 +116,7 @@ int main(int argc, char* argv[])
 	while (optind<argc)
 	{
 		std::string url(argv[optind]);
-		urlList[url]=url;
+		urlVideoList[url]=url;
 		optind++;
 	}
 
@@ -120,7 +129,12 @@ int main(int argc, char* argv[])
 	rtc::InitializeSSL();
 
 	// webrtc server
-	PeerConnectionManager webRtcServer(stunurl, turnurl, urlList, audioLayer);
+	std::list<std::string> iceServerList;
+	iceServerList.push_back(std::string("stun:")+stunurl);
+	if (strlen(turnurl)) {
+		iceServerList.push_back(std::string("turn:")+turnurl);
+	}
+	PeerConnectionManager webRtcServer(iceServerList, urlVideoList, urlAudioList, audioLayer, publishFilter);
 	if (!webRtcServer.InitializePeerConnection())
 	{
 		std::cout << "Cannot Initialize WebRTC server" << std::endl;

@@ -7,11 +7,11 @@
 **
 ** -------------------------------------------------------------------------*/
 
-#ifndef PEERCONNECTIONMANAGER_H_
-#define PEERCONNECTIONMANAGER_H_
+#pragma once
 
 #include <string>
 #include <mutex>
+#include <regex>
 
 #include "api/peerconnectioninterface.h"
 #include "api/test/fakeconstraints.h"
@@ -236,7 +236,7 @@ class PeerConnectionManager {
 	};
 
 	public:
-		PeerConnectionManager(const std::string & stunurl, const std::string & turnurl, const std::map<std::string,std::string> & urlList, const webrtc::AudioDeviceModule::AudioLayer audioLayer);
+		PeerConnectionManager(const std::list<std::string> & iceServerList, const std::map<std::string,std::string> & urlVideoList, const std::map<std::string,std::string> & urlAudioList, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter);
 		virtual ~PeerConnectionManager();
 
 		bool InitializePeerConnection();
@@ -258,9 +258,10 @@ class PeerConnectionManager {
 	protected:
 		PeerConnectionObserver*                 CreatePeerConnection(const std::string& peerid);
 		bool                                    AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & videourl, const std::string & audiourl, const std::string & options);
-		rtc::scoped_refptr<webrtc::VideoTrackInterface> CreateVideoTrack(const std::string & videourl, const std::string & options);
-		rtc::scoped_refptr<webrtc::AudioTrackInterface> CreateAudioTrack(const std::string & audiourl, const std::string & options);
+		rtc::scoped_refptr<webrtc::VideoTrackInterface> CreateVideoTrack(const std::string & videourl, const std::map<std::string,std::string> & opts);
+		rtc::scoped_refptr<webrtc::AudioTrackInterface> CreateAudioTrack(const std::string & audiourl, const std::map<std::string,std::string> & opts);
 		bool                                    streamStillUsed(const std::string & streamLabel);
+		const std::list<std::string>            getVideoCaptureDeviceList();
 
 	protected:
 		rtc::scoped_refptr<webrtc::AudioDeviceModule>                             audioDeviceModule_;
@@ -269,12 +270,10 @@ class PeerConnectionManager {
 		std::map<std::string, PeerConnectionObserver* >                           peer_connectionobs_map_;
 		std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >  stream_map_;
 	        std::mutex                                                                m_streamMapMutex;
-		std::string                                                               stunurl_;
-		std::string                                                               turnurl_;
-		std::string                                                               turnuser_;
-		std::string                                                               turnpass_;
-		const std::map<std::string,std::string>                                   urlList_;
+		std::list<std::string>                                                              iceServerList_;
+		const std::map<std::string,std::string>                                   m_urlVideoList;
+		const std::map<std::string,std::string>                                   m_urlAudioList;
 		std::map<std::string,std::string>                                         m_videoaudiomap;
+		const std::regex                                                          m_publishFilter;
 };
 
-#endif
