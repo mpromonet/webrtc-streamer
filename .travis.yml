@@ -50,7 +50,7 @@ script:
 - pushd src
 # build WebRTC
 - gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}"
-- ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc
+- ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory
 - popd
 - popd
 # build

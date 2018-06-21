@@ -35,11 +35,12 @@ class RequestHandler : public CivetHandler
 			{
 				std::string body;
 				long long nlen = 0;
-				char buf[1024];
+				long long bufSize = 1024;
+				char buf[bufSize];
 				while (nlen < tlen) {
 					long long rlen = tlen - nlen;
-					if (rlen > sizeof(buf)) {
-						rlen = sizeof(buf);
+					if (rlen > bufSize) {
+						rlen = bufSize;
 					}
 					rlen = mg_read(conn, buf, (size_t)rlen);
 					if (rlen <= 0) {
@@ -49,7 +50,7 @@ class RequestHandler : public CivetHandler
 
 					nlen += rlen;
 				}
-				std::cout << "body:" << body << std::endl;
+				RTC_LOG(INFO) << "body:" << body;
 
 				// parse in
 				Json::Reader reader;
@@ -66,7 +67,7 @@ class RequestHandler : public CivetHandler
 			if (out.isNull() == false)
 			{
 				std::string answer(Json::StyledWriter().write(out));
-				std::cout << "answer:" << answer << std::endl;
+				RTC_LOG(INFO) << "answer:" << answer;
 
 				mg_printf(conn,"HTTP/1.1 200 OK\r\n");
 				mg_printf(conn,"Access-Control-Allow-Origin: *\r\n");
@@ -74,7 +75,7 @@ class RequestHandler : public CivetHandler
 				mg_printf(conn,"Content-Length: %zd\r\n", answer.size());
 				mg_printf(conn,"Connection: close\r\n");
 				mg_printf(conn,"\r\n");
-				mg_printf(conn,answer.c_str());
+				mg_printf(conn,"%s",answer.c_str());
 
 				ret = true;
 			}

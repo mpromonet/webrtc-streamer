@@ -7,6 +7,8 @@
 ** 
 ** -------------------------------------------------------------------------*/
 
+#include <functional>
+
 #include "CivetServer.h"
 #include "PeerConnectionManager.h"
 
