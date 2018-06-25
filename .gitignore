@@ -3,3 +3,4 @@ src/*.o
 *.tgz
 webrtc-streamer
 /node_modules/
+.vscode
