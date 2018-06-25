@@ -322,20 +322,6 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 	{
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = peerConnectionObserver->getPeerConnection();
 
-		// set bandwidth
-		std::string tmp;
-		if (CivetServer::getParam(options, "bitrate", tmp)) {
-			int bitrate = std::stoi(tmp);
-
-			webrtc::PeerConnectionInterface::BitrateParameters bitrateParam;
-			bitrateParam.min_bitrate_bps = rtc::Optional<int>(bitrate/2);
-			bitrateParam.current_bitrate_bps = rtc::Optional<int>(bitrate);
-			bitrateParam.max_bitrate_bps = rtc::Optional<int>(bitrate*2);
-			peerConnection->SetBitrate(bitrateParam);
-
-			RTC_LOG(WARNING) << "set bitrate:" << bitrate;
-		}
-
 		if (!this->AddStreams(peerConnectionObserver->getPeerConnection(), videourl, audiourl, peerid, options))
 		{
 			RTC_LOG(WARNING) << "Can't add stream";
