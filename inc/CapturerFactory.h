@@ -99,7 +99,7 @@ class CapturerFactory {
 			capturer.reset(new RTSPVideoCapturer(videourl, opts));
 #endif
 		}
-		else if ((videourl.find("vnc://") == 0) && (std::regex_match("vnc://",publishFilter))) 
+		else if ((videourl.find("vnc://") == 0)) 
 		{
 			auto vncCapturer = new VNCVideoCapturer(videourl);
 			RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " Starting VNC URL:" << videourl;

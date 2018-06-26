@@ -1,0 +1,12 @@
+FROM heroku/heroku:18
+RUN apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make g++ xz-utils libgtk-3-dev libasound2-dev
+RUN apt-get install -y --no-install-recommends libvncserver-dev pkg-config
+
+RUN mkdir -p /webrtc/html
+COPY webrtc-streamer /webrtc
+COPY index.html /webrtc/html
+COPY dist /webrtc/html/dist
+# ENTRYPOINT [ "/bin/bash" ]
+ENTRYPOINT [ "/webrtc/webrtc-streamer" ]
+CMD [ "-w", "/webrtc/html", "-a", "rtsp://217.17.220.110/axis-media/media.amp", "rtsp://85.255.175.241/h264", "rtsp://85.255.175.244/h264", "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov", "rtsp://b1.dnsdojo.com:1935/live/sys3.stream", "rtsp://streaming3.webcam.nl:80/n224/n224.stream", "rtsp://streaming3.webcam.nl:80/varik/varik.stream", "screen://"  ]
+
