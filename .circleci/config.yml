@@ -55,7 +55,7 @@ jobs:
       - run: aws s3 sync ./publish s3://rnfrst-webrtc-prd/build/
 
 
-      - run: mkdir /distrib && cp *.tgz /distrib
+      - run: mkdir /distrib && cp publish/*.tgz /distrib
       - persist_to_workspace:
           root: /
           paths:
@@ -209,7 +209,16 @@ jobs:
       - deploy:
           name: "Deploy to Github"
           command: ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME $CIRCLE_TAG /distrib
-
+  aws_release:
+    docker:
+      - image: rainforestapp/docker-aws-cli:latest
+    steps:
+      - attach_workspace:
+          at: /
+      - run:
+          name: Sync to S3
+          command: |
+            aws s3 sync /distrib s3://rnfrst-webrtc-prd/build/ --acl public-read
 workflows:
   version: 2
   build:
@@ -251,7 +260,7 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - github_release:
+      - aws_release:
           requires:
             - store_artifact
           filters:
