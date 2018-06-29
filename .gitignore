@@ -4,3 +4,4 @@ src/*.o
 webrtc-streamer
 /node_modules/
 .vscode
+publish

@@ -1,8 +1,8 @@
-CC=$(CROSS)gcc 
+CC=$(CROSS)gcc
 CXX=$(CROSS)g++
 AR=$(CROSS)ar
-CFLAGS = -Wall -pthread -g -std=c++11 -Iinc 
-LDFLAGS = -pthread 
+CFLAGS = -Wall -pthread -g -std=c++11 -Iinc
+LDFLAGS = -pthread
 WEBRTCROOT?=$(CURDIR)/../webrtc
 WEBRTCBUILD?=Release
 PREFIX?=/usr
@@ -36,12 +36,12 @@ ifeq ($(TESTDEBUG),debug)
 else
 	CFLAGS +=-DNDEBUG=1
 endif
-LDFLAGS += -ldl -lrt 
+LDFLAGS += -ldl -lrt
 
 # desktop capture
 ifneq ($(wildcard $(WEBRTCLIBPATH)/obj/modules/desktop_capture/desktop_capture.ninja),)
 CFLAGS += -DUSE_X11
-LDFLAGS += -lX11 -lXext -lXdamage -lXfixes -lXcomposite 
+LDFLAGS += -lX11 -lXext -lXdamage -lXfixes -lXcomposite
 endif
 
 WEBRTC_LIB += $(shell find $(WEBRTCLIBPATH)/obj -name '*.o')
@@ -53,7 +53,7 @@ libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a: $(WEBRTC_LIB)
 ifneq ($(wildcard $(SYSROOT)$(PREFIX)/include/alsa/asoundlib.h),)
 CFLAGS += -DHAVE_ALSA -I $(SYSROOT)$(PREFIX)/include
 LDFLAGS+= -L $(SYSROOT)$(PREFIX)/lib -lasound
-else	
+else
 $(info ALSA not found in $(SYSROOT)$(PREFIX)/include)
 endif
 
@@ -73,8 +73,8 @@ CFLAGS += -I live555helper/inc
 CFLAGS += -I $(SYSROOT)$(PREFIX)/include/liveMedia  -I $(SYSROOT)$(PREFIX)/include/groupsock -I $(SYSROOT)$(PREFIX)/include/UsageEnvironment -I $(SYSROOT)$(PREFIX)/include/BasicUsageEnvironment/
 
 LDFLAGS += live555helper/live555helper.a
-LDFLAGS += -L $(SYSROOT)$(PREFIX)/lib -l:libliveMedia.a -l:libgroupsock.a -l:libUsageEnvironment.a -l:libBasicUsageEnvironment.a 
-else	
+LDFLAGS += -L $(SYSROOT)$(PREFIX)/lib -l:libliveMedia.a -l:libgroupsock.a -l:libUsageEnvironment.a -l:libBasicUsageEnvironment.a
+else
 $(info LIVE555 not found in $(SYSROOT)$(PREFIX)/include)
 endif
 
@@ -94,12 +94,12 @@ LDFLAGS += -L civetweb -l civetweb
 VERSION+=h264bitstream@$(shell git -C h264bitstream describe --tags --always --dirty)
 LIBS+=h264bitstream/.libs/libh264bitstream.a
 h264bitstream/Makefile:
-	git submodule update --init h264bitstream	
+	git submodule update --init h264bitstream
 
 h264bitstream/.libs/libh264bitstream.a: h264bitstream/Makefile
 	cd h264bitstream && autoreconf -i -f
 	cd h264bitstream && CC=$(CXX) ./configure --host=$(shell $(CXX) -dumpmachine)
-	make -C h264bitstream 
+	make -C h264bitstream
 
 CFLAGS += -I h264bitstream $(shell pkg-config --cflags libvncclient)
 LDFLAGS += h264bitstream/.libs/libh264bitstream.a $(shell pkg-config --libs libvncclient)
@@ -108,7 +108,7 @@ src/%.o: src/%.cpp $(LIBS)
 	$(CXX) -o $@ -c $< $(CFLAGS) -DVERSION="\"$(VERSION)\""
 
 FILES = $(wildcard src/*.cpp)
-$(TARGET): $(subst .cpp,.o,$(FILES)) $(LIBS) 
+$(TARGET): $(subst .cpp,.o,$(FILES)) $(LIBS)
 	$(CXX) -o $@ $^ $(LDFLAGS)
 
 clean:
@@ -124,7 +124,12 @@ install: $(TARGET) html/index.html
 	find html -type f -exec install -m 0422 {} $(PREFIX)/etc/$(TARGET)/ \;
 
 tgz: $(TARGET) html/index.html
-	tar cvzf $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).tgz $(TARGET) html
+	cd public && npm install && npm build
+	mkdir -p publish/html
+	cp public/index.html publish/html
+	cp -r public/dist publish/html
+	cp $(TARGET) publish/
+	cd publish && tar cvzf $(TARGET).tgz $(TARGET) html
 
 live555:
 	wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -
