@@ -1,7 +1,7 @@
 defaults: &defaults
   working_directory: /webrtc-streamer
   docker:
-    - image: heroku/heroku:18
+    - image: node:8.2
 
 version: 2
 jobs:
