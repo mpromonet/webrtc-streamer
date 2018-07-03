@@ -5,3 +5,4 @@ webrtc-streamer
 /node_modules/
 .vscode
 publish
+.DS_Store
