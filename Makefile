@@ -124,7 +124,7 @@ install: $(TARGET) html/index.html
 	find html -type f -exec install -m 0422 {} $(PREFIX)/etc/$(TARGET)/ \;
 
 tgz: $(TARGET) html/index.html
-	cd public && npm install && npm build
+	cd public && npm install && npm run build
 	mkdir -p publish/html
 	cp public/index.html publish/html
 	cp -r public/dist publish/html
