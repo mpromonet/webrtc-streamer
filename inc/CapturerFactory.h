@@ -91,7 +91,7 @@ class CapturerFactory {
 	}
 
 	
-	static std::unique_ptr<cricket::VideoCapturer> CreateVideoCapturer(const std::string & videourl, const std::map<std::string,std::string> & opts, const std::string & peerid, std::map<std::string, VNCVideoCapturer* >  vnc_map_, const std::regex & publishFilter) {
+	static std::unique_ptr<cricket::VideoCapturer> CreateVideoCapturer(const std::string & videourl, const std::map<std::string,std::string> & opts, const std::string & peerid, std::map<std::string, VNCVideoCapturer* > & vnc_map_, const std::regex & publishFilter) {
 		std::unique_ptr<cricket::VideoCapturer> capturer;
 		if ( (videourl.find("rtsp://") == 0) && (std::regex_match("rtsp://",publishFilter)) ) 
 		{
