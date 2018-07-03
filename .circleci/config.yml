@@ -50,7 +50,7 @@ jobs:
       - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}"
       - run: cd ${WEBRTCROOT}/src && ( ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory)
       - run: make live555
-      - run: curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+      - run: curl -sL https://deb.nodesource.com/setup_8.x | bash -
       - run: apt-get install -y --no-install-recommends nodejs awscli libvncserver-dev pkg-config
       - run: make all tgz
       - run: aws s3 sync ./publish s3://rnfrst-webrtc-prd/build/
@@ -85,7 +85,7 @@ jobs:
       - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}"
       - run: make live555 alsa-lib
       - run: cd ${WEBRTCROOT}/src && ( ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory)
-      - run: curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+      - run: curl -sL https://deb.nodesource.com/setup_8.x | bash -
       - run: apt-get install -y --no-install-recommends nodejs libvncserver-dev pkg-config
       - run: make all tgz
 
@@ -137,7 +137,7 @@ jobs:
       - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}"
       - run: make live555 alsa-lib
       - run: cd ${WEBRTCROOT}/src && ( ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory)
-      - run: curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+      - run: curl -sL https://deb.nodesource.com/setup_8.x | bash -
       - run: apt-get install -y --no-install-recommends nodejs libvncserver-dev pkg-config
       - run: make all tgz
 
@@ -175,7 +175,7 @@ jobs:
       - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}"
       - run: make live555 alsa-lib
       - run: cd ${WEBRTCROOT}/src && ( ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory)
-      - run: curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+      - run: curl -sL https://deb.nodesource.com/setup_8.x | bash -
       - run: apt-get install -y --no-install-recommends nodejs libvncserver-dev pkg-config
       - run: make all tgz
 
