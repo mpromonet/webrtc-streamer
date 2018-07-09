@@ -519,6 +519,7 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 	bool result = false;
 	RTC_LOG(INFO) << __FUNCTION__ << " " << peerid;
 
+	vnc_map_.erase(peerid);
 	std::map<std::string, PeerConnectionObserver* >::iterator  it = peer_connectionobs_map_.find(peerid);
 	if (it != peer_connectionobs_map_.end())
 	{
@@ -526,7 +527,6 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 		PeerConnectionObserver* pcObserver = it->second;
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = pcObserver->getPeerConnection();
 		peer_connectionobs_map_.erase(it);
-		vnc_map_.erase(peerid);
 
 		rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
 		for (unsigned int i = 0; i<localstreams->count(); i++)
