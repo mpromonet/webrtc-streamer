@@ -94,7 +94,7 @@ IceServer getIceServerFromUrl(const std::string & url, const std::string& client
 			uri = uri.substr(pos + 1);
 		}
 		
-		if (uri.find("0.0.0.0:") == 0) {
+		if ( (uri.find("0.0.0.0:") == 0) && (clientIp.empty() == false)) {
 			// answer with ip that is on same network as client
 			std::string clienturl = getServerIpFromClientIp(inet_addr(clientIp.c_str()));
 			clienturl += uri.substr(uri.find_first_of(':'));
@@ -414,9 +414,14 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 	else
 	{
 		PeerConnectionObserver* peerConnectionObserver = this->CreatePeerConnection(peerid);
-		if (!peerConnectionObserver)
+		if (!peerConnectionObserver) 
+		{
+			RTC_LOG(LERROR) << "Failed to initialize PeerConnectionObserver";
+		}
+		else if (!peerConnectionObserver->getPeerConnection().get()) 
 		{
 			RTC_LOG(LERROR) << "Failed to initialize PeerConnection";
+			delete peerConnectionObserver;
 		}
 		else
 		{
