@@ -42,17 +42,17 @@ bool RTSPAudioSource::onNewSession(const char* id, const char* media, const char
 		
 		if (strcmp(codec, "PCMU") == 0) 
 		{
-			m_decoder = m_factory->MakeAudioDecoder(webrtc::SdpAudioFormat(codec, m_freq, m_channel),rtc::Optional<webrtc::AudioCodecPairId>());
+			m_decoder = m_factory->MakeAudioDecoder(webrtc::SdpAudioFormat(codec, m_freq, m_channel),absl::optional<webrtc::AudioCodecPairId>());
 			success = true;
 		}
 		else if (strcmp(codec, "OPUS") == 0) 
 		{
-			m_decoder = m_factory->MakeAudioDecoder(webrtc::SdpAudioFormat(codec, m_freq, m_channel),rtc::Optional<webrtc::AudioCodecPairId>());
+			m_decoder = m_factory->MakeAudioDecoder(webrtc::SdpAudioFormat(codec, m_freq, m_channel),absl::optional<webrtc::AudioCodecPairId>());
 			success = true;
 		}
 		else if (strcmp(codec, "L16") == 0)
 		{
-			m_decoder = m_factory->MakeAudioDecoder(webrtc::SdpAudioFormat(codec, m_freq, m_channel),rtc::Optional<webrtc::AudioCodecPairId>());
+			m_decoder = m_factory->MakeAudioDecoder(webrtc::SdpAudioFormat(codec, m_freq, m_channel),absl::optional<webrtc::AudioCodecPairId>());
 			success = true;
 		}
 	}

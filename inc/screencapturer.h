@@ -35,9 +35,9 @@ class DesktopCapturer : public cricket::VideoCapturer, public rtc::Thread, publi
 				rtc::scoped_refptr<webrtc::I420Buffer> I420buffer = webrtc::I420Buffer::Create(width, height);
 
 				const int conversionResult = libyuv::ConvertToI420(frame->data(), frame->stride()*webrtc::DesktopFrame::kBytesPerPixel,
-					(uint8*)I420buffer->DataY(), I420buffer->StrideY(),
-					(uint8*)I420buffer->DataU(), I420buffer->StrideU(),
-					(uint8*)I420buffer->DataV(), I420buffer->StrideV(),
+					I420buffer->MutableDataY(), I420buffer->StrideY(),
+					I420buffer->MutableDataU(), I420buffer->StrideU(),
+					I420buffer->MutableDataV(), I420buffer->StrideV(),
 					0, 0,
 					width, height,
 					width, height,

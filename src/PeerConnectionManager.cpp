@@ -835,9 +835,9 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 			int bitrate = std::stoi(opts.at("bitrate"));
 			
 			webrtc::PeerConnectionInterface::BitrateParameters bitrateParam;
-			bitrateParam.min_bitrate_bps = rtc::Optional<int>(bitrate/2);
-			bitrateParam.current_bitrate_bps = rtc::Optional<int>(bitrate);
-			bitrateParam.max_bitrate_bps = rtc::Optional<int>(bitrate*2);
+			bitrateParam.min_bitrate_bps = absl::optional<int>(bitrate/2);
+			bitrateParam.current_bitrate_bps = absl::optional<int>(bitrate);
+			bitrateParam.max_bitrate_bps = absl::optional<int>(bitrate*2);
 			peer_connection->SetBitrate(bitrateParam);			
 			
 			RTC_LOG(WARNING) << "set bitrate:" << bitrate;
