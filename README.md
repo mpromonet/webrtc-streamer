@@ -35,8 +35,8 @@ Build WebRTC with H264 support
 	mkdir ../webrtc
 	pushd ../webrtc
 	fetch webrtc
-	gn gen out/Release --args='is_debug=false use_custom_libcxx=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false use_ozone=true rtc_include_pulse_audio=false'
-	ninja -C out/Release
+	gn gen out/Release --args='is_debug=false use_custom_libcxx=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false rtc_include_pulse_audio=false use_sysroot=false is_clang=false treat_warnings_as_errors=false'
+	ninja -C out/Release 
 	popd
 
 
