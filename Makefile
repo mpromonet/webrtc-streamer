@@ -93,10 +93,10 @@ LDFLAGS += -L civetweb -l civetweb
 #h264bitstream
 VERSION+=h264bitstream@$(shell git -C h264bitstream describe --tags --always --dirty)
 LIBS+=h264bitstream/.libs/libh264bitstream.a
-h264bitstream/Makefile:
-	git submodule update --init h264bitstream	
+h264bitstream/configure.ac:
+	git submodule update --init h264bitstream
 
-h264bitstream/.libs/libh264bitstream.a: h264bitstream/Makefile
+h264bitstream/.libs/libh264bitstream.a: h264bitstream/configure.ac
 	cd h264bitstream && autoreconf -i -f
 	cd h264bitstream && CC=$(CXX) ./configure --host=$(shell $(CXX) -dumpmachine)
 	make -C h264bitstream 

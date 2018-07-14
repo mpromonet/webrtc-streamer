@@ -186,10 +186,10 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			int stride_uv = (width + 1) / 2;
 					
 			rtc::scoped_refptr<webrtc::I420Buffer> I420buffer = webrtc::I420Buffer::Create(width, height, stride_y, stride_uv, stride_uv);
-			const int conversionResult = libyuv::ConvertToI420((const uint8*)buffer, size,
-							(uint8*)I420buffer->DataY(), I420buffer->StrideY(),
-							(uint8*)I420buffer->DataU(), I420buffer->StrideU(),
-							(uint8*)I420buffer->DataV(), I420buffer->StrideV(),
+			const int conversionResult = libyuv::ConvertToI420((const uint8_t*)buffer, size,
+							I420buffer->MutableDataY(), I420buffer->StrideY(),
+							I420buffer->MutableDataU(), I420buffer->StrideU(),
+							I420buffer->MutableDataV(), I420buffer->StrideV(),
 							0, 0,
 							width, height,
 							width, height,
