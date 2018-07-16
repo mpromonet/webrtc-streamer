@@ -26,18 +26,18 @@ class PeerConnectionManager {
 	class VideoSink : public rtc::VideoSinkInterface<webrtc::VideoFrame> {
 		public:
 			VideoSink(webrtc::VideoTrackInterface* track): m_track(track) {
-				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " track:" << m_track->id();
+				RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " track:" << m_track->id();
 				m_track->AddOrUpdateSink(this, rtc::VideoSinkWants());
 			}
 			virtual ~VideoSink() {
-				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " track:" << m_track->id();
+				RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " track:" << m_track->id();
 				m_track->RemoveSink(this);
 			}		
 
 			// VideoSinkInterface implementation
 			virtual void OnFrame(const webrtc::VideoFrame& video_frame) {
 				rtc::scoped_refptr<webrtc::I420BufferInterface> buffer(video_frame.video_frame_buffer()->ToI420());
-				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " frame:" << buffer->width() << "x" << buffer->height();
+				RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << " frame:" << buffer->width() << "x" << buffer->height();
 			}
 
 		protected:
