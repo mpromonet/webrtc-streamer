@@ -170,7 +170,7 @@ class PeerConnectionManager {
 					unsigned int code;
 					bool down, isPress, isClick;
 					if (rtc::GetBoolFromJsonObject(event, "isPress", &isPress) && isPress) {
-						RTC_LOG(LS_VERBOSE) << "Processing a press!!!";
+						RTC_LOG(LS_VERBOSE) << "Processing a press!!! - " << code;
 						if (!rtc::GetBoolFromJsonObject(event, "down", &down)
 							|| !rtc::GetUIntFromJsonObject(event, "code", &code)
 						) {

@@ -102,9 +102,9 @@ void VNCVideoCapturer::onFrameBufferUpdate() {
 	rtc::scoped_refptr<webrtc::I420Buffer> I420buffer = webrtc::I420Buffer::Create(client->width, client->height);
 	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Transcoding frame ...";
 	const int conversionResult = libyuv::RAWToI420(rgba_buffer, client->width * 3,
-		(uint8*)I420buffer->DataY(), I420buffer->StrideY(),
-		(uint8*)I420buffer->DataU(), I420buffer->StrideU(),
-		(uint8*)I420buffer->DataV(), I420buffer->StrideV(),
+		(uint8_t*)I420buffer->DataY(), I420buffer->StrideY(),
+		(uint8_t*)I420buffer->DataU(), I420buffer->StrideU(),
+		(uint8_t*)I420buffer->DataV(), I420buffer->StrideV(),
 		client->width, client->height
 	);				
 	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Finished Transcoding Frame!!! :D";
