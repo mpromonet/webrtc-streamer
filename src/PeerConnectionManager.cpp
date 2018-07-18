@@ -524,11 +524,11 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 	bool result = false;
 	RTC_LOG(INFO) << __FUNCTION__ << " " << peerid;
 
-	vnc_map_.erase(peerid);
 	std::map<std::string, PeerConnectionObserver* >::iterator  it = peer_connectionobs_map_.find(peerid);
 	if (it != peer_connectionobs_map_.end())
 	{
-		RTC_LOG(LS_ERROR) << "Close PeerConnection";
+		RTC_LOG(LS_ERROR) << "Close PeerConnection: " << peerid;
+		vnc_map_.erase(peerid);
 		PeerConnectionObserver* pcObserver = it->second;
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = pcObserver->getPeerConnection();
 		peer_connectionobs_map_.erase(it);

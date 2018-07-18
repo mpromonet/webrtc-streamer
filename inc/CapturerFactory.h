@@ -102,7 +102,7 @@ class CapturerFactory {
 		else if ((videourl.find("vnc://") == 0)) 
 		{
 			auto vncCapturer = new VNCVideoCapturer(videourl);
-			RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " Starting VNC URL:" << videourl;
+			RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " Starting VNC URL:" << videourl << " on peer id: " << peerid;
 			vnc_map_[peerid] = vncCapturer;
 			capturer.reset(vncCapturer);
 		}

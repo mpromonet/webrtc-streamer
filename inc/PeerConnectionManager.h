@@ -142,7 +142,7 @@ class PeerConnectionManager {
 				RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Got back Data Channel message!!" << msg;
 				VNCVideoCapturer* capturer = m_manager->vnc_map_[m_peerid];
 				if (!capturer) {
-					RTC_LOG(LERROR) << "This stream can not support vnc events!!!";
+					RTC_LOG(LERROR) << "This stream can not support vnc events!! : " << m_peerid;
 					return;
 				}
 				RTC_LOG(LS_VERBOSE) << "Got VNC STream!!";
