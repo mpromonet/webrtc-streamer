@@ -170,7 +170,7 @@ class PeerConnectionManager {
 					unsigned int code;
 					bool down, isPress, isClick;
 					if (rtc::GetBoolFromJsonObject(event, "isPress", &isPress) && isPress) {
-						RTC_LOG(LS_VERBOSE) << "Processing a press!!! - " << code;
+						RTC_LOG(LERROR) << "Processing a press!!! - " << code;
 						if (!rtc::GetBoolFromJsonObject(event, "down", &down)
 							|| !rtc::GetUIntFromJsonObject(event, "code", &code)
 						) {
@@ -190,7 +190,7 @@ class PeerConnectionManager {
 							RTC_LOG(LERROR) << "Can not parse clicks!! - " << msg;
 							continue;
 						}
-						RTC_LOG(LS_VERBOSE) << "Processing a click!!!";
+						RTC_LOG(LERROR) << "Processing a click!!!" << x << ":" << y;
 
 						capturer->onClick(x, y, buttonMask);
 						continue;
