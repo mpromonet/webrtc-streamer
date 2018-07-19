@@ -141,7 +141,7 @@ class PeerConnectionManager {
 				std::string msg((const char*)buffer.data.data(),buffer.data.size());
 				RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Got back Data Channel message!!" << msg;
 				std::string videoUrl = m_manager->videourl_peer_map_[m_peerid];
-				if (!videoUrl) {
+				if (!videoUrl.empty()) {
 					RTC_LOG(LERROR) << "This stream has no video url mapping!! : " << m_peerid;
 					return;
 				}
