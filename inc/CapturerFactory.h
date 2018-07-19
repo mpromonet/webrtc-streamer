@@ -101,9 +101,9 @@ class CapturerFactory {
 		}
 		else if ((videourl.find("vnc://") == 0)) 
 		{
-			auto vncCapturer = new VNCVideoCapturer(videourl);
 			RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " Starting VNC URL:" << videourl << " on peer id: " << peerid;
-			vnc_map_[peerid] = vncCapturer;
+			auto vncCapturer = new VNCVideoCapturer(videourl);
+			vnc_map_[videourl] = vncCapturer;
 			capturer.reset(vncCapturer);
 		}
 		else if ( (videourl.find("screen://") == 0) && (std::regex_match("screen://",publishFilter)) )

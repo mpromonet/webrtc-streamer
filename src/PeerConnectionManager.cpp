@@ -528,7 +528,8 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 	if (it != peer_connectionobs_map_.end())
 	{
 		RTC_LOG(LS_ERROR) << "Close PeerConnection: " << peerid;
-		vnc_map_.erase(peerid);
+		std::string videoUrl = videourl_peer_map_[peerid];
+		videourl_peer_map_.erase(peerid);
 		PeerConnectionObserver* pcObserver = it->second;
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = pcObserver->getPeerConnection();
 		peer_connectionobs_map_.erase(it);
@@ -542,6 +543,7 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 			if (!stillUsed)
 			{
 				RTC_LOG(LS_ERROR) << "Close PeerConnection no more used " << streamLabel;
+				vnc_map_.erase(videoUrl);
 
 				rtc::scoped_refptr<webrtc::MediaStreamInterface> mediaStream;
 				{
@@ -719,7 +721,7 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 {
 	RTC_LOG(INFO) << "videourl:" << videourl;
 
-
+	videourl_peer_map_[peerid] = videourl;
 	std::unique_ptr<cricket::VideoCapturer> capturer = CapturerFactory::CreateVideoCapturer(videourl, opts, peerid, vnc_map_, m_publishFilter);
 	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
 	if (!capturer)

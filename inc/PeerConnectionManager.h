@@ -140,12 +140,17 @@ class PeerConnectionManager {
 			virtual void OnMessage(const webrtc::DataBuffer& buffer) {
 				std::string msg((const char*)buffer.data.data(),buffer.data.size());
 				RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Got back Data Channel message!!" << msg;
-				VNCVideoCapturer* capturer = m_manager->vnc_map_[m_peerid];
-				if (!capturer) {
-					RTC_LOG(LERROR) << "This stream can not support vnc events!! : " << m_peerid;
+				std::string videoUrl = m_manager->videourl_peer_map_[m_peerid]
+				if (!videoUrl) {
+					RTC_LOG(LERROR) << "This stream has no video url mapping!! : " << m_peerid;
 					return;
 				}
-				RTC_LOG(LS_VERBOSE) << "Got VNC STream!!";
+				VNCVideoCapturer* capturer = m_manager->vnc_map_[videoUrl];
+				if (!capturer) {
+					RTC_LOG(LERROR) << "This url has no video stream!! : " << videoUrl << " : " << m_peerid;
+					return;
+				}
+				RTC_LOG(LS_VERBOSE) << "Got VNC STream for:" << videoUrl;
 
 				Json::Value  jmessage;
 				// parse in
@@ -336,6 +341,7 @@ class PeerConnectionManager {
 		std::map<std::string, PeerConnectionObserver* >                           peer_connectionobs_map_;
 		std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >  stream_map_;
 		std::map<std::string, VNCVideoCapturer* >  vnc_map_;
+		std::map<std::string, std::string>  videourl_peer_map_;
 	        std::mutex                                                                m_streamMapMutex;
 		std::list<std::string>                                                              iceServerList_;
 		const std::map<std::string,std::string>                                   m_urlVideoList;
