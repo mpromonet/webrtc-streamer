@@ -720,7 +720,6 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVideoTrack(const std::string & videourl, const std::string & peerid, const std::map<std::string,std::string> & opts)
 {
 	RTC_LOG(INFO) << "videourl:" << videourl;
-	RTC_LOG(LS_ERROR) << " Setting VNC:" << videourl << " on peer id: " << peerid;
 	std::unique_ptr<cricket::VideoCapturer> capturer = CapturerFactory::CreateVideoCapturer(videourl, opts, peerid, vnc_map_, m_publishFilter);
 	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
 	if (!capturer)
@@ -821,6 +820,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 	}
 
 
+	RTC_LOG(LS_ERROR) << " Setting VNC:" << videourl << " on peer id: " << peerid;
 	videourl_peer_map_[peerid] = videourl;
 
 	if (!existingStream)

@@ -70,7 +70,7 @@ void VNCVideoCapturer::onFrameBufferUpdate() {
 	int bpp = pf->bitsPerPixel/8;
 	int row_stride = client->width*bpp;
 
-	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Parsing Frame with BPP: " << bpp;
+	// RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Parsing Frame with BPP: " << bpp;
 	/* assert bpp=4 */
 	if(bpp!=4) {
 		onError("Got back VNC frame with bpp !== 4");
@@ -84,7 +84,7 @@ void VNCVideoCapturer::onFrameBufferUpdate() {
 
 	uint8_t * rgba_buffer = new uint8_t[client->width * client->height * 3];
 
-	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Parsing Height:Width - " << client->height << ":" << client->width;
+	// RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Parsing Height:Width - " << client->height << ":" << client->width;
 
 	for(int j = 0, k = 0; j < client->height*row_stride; k += 1, j += row_stride) {
 		for (int l = 0, i = 0; i < client->width * bpp; i += bpp, l+=3) {
@@ -100,18 +100,18 @@ void VNCVideoCapturer::onFrameBufferUpdate() {
 
 
 	rtc::scoped_refptr<webrtc::I420Buffer> I420buffer = webrtc::I420Buffer::Create(client->width, client->height);
-	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Transcoding frame ...";
+	// RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Transcoding frame ...";
 	const int conversionResult = libyuv::RAWToI420(rgba_buffer, client->width * 3,
 		(uint8_t*)I420buffer->DataY(), I420buffer->StrideY(),
 		(uint8_t*)I420buffer->DataU(), I420buffer->StrideU(),
 		(uint8_t*)I420buffer->DataV(), I420buffer->StrideV(),
 		client->width, client->height
 	);				
-	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Finished Transcoding Frame!!! :D";
+	// RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Finished Transcoding Frame!!! :D";
 					
 	if (conversionResult >= 0) {
 		webrtc::VideoFrame frame(I420buffer, 0, ts, webrtc::kVideoRotation_0);
-		RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Sending Frame!!! :D";
+		// RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Sending Frame!!! :D";
 		this->OnFrame(frame, frame.height(), frame.width());
 	} else {
 		RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "got back error decoding data" << conversionResult;
@@ -161,7 +161,7 @@ void VNCVideoCapturer::Run()
 	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "VNCVideoCapturer Running ...";
 	signal(SIGINT, signal_handler);
 	while (IsRunning()) {
-		RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Capturing Frame ...";
+		// RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Capturing Frame ...";
 		SendFramebufferUpdateRequest(client, 0, 0, client->width, client->height, FALSE);
 		if (WaitForMessage(client, 50) < 0)
 			break;
