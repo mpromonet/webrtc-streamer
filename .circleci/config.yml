@@ -53,7 +53,7 @@ jobs:
       - run: curl -sL https://deb.nodesource.com/setup_8.x | bash -
       - run: apt-get install -y --no-install-recommends nodejs awscli libvncserver-dev pkg-config
       - run: make all tgz
-      - run: AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY AWS_SECRET_ACCESS_KEY=$AWS_SECRET_KEY AWS_DEFAULT_REGION=$AWS_REGION aws s3 sync ./publish s3://rnfrst-webrtc-prd/build/
+      - run: aws s3 sync ./publish s3://rnfrst-webrtc-prd/build/
       - run: mkdir /distrib && cp publish/*.tgz /distrib
       - persist_to_workspace:
           root: /
