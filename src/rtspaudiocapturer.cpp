@@ -8,6 +8,8 @@
 ** -------------------------------------------------------------------------*/
 
 
+#ifdef HAVE_LIVE555
+
 #include "rtspaudiocapturer.h"
 
 
@@ -94,3 +96,4 @@ bool RTSPAudioSource::onData(const char* id, unsigned char* buffer, ssize_t size
 	return success;
 }
 
+#endif
