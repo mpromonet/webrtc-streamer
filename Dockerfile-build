@@ -13,5 +13,7 @@ RUN cd ${WEBRTCROOT} && sed -i -e "s|'src/resources'],|'src/resources'],'conditi
 RUN cd ${WEBRTCROOT} && gclient sync
 RUN cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}"
 RUN cd ${WEBRTCROOT}/src && ( ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory)
-RUN make live555
+COPY . /webrtc-streamer
+WORKDIR /webrtc-streamer
+RUN  make live555
 RUN make all tgz
