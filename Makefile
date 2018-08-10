@@ -101,8 +101,8 @@ h264bitstream/.libs/libh264bitstream.a: h264bitstream/Makefile
 	cd h264bitstream && CC=$(CXX) ./configure --host=$(shell $(CXX) -dumpmachine)
 	make -C h264bitstream 
 
-CFLAGS += -I h264bitstream
-LDFLAGS += h264bitstream/.libs/libh264bitstream.a
+CFLAGS += -I h264bitstream $(shell pkg-config --cflags libvncclient)
+LDFLAGS += h264bitstream/.libs/libh264bitstream.a $(shell pkg-config --libs libvncclient)
 
 src/%.o: src/%.cpp $(LIBS)
 	$(CXX) -o $@ -c $< $(CFLAGS) -DVERSION="\"$(VERSION)\""
