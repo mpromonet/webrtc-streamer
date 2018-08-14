@@ -26,6 +26,8 @@ class VNCVideoCapturer : public cricket::VideoCapturer, public rtc::Thread {
 		char* onGetPassword();
 		void onFrameBufferUpdate();
 
+		// internal
+		bool onStart();
 		void onError(char error[]);
 		void onClick(int x, int y, int button);
 		void onPress(unsigned int code, bool down);

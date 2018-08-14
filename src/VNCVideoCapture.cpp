@@ -122,7 +122,9 @@ void VNCVideoCapturer::onFrameBufferUpdate() {
 }
 
 VNCVideoCapturer::VNCVideoCapturer(const std::string u): client(rfbGetClient(8,3,4)), uri(u)
-{
+{}
+
+bool VNCVideoCapturer::onStart() {
 	client->GetPassword = get_password;
 	client->FinishedFrameBufferUpdate = get_frame;
 
@@ -140,14 +142,16 @@ VNCVideoCapturer::VNCVideoCapturer(const std::string u): client(rfbGetClient(8,3
 	rfbClientSetClientData(client, (void *) "this", (void *) this);
 	if (!rfbInitClient(client, &len, (char **) args)) {
 		onError("Something went wrong in initializing RFB client ");
-		return;
+		return false;
 	}
 	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Initialized VNC Successfully: " << url;
+	return true;
 }
 
 void VNCVideoCapturer::onError(char str[]) {
 	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << str;
-	exit(EXIT_FAILURE);
+	this->Stop();
+	// exit(EXIT_FAILURE);
 }
 
 VNCVideoCapturer::~VNCVideoCapturer()
@@ -158,15 +162,24 @@ VNCVideoCapturer::~VNCVideoCapturer()
 // overide rtc::Thread
 void VNCVideoCapturer::Run()
 {
-	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "VNCVideoCapturer Running ...";
+	RTC_LOG(LS_ERROR) << "VNCVideoCapturer Frame capture started ...";
+	if (!this->onStart()) {
+		return;
+	}
 	signal(SIGINT, signal_handler);
 	while (IsRunning()) {
 		// RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Capturing Frame ...";
 		SendFramebufferUpdateRequest(client, 0, 0, client->width, client->height, FALSE);
-		if (WaitForMessage(client, 50) < 0)
+		if (WaitForMessage(client, 50) < 0) {
+			RTC_LOG(LS_ERROR) << "VNCVideoCapturer Frame capture timed out";
+			this->Stop();
 			break;
-		if (!HandleRFBServerMessage(client))
+		}
+		if (!HandleRFBServerMessage(client)) {
+			RTC_LOG(LS_ERROR) << "VNCVideoCapturer Frame capture cant handle message";
+			this->Stop();
 			break;
+		}
 	}
 }
 
