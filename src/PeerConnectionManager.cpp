@@ -805,7 +805,8 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 		
 	// compute stream label removing space because SDP use label
 	std::string streamLabel = video + "|" + audio;
-	streamLabel.erase(std::remove_if(streamLabel.begin(), streamLabel.end(), isspace), streamLabel.end());
+	streamLabel.erase(std::remove_if(streamLabel.begin(), streamLabel.end(), [](char c) { return c==' '||c==':'|| c=='.' || c=='/'; })
+							, streamLabel.end());
 
 	bool existingStream = false;
 	{
