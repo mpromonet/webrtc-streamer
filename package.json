@@ -4,7 +4,8 @@
   "description": "",
   "main": "joinjanusvideoroom.js",
   "dependencies": {
-    "then-request": "^6.0.0"
+    "node-strophe": "^2.0.0",
+	"then-request": "^6.0.0"
   },
   "devDependencies": {},
   "scripts": {
