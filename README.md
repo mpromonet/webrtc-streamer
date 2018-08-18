@@ -164,6 +164,33 @@ The same logic could be implemented in NodeJS using the same JS API :
 	var janus = new JanusVideoRoom("http://192.168.0.15:8088/janus", "http://192.168.0.15:8000")
 	janus.join(1234,"mmal service 16.1","video")
 
+Connect to Jitsi 
+===============
+A simple way to publish WebRTC stream to a [Jitsi](https://meet.jit.si) Video Room is to use the XMPPVideoRoom interface
+
+        var xmpp = new XMPPVideoRoom(<xmpp server url>, <webrtc-streamer url>)
+
+A short sample to publish WebRTC streams to a Jitsi Video Room could be :
+
+	<html>
+	<head>
+	<script src="libs/strophe.min.js" ></script>
+	<script src="libs/strophe.muc.min.js" ></script>
+	<script src="libs/strophe.disco.min.js" ></script>
+	<script src="libs/strophe.caps.min.js" ></script>
+	<script src="libs/strophe.jingle.sdp.js"></script>
+	<script src="libs/jquery-1.12.4.min.js"></script>
+	<script src="libs/request.min.js" ></script>
+	<script src="request.min.js" ></script>
+	<script src="xmppvideoroom.js" ></script>
+	<script>        
+		var xmpp = new XMPPVideoRoom("meet.jit.si", null);
+		xmpp.join("testroom", "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov","Bunny");	    
+	</script>
+	</head>
+	</html>
+
+[Live Demo](https://rtsp2webrtc.herokuapp.com/xmppvideoroom.html)
 
 Docker image
 ===============
