@@ -111,11 +111,11 @@ jobs:
     <<: *defaults
     
     environment:
-      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false is_clang=false' 
+      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false is_clang=false treat_warnings_as_errors=false' 
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
       GYP_GENERATOR_OUTPUT: "rpi-armv7"  
-      GNARGS: 'is_debug=false use_ozone=true rtc_use_h264=true ffmpeg_branding="Chrome" target_cpu="arm" treat_warnings_as_errors=false' 
+      GNARGS: 'is_debug=false use_ozone=true rtc_use_h264=true ffmpeg_branding="Chrome" target_cpu="arm"' 
       CROSS: arm-linux-gnueabihf- 
 
     steps:
@@ -146,11 +146,11 @@ jobs:
     <<: *defaults
     
     environment:
-      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false use_ozone=true rtc_include_pulse_audio=false rtc_build_examples=false is_clang=false' 
+      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false is_clang=false treat_warnings_as_errors=false' 
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
       GYP_GENERATOR_OUTPUT: "rpi-armv6"  
-      GNARGS: 'is_debug=false use_ozone=true target_cpu="arm" treat_warnings_as_errors=false arm_version=6 arm_float_abi="hard" rtc_include_opus=false use_sysroot=false' 
+      GNARGS: 'is_debug=false use_ozone=true target_cpu="arm" arm_version=6 arm_float_abi="hard" rtc_include_opus=false use_sysroot=false' 
       CROSS: arm-linux-gnueabihf- 
       CFLAGS_EXTRA: "-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard"
 
