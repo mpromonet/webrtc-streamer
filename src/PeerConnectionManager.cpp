@@ -23,9 +23,6 @@
 #endif
 
 
-const char kAudioLabel[] = "audio_label";
-const char kVideoLabel[] = "video_label";
-
 // Names used for a IceCandidate JSON object.
 const char kCandidateSdpMidName[] = "sdpMid";
 const char kCandidateSdpMlineIndexName[] = "sdpMLineIndex";
@@ -729,7 +726,12 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 	else
 	{
 		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = peer_connection_factory_->CreateVideoSource(std::move(capturer), NULL);
-		video_track = peer_connection_factory_->CreateVideoTrack(kVideoLabel, videoSource);
+		
+		std::string label = videourl + "_video";
+		label.erase(std::remove_if(label.begin(), label.end(), [](char c) { return c==' '||c==':'|| c=='.' || c=='/'; })
+							, label.end());
+	
+		video_track = peer_connection_factory_->CreateVideoTrack(label, videoSource);
 	}
 	return video_track;
 }
@@ -778,7 +780,10 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 	if (!audioSource) {
 		RTC_LOG(LS_ERROR) << "Cannot create capturer audio:" << audiourl;
 	} else {
-		audio_track = peer_connection_factory_->CreateAudioTrack(kAudioLabel, audioSource);
+		std::string label = audiourl + "_audio";
+		label.erase(std::remove_if(label.begin(), label.end(), [](char c) { return c==' '||c==':'|| c=='.' || c=='/'; })
+							, label.end());
+		audio_track = peer_connection_factory_->CreateAudioTrack(label, audioSource);
 	}
 	
 	return audio_track;
