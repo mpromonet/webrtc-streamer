@@ -24,6 +24,7 @@ addons:
     packages:
     - git
     - libgtk-3-dev
+    - libasound2-dev
 language: cpp
 compiler:
 - gcc
