@@ -2,6 +2,7 @@ dist: xenial
 env:
   global:
     - GNARGSCOMMON='rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false is_clang=false treat_warnings_as_errors=false' 
+    - PREFIX=$HOME/prefix
   matrix:
     - |
       GYP_GENERATOR_OUTPUT=x86_64     
@@ -38,7 +39,7 @@ script:
 - sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
 # patch webrtc for std::vector::erase with iterator
 - if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then sed -i -e "s|const auto iter = FindSourceInList(audio_source, &audio_source_list_);|const auto iter = std::find_if(audio_source_list_.begin(), audio_source_list_.end(), [audio_source](const std::unique_ptr<AudioMixerImpl::SourceStatus> \&p) { return p->audio_source == audio_source; });|" src/modules/audio_mixer/audio_mixer_impl.cc; fi
-- if [ "$CROSS" == "arm-linux-gnueabihf-" ] && [ "$SYSROOT" != "" ] ; then src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm; fi
+- if [ "$CROSS" == "arm-linux-gnueabihf-" ] && [ "$(grep -Po 'sysroot=\K[^ ]*' src/${GYP_GENERATOR_OUTPUT}/out/Release/obj/webrtc_common.ninja)" != "" ] ; then src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm; fi
 # get WebRTC dependencies
 - travis_wait 30 gclient sync
 - popd
@@ -74,4 +75,5 @@ deploy:
   - "${RELEASE_PKG_FILE}"
   on:
     repo: mpromonet/webrtc-streamer
+    tags: true
     tags: true
