@@ -6,8 +6,6 @@ configuration:
   - Debug
   - Release
 
-environment:
-
 clone_folder: c:\projects\webrtc-streamer
 
 install:
