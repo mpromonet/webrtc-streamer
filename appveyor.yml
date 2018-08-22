@@ -1,0 +1,26 @@
+platform:
+  - x64
+  - x86
+
+configuration:
+  - Debug
+  - Release
+
+environment:
+
+clone_folder: c:\projects\webrtc-streamer
+
+install:
+  - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git ..\depot_tools\
+  - set PATH=C:\projects\depot_tools;%PATH%
+  - set DEPOT_TOOLS_WIN_TOOLCHAIN=0
+  - fetch webrtc
+  - gn gen out/Release --args='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false use_sysroot=false is_clang=false treat_warnings_as_errors=false'
+  - ninja -C out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory
+
+build_script:
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - make
+
+
+

@@ -11,6 +11,8 @@
 #include <fstream>
 #include <utility>
 
+#include "api/video_codecs/builtin_video_decoder_factory.h"
+#include "api/video_codecs/builtin_video_encoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 
@@ -132,8 +134,9 @@ PeerConnectionManager::PeerConnectionManager( const std::list<std::string> & ice
                                                                     audioDeviceModule_,
                                                                     webrtc::CreateBuiltinAudioEncoderFactory(),
                                                                     audioDecoderfactory_,
-                                                                    NULL,
-                                                                    NULL))
+                                                                    webrtc::CreateBuiltinVideoEncoderFactory(),
+                                                                    webrtc::CreateBuiltinVideoDecoderFactory(),
+																	NULL, NULL))
 	, iceServerList_(iceServerList)
 	, m_urlVideoList(urlVideoList)
 	, m_urlAudioList(urlAudioList)
