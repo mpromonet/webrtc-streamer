@@ -332,7 +332,8 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 		peer_connectionobs_map_.insert(std::pair<std::string, PeerConnectionObserver* >(peerid, peerConnectionObserver));
 
 		// ask to create offer
-		peerConnectionObserver->getPeerConnection()->CreateOffer(CreateSessionDescriptionObserver::Create(peerConnectionObserver->getPeerConnection()), NULL);
+		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+		peerConnectionObserver->getPeerConnection()->CreateOffer(CreateSessionDescriptionObserver::Create(peerConnectionObserver->getPeerConnection()), options);
 
 		// waiting for offer
 		int count=10;
@@ -459,10 +460,10 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 			}
 
 			// create answer
-			webrtc::FakeConstraints constraints;
-			constraints.AddMandatory(webrtc::MediaConstraintsInterface::kOfferToReceiveVideo, "false");
-			constraints.AddMandatory(webrtc::MediaConstraintsInterface::kOfferToReceiveAudio, "false");
-			peerConnection->CreateAnswer(CreateSessionDescriptionObserver::Create(peerConnection), &constraints);
+			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
+			options.offer_to_receive_video = 0;
+			options.offer_to_receive_audio = 0;
+			peerConnection->CreateAnswer(CreateSessionDescriptionObserver::Create(peerConnection), options);
 
 			RTC_LOG(INFO) << "nbStreams local:" << peerConnection->local_streams()->count() << " remote:" << peerConnection->remote_streams()->count()
 					<< " localDescription:" << peerConnection->local_description()
@@ -691,7 +692,8 @@ bool PeerConnectionManager::InitializePeerConnection()
 PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeerConnection(const std::string& peerid)
 {
 	webrtc::PeerConnectionInterface::RTCConfiguration config;
-	
+	config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
+	config.enable_dtls_srtp = true;
 	for (auto iceServer : iceServerList_) {
 		webrtc::PeerConnectionInterface::IceServer server;
 		IceServer srv = getIceServerFromUrl(iceServer);
@@ -701,10 +703,7 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 		config.servers.push_back(server);
 	}
 
-	webrtc::FakeConstraints constraints;
-	constraints.AddOptional(webrtc::MediaConstraintsInterface::kEnableDtlsSrtp, "true");
-
-	PeerConnectionObserver* obs = new PeerConnectionObserver(this, peerid, config, constraints);
+	PeerConnectionObserver* obs = new PeerConnectionObserver(this, peerid, config);
 	if (!obs)
 	{
 		RTC_LOG(LERROR) << __FUNCTION__ << "CreatePeerConnection failed";

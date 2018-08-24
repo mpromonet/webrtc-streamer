@@ -14,7 +14,6 @@
 #include <regex>
 
 #include "api/peerconnectioninterface.h"
-#include "api/test/fakeconstraints.h"
 
 #include "modules/audio_device/include/audio_device.h"
 
@@ -146,14 +145,13 @@ class PeerConnectionManager {
 
 	class PeerConnectionObserver : public webrtc::PeerConnectionObserver {
 		public:
-			PeerConnectionObserver(PeerConnectionManager* peerConnectionManager, const std::string& peerid, const webrtc::PeerConnectionInterface::RTCConfiguration & config, const webrtc::FakeConstraints & constraints)
+			PeerConnectionObserver(PeerConnectionManager* peerConnectionManager, const std::string& peerid, const webrtc::PeerConnectionInterface::RTCConfiguration & config)
 			: m_peerConnectionManager(peerConnectionManager)
 			, m_peerid(peerid)
 			, m_localChannel(NULL)
 			, m_remoteChannel(NULL)
 			, iceCandidateList_(Json::arrayValue) {
 				m_pc = m_peerConnectionManager->peer_connection_factory_->CreatePeerConnection(config,
-							    &constraints,
 							    NULL,
 							    NULL,
 							    this);
