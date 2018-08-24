@@ -692,7 +692,6 @@ bool PeerConnectionManager::InitializePeerConnection()
 PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeerConnection(const std::string& peerid)
 {
 	webrtc::PeerConnectionInterface::RTCConfiguration config;
-	config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
 	config.enable_dtls_srtp = true;
 	for (auto iceServer : iceServerList_) {
 		webrtc::PeerConnectionInterface::IceServer server;
