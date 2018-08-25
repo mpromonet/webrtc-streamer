@@ -104,13 +104,13 @@ Example
 
 [Live Demo](https://rtsp2webrtc.herokuapp.com/)
 
-You can access to the WebRTC stream coming from an RTSP url using [webrtcstreamer.html](html/webrtcstreamer.html) page with the RTSP url as argument, something like:
+You can access to the WebRTC stream coming from an RTSP url using [webrtcstreamer.html](https://github.com/mpromonet/webrtc-streamer-html/blob/master/webrtcstreamer.html) page with the RTSP url as argument, something like:
 
    https://rtsp2webrtc.herokuapp.com/webrtcstreamer.html?rtsp://217.17.220.110/axis-media/media.amp
 
 Embed in a HTML page:
 ===============
-Instead of using the internal HTTP server, it is easy to display a WebRTC stream in a HTML page served by another HTTP server. The URL of the webrtc-streamer to use should be given creating the [WebRtcStreamer](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer/blob/master/jsdoc/WebRtcStreamer.html) instance :
+Instead of using the internal HTTP server, it is easy to display a WebRTC stream in a HTML page served by another HTTP server. The URL of the webrtc-streamer to use should be given creating the [WebRtcStreamer](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer-html/blob/master/jsdoc/WebRtcStreamer.html) instance :
 
 	var webRtcServer      = new WebRtcStreamer(<video tag>, <webrtc-streamer url>);
 
@@ -118,7 +118,7 @@ A short sample HTML page using webrtc-streamer running locally on port 8000 :
 
 	<html>
 	<head>
-	<script src="request.min.js" ></script>
+	<script src="lib/request.min.js" ></script>
 	<script src="webrtcstreamer.js" ></script>
 	<script>        
 	    var webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000");
@@ -133,7 +133,7 @@ A short sample HTML page using webrtc-streamer running locally on port 8000 :
 
 Connect to Janus Gateway Video Room
 ===============
-A simple way to publish WebRTC stream to a [Janus Gateway](https://janus.conf.meetecho.com) Video Room is to use the [JanusVideoRoom](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer/blob/master/jsdoc/JanusVideoRoom.html) interface
+A simple way to publish WebRTC stream to a [Janus Gateway](https://janus.conf.meetecho.com) Video Room is to use the [JanusVideoRoom](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer-html/blob/master/jsdoc/JanusVideoRoom.html) interface
 
         var janus = new JanusVideoRoom(<janus url>, <webrtc-streamer url>)
 
@@ -141,7 +141,7 @@ A short sample to publish WebRTC streams to Janus Video Room could be :
 
 	<html>
 	<head>
-	<script src="request.min.js" ></script>
+	<script src="lib/request.min.js" ></script>
 	<script src="janusvideoroom.js" ></script>
 	<script>        
 		var janus = new JanusVideoRoom("https://janus.conf.meetecho.com/janus", null);
@@ -166,7 +166,7 @@ The same logic could be implemented in NodeJS using the same JS API :
 
 Connect to Jitsi 
 ===============
-A simple way to publish WebRTC stream to a [Jitsi](https://meet.jit.si) Video Room is to use the XMPPVideoRoom interface
+A simple way to publish WebRTC stream to a [Jitsi](https://meet.jit.si) Video Room is to use the [XMPPVideoRoom](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer-html/blob/master/jsdoc/XMPPVideoRoom.html) interface
 
         var xmpp = new XMPPVideoRoom(<xmpp server url>, <webrtc-streamer url>)
 
@@ -177,11 +177,9 @@ A short sample to publish WebRTC streams to a Jitsi Video Room could be :
 	<script src="libs/strophe.min.js" ></script>
 	<script src="libs/strophe.muc.min.js" ></script>
 	<script src="libs/strophe.disco.min.js" ></script>
-	<script src="libs/strophe.caps.min.js" ></script>
 	<script src="libs/strophe.jingle.sdp.js"></script>
 	<script src="libs/jquery-1.12.4.min.js"></script>
 	<script src="libs/request.min.js" ></script>
-	<script src="request.min.js" ></script>
 	<script src="xmppvideoroom.js" ></script>
 	<script>        
 		var xmpp = new XMPPVideoRoom("meet.jit.si", null);
