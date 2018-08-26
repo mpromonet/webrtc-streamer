@@ -15,14 +15,15 @@ console.log("videourl: " + videourl);
 
 var jsdom = require("jsdom");
 const { JSDOM } = jsdom;
-const { window } = new JSDOM();
-const { document } = (new JSDOM('')).window;
-global.window = window;
-global.document = document;
-global.DOMParser = window.DOMParser;
-global.XMLHttpRequest = window.XMLHttpRequest;
+const { window } = new JSDOM('');
 
-global.$ = jQuery = require('jquery')(global.window);
+global.jquery = require('jquery')(window);
+global.$ = (selector,context) => {return new jquery.fn.init(selector,context); };
+
+global.window = window;
+global.document = window.document;
+global.DOMParser = window.document.DOMParser;
+global.XMLHttpRequest = window.XMLHttpRequest;
 
 var strophe = require("strophe.js");
 global.Strophe = strophe.Strophe;
@@ -30,14 +31,12 @@ global.$iq = strophe.$iq;
 //global.Strophe.log = console.log;
 
 require("strophejs-plugin-disco");
-require("strophejs-plugin-caps"); 
 require("strophejs-plugin-muc"); 
 
 global.SDP = require("strophe.jingle/strophe.jingle.sdp.js");
+
 request = require("then-request");
 var XMPPVideoRoom = require("./html/xmppvideoroom.js"); 
-
-var a = new SDP("");
 
 // get configuration from webrtc-streamer using janusvideoroom.json
 request( "GET",  webrtcstreamerurl + "/xmppvideoroom.json" ).done(
@@ -47,7 +46,10 @@ request( "GET",  webrtcstreamerurl + "/xmppvideoroom.json" ).done(
 			eval("{" + response.body + "}");
 			
 			var xmpp = new XMPPVideoRoom(xmppRoomConfig.url, webrtcstreamerurl);
-			xmpp.join(xmppRoomConfig.roomId,videourl,"user");
+			var username = "user"+Math.random().toString(36).slice(2);
+			console.log("join " + xmppRoomConfig.roomId + "/" + username);
+
+			xmpp.join(xmppRoomConfig.roomId,videourl,username);
 		} else {
 			console.log("HTTP code:"+ response.statusCode);
 		}
