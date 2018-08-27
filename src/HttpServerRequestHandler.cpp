@@ -35,7 +35,7 @@ class RequestHandler : public CivetHandler
 			{
 				std::string body;
 				long long nlen = 0;
-				long long bufSize = 1024;
+				const long long bufSize = 1024;
 				char buf[bufSize];
 				while (nlen < tlen) {
 					long long rlen = tlen - nlen;

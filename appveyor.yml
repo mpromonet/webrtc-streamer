@@ -17,7 +17,8 @@ install:
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - make
+  - cmake .
+  - nmake
 
 
 
