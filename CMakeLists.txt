@@ -1,14 +1,12 @@
 cmake_minimum_required (VERSION 3.0.0)
  
 project (webrtc-streamer)
-set(EXECUTABLE_OUTPUT_PATH ./${CMAKE_BUILD_TYPE})
  
 set (SOURCE civetweb/src/civetweb.c civetweb/src/CivetServer.cpp src/HttpServerRequestHandler.cpp src/PeerConnectionManager.cpp src/main.cpp)
 
 set (CMAKE_BUILD_TYPE Release) 
-set (CMAKE_C_FLAGS "-DNDEBUG=1 -DWEBRTC_WIN -DHAVE_JPEG /EHsc -DNOMINMAX -DWEBRTC_WIN -DVERSION='ABC'")
+set (CMAKE_C_FLAGS "-DNDEBUG=1 -DWEBRTC_WIN -DHAVE_JPEG /EHsc -DNOMINMAX -DWEBRTC_WIN -DVERSION='ABC' -D__PRETTY_FUNCTION__=__FUNCTION__")
 set (CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS})
-#set (CMAKE_EXE_LINKER_FLAGS "/MT")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(CompilerFlags

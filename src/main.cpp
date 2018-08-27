@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 	int logLevel              = rtc::LERROR;
 	const char* webroot       = "./html";
 	std::string sslCertificate;
-	webrtc::AudioDeviceModule::AudioLayer audioLayer = webrtc::AudioDeviceModule::kLinuxAlsaAudio;
+	webrtc::AudioDeviceModule::AudioLayer audioLayer = webrtc::AudioDeviceModule::kPlatformDefaultAudio;
 	std::string streamName;
 	std::map<std::string,std::string> urlVideoList;
 	std::map<std::string,std::string> urlAudioList;
@@ -45,6 +45,7 @@ int main(int argc, char* argv[])
 	}
 	httpAddress.append(httpPort);
 
+#ifndef WIN32
 	int c = 0;
 	while ((c = getopt (argc, argv, "hVv::" "c:H:w:T:A:" "t:S::s::" "a::q:" "n:u:U:")) != -1)
 	{
@@ -119,6 +120,7 @@ int main(int argc, char* argv[])
 		urlVideoList[url]=url;
 		optind++;
 	}
+#endif
 
 	rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)logLevel);
 	rtc::LogMessage::LogTimestamps();

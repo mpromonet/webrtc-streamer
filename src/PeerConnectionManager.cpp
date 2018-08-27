@@ -39,10 +39,14 @@ const char kSessionDescriptionSdpName[] = "sdp";
 **  helpers that should be moved somewhere else
 ** -------------------------------------------------------------------------*/
 
+#ifdef WIN32
+std::string getServerIpFromClientIp(int clientip) {
+	return "127.0.0.1";
+}
+#else
 #include <net/if.h>
 #include <ifaddrs.h>
-std::string getServerIpFromClientIp(int clientip)
-{
+std::string getServerIpFromClientIp(int clientip) {
 	std::string serverAddress;
 	char host[NI_MAXHOST];
 	struct ifaddrs *ifaddr = NULL;
@@ -68,6 +72,7 @@ std::string getServerIpFromClientIp(int clientip)
 	freeifaddrs(ifaddr);
 	return serverAddress;
 }
+#endif
 
 struct IceServer {
 	std::string url;
@@ -337,9 +342,8 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 
 		// waiting for offer
 		int count=10;
-		while ( (peerConnectionObserver->getPeerConnection()->local_description() == NULL) && (--count > 0) )
-		{
-			usleep(1000);
+		while ( (peerConnectionObserver->getPeerConnection()->local_description() == NULL) && (--count > 0) ) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(1000));					
 		}
 
 		// answer with the created offer
@@ -445,9 +449,8 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 			
 			// waiting for remote description
 			int count=10;
-			while ( (peerConnection->remote_description() == NULL) && (--count > 0) )
-			{
-				usleep(1000);
+			while ( (peerConnection->remote_description() == NULL) && (--count > 0) ) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(1000));					
 			}
 			if (peerConnection->remote_description() == NULL) {
 				RTC_LOG(WARNING) << "remote_description is NULL";
@@ -471,9 +474,8 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 
 			// waiting for answer
 			count=10;
-			while ( (peerConnection->local_description() == NULL) && (--count > 0) )
-			{
-				usleep(1000);
+			while ( (peerConnection->local_description() == NULL) && (--count > 0) ) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(1000));					
 			}
 
 			RTC_LOG(INFO) << "nbStreams local:" << peerConnection->local_streams()->count() << " remote:" << peerConnection->remote_streams()->count()

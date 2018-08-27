@@ -179,9 +179,8 @@ class PeerConnectionManager {
 				m_statsCallback->clearReport();
 				m_pc->GetStats(m_statsCallback);
 				int count=10;
-				while ( (m_statsCallback->getReport().empty()) && (--count > 0) )
-				{
-					usleep(1000);
+				while ( (m_statsCallback->getReport().empty()) && (--count > 0) ) {
+					std::this_thread::sleep_for(std::chrono::milliseconds(1000));					
 				}
 				return Json::Value(m_statsCallback->getReport());
 			};
