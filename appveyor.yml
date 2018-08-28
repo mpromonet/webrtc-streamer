@@ -4,6 +4,9 @@ platform: x64
 
 clone_folder: c:\projects\webrtc-streamer
 
+environment:
+  - generator: "Visual Studio 15 2017 Win64"
+
 install:
   - git submodule update --init
   - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git ..\depot_tools\
@@ -16,10 +19,12 @@ install:
   - gn gen out/Release --args="is_debug=false rtc_use_h264=true ffmpeg_branding=\"Chrome\" rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false use_sysroot=false is_clang=false treat_warnings_as_errors=false"
   - ninja -C out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory
 
-build_script:
+before_build:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - cmake .
-  - nmake
+  - cmake . -G %generator%
+
+build:
+  project: c:\projects\webrtc-streamer\webrtc-streamer.sln
 
 after_build:
   - 7z a webrtc-streamer.zip webrtc-streamer.exe html
