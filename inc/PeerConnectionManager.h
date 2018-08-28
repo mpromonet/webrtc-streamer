@@ -12,6 +12,7 @@
 #include <string>
 #include <mutex>
 #include <regex>
+#include <thread>
 
 #include "api/peerconnectioninterface.h"
 
