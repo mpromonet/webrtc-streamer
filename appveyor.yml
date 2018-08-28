@@ -30,6 +30,7 @@ build:
   project: c:\projects\webrtc-streamer\webrtc-streamer.sln
 
 after_build:
+  - move Release\webrtc-streamer.exe .
   - 7z a webrtc-streamer.zip webrtc-streamer.exe html
 
 artifacts:
