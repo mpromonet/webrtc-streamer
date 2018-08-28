@@ -5,7 +5,7 @@ platform: x64
 clone_folder: c:\projects\webrtc-streamer
 
 environment:
-  - generator: "Visual Studio 15 2017 Win64"
+  generator: "Visual Studio 15 2017 Win64"
 
 install:
   - git submodule update --init
