@@ -21,7 +21,7 @@ install:
 
 before_build:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - cmake . -G %generator%
+  - cmake . -G "%generator%"
 
 build:
   project: c:\projects\webrtc-streamer\webrtc-streamer.sln
