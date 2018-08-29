@@ -31,9 +31,19 @@ build:
 
 after_build:
   - move Release\webrtc-streamer.exe .
-  - 7z a webrtc-streamer.zip webrtc-streamer.exe html
+  - 7z a webrtc-streamer_v$(APPVEYOR_REPO_TAG_NAME)-$(PLATFORM).zip webrtc-streamer.exe html
 
 artifacts:
-  - path: webrtc-streamer.zip
+  - path: webrtc-streamer_v$(APPVEYOR_REPO_TAG_NAME)-$(PLATFORM).zip
 
+deploy:
+  provider: GitHub
+  auth_token:
+    secure: Ov3sAkiU1iRjAOc7GYaScSUujzhKiTCz/gZ4uQws2fTaNu8O5FUciAQk4uuGeiC7
+  artifact: webrtc-streamer_v$(APPVEYOR_REPO_TAG_NAME)-$(PLATFORM).zip
+  draft: false
+  prerelease: false
+  on:
+    branch: master                 
+    appveyor_repo_tag: true       
 
