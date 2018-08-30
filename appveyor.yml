@@ -31,10 +31,10 @@ build:
 
 after_build:
   - move Release\webrtc-streamer.exe .
-  - 7z a webrtc-streamer_v$(APPVEYOR_REPO_TAG_NAME)-$(PLATFORM).zip webrtc-streamer.exe html
+  - 7z a webrtc-streamer_v%APPVEYOR_REPO_TAG_NAME%-%PLATFORM%.zip webrtc-streamer.exe html
 
 artifacts:
-  - path: webrtc-streamer_v$(APPVEYOR_REPO_TAG_NAME)-$(PLATFORM).zip
+  - path: webrtc-streamer*.zip
 
 deploy:
   provider: GitHub
