@@ -25,7 +25,6 @@
 #include "media/engine/internaldecoderfactory.h"
 #include "api/video_codecs/video_decoder.h"
 
-#include "h264_stream.h"
 
 class Frame
 {
@@ -79,7 +78,6 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 		std::unique_ptr<webrtc::VideoDecoder> m_decoder;
 		std::vector<uint8_t>                  m_cfg;
 		std::string                           m_codec;
-                h264_stream_t*                        m_h264;
 		std::queue<Frame>                     m_queue;
 		std::mutex                            m_queuemutex;
 		std::condition_variable               m_queuecond;

@@ -90,20 +90,6 @@ civetweb/libcivetweb.a: civetweb/Makefile
 CFLAGS += -I civetweb/include
 LDFLAGS += -L civetweb -l civetweb
 
-#h264bitstream
-VERSION+=h264bitstream@$(shell git -C h264bitstream describe --tags --always --dirty)
-LIBS+=h264bitstream/.libs/libh264bitstream.a
-h264bitstream/configure.ac:
-	git submodule update --init h264bitstream
-
-h264bitstream/.libs/libh264bitstream.a: h264bitstream/configure.ac
-	cd h264bitstream && autoreconf -i -f
-	cd h264bitstream && CC=$(CXX) ./configure --host=$(shell $(CXX) -dumpmachine)
-	make -C h264bitstream 
-
-CFLAGS += -I h264bitstream
-LDFLAGS += h264bitstream/.libs/libh264bitstream.a
-
 src/%.o: src/%.cpp $(LIBS)
 	$(CXX) -o $@ -c $< $(CFLAGS) -DVERSION="\"$(VERSION)\""
 
@@ -114,7 +100,6 @@ $(TARGET): $(subst .cpp,.o,$(FILES)) $(LIBS)
 clean:
 	rm -f src/*.o libWebRTC_$(GYP_GENERATOR_OUTPUT)_$(WEBRTCBUILD).a $(TARGET)
 	make -C civetweb clean
-	make -C h264bitstream clean
 	make -k -C live555helper clean PREFIX=$(PREFIX) SYSROOT=$(SYSROOT)
 
 install: $(TARGET) html/index.html

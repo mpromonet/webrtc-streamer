@@ -14,6 +14,10 @@
 #include "rtc_base/timeutils.h"
 #include "rtc_base/logging.h"
 
+
+#include "common_video/h264/h264_common.h"
+#include "common_video/h264/sps_parser.h"
+
 #include "modules/video_coding/h264_sprop_parameter_sets.h"
 #include "api/video/i420_buffer.h"
 
@@ -55,12 +59,10 @@ RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, const std::map<std
 	: m_connection(m_env, this, uri.c_str(), decodeTimeoutOption(opts), decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=3)
 {
 	RTC_LOG(INFO) << "RTSPVideoCapturer" << uri ;
-	m_h264 = h264_new();
 }
 
 RTSPVideoCapturer::~RTSPVideoCapturer()
 {
-	h264_free(m_h264);
 }
 
 bool RTSPVideoCapturer::onNewSession(const char* id,const char* media, const char* codec, const char* sdp)
@@ -122,50 +124,52 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 	int res = 0;
 
 	if (m_codec == "H264") {
-		int nal_start = 0;
-		int nal_end   = 0;
-		find_nal_unit(buffer, size, &nal_start, &nal_end);
-		read_nal_unit(m_h264, &buffer[nal_start], nal_end - nal_start);
-		if (m_h264->nal->nal_unit_type == NAL_UNIT_TYPE_SPS) {
+		webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[sizeof(marker)]);	
+		if (nalu_type == webrtc::H264::NaluType::kSps) {
 			RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData SPS";
 			m_cfg.clear();
 			m_cfg.insert(m_cfg.end(), buffer, buffer+size);
 
-			unsigned int width = ((m_h264->sps->pic_width_in_mbs_minus1 +1)*16) - m_h264->sps->frame_crop_left_offset*2 - m_h264->sps->frame_crop_right_offset*2;
-			unsigned int height= ((2 - m_h264->sps->frame_mbs_only_flag)* (m_h264->sps->pic_height_in_map_units_minus1 +1) * 16) - (m_h264->sps->frame_crop_top_offset * 2) - (m_h264->sps->frame_crop_bottom_offset * 2);
-			unsigned int fps=25;
-			RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData SPS set timing_info_present_flag:" << m_h264->sps->vui.timing_info_present_flag << " " << m_h264->sps->vui.time_scale << " " << m_h264->sps->vui.num_units_in_tick;
-			if (m_decoder.get()) {
-				if ( (GetCaptureFormat()->width != width) || (GetCaptureFormat()->height != height) )  {
-					RTC_LOG(INFO) << "format changed => set format from " << GetCaptureFormat()->width << "x" << GetCaptureFormat()->height	 << " to " << width << "x" << height;
-					m_decoder.reset(NULL);
+			absl::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(buffer+sizeof(marker)+webrtc::H264::kNaluTypeSize, size-sizeof(marker)-webrtc::H264::kNaluTypeSize);
+			if (!sps) {	
+				RTC_LOG(LS_ERROR) << "cannot parse sps";
+				res = -1;
+			}
+			else
+			{			
+				int fps = 25;
+				if (m_decoder.get()) {
+					if ( (GetCaptureFormat()->width !=  sps->width) || (GetCaptureFormat()->height !=  sps->height) )  {
+						RTC_LOG(INFO) << "format changed => set format from " << GetCaptureFormat()->width << "x" << GetCaptureFormat()->height	 << " to " << sps->width << "x" << sps->height;
+						m_decoder.reset(NULL);
+					}
+				}
+
+				if (!m_decoder.get()) {
+					RTC_LOG(INFO) << "RTSPVideoCapturer:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
+					cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
+					SetCaptureFormat(&videoFormat);
+
+					m_decoder=m_factory.CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kH264CodecName));
+					webrtc::VideoCodec codec_settings;
+					codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecH264;
+					m_decoder->InitDecode(&codec_settings,2);
+					m_decoder->RegisterDecodeCompleteCallback(this);
 				}
 			}
-
-			if (!m_decoder.get()) {
-				RTC_LOG(INFO) << "RTSPVideoCapturer:onData SPS set format " << width << "x" << height << " fps:" << fps;
-				cricket::VideoFormat videoFormat(width, height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
-				SetCaptureFormat(&videoFormat);
-
-				m_decoder=m_factory.CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kH264CodecName));
-				webrtc::VideoCodec codec_settings;
-				codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecH264;
-				m_decoder->InitDecode(&codec_settings,2);
-				m_decoder->RegisterDecodeCompleteCallback(this);
-			}
 		}
-		else if (m_h264->nal->nal_unit_type == NAL_UNIT_TYPE_PPS) {
+		else if (nalu_type == webrtc::H264::NaluType::kPps) {
 			RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData PPS";
 			m_cfg.insert(m_cfg.end(), buffer, buffer+size);
 		}
 		else if (m_decoder.get()) {
 			std::vector<uint8_t> content;
-			if (m_h264->nal->nal_unit_type == NAL_UNIT_TYPE_CODED_SLICE_IDR) {
+			if (nalu_type == webrtc::H264::NaluType::kIdr) {
 				RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData IDR";				
 				content.insert(content.end(), m_cfg.begin(), m_cfg.end());
 			}
 			else {
-				RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData SLICE NALU:" << m_h264->nal->nal_unit_type;
+				RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData SLICE NALU:" << nalu_type;
 			}
 			content.insert(content.end(), buffer, buffer+size);
 			Frame frame(std::move(content), ts);			

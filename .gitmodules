@@ -4,9 +4,6 @@
 [submodule "civetweb"]
 	path = civetweb
 	url = https://github.com/civetweb/civetweb
-[submodule "h264bitstream"]
-	path = h264bitstream
-	url = https://github.com/aizvorski/h264bitstream
 [submodule "html"]
 	path = html
 	url = https://github.com/mpromonet/webrtc-streamer-html
