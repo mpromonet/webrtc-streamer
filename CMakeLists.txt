@@ -1,8 +1,6 @@
 cmake_minimum_required (VERSION 3.0.0)
  
 project (webrtc-streamer)
- 
-set (SOURCE civetweb/src/civetweb.c civetweb/src/CivetServer.cpp src/HttpServerRequestHandler.cpp src/PeerConnectionManager.cpp src/main.cpp)
 
 find_package(Git)
 if(GIT_FOUND)
@@ -15,7 +13,11 @@ set (CMAKE_BUILD_TYPE Release)
 set (CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS})
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-include_directories(civetweb/include inc ../webrtc/src ../webrtc/src/third_party/abseil-cpp ../webrtc/src/third_party/jsoncpp/source/include) 
+# source & objects
+set (SOURCE civetweb/src/civetweb.c civetweb/src/CivetServer.cpp src/HttpServerRequestHandler.cpp src/PeerConnectionManager.cpp src/main.cpp)
+if (MSVC)
+    set (SOURCE getopt/getopt.c ${SOURCE})
+endif(MSVC)
 
 set (OBJS ../webrtc/src/out/Release/obj/third_party/jsoncpp/jsoncpp/json_value${CMAKE_C_OUTPUT_EXTENSION}
             ../webrtc/src/out/Release/obj/third_party/jsoncpp/jsoncpp/json_reader${CMAKE_C_OUTPUT_EXTENSION}
@@ -24,22 +26,25 @@ set (OBJS ../webrtc/src/out/Release/obj/third_party/jsoncpp/jsoncpp/json_value${
 
 add_executable (${PROJECT_NAME} ${SOURCE} ${OBJS})
 
+# libs
 find_package (Threads)
 target_link_libraries (${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT}) 
 
 if (MSVC)
-add_definitions("-DWEBRTC_WIN  -EHsc -DNOMINMAX -D__PRETTY_FUNCTION__=__FUNCTION__")
+	include_directories(inc civetweb/include  getopt ../webrtc/src ../webrtc/src/third_party/abseil-cpp ../webrtc/src/third_party/jsoncpp/source/include) 
+	add_definitions("-DWEBRTC_WIN  -EHsc -DNOMINMAX -D__PRETTY_FUNCTION__=__FUNCTION__")
 
-set(CompilerFlags CMAKE_CXX_FLAGS_DEBUG CMAKE_C_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_C_FLAGS_RELEASE)
-foreach(CompilerFlag ${CompilerFlags})
-  string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
-  MESSAGE("${CompilerFlag} = ${${CompilerFlag}}")
-endforeach()
+	set(CompilerFlags CMAKE_CXX_FLAGS_DEBUG CMAKE_C_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_C_FLAGS_RELEASE)
+	foreach(CompilerFlag ${CompilerFlags})
+	  string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+	  MESSAGE("${CompilerFlag} = ${${CompilerFlag}}")
+	endforeach()
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ../webrtc/src/out/Release/obj/webrtc secur32 dmoguids wmcodecdspuuid strmiids msdmo winmm)
+	target_link_libraries (${PROJECT_NAME} ../webrtc/src/out/Release/obj/webrtc secur32 dmoguids wmcodecdspuuid strmiids msdmo winmm)
 else(MSVC)
-add_definitions("-DWEBRTC_POSIX -std=c++11 -fno-rtti")
-find_library(WEBRTC_LIBRARY NAMES libwebrtc.a PATHS ../webrtc/src/out/Release/obj/)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${WEBRTC_LIBRARY} dl X11)
+	include_directories(inc civetweb/include ../webrtc/src ../webrtc/src/third_party/abseil-cpp ../webrtc/src/third_party/jsoncpp/source/include) 
+	add_definitions("-DWEBRTC_POSIX -std=c++11 -fno-rtti")
+	find_library(WEBRTC_LIBRARY NAMES libwebrtc.a PATHS ../webrtc/src/out/Release/obj/)
+	target_link_libraries (${PROJECT_NAME} ${WEBRTC_LIBRARY} dl X11)
 endif(MSVC)
 

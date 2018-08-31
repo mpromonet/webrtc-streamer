@@ -16,6 +16,10 @@
 #include "PeerConnectionManager.h"
 #include "HttpServerRequestHandler.h"
 
+#if WIN32
+#include "getopt.h"
+#endif
+
 /* ---------------------------------------------------------------------------
 **  main
 ** -------------------------------------------------------------------------*/
@@ -45,7 +49,6 @@ int main(int argc, char* argv[])
 	}
 	httpAddress.append(httpPort);
 
-#ifndef WIN32
 	int c = 0;
 	while ((c = getopt (argc, argv, "hVv::" "c:H:w:T:A:" "t:S::s::" "a::q:" "n:u:U:")) != -1)
 	{
@@ -120,7 +123,6 @@ int main(int argc, char* argv[])
 		urlVideoList[url]=url;
 		optind++;
 	}
-#endif
 
 	rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)logLevel);
 	rtc::LogMessage::LogTimestamps();
