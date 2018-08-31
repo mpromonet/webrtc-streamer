@@ -2,6 +2,10 @@ cmake_minimum_required (VERSION 3.0.0)
  
 project (webrtc-streamer)
 
+set (CMAKE_BUILD_TYPE Release) 
+set (CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS})
+set (CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 find_package(Git)
 if(GIT_FOUND)
     EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} describe --tags --always --dirty OUTPUT_VARIABLE VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -9,17 +13,19 @@ if(GIT_FOUND)
 endif()
 add_definitions("-DHAVE_JPEG -DVERSION=\\\"${VERSION}\\\"")
 
-set (CMAKE_BUILD_TYPE Release) 
-set (CMAKE_CXX_FLAGS ${CMAKE_C_FLAGS})
-set (CMAKE_POSITION_INDEPENDENT_CODE ON)
-
 # source & objects
 set (SOURCE civetweb/src/civetweb.c civetweb/src/CivetServer.cpp src/HttpServerRequestHandler.cpp src/PeerConnectionManager.cpp src/rtspaudiocapturer.cpp src/rtspvideocapturer.cpp src/main.cpp)
 if (MSVC)	
     set (SOURCE getopt/getopt.c ${SOURCE})
 endif(MSVC)
 
-# live 555
+# live555 & live555helper
+find_path(LIVE555_DIR live)
+if (NOT LIVE555_DIR)
+		file (DOWNLOAD http://www.live555.com/liveMedia/public/live555-latest.tar.gz ${CMAKE_SOURCE_DIR}/live555-latest.tar.gz )
+        EXECUTE_PROCESS(COMMAND 7z x live555-latest.tar.gz -so COMMAND 7z x -ttar -si)
+endif(NOT LIVE555_DIR) 
+
 FILE(GLOB groupsockSources live/groupsock/*.c*)
 FILE(GLOB liveMediaSources live/liveMedia/*.c*)
 FILE(GLOB UsageEnvironmentSources live/UsageEnvironment/*.c*)
@@ -30,7 +36,6 @@ if (MSVC)
     set (LIVELIBS ws2_32.lib)
 endif(MSVC)
 
-# live555helper
 set (SOURCE ${SOURCE} live555helper/src/environment.cpp live555helper/src/SessionSink.cpp live555helper/src/rtspconnectionclient.cpp)
 set (LIVEINCLUDE ${LIVEINCLUDE}  live555helper/inc)
 
@@ -41,9 +46,11 @@ set (OBJS ${WEBRTCROOT}/out/Release/obj/third_party/jsoncpp/jsoncpp/json_value${
             ${WEBRTCROOT}/out/Release/obj/third_party/jsoncpp/jsoncpp/json_reader${CMAKE_C_OUTPUT_EXTENSION}
             ${WEBRTCROOT}/out/Release/obj/third_party/jsoncpp/jsoncpp/json_writer${CMAKE_C_OUTPUT_EXTENSION}
             ${WEBRTCROOT}/out/Release/obj/rtc_base/rtc_json/json${CMAKE_C_OUTPUT_EXTENSION})
+find_library(WEBRTC_LIBRARY NAMES webrtc PATHS ${WEBRTCROOT}/out/Release/obj/)
 
+# target
 add_executable (${PROJECT_NAME} ${SOURCE} ${OBJS})
-
+	
 # libs
 find_package (Threads)
 target_link_libraries (${PROJECT_NAME} ${CMAKE_THREAD_LIBS_INIT}) 
@@ -58,11 +65,10 @@ if (MSVC)
 	  MESSAGE("${CompilerFlag} = ${${CompilerFlag}}")
 	endforeach()
 
-	target_link_libraries (${PROJECT_NAME} ${WEBRTCROOT}/out/Release/obj/webrtc secur32 dmoguids wmcodecdspuuid strmiids msdmo winmm ${LIVELIBS})
+	target_link_libraries (${PROJECT_NAME} ${WEBRTC_LIBRARY} secur32 dmoguids wmcodecdspuuid strmiids msdmo winmm ${LIVELIBS})
 else(MSVC)
 	include_directories(inc civetweb/include ${WEBRTCINCLUDE} ${LIVEINCLUDE}) 
 	add_definitions("-DHAVE_LIVE555 -DWEBRTC_POSIX -std=c++11 -fno-rtti")
-	find_library(WEBRTC_LIBRARY NAMES libwebrtc.a PATHS ${WEBRTCROOT}/out/Release/obj/)
 	target_link_libraries (${PROJECT_NAME} ${WEBRTC_LIBRARY} dl X11)
 endif(MSVC)
 
