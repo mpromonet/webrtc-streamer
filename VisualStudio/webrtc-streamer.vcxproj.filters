@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\src\HttpServerRequestHandler.cpp" />
+    <ClCompile Include="..\src\main.cpp" />
+    <ClCompile Include="..\src\PeerConnectionManager.cpp" />
+    <ClCompile Include="..\src\rtspaudiocapturer.cpp" />
+    <ClCompile Include="..\src\rtspvideocapturer.cpp" />
+    <ClCompile Include="..\civetweb\src\CivetServer.cpp">
+      <Filter>civet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\civetweb\src\civetweb.c">
+      <Filter>civet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\webrtc\src\rtc_base\json.cc">
+      <Filter>jsoncpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\webrtc\src\third_party\jsoncpp\source\src\lib_json\json_reader.cpp">
+      <Filter>jsoncpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\webrtc\src\third_party\jsoncpp\source\src\lib_json\json_value.cpp">
+      <Filter>jsoncpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\webrtc\src\third_party\jsoncpp\source\src\lib_json\json_writer.cpp">
+      <Filter>jsoncpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\live555helper\src\environment.cpp">
+      <Filter>live555</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\getopt.cpp">
+      <Filter>live555</Filter>
+    </ClCompile>
+    <ClCompile Include="..\live555helper\src\sdpclient.cpp">
+      <Filter>live555</Filter>
+    </ClCompile>
+    <ClCompile Include="..\live555helper\src\SessionSink.cpp">
+      <Filter>live555</Filter>
+    </ClCompile>
+    <ClCompile Include="..\live555helper\src\rtspconnectionclient.cpp">
+      <Filter>live555</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\filevideocapturer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="jsoncpp">
+      <UniqueIdentifier>{cd1b4470-8e9f-45f6-b270-81443ea6aee9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="civet">
+      <UniqueIdentifier>{edb2bf80-c551-4f4a-88dd-849a3af2edb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="live555">
+      <UniqueIdentifier>{2722809d-5420-47c1-bd8b-e1d55f3ea504}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

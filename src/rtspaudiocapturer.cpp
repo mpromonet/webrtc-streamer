@@ -66,7 +66,11 @@ bool RTSPAudioSource::onData(const char* id, unsigned char* buffer, ssize_t size
 	int segmentLength = m_freq/100;
 	if (m_sink) {								
 		if (m_decoder.get() != NULL) {				
+#ifndef WIN32
 			int16_t decoded[size];
+#else
+			int16_t decoded[128 * 1024];
+#endif
 			webrtc::AudioDecoder::SpeechType speech_type;
 			int res = m_decoder->Decode(buffer, size, m_freq, sizeof(decoded), decoded, &speech_type);
 			RTC_LOG(LS_VERBOSE) << "RTSPAudioSource::onData size:" << size << " decoded:" << res;
@@ -78,7 +82,11 @@ bool RTSPAudioSource::onData(const char* id, unsigned char* buffer, ssize_t size
 				RTC_LOG(LS_ERROR) << "RTSPAudioSource::onData error:Decode Audio failed";
 			}																
 			while (m_buffer.size() > segmentLength*m_channel) {
+#ifndef WIN32
 				int16_t outbuffer[segmentLength*m_channel];
+#else
+				int16_t outbuffer[128 * 1024];
+#endif
 				for (int i=0; i<segmentLength*m_channel; ++i) {
 					uint16_t value = m_buffer.front();
 					outbuffer[i] = value;

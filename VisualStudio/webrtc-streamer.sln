@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2003
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "webrtc-streamer", "webrtc-streamer.vcxproj", "{868EF29A-C134-494B-8432-01EAC97978FD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{868EF29A-C134-494B-8432-01EAC97978FD}.Release|x64.ActiveCfg = Release|x64
+		{868EF29A-C134-494B-8432-01EAC97978FD}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B65C07B7-3DC3-4D1C-8E12-48362F1B858E}
+	EndGlobalSection
+EndGlobal
