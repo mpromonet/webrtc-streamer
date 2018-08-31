@@ -72,6 +72,51 @@ where WEBRTCROOT and WEBRTCBUILD indicate how to point to WebRTC :
  - $WEBRTCROOT/src should contains source (default is $(pwd)/../webrtc) 
  - $WEBRTCROOT/src/out/$WEBRTCBUILD should contains libraries (default is Release)
 
+ Build on Windows
+ ==============
+ These 3 directories should be generated in the same location:
+live
+webrtc
+webrtc-streamer
+
+how to build google's webrtc windows:
+https://chromium.googlesource.com/chromium/src/+/master/docs/windows_build_instructions.md
+
+this is going to install the other tools used here (e.g. git)
+
+then do:
+cd src
+gn gen out/Release --args="is_debug=false use_custom_libcxx=false rtc_use_h264=true ffmpeg_branding=\"Chrome\" rtc_include_tests=false rtc_include_pulse_audio=false use_sysroot=false is_clang=false treat_warnings_as_errors=false"
+ninja -C out/Release webrtc 
+
+
+download latest live from: http://www.live555.com/liveMedia/public/   (I used live.2018.08.28a.tar.gz)
+the directory should be placed on the same level as webrtc-streamer and it should be called live
+unzip VS_live.zip into the live directory. A directory by the name VisualStudio should be created under live
+
+Open the solution live\VisualStudio\live555.sln with VisualStudio 2017 and compile. 
+The following 4 files would be created under the directory live\lib64
+BasicUsageEnvironment.lib 
+groupsock.lib
+liveMedia.lib 
+UsageEnvironment.lib
+
+Get the webrtc-streamer with:
+git clone --recurse-submodules https://github.com/mpromonet/webrtc-streamer.git
+
+
+Open webrtc-streamer\VisualStudio\webrtc-streamer.sln with VisualStudio 2017 and compile
+
+If it does not compile - you might need to change manually the file /inc/SessionSink.h 
+Delete the line: static uint8_t H26X_marker[] = { 0, 0, 0, 1};  as being declared outside the class
+and add this line:  uint8_t H26X_marker[] = { 0, 0, 0, 1};  immediately following this line:
+if ( (strcmp(mime, "video/H264") == 0) || (strcmp(mime, "video/H265") == 0) ) {
+
+This version allows playing raw h264 files. To do that run it as:
+webrtc-streamer.exe file:d:\camd\webrtc-streamer\videos\airshow.264
+or you can use the Debugger to run it.
+
+
 Usage
 ===============
 	./webrtc-streamer [-H http port] [-S[embeded stun address]] -[v[v]]  [url1]...[urln]

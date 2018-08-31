@@ -18,6 +18,7 @@
 #include "rtspvideocapturer.h"
 #include "rtspaudiocapturer.h"
 #endif
+#include "FileVideoCapturer.h"
 
 #ifdef USE_X11
 #include "screencapturer.h"
@@ -91,7 +92,11 @@ class CapturerFactory {
 	
 	static std::unique_ptr<cricket::VideoCapturer> CreateVideoCapturer(const std::string & videourl, const std::map<std::string,std::string> & opts, const std::regex & publishFilter) {
 		std::unique_ptr<cricket::VideoCapturer> capturer;
-		if ( (videourl.find("rtsp://") == 0) && (std::regex_match("rtsp://",publishFilter)) ) 
+		if ((videourl.find("file:") == 0) && (std::regex_match("file:", publishFilter)))
+		{
+			capturer.reset(new FileVideoCapturer(videourl, opts));
+		}
+		else if ((videourl.find("rtsp://") == 0) && (std::regex_match("rtsp://", publishFilter)))
 		{
 #ifdef HAVE_LIVE555
 			capturer.reset(new RTSPVideoCapturer(videourl, opts));
