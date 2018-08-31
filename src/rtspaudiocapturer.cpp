@@ -65,10 +65,10 @@ bool RTSPAudioSource::onData(const char* id, unsigned char* buffer, ssize_t size
 	bool success = false;
 	int segmentLength = m_freq/100;
 	if (m_sink) {								
-		if (m_decoder.get() != NULL) {				
-			int16_t decoded[size];
+		if (m_decoder.get() != NULL) {			
+			int16_t* decoded = new int16_t[size];
 			webrtc::AudioDecoder::SpeechType speech_type;
-			int res = m_decoder->Decode(buffer, size, m_freq, sizeof(decoded), decoded, &speech_type);
+			int res = m_decoder->Decode(buffer, size, m_freq, size, decoded, &speech_type);
 			RTC_LOG(LS_VERBOSE) << "RTSPAudioSource::onData size:" << size << " decoded:" << res;
 			if (res > 0) {
 				for (int i = 0 ; i < res*m_channel; ++i) {
@@ -76,15 +76,17 @@ bool RTSPAudioSource::onData(const char* id, unsigned char* buffer, ssize_t size
 				}
 			} else {
 				RTC_LOG(LS_ERROR) << "RTSPAudioSource::onData error:Decode Audio failed";
-			}																
+			}	
+			delete [] decoded;
 			while (m_buffer.size() > segmentLength*m_channel) {
-				int16_t outbuffer[segmentLength*m_channel];
+				int16_t* outbuffer = new int16_t[segmentLength*m_channel];
 				for (int i=0; i<segmentLength*m_channel; ++i) {
 					uint16_t value = m_buffer.front();
 					outbuffer[i] = value;
 					m_buffer.pop();
 				}
 				m_sink->OnData(outbuffer, 16, m_freq, m_channel, segmentLength);
+				delete [] outbuffer;
 			}
 			success = true;
 		} else {
