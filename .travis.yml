@@ -18,7 +18,7 @@ env:
       GYP_GENERATOR_OUTPUT=rpi-armv6  
       GNARGS='is_debug=false is_clang=false target_cpu="arm" use_ozone=true treat_warnings_as_errors=false arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false' 
       CROSS=arm-linux-gnueabihf- 
-      CFLAGS_EXTRA="-march=armv6 -mfpu=vfp -mfloat-abi=hard"
+      CFLAGS_EXTRA="-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard"
 addons:
   apt:
     packages:
@@ -45,7 +45,7 @@ script:
 - travis_wait 30 gclient sync
 - popd
 # get, build and install live555 & alsa
-- make WEBRTCROOT=./webrtc live555 alsa-lib
+- make WEBRTCROOT=./webrtc live555 
 - pushd webrtc
 - pushd src
 # build WebRTC
@@ -68,13 +68,12 @@ deploy:
   on:
     repo: mpromonet/webrtc-streamer
     condition: $GYP_GENERATOR_OUTPUT = x86_64
-- provider: releases
-  skip_cleanup: true
-  api_key:
-    secure: FMXzmhBmuy7Jou3h5lG10b8xl5oqI96aYoUrUHO2rfKqQ4UMKxT3hXcdxOnSsnbI6d8NfXbOPKqmqmD4vTk+EqQjCK9fmsNxAg1UktLIsuOxoWmEWYLK5d3xpIuRmfRQDtPVjcryrE420FCfZS67lyr22+v1pLcvcD61ebGZLCg=
-  file: 
-  - "${RELEASE_PKG_FILE}"
-  on:
-    repo: mpromonet/webrtc-streamer
-    tags: true
-    tags: true
+#- provider: releases
+#  skip_cleanup: true
+#  api_key:
+#    secure: FMXzmhBmuy7Jou3h5lG10b8xl5oqI96aYoUrUHO2rfKqQ4UMKxT3hXcdxOnSsnbI6d8NfXbOPKqmqmD4vTk+EqQjCK9fmsNxAg1UktLIsuOxoWmEWYLK5d3xpIuRmfRQDtPVjcryrE420FCfZS67lyr22+v1pLcvcD61ebGZLCg=
+#  file: 
+#  - "${RELEASE_PKG_FILE}"
+#  on:
+#    repo: mpromonet/webrtc-streamer
+#    tags: true
