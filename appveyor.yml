@@ -10,8 +10,8 @@ environment:
   generator: "Visual Studio 15 2017 Win64"
 
 install:
-  - set PATH=%APPVEYOR_BUILD_FOLDER%\..\depot_tools;%PATH%
-  - set DEPOT_TOOLS_WIN_TOOLCHAIN=0
+  - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\..\depot_tools;%PATH%
+  - cmd: set DEPOT_TOOLS_WIN_TOOLCHAIN=0
   - git submodule update --init
   - cd ..
   - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git 
@@ -23,13 +23,14 @@ install:
   - ninja -C out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory
 
 before_build:
-  - cmake . -G "%generator%"
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%
+  - cmd: cmake . -G "%generator%"
 
 build:
   project: webrtc-streamer.sln
 
 after_build:
-  - move Release\webrtc-streamer.exe .
+  - cmd: move Release\webrtc-streamer.exe .
   - 7z a webrtc-streamer_%APPVEYOR_REPO_TAG_NAME%-%PLATFORM%.zip webrtc-streamer.exe html
 
 artifacts:
