@@ -2,7 +2,11 @@ cmake_minimum_required (VERSION 3.0.0)
  
 project (webrtc-streamer)
 
-set (WEBRTCROOT ../webrtc/src)
+# add by sunghyun kim
+STRING(REGEX REPLACE "\\\\" "/" WEBRTC_HOME "$ENV{WEBRTC_HOME}")
+STRING(REGEX REPLACE "\\\\" "/" LIVE555_HOME "$ENV{LIVE555_HOME}")
+set (WEBRTCROOT ${WEBRTC_HOME})
+set (LIVE555ROOT ${LIVE555_HOME})
 
 set (CMAKE_BUILD_TYPE Release) 
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -33,15 +37,9 @@ endif(MSVC)
 # civetweb sources
 set (SOURCE ${SOURCE} civetweb/src/civetweb.c civetweb/src/CivetServer.cpp)
 
-# live555 & live555helper sources
-if (NOT EXISTS live)
-	file (DOWNLOAD http://www.live555.com/liveMedia/public/live555-latest.tar.gz ${CMAKE_SOURCE_DIR}/live555-latest.tar.gz )
-    EXECUTE_PROCESS(COMMAND 7z x live555-latest.tar.gz -so COMMAND 7z x -aoa -ttar -si)
-endif(NOT EXISTS live) 
-
-FILE(GLOB LIVE55SOURCE live/groupsock/*.c* live/liveMedia/*.c* live/UsageEnvironment/*.c* live/BasicUsageEnvironment/*.c*)
-set (LIVEINCLUDE live/groupsock/include live/liveMedia/include live/UsageEnvironment/include live/BasicUsageEnvironment/include)
-set (SOURCE ${SOURCE} ${LIVE55SOURCE})
+# live555 - modify by sunghyun kim
+set (LIVEINCLUDE ${LIVE555_HOME}/groupsock/include ${LIVE555_HOME}/liveMedia/include ${LIVE555_HOME}/UsageEnvironment/include ${LIVE555_HOME}/BasicUsageEnvironment/include)
+set (LIVELIB ${LIVE555_HOME}/groupsock/libgroupsock.lib ${LIVE555_HOME}/liveMedia/libliveMedia.lib ${LIVE555_HOME}/UsageEnvironment/libUsageEnvironment.lib ${LIVE555_HOME}/BasicUsageEnvironment/libBasicUsageEnvironment.lib)
 set (SOURCE ${SOURCE} live555helper/src/environment.cpp live555helper/src/SessionSink.cpp live555helper/src/rtspconnectionclient.cpp)
 
 # target
@@ -62,10 +60,10 @@ set (OBJS ${WEBRTCROOT}/out/Release/obj/third_party/jsoncpp/jsoncpp/json_value${
             ${WEBRTCROOT}/out/Release/obj/third_party/jsoncpp/jsoncpp/json_writer${CMAKE_C_OUTPUT_EXTENSION}
 			${WEBRTCROOT}/out/Release/obj/rtc_base/rtc_json/json${CMAKE_C_OUTPUT_EXTENSION})
 
-add_library (webrtcextra STATIC ${OBJS})	
+add_library (webrtcextra STATIC ${OBJS} )	
 set_target_properties(webrtcextra PROPERTIES LINKER_LANGUAGE CXX)		
 find_library(WEBRTC_LIBRARY NAMES webrtc PATHS ${WEBRTCROOT}/out/Release/obj/)
-target_link_libraries (${PROJECT_NAME} ${WEBRTC_LIBRARY} webrtcextra) 
+target_link_libraries (${PROJECT_NAME} ${WEBRTC_LIBRARY} ${LIVELIB} webrtcextra) 
 
 # compiler specific
 if (MSVC)
