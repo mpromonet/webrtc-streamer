@@ -252,6 +252,7 @@ const Json::Value PeerConnectionManager::getIceServers(const std::string& client
 		Json::Value server;
 		Json::Value urlList(Json::arrayValue);
 		IceServer srv = getIceServerFromUrl(iceServer, clientIp);
+		RTC_LOG(INFO) << "ICE URL:" << srv.url;
 		urlList.append(srv.url);
 		server["urls"] = urlList;
 		if (srv.user.length() > 0) server["username"] = srv.user;
