@@ -22,82 +22,46 @@
 
 class DesktopCapturer : public cricket::VideoCapturer, public rtc::Thread, public webrtc::DesktopCapturer::Callback  {
 	public:
+		DesktopCapturer(const std::map<std::string,std::string> & opts) : m_width(0), m_height(0) {
+			if (opts.find("width") != opts.end()) {
+				m_width = std::stoi(opts.at("width"));
+			}	
+			if (opts.find("height") != opts.end()) {
+				m_height = std::stoi(opts.at("height"));
+			}
+		}
 		virtual ~DesktopCapturer() {}
 
 		// overide webrtc::DesktopCapturer::Callback
-		virtual void OnCaptureResult(webrtc::DesktopCapturer::Result result, std::unique_ptr<webrtc::DesktopFrame> frame) {
-			
-			RTC_LOG(INFO) << "ScreenCapturer:OnCaptureResult";
-			
-			if (result == webrtc::DesktopCapturer::Result::SUCCESS) {
-				int width = frame->rect().width();
-				int height = frame->rect().height();
-				rtc::scoped_refptr<webrtc::I420Buffer> I420buffer = webrtc::I420Buffer::Create(width, height);
-
-				const int conversionResult = libyuv::ConvertToI420(frame->data(), frame->stride()*webrtc::DesktopFrame::kBytesPerPixel,
-					I420buffer->MutableDataY(), I420buffer->StrideY(),
-					I420buffer->MutableDataU(), I420buffer->StrideU(),
-					I420buffer->MutableDataV(), I420buffer->StrideV(),
-					0, 0,
-					width, height,
-					width, height,
-					libyuv::kRotate0, ::libyuv::FOURCC_ARGB);									
-						
-				if (conversionResult >= 0) {
-					webrtc::VideoFrame videoFrame(I420buffer, webrtc::VideoRotation::kVideoRotation_0, rtc::TimeMicros());
-					this->OnFrame(videoFrame, width, height);
-				} else {
-					RTC_LOG(LS_ERROR) << "ScreenCapturer:OnCaptureResult conversion error:" << conversionResult;
-				}				
-
-			} else {
-				RTC_LOG(LS_ERROR) << "ScreenCapturer:OnCaptureResult capture error:" << (int)result;
-			}
-		}
+		virtual void OnCaptureResult(webrtc::DesktopCapturer::Result result, std::unique_ptr<webrtc::DesktopFrame> frame);
 		
 		// overide rtc::Thread
-		virtual void Run() {
-			RTC_LOG(INFO) << "ScreenCapturer:Run start";
-			while (IsRunning()) {
-				m_capturer->CaptureFrame();
-			}
-			RTC_LOG(INFO) << "ScreenCapturer:Run exit";
-		}
+		virtual void Run();
 
 		// overide cricket::VideoCapturer
-		virtual cricket::CaptureState Start(const cricket::VideoFormat& format) {
-			SetCaptureFormat(&format);
-			SetCaptureState(cricket::CS_RUNNING);
-			rtc::Thread::Start();
-			m_capturer->Start(this);
-			return cricket::CS_RUNNING;
-		}
-		
-		virtual void Stop() {
-			SetCaptureState(cricket::CS_STOPPED);			
-			rtc::Thread::Stop();
-			SetCaptureFormat(NULL);
-		}
-		
+		virtual cricket::CaptureState Start(const cricket::VideoFormat& format);
+		virtual void Stop();
 		virtual bool GetPreferredFourccs(std::vector<unsigned int>* fourccs) { return true; }
 		virtual bool IsScreencast() const { return false; };
 		virtual bool IsRunning() { return this->capture_state() == cricket::CS_RUNNING; }
 	
 	protected:
-		std::unique_ptr<webrtc::DesktopCapturer> m_capturer;		
+		std::unique_ptr<webrtc::DesktopCapturer> m_capturer;
+		int                                      m_width;		
+		int                                      m_height;		
 };
 
 
 class ScreenCapturer : public DesktopCapturer {
 	public:
-		ScreenCapturer(const std::string & url, const std::map<std::string,std::string> & opts) {
+		ScreenCapturer(const std::string & url, const std::map<std::string,std::string> & opts) : DesktopCapturer(opts) {
 			m_capturer = webrtc::DesktopCapturer::CreateScreenCapturer(webrtc::DesktopCaptureOptions::CreateDefault());
 		}
 };
 
 class WindowCapturer : public DesktopCapturer {
 	public:
-		WindowCapturer(const std::string & url, const std::map<std::string,std::string> & opts) {
+		WindowCapturer(const std::string & url, const std::map<std::string,std::string> & opts) : DesktopCapturer(opts) {
 			const std::string windowprefix("window://");
 			if (url.find(windowprefix) == 0) {	
 				m_capturer = webrtc::DesktopCapturer::CreateWindowCapturer(webrtc::DesktopCaptureOptions::CreateDefault());

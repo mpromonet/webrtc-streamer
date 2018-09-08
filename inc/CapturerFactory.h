@@ -111,7 +111,26 @@ class CapturerFactory {
 		}
 		else if (std::regex_match("videocap://",publishFilter)) {		
 			cricket::WebRtcVideoDeviceCapturerFactory factory;
-			capturer = factory.Create(cricket::Device(videourl, 0));
+			cricket::Device device = cricket::Device(videourl, 0);
+			capturer = factory.Create(device);
+			if (capturer) {
+				int width = 0;
+				int height = 0;
+				if (opts.find("width") != opts.end()) {
+					width = std::stoi(opts.at("width"));
+				}
+				if (opts.find("height") != opts.end()) {
+					height = std::stoi(opts.at("height"));
+				}
+				if ((width != 0) && (height != 0)) {
+					cricket::VideoFormat maxFormat(width, height, 0, 0);
+					capturer->set_enable_camera_list(true);
+					RTC_LOG(LS_ERROR) << "nb format:" << capturer->GetSupportedFormats()->size();
+					// TODO call in the correct the capture thread (this assert in debug)
+					capturer->ConstrainSupportedFormats(maxFormat);
+					RTC_LOG(LS_ERROR) << "nb format:" << capturer->GetSupportedFormats()->size();
+				}
+			}
 		}
 		
 		return capturer;
