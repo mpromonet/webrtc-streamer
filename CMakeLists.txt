@@ -3,8 +3,10 @@ cmake_minimum_required (VERSION 3.0.0)
 project (webrtc-streamer)
 
 set (WEBRTCROOT "../webrtc/src" CACHE STRING "WEBRTC root directory")
+set (WEBRTCBUILD "Release" CACHE STRING "WEBRTC build type")
 
-set (CMAKE_BUILD_TYPE Release) 
+MESSAGE("WEBRTCBUILD = ${WEBRTCBUILD}")
+set (CMAKE_BUILD_TYPE ${WEBRTCBUILD}) 
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # build version identifier
@@ -47,13 +49,14 @@ set (WEBRTCINCLUDE ${WEBRTCROOT} ${WEBRTCROOT}/third_party/abseil-cpp ${WEBRTCRO
 add_definitions(-DHAVE_JPEG -DUSE_X11)
 target_include_directories(${PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
 
-set (OBJS ${WEBRTCROOT}/out/Release/obj/third_party/jsoncpp/jsoncpp/json_value${CMAKE_C_OUTPUT_EXTENSION}
-            ${WEBRTCROOT}/out/Release/obj/third_party/jsoncpp/jsoncpp/json_reader${CMAKE_C_OUTPUT_EXTENSION}
-            ${WEBRTCROOT}/out/Release/obj/third_party/jsoncpp/jsoncpp/json_writer${CMAKE_C_OUTPUT_EXTENSION}
-			${WEBRTCROOT}/out/Release/obj/rtc_base/rtc_json/json${CMAKE_C_OUTPUT_EXTENSION})
+set (WEBRTCOBJS ${WEBRTCROOT}/out/${WEBRTCBUILD}/obj)
+set (OBJS ${WEBRTCOBJS}/third_party/jsoncpp/jsoncpp/json_value${CMAKE_C_OUTPUT_EXTENSION}
+			${WEBRTCOBJS}/third_party/jsoncpp/jsoncpp/json_reader${CMAKE_C_OUTPUT_EXTENSION}
+            ${WEBRTCOBJS}/third_party/jsoncpp/jsoncpp/json_writer${CMAKE_C_OUTPUT_EXTENSION}
+			${WEBRTCOBJS}/rtc_base/rtc_json/json${CMAKE_C_OUTPUT_EXTENSION})
 add_library (webrtcextra STATIC ${OBJS})	
 set_target_properties(webrtcextra PROPERTIES LINKER_LANGUAGE CXX)		
-find_library(WEBRTC_LIBRARY NAMES webrtc PATHS ${WEBRTCROOT}/out/Release/obj/)
+find_library(WEBRTC_LIBRARY NAMES webrtc PATHS ${WEBRTCOBJS})
 target_link_libraries (${PROJECT_NAME} ${WEBRTC_LIBRARY} webrtcextra) 
 
 # live555helper & live555
