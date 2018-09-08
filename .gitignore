@@ -1,5 +1,14 @@
-src/*.o
+src/*.o*
 *.a
 *.tgz
 webrtc-streamer
 /node_modules/
+*.sln
+*.vcxproj*
+*.lib
+*.dir
+*.cmake
+CMakeCache.txt
+CMakeFiles
+*.manifest
+_CPack_Packages
