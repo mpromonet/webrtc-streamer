@@ -68,7 +68,7 @@ bool RTSPAudioSource::onData(const char* id, unsigned char* buffer, ssize_t size
 		if (m_decoder.get() != NULL) {			
 			int16_t* decoded = new int16_t[size];
 			webrtc::AudioDecoder::SpeechType speech_type;
-			int res = m_decoder->Decode(buffer, size, m_freq, size, decoded, &speech_type);
+			int res = m_decoder->Decode(buffer, size, m_freq, size*sizeof(int16_t), decoded, &speech_type);
 			RTC_LOG(LS_VERBOSE) << "RTSPAudioSource::onData size:" << size << " decoded:" << res;
 			if (res > 0) {
 				for (int i = 0 ; i < res*m_channel; ++i) {
