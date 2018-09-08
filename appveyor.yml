@@ -30,17 +30,15 @@ build:
   project: webrtc-streamer.sln
 
 after_build:
-  - cmd: move Release\webrtc-streamer.exe .
-  - 7z a webrtc-streamer_%APPVEYOR_REPO_TAG_NAME%-%PLATFORM%.zip webrtc-streamer.exe html
+  - cpack
 
 artifacts:
-  - path: webrtc-streamer*.zip
+  - path: webrtc-streamer*.tgz
 
 deploy:
   provider: GitHub
   auth_token:
     secure: Ov3sAkiU1iRjAOc7GYaScSUujzhKiTCz/gZ4uQws2fTaNu8O5FUciAQk4uuGeiC7
-  artifact: webrtc-streamer_$(APPVEYOR_REPO_TAG_NAME)-$(PLATFORM).zip
   draft: false
   prerelease: false
   on:
