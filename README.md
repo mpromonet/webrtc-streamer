@@ -113,10 +113,13 @@ Example
 
 [Live Demo](https://rtsp2webrtc.herokuapp.com/)
 
-You can access to the WebRTC stream using [webrtcstreamer.html](https://github.com/mpromonet/webrtc-streamer-html/blob/master/webrtcstreamer.html) for instance :
+We can access to the WebRTC stream using [webrtcstreamer.html](https://github.com/mpromonet/webrtc-streamer-html/blob/master/webrtcstreamer.html) for instance :
 
  * https://rtsp2webrtc.herokuapp.com/webrtcstreamer.html?rtsp://217.17.220.110/axis-media/media.amp
  * https://rtsp2webrtc.herokuapp.com/webrtcstreamer.html?Bunny
+
+An example displaying grid of WebRTC Streams is available using option "layout=<lines>x<columns>"
+[![Screenshot](images/layout2x4.png)](https://rtsp2webrtc.herokuapp.com/?layout=2x4)
 
 Embed in a HTML page:
 ===============
