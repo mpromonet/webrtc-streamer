@@ -46,7 +46,7 @@ target_include_directories(civetweb PUBLIC civetweb/include)
 
 # webrtc
 set (WEBRTCINCLUDE ${WEBRTCROOT} ${WEBRTCROOT}/third_party/abseil-cpp ${WEBRTCROOT}/third_party/jsoncpp/source/include ${WEBRTCROOT}/third_party/libyuv/include)
-add_definitions(-DHAVE_JPEG -DUSE_X11)
+add_definitions(-DUSE_X11)
 target_include_directories(${PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
 
 set (WEBRTCOBJS ${WEBRTCROOT}/out/${WEBRTCBUILD}/obj)
@@ -69,7 +69,7 @@ FILE(GLOB LIVEHELPERSOURCE live/groupsock/*.c* live/liveMedia/*.c* live/UsageEnv
 add_library (live555helper STATIC ${LIVEHELPERSOURCE})	
 target_include_directories(live555helper PUBLIC live/groupsock/include live/liveMedia/include live/UsageEnvironment/include live/BasicUsageEnvironment/include live555helper/inc)
 target_link_libraries (${PROJECT_NAME} live555helper) 
-add_definitions(-DHAVE_LIVE555)
+add_definitions(-DHAVE_LIVE555 -DHAVE_JPEG)
 
 # compiler specific
 if (MSVC)
@@ -93,6 +93,9 @@ else(MSVC)
 	add_definitions(-DBSD=1 -DSOCKLEN_T=socklen_t -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE=1)
 	# webrtc
 	add_definitions(-DWEBRTC_POSIX -std=c++11 -fno-rtti)
+	if(WEBRTCBUILD STREQUAL "Debug")
+		add_definitions(-D_GLIBCXX_DEBUG=1)
+	endif()
 	target_link_libraries (${PROJECT_NAME} dl X11 Xext Xdamage Xfixes Xcomposite)
 endif(MSVC)
 
