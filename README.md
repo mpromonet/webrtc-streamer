@@ -1,6 +1,6 @@
 [![TravisCI](https://travis-ci.org/mpromonet/webrtc-streamer.png)](https://travis-ci.org/mpromonet/webrtc-streamer)
 [![CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer.svg?style=shield)](https://circleci.com/gh/mpromonet/webrtc-streamer)
-[![Appveyor](https://ci.appveyor.com/api/projects/status/github/mpromonet/webrtc-streamer?branch=master&svg=true)](https://ci.appveyor.com/project/mpromonet/webrtc-streamer)
+[![Appveyor](https://ci.appveyor.com/api/projects/status/github/mpromonet/webrtc-streamer?branch=master&svg=true)](https://ci.appveyor.com/project/mpromonet/webrtc-streamer/build/artifacts)
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c209c81a15854964a08df5c300f56804)](https://www.codacy.com/app/michelpromonet_2643/webrtc-streamer?utm_source=github.com&utm_medium=referral&utm_content=mpromonet/webrtc-streamer&utm_campaign=badger)
 
@@ -32,6 +32,9 @@ Nowdays there is 3 builds on [CircleCI](https://circleci.com/gh/mpromonet/webrtc
  * for x86_64 on Ubuntu Xenial
  * for armv7 crosscompiling with gcc-linaro-arm-linux-gnueabihf-raspbian-x64 (this build is running on Raspberry Pi2 and NanoPi NEO)
  * for armv6+vfp crosscompiling with gcc-linaro-arm-linux-gnueabihf-raspbian-x64 (this build is running on Raspberry PiB and should run on a Raspberry Zero)
+ 
+and a build on [Appveyor](https://ci.appveyor.com/project/mpromonet/webrtc-streamer/build/artifacts) :
+* for Windows using Visual 2017 64bits
 
 The webrtc stream name could be :
  * an alias defined using -n argument then the corresponding -u argument will be used to create the capturer
@@ -45,8 +48,7 @@ Dependencies :
 It is based on :
  * [WebRTC Native Code Package](http://www.webrtc.org)
  * [civetweb HTTP server](https://github.com/civetweb/civetweb)
- * [h264bitstream](https://github.com/aizvorski/h264bitstream)
- * [live555](http://www.live555.com/liveMedia)
+ * [live555](http://www.live555.com/liveMedia) for RTSP cpaturer
 
 Build
 ===============
@@ -72,6 +74,12 @@ Build WebRTC Streamer
 where WEBRTCROOT and WEBRTCBUILD indicate how to point to WebRTC :
  - $WEBRTCROOT/src should contains source (default is $(pwd)/../webrtc) 
  - $WEBRTCROOT/src/out/$WEBRTCBUILD should contains libraries (default is Release)
+
+Build using cmake (experimental)
+-------
+
+       cmake .
+       make
 
 Usage
 ===============
@@ -105,9 +113,10 @@ Example
 
 [Live Demo](https://rtsp2webrtc.herokuapp.com/)
 
-You can access to the WebRTC stream coming from an RTSP url using [webrtcstreamer.html](https://github.com/mpromonet/webrtc-streamer-html/blob/master/webrtcstreamer.html) page with the RTSP url as argument, something like:
+You can access to the WebRTC stream using [webrtcstreamer.html](https://github.com/mpromonet/webrtc-streamer-html/blob/master/webrtcstreamer.html) for instance :
 
-   https://rtsp2webrtc.herokuapp.com/webrtcstreamer.html?rtsp://217.17.220.110/axis-media/media.amp
+ * https://rtsp2webrtc.herokuapp.com/webrtcstreamer.html?rtsp://217.17.220.110/axis-media/media.amp
+ * https://rtsp2webrtc.herokuapp.com/webrtcstreamer.html?Bunny
 
 Embed in a HTML page:
 ===============

@@ -39,10 +39,11 @@ script:
 # patch webrtc to not download chromium-webrtc-resources
 - sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
 # patch webrtc for std::vector::erase with iterator
-- if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then sed -i -e "s|const auto iter = FindSourceInList(audio_source, &audio_source_list_);|const auto iter = std::find_if(audio_source_list_.begin(), audio_source_list_.end(), [audio_source](const std::unique_ptr<AudioMixerImpl::SourceStatus> \&p) { return p->audio_source == audio_source; });|" src/modules/audio_mixer/audio_mixer_impl.cc; fi
-- if [ "$CROSS" == "arm-linux-gnueabihf-" ] && [ "$(grep -Po 'sysroot=\K[^ ]*' src/${GYP_GENERATOR_OUTPUT}/out/Release/obj/webrtc_common.ninja)" != "" ] ; then src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm; fi
+- if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm; fi
 # get WebRTC dependencies
 - travis_wait 30 gclient sync
+- if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then sed -i -e "s|const auto iter = FindSourceInList(audio_source, &audio_source_list_);|const auto iter = std::find_if(audio_source_list_.begin(), audio_source_list_.end(), [audio_source](const std::unique_ptr<AudioMixerImpl::SourceStatus> \&p) { return p->audio_source == audio_source; });|" src/modules/audio_mixer/audio_mixer_impl.cc; fi
+- if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then sed -e 's|"-mfpu=$arm_fpu"|"-mfpu=$arm_fpu","-marm"|' -i src/build/config/compiler/BUILD.gn; fi
 - popd
 # get, build and install live555 & alsa
 - make WEBRTCROOT=./webrtc live555 
@@ -60,14 +61,14 @@ script:
 before_deploy:
 - export RELEASE_PKG_FILE=$(ls *.tgz)
 - echo "RELEASE_PKG_FILE=${RELEASE_PKG_FILE}"   
-deploy:
-- provider: heroku
-  skip_cleanup: true
-  api_key:
-    secure: NmTNf38MkoWWQZrRkXyWqCdRRO4Xjv+Kl0TOZPw+qCXva4kc2T0uwSi2o4YNZBUA533NyZvO6IJMQOpx24UkjPhxVv591FBB+HdUevOxD4SEAE8fBibpHVX3sTU0XLp/mx+BpNFdxKrEHHzoyBZBFjesQVVMVczB4AOv/KZerGw=
-  on:
-    repo: mpromonet/webrtc-streamer
-    condition: $GYP_GENERATOR_OUTPUT = x86_64
+#deploy:
+#- provider: heroku
+#  skip_cleanup: true
+#  api_key:
+#    secure: NmTNf38MkoWWQZrRkXyWqCdRRO4Xjv+Kl0TOZPw+qCXva4kc2T0uwSi2o4YNZBUA533NyZvO6IJMQOpx24UkjPhxVv591FBB+HdUevOxD4SEAE8fBibpHVX3sTU0XLp/mx+BpNFdxKrEHHzoyBZBFjesQVVMVczB4AOv/KZerGw=
+#  on:
+#    repo: mpromonet/webrtc-streamer
+#    condition: $GYP_GENERATOR_OUTPUT = x86_64
 #- provider: releases
 #  skip_cleanup: true
 #  api_key:

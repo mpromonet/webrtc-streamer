@@ -1,6 +1,5 @@
-image: Visual Studio 2017
-
-clone_folder: c:\projects\webrtc-streamer
+image: 
+- Visual Studio 2017
 
 platform: x64
 
@@ -11,27 +10,28 @@ environment:
   generator: "Visual Studio 15 2017 Win64"
 
 install:
+  - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\..\depot_tools;%PATH%
+  - cmd: set DEPOT_TOOLS_WIN_TOOLCHAIN=0
   - git submodule update --init
-  - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git ..\depot_tools\
-  - set PATH=C:\projects\depot_tools;%PATH%
-  - set DEPOT_TOOLS_WIN_TOOLCHAIN=0
-  - mkdir ..\webrtc
-  - cd ..\webrtc
+  - cd ..
+  - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git 
+  - mkdir webrtc
+  - cd webrtc
   - fetch webrtc
   - cd src
   - gn gen out/Release --args="is_debug=false rtc_use_h264=true ffmpeg_branding=\"Chrome\" rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false use_sysroot=false is_clang=false treat_warnings_as_errors=false"
   - ninja -C out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory
 
 before_build:
-  - cd %APPVEYOR_BUILD_FOLDER%
-  - cmake . -G "%generator%"
+  - cmd: cd %APPVEYOR_BUILD_FOLDER%
+  - cmd: cmake . -G "%generator%"
 
 build:
-  project: c:\projects\webrtc-streamer\webrtc-streamer.sln
+  project: webrtc-streamer.sln
 
 after_build:
-  - move Release\webrtc-streamer.exe .
-  - 7z a webrtc-streamer_v%APPVEYOR_REPO_TAG_NAME%-%PLATFORM%.zip webrtc-streamer.exe html
+  - cmd: move Release\webrtc-streamer.exe .
+  - 7z a webrtc-streamer_%APPVEYOR_REPO_TAG_NAME%-%PLATFORM%.zip webrtc-streamer.exe html
 
 artifacts:
   - path: webrtc-streamer*.zip
@@ -40,7 +40,7 @@ deploy:
   provider: GitHub
   auth_token:
     secure: Ov3sAkiU1iRjAOc7GYaScSUujzhKiTCz/gZ4uQws2fTaNu8O5FUciAQk4uuGeiC7
-  artifact: webrtc-streamer_v$(APPVEYOR_REPO_TAG_NAME)-$(PLATFORM).zip
+  artifact: webrtc-streamer_$(APPVEYOR_REPO_TAG_NAME)-$(PLATFORM).zip
   draft: false
   prerelease: false
   on:
