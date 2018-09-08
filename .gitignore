@@ -2,9 +2,13 @@ src/*.o*
 *.a
 *.tgz
 webrtc-streamer
+webrtc-streamer.exe
 /node_modules/
 *.sln
 *.vcxproj*
+*.tlog
+*.log
+*.pdb
 *.lib
 *.dir
 *.cmake
@@ -12,3 +16,4 @@ CMakeCache.txt
 CMakeFiles
 *.manifest
 _CPack_Packages
+live

@@ -82,6 +82,9 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 		std::mutex                            m_queuemutex;
 		std::condition_variable               m_queuecond;
 		std::thread                           m_decoderthread;
+		int                                   m_width;
+		int                                   m_height;
+		int                                   m_fps;
 };
 
 

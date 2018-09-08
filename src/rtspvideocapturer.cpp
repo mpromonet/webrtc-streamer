@@ -56,9 +56,19 @@ int decodeRTPTransport(const std::map<std::string,std::string> & opts)
 }
 
 RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
-	: m_connection(m_env, this, uri.c_str(), decodeTimeoutOption(opts), decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=3)
+	: m_connection(m_env, this, uri.c_str(), decodeTimeoutOption(opts), decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=3),
+	m_width(0), m_height(0), m_fps(0)
 {
-	RTC_LOG(INFO) << "RTSPVideoCapturer" << uri ;
+	RTC_LOG(INFO) << "RTSPVideoCapturer " << uri ;
+	if (opts.find("width") != opts.end()) {
+		m_width = std::stoi(opts.at("width"));
+	}	
+	if (opts.find("height") != opts.end()) {
+		m_height = std::stoi(opts.at("height"));
+	}	
+	if (opts.find("fps") != opts.end()) {
+		m_fps = std::stoi(opts.at("fps"));
+	}	
 }
 
 RTSPVideoCapturer::~RTSPVideoCapturer()
@@ -266,8 +276,27 @@ int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 			std::this_thread::sleep_for(std::chrono::milliseconds(delayms));			
 		}
 	}
-	
-	this->OnFrame(decodedImage, decodedImage.height(), decodedImage.width());
+
+	if ( (m_height == 0) && (m_width == 0) ) {
+		this->OnFrame(decodedImage, decodedImage.height(), decodedImage.width());	
+	} else {
+		int height = m_height;
+		int width = m_width;
+		if (height == 0) {
+			height = (decodedImage.height() * width) / decodedImage.width();
+		}
+		else if (width == 0) {
+			width = (decodedImage.width() * height) / decodedImage.height();
+		}
+		int stride_y = width;
+		int stride_uv = (width + 1) / 2;
+		rtc::scoped_refptr<webrtc::I420Buffer> scaled_buffer = webrtc::I420Buffer::Create(width, height, stride_y, stride_uv, stride_uv);
+		scaled_buffer->ScaleFrom(*decodedImage.video_frame_buffer()->ToI420());
+		webrtc::VideoFrame frame = webrtc::VideoFrame(scaled_buffer, decodedImage.timestamp(),
+			decodedImage.render_time_ms(), webrtc::kVideoRotation_0);
+				
+		this->OnFrame(frame, frame.width(), frame.height());
+	}
 	
 	previmagets = decodedImage.timestamp();
 	prevts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
@@ -277,6 +306,7 @@ int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 
 cricket::CaptureState RTSPVideoCapturer::Start(const cricket::VideoFormat& format)
 {
+	RTC_LOG(INFO) << "RTSPVideoCapturer::start format" << format.ToString();
 	SetCaptureFormat(&format);
 	SetCaptureState(cricket::CS_RUNNING);
 	rtc::Thread::Start();
@@ -286,6 +316,7 @@ cricket::CaptureState RTSPVideoCapturer::Start(const cricket::VideoFormat& forma
 
 void RTSPVideoCapturer::Stop()
 {
+	RTC_LOG(INFO) << "RTSPVideoCapturer::stop";
 	m_env.stop();
 	rtc::Thread::Stop();
 	SetCaptureFormat(NULL);

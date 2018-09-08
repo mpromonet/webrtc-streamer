@@ -338,8 +338,8 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 		peer_connectionobs_map_.insert(std::pair<std::string, PeerConnectionObserver* >(peerid, peerConnectionObserver));
 
 		// ask to create offer
-		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
-		peerConnectionObserver->getPeerConnection()->CreateOffer(CreateSessionDescriptionObserver::Create(peerConnectionObserver->getPeerConnection()), options);
+		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions rtcoptions;
+		peerConnectionObserver->getPeerConnection()->CreateOffer(CreateSessionDescriptionObserver::Create(peerConnectionObserver->getPeerConnection()), rtcoptions);
 
 		// waiting for offer
 		int count=10;
@@ -464,10 +464,10 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 			}
 
 			// create answer
-			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
-			options.offer_to_receive_video = 0;
-			options.offer_to_receive_audio = 0;
-			peerConnection->CreateAnswer(CreateSessionDescriptionObserver::Create(peerConnection), options);
+			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions rtcoptions;
+			rtcoptions.offer_to_receive_video = 0;
+			rtcoptions.offer_to_receive_audio = 0;
+			peerConnection->CreateAnswer(CreateSessionDescriptionObserver::Create(peerConnection), rtcoptions);
 
 			RTC_LOG(INFO) << "nbStreams local:" << peerConnection->local_streams()->count() << " remote:" << peerConnection->remote_streams()->count()
 					<< " localDescription:" << peerConnection->local_description()
@@ -813,7 +813,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 	}
 		
 	// compute stream label removing space because SDP use label
-	std::string streamLabel = video + "|" + audio;
+	std::string streamLabel = video + "|" + audio + "|" + options;
 	streamLabel.erase(std::remove_if(streamLabel.begin(), streamLabel.end(), [](char c) { return c==' '||c==':'|| c=='.' || c=='/'; })
 							, streamLabel.end());
 
