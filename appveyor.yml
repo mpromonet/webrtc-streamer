@@ -33,7 +33,7 @@ after_build:
   - cpack
 
 artifacts:
-  - path: webrtc-streamer*.tgz
+  - path: webrtc-streamer*.tar.gz
 
 deploy:
   provider: GitHub
