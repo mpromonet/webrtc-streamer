@@ -152,17 +152,21 @@ class PeerConnectionManager {
 			, m_localChannel(NULL)
 			, m_remoteChannel(NULL)
 			, iceCandidateList_(Json::arrayValue) {
+				RTC_LOG(INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
 				m_pc = m_peerConnectionManager->peer_connection_factory_->CreatePeerConnection(config,
 							    NULL,
 							    NULL,
 							    this);
-
-				m_statsCallback = new rtc::RefCountedObject<PeerConnectionStatsCollectorCallback>();
 				
 				if (m_pc.get()) {
+					RTC_LOG(INFO) << __FUNCTION__ << "CreateDataChannel peerid:" << peerid;
+
 					rtc::scoped_refptr<webrtc::DataChannelInterface>   channel = m_pc->CreateDataChannel("ServerDataChannel", NULL);
 					m_localChannel = new DataChannelObserver(channel);
 				}
+
+				m_statsCallback = new rtc::RefCountedObject<PeerConnectionStatsCollectorCallback>();
+
 			};
 
 			virtual ~PeerConnectionObserver() {

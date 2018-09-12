@@ -705,6 +705,7 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 		config.servers.push_back(server);
 	}
 
+	RTC_LOG(INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
 	PeerConnectionObserver* obs = new PeerConnectionObserver(this, peerid, config);
 	if (!obs)
 	{
