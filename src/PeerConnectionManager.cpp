@@ -15,6 +15,7 @@
 #include "api/video_codecs/builtin_video_encoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
+#include "api/test/fakeconstraints.h"
 
 #include "PeerConnectionManager.h"
 #include "V4l2AlsaMap.h"
@@ -730,7 +731,18 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 	}
 	else
 	{
-		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = peer_connection_factory_->CreateVideoSource(std::move(capturer), NULL);
+		webrtc::FakeConstraints constraints;
+		std::list<std::string> keyList = { webrtc::MediaConstraintsInterface::kMinWidth, webrtc::MediaConstraintsInterface::kMaxWidth,
+										webrtc::MediaConstraintsInterface::kMinHeight, webrtc::MediaConstraintsInterface::kMaxHeight,
+										webrtc::MediaConstraintsInterface::kMinFrameRate, webrtc::MediaConstraintsInterface::kMaxFrameRate,
+										webrtc::MediaConstraintsInterface::kMinAspectRatio, webrtc::MediaConstraintsInterface::kMaxAspectRatio };
+										
+		for (auto key : keyList) {
+			if (opts.find(key) != opts.end()) {
+				constraints.AddMandatory(key, opts.at(key));
+			}
+		}
+		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = peer_connection_factory_->CreateVideoSource(std::move(capturer), &constraints);
 		
 		std::string label = videourl + "_video";
 		label.erase(std::remove_if(label.begin(), label.end(), [](char c) { return c==' '||c==':'|| c=='.' || c=='/'; })
