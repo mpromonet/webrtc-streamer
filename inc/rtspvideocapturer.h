@@ -26,18 +26,18 @@
 #include "api/video_codecs/video_decoder.h"
 
 
-class Frame
-{
-	public:
-		Frame(): m_timestamp_ms(0) {}
-		Frame(std::vector<uint8_t> && content, uint64_t timestamp_ms) : m_content(content), m_timestamp_ms(timestamp_ms) {}
-	
-		std::vector<uint8_t> m_content;
-		uint64_t m_timestamp_ms;
-};
-
 class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::Callback, public rtc::Thread, public webrtc::DecodedImageCallback
 {
+	class Frame
+	{
+		public:
+			Frame(): m_timestamp_ms(0) {}
+			Frame(std::vector<uint8_t> && content, uint64_t timestamp_ms) : m_content(content), m_timestamp_ms(timestamp_ms) {}
+		
+			std::vector<uint8_t> m_content;
+			uint64_t m_timestamp_ms;
+	};
+
 	public:
 		RTSPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts);
 		virtual ~RTSPVideoCapturer();

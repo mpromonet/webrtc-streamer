@@ -10,7 +10,7 @@
 #ifdef HAVE_LIVE555
 
 #ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 
 #endif
 
 #include <chrono>
@@ -252,7 +252,7 @@ void RTSPVideoCapturer::DecoderThread()
 			memcpy( buf, data, size );
 
 			webrtc::EncodedImage input_image(buf, size, allocsize);		
-			input_image._timeStamp = frame.m_timestamp_ms; // store time in ms that overflow the 32bits
+			input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
 			m_decoder->Decode(input_image, false, NULL,0);
 			delete [] buf;
 		}
