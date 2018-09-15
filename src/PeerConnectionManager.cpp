@@ -555,6 +555,7 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 		std::map<std::string, PeerConnectionObserver* >::iterator  it = peer_connectionobs_map_.find(peerid);
 		if (it != peer_connectionobs_map_.end())
 		{
+			pcObserver = it->second;
 			RTC_LOG(LS_ERROR) << "Close PeerConnection peerid:" << peerid;
 			peer_connectionobs_map_.erase(it);
 		}
