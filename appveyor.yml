@@ -26,7 +26,7 @@ install:
 
 before_build:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%
-  - cmd: cmake . -G "%generator%" -DWEBRTCROOT=%CONFIGURATION%
+  - cmd: cmake . -G "%generator%" -DWEBRTCBUILD=%CONFIGURATION%
 
 build:
   project: webrtc-streamer.sln
