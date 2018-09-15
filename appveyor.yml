@@ -5,6 +5,7 @@ platform: x64
 
 configuration:
   - Release
+  - Debug
 
 environment:
   generator: "Visual Studio 15 2017 Win64"
@@ -19,8 +20,9 @@ install:
   - cd webrtc
   - fetch webrtc
   - cd src
-  - gn gen out/Release --args="is_debug=false rtc_use_h264=true ffmpeg_branding=\"Chrome\" rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false use_sysroot=false is_clang=false treat_warnings_as_errors=false"
-  - ninja -C out/Release jsoncpp rtc_json webrtc
+  - if "%CONFIGURATION%" == "Release" set GNARGS="is_debug=false"
+  - gn gen out/%CONFIGURATION% --args="%GNARGS% rtc_use_h264=true ffmpeg_branding=\"Chrome\" rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false use_sysroot=false is_clang=false treat_warnings_as_errors=false"
+  - ninja -C out/%CONFIGURATION% jsoncpp rtc_json webrtc
 
 before_build:
   - cmd: cd %APPVEYOR_BUILD_FOLDER%
