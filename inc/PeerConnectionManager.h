@@ -268,14 +268,16 @@ class PeerConnectionManager {
 		rtc::scoped_refptr<webrtc::AudioTrackInterface> CreateAudioTrack(const std::string & audiourl, const std::map<std::string,std::string> & opts);
 		bool                                    streamStillUsed(const std::string & streamLabel);
 		const std::list<std::string>            getVideoCaptureDeviceList();
+		rtc::scoped_refptr<webrtc::PeerConnectionInterface> getPeerConnection(const std::string& peerid);
 
 	protected:
 		rtc::scoped_refptr<webrtc::AudioDeviceModule>                             audioDeviceModule_;
 		rtc::scoped_refptr<webrtc::AudioDecoderFactory>                           audioDecoderfactory_;
 		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>                peer_connection_factory_;
+	    std::mutex                                                                m_peerMapMutex;
 		std::map<std::string, PeerConnectionObserver* >                           peer_connectionobs_map_;
 		std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >  stream_map_;
-	        std::mutex                                                                m_streamMapMutex;
+	    std::mutex                                                                m_streamMapMutex;
 		std::list<std::string>                                                              iceServerList_;
 		const std::map<std::string,std::string>                                   m_urlVideoList;
 		const std::map<std::string,std::string>                                   m_urlAudioList;

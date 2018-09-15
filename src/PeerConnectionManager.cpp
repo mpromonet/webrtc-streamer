@@ -268,6 +268,20 @@ const Json::Value PeerConnectionManager::getIceServers(const std::string& client
 }
 
 /* ---------------------------------------------------------------------------
+**  get PeerConnection associated with peerid
+** -------------------------------------------------------------------------*/
+rtc::scoped_refptr<webrtc::PeerConnectionInterface> PeerConnectionManager::getPeerConnection(const std::string& peerid)
+{
+	std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
+	rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection;
+	std::map<std::string, PeerConnectionObserver* >::iterator  it = peer_connectionobs_map_.find(peerid);
+	if (it != peer_connectionobs_map_.end())
+	{
+		peerConnection = it->second->getPeerConnection();
+	}
+	return peerConnection;
+}
+/* ---------------------------------------------------------------------------
 **  add ICE candidate to a PeerConnection
 ** -------------------------------------------------------------------------*/
 const Json::Value PeerConnectionManager::addIceCandidate(const std::string& peerid, const Json::Value& jmessage)
@@ -291,10 +305,9 @@ const Json::Value PeerConnectionManager::addIceCandidate(const std::string& peer
 		}
 		else
 		{
-			std::map<std::string, PeerConnectionObserver* >::iterator  it = peer_connectionobs_map_.find(peerid);
-			if (it != peer_connectionobs_map_.end())
+			rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = this->getPeerConnection(peerid);
+			if (peerConnection)
 			{
-				rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it->second->getPeerConnection();
 				if (!peerConnection->AddIceCandidate(candidate.get()))
 				{
 					RTC_LOG(WARNING) << "Failed to apply the received candidate";
@@ -336,7 +349,10 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 		}
 
 		// register peerid
-		peer_connectionobs_map_.insert(std::pair<std::string, PeerConnectionObserver* >(peerid, peerConnectionObserver));
+		{
+			std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
+			peer_connectionobs_map_.insert(std::pair<std::string, PeerConnectionObserver* >(peerid, peerConnectionObserver));
+		}
 
 		// ask to create offer
 		webrtc::PeerConnectionInterface::RTCOfferAnswerOptions rtcoptions;
@@ -391,10 +407,9 @@ void PeerConnectionManager::setAnswer(const std::string &peerid, const Json::Val
 		{
 			RTC_LOG(LERROR) << "From peerid:" << peerid << " received session description :" << session_description->type();
 
-			std::map<std::string, PeerConnectionObserver* >::iterator  it = peer_connectionobs_map_.find(peerid);
-			if (it != peer_connectionobs_map_.end())
+			rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = this->getPeerConnection(peerid);
+			if (peerConnection)
 			{
-				rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it->second->getPeerConnection();
 				peerConnection->SetRemoteDescription(SetSessionDescriptionObserver::Create(peerConnection), session_description);
 			}
 		}
@@ -436,7 +451,10 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 			RTC_LOG(INFO) << "nbStreams local:" << peerConnection->local_streams()->count() << " remote:" << peerConnection->remote_streams()->count() << " localDescription:" << peerConnection->local_description();
 
 			// register peerid
-			peer_connectionobs_map_.insert(std::pair<std::string, PeerConnectionObserver* >(peerid, peerConnectionObserver));
+			{
+				std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
+				peer_connectionobs_map_.insert(std::pair<std::string, PeerConnectionObserver* >(peerid, peerConnectionObserver));
+			}
 
 			// set remote offer
 			webrtc::SessionDescriptionInterface* session_description(webrtc::CreateSessionDescription(type, sdp, NULL));
@@ -506,6 +524,7 @@ const Json::Value PeerConnectionManager::call(const std::string & peerid, const 
 bool PeerConnectionManager::streamStillUsed(const std::string & streamLabel)
 {
 	bool stillUsed = false;
+	std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
 	for (auto it: peer_connectionobs_map_)
 	{
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it.second->getPeerConnection();
@@ -530,13 +549,20 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 	bool result = false;
 	RTC_LOG(INFO) << __FUNCTION__ << " " << peerid;
 
-	std::map<std::string, PeerConnectionObserver* >::iterator  it = peer_connectionobs_map_.find(peerid);
-	if (it != peer_connectionobs_map_.end())
+	PeerConnectionObserver* pcObserver = NULL;
 	{
-		RTC_LOG(LS_ERROR) << "Close PeerConnection";
-		PeerConnectionObserver* pcObserver = it->second;
+		std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
+		std::map<std::string, PeerConnectionObserver* >::iterator  it = peer_connectionobs_map_.find(peerid);
+		if (it != peer_connectionobs_map_.end())
+		{
+			RTC_LOG(LS_ERROR) << "Close PeerConnection peerid:" << peerid;
+			peer_connectionobs_map_.erase(it);
+		}
+	}
+
+	if (pcObserver)
+	{
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = pcObserver->getPeerConnection();
-		peer_connectionobs_map_.erase(it);
 
 		rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
 		for (unsigned int i = 0; i<localstreams->count(); i++)
@@ -595,6 +621,7 @@ const Json::Value PeerConnectionManager::getIceCandidateList(const std::string &
 	RTC_LOG(INFO) << __FUNCTION__;
 	
 	Json::Value value;
+	std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
 	std::map<std::string, PeerConnectionObserver* >::iterator  it = peer_connectionobs_map_.find(peerid);
 	if (it != peer_connectionobs_map_.end())
 	{
@@ -617,6 +644,8 @@ const Json::Value PeerConnectionManager::getIceCandidateList(const std::string &
 const Json::Value PeerConnectionManager::getPeerConnectionList()
 {
 	Json::Value value(Json::arrayValue);
+
+	std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
 	for (auto it : peer_connectionobs_map_)
 	{
 		Json::Value content;
@@ -659,7 +688,7 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 		}
 		
 		// get Stats
-		content["stats"] = it.second->getStats();
+//		content["stats"] = it.second->getStats();
 
 		Json::Value pc;
 		pc[it.first] = content;
