@@ -32,7 +32,7 @@ build:
   project: webrtc-streamer.sln
 
 after_build:
-  - cpack
+  - cpack -C %CONFIGURATION%
 
 artifacts:
   - path: webrtc-streamer*.tar.gz
