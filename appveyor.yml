@@ -32,10 +32,10 @@ install:
 
 before_build:
   - ps: cd $env:APPVEYOR_BUILD_FOLDER
-  - ps: cmake . -G $env:generator -DWEBRTCBUILD=$env:CONFIGURATION
+  - ps: $ExecutionContext.InvokeCommand.InvokeScript("cmake . -G '$env:generator' -DWEBRTCBUILD=$env:CONFIGURATION")
 
 build_script:
-  - cmd: msbuild INSTALL.vcxproj /p:Configuration=%CONFIGURATION% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+  - cmd: msbuild INSTALL.vcxproj /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - sh: make
 
 after_build:
