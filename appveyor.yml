@@ -15,8 +15,8 @@ install:
   - cmd: set DEPOT_TOOLS_WIN_TOOLCHAIN=0
   - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\..\depot_tools;%PATH%
   - sh: export PATH=${APPVEYOR_BUILD_FOLDER}/../depot_tools:${PATH}
-  - cmd: set generator="Visual Studio 15 2017 Win64"
-  - sh: export generator="Unix Makefiles"
+  - cmd: set GENERATOR="Visual Studio 15 2017 Win64"
+  - sh: export GENERATOR="Unix Makefiles"
   - git submodule update --init
   - cd ..
   - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git 
@@ -24,15 +24,18 @@ install:
   - cd webrtc
   - fetch --no-history --nohooks webrtc 
   - cd src
+  - ps: echo CONFIGURATION=$env:CONFIGURATION
+  - ps: echo PLATFORM=$env:PLATFORM
+  - ps: echo GENERATOR=$env:GENERATOR
   - ps: (get-content DEPS) | foreach-object {$_ -replace "'src/resources'],", "'src/resources'],'condition':'rtc_include_tests==true',"} | set-content DEPS
   - gclient sync
   - ps: if ($env:CONFIGURATION = "Release") { $env:GNARGS="is_debug=false" + " " + $env:GNARGS_COMMON } else { $env:GNARGS="is_debug=true" + " " + $env:GNARGS_COMMON }
-  - ps: $ExecutionContext.InvokeCommand.InvokeScript("gn gen out/$env:CONFIGURATION --args=$env:GNARGS")
+  - ps: $ExecutionContext.InvokeCommand.InvokeScript("gn gen out/$env:CONFIGURATION --args='$env:GNARGS'")
   - ps: $ExecutionContext.InvokeCommand.InvokeScript("ninja -C out/$env:CONFIGURATION jsoncpp rtc_json webrtc")
 
 before_build:
   - ps: cd $env:APPVEYOR_BUILD_FOLDER
-  - ps: $ExecutionContext.InvokeCommand.InvokeScript("cmake . -G '$env:generator' -DWEBRTCBUILD=$env:CONFIGURATION")
+  - ps: $ExecutionContext.InvokeCommand.InvokeScript("cmake . -G '$env:GENERATOR' -DWEBRTCBUILD=$env:CONFIGURATION")
 
 build_script:
   - cmd: msbuild INSTALL.vcxproj /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
