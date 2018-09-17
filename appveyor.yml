@@ -9,7 +9,7 @@ configuration:
   - Debug
 
 environment:
-  GNARGS_COMMON: "rtc_use_h264=true ffmpeg_branding=\\\"Chrome\\\" rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false use_sysroot=false is_clang=false treat_warnings_as_errors=false"
+  GNARGS_COMMON: rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false use_sysroot=false is_clang=false treat_warnings_as_errors=false
 
 install:
   - cmd: set DEPOT_TOOLS_WIN_TOOLCHAIN=0
@@ -30,12 +30,13 @@ install:
   - ps: (get-content DEPS) | foreach-object {$_ -replace "'src/resources'],", "'src/resources'],'condition':'rtc_include_tests==true',"} | set-content DEPS
   - gclient sync
   - ps: if ($env:CONFIGURATION = "Release") { $env:GNARGS="is_debug=false" + " " + $env:GNARGS_COMMON } else { $env:GNARGS="is_debug=true" + " " + $env:GNARGS_COMMON }
-  - ps: $ExecutionContext.InvokeCommand.InvokeScript("gn gen out/$env:CONFIGURATION --args='$env:GNARGS'")
-  - ps: $ExecutionContext.InvokeCommand.InvokeScript("ninja -C out/$env:CONFIGURATION jsoncpp rtc_json webrtc")
+  - ps: echo GNARGS=$env:GNARGS
+  - ps: gn gen "out/$env:CONFIGURATION" --args="$env:GNARGS"
+  - ps: ninja -C "out/$env:CONFIGURATION" jsoncpp rtc_json webrtc")
 
 before_build:
   - ps: cd $env:APPVEYOR_BUILD_FOLDER
-  - ps: $ExecutionContext.InvokeCommand.InvokeScript("cmake . -G '$env:GENERATOR' -DWEBRTCBUILD=$env:CONFIGURATION")
+  - ps: cmake . -G "$env:GENERATOR" -DWEBRTCBUILD="$env:CONFIGURATION"
 
 build_script:
   - cmd: msbuild INSTALL.vcxproj /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
