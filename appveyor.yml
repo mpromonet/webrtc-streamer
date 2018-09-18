@@ -36,14 +36,14 @@ install:
 
 before_build:
   - ps: cd $env:APPVEYOR_BUILD_FOLDER
-  - ps: cmake . -G "$env:GENERATOR" -DWEBRTCBUILD="$env:CONFIGURATION"
+  - ps: cmake -G "$env:GENERATOR" -D WEBRTCBUILD="$env:CONFIGURATION" .
 
 build_script:
   - cmd: msbuild INSTALL.vcxproj /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
   - sh: make
 
 after_build:
-  - ps: cpack -C $env:CONFIGURATION
+  - ps: cpack -C "$env:CONFIGURATION"
 
 artifacts:
   - path: webrtc-streamer*.tar.gz
