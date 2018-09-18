@@ -36,7 +36,8 @@ install:
 
 before_build:
   - ps: cd $env:APPVEYOR_BUILD_FOLDER
-  - ps: cmake -G "$env:GENERATOR" -D WEBRTCBUILD="$env:CONFIGURATION" .
+  - cmd: cmake -G %GENERATOR% -D WEBRTCBUILD=%CONFIGURATION% .
+  - sh: cmake -G "${GENERATOR}" -D WEBRTCBUILD=${CONFIGURATION} .
 
 build_script:
   - cmd: msbuild INSTALL.vcxproj /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
