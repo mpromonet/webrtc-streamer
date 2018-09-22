@@ -8,6 +8,7 @@ set (WEBRTCBUILD "Release" CACHE STRING "WEBRTC build type")
 MESSAGE("WEBRTCBUILD = ${WEBRTCBUILD}")
 set (CMAKE_BUILD_TYPE ${WEBRTCBUILD}) 
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
+set (CMAKE_CXX_STANDARD 11)
 
 # build version identifier
 find_package(Git)
@@ -109,7 +110,7 @@ else(MSVC)
 	# live555
 	add_definitions(-DBSD=1 -DSOCKLEN_T=socklen_t -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE=1)
 	# webrtc
-	add_definitions(-DWEBRTC_POSIX -std=c++11 -fno-rtti)
+	add_definitions(-DWEBRTC_POSIX -fno-rtti)
 	if(WEBRTCBUILD STREQUAL "Debug")
 		add_definitions(-D_GLIBCXX_DEBUG=1)
 	endif()
