@@ -793,7 +793,7 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 	{
 #ifdef HAVE_LIVE555
 		audioDeviceModule_->Terminate();
-		audioSource = RTSPAudioSource::Create(audioDecoderfactory_, audiourl);
+		audioSource = RTSPAudioSource::Create(audioDecoderfactory_, audiourl, opts);
 #endif
 	}
 	else if (std::regex_match("audiocap://",m_publishFilter)) 

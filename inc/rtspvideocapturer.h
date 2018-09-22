@@ -45,15 +45,13 @@ class RTSPVideoCapturer : public cricket::VideoCapturer, public RTSPConnection::
 		// overide RTSPConnection::Callback
 		virtual bool onNewSession(const char* id, const char* media, const char* codec, const char* sdp);
 		virtual bool onData(const char* id, unsigned char* buffer, ssize_t size, struct timeval presentationTime);
-                virtual void    onConnectionTimeout(RTSPConnection& connection) {
-                        connection.start();
-                }
-                virtual void    onDataTimeout(RTSPConnection& connection)       {
-                        connection.start();
-                }
-                virtual void    onError(RTSPConnection& connection,const char* erro)       {
-                        connection.start(1);
-                }		
+		virtual void    onConnectionTimeout(RTSPConnection& connection) {
+				connection.start();
+		}
+		virtual void    onDataTimeout(RTSPConnection& connection) {
+				connection.start();
+		}
+		virtual void    onError(RTSPConnection& connection,const char* erro);
 
 		// overide webrtc::DecodedImageCallback
 		virtual int32_t Decoded(webrtc::VideoFrame& decodedImage);

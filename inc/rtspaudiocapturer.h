@@ -19,8 +19,8 @@
 
 class RTSPAudioSource : public webrtc::Notifier<webrtc::AudioSourceInterface>, public rtc::Thread, public RTSPConnection::Callback {
 	public:
-		static rtc::scoped_refptr<RTSPAudioSource> Create(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri) {
-			rtc::scoped_refptr<RTSPAudioSource> source(new rtc::RefCountedObject<RTSPAudioSource>(audioDecoderFactory, uri));
+		static rtc::scoped_refptr<RTSPAudioSource> Create(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri, const std::map<std::string,std::string> & opts) {
+			rtc::scoped_refptr<RTSPAudioSource> source(new rtc::RefCountedObject<RTSPAudioSource>(audioDecoderFactory, uri, opts));
 			return source;
 		}
 
@@ -44,11 +44,8 @@ class RTSPAudioSource : public webrtc::Notifier<webrtc::AudioSourceInterface>, p
 		virtual bool onData(const char* id, unsigned char* buffer, ssize_t size, struct timeval presentationTime);
 		
 	protected:
-		RTSPAudioSource(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri) 
-				: m_connection(m_env, this, uri.c_str(), 5, RTSPConnection::RTPUDPUNICAST, rtc::LogMessage::GetLogToDebug()<=3)
-				, m_factory(audioDecoderFactory), m_sink(NULL), m_freq(8000), m_channel(1) { rtc::Thread::Start(); }
-		virtual ~RTSPAudioSource() override { m_env.stop(); rtc::Thread::Stop(); }
-
+		RTSPAudioSource(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri, const std::map<std::string,std::string> & opts); 
+		virtual ~RTSPAudioSource();
 
 	private:
 		Environment                             m_env;

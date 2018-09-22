@@ -17,6 +17,19 @@
 #include "rtspaudiocapturer.h"
 
 
+RTSPAudioSource::RTSPAudioSource(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri, const std::map<std::string,std::string> & opts) 
+				: m_connection(m_env, this, uri.c_str(), RTSPConnection::decodeTimeoutOption(opts), RTSPConnection::decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=3)
+				, m_factory(audioDecoderFactory), m_sink(NULL), m_freq(8000), m_channel(1) {
+	SetName("RTSPAudioSource", NULL);
+	rtc::Thread::Start(); 
+}
+
+RTSPAudioSource::~RTSPAudioSource()  { 
+	m_env.stop(); 
+	rtc::Thread::Stop(); 
+}
+
+
 // overide RTSPConnection::Callback
 bool RTSPAudioSource::onNewSession(const char* id, const char* media, const char* codec, const char* sdp) {
 	
@@ -97,7 +110,7 @@ bool RTSPAudioSource::onData(const char* id, unsigned char* buffer, ssize_t size
 			RTC_LOG(LS_ERROR) << "RTSPAudioSource::onData error:No Audio decoder";
 		}
 	} else {
-		RTC_LOG(LS_ERROR) << "RTSPAudioSource::onData error:No Audio Sink";
+		RTC_LOG(LS_VERBOSE) << "RTSPAudioSource::onData error:No Audio Sink";
 	}
 	return success;
 }

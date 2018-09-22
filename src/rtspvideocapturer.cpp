@@ -32,35 +32,8 @@
 
 uint8_t marker[] = { 0, 0, 0, 1};
 
-int decodeTimeoutOption(const std::map<std::string,std::string> & opts) {
-	int timeout = 10;
-	if (opts.find("timeout") != opts.end()) 
-	{
-		std::string timeoutString = opts.at("timeout");
-		timeout = std::stoi(timeoutString);
-	}
-	return timeout;
-}
-
-int decodeRTPTransport(const std::map<std::string,std::string> & opts) 
-{
-	int rtptransport = RTSPConnection::RTPUDPUNICAST;
-	if (opts.find("rtptransport") != opts.end()) 
-	{
-		std::string rtpTransportString = opts.at("rtptransport");
-		if (rtpTransportString == "tcp") {
-			rtptransport = RTSPConnection::RTPOVERTCP;
-		} else if (rtpTransportString == "http") {
-			rtptransport = RTSPConnection::RTPOVERHTTP;
-		} else if (rtpTransportString == "multicast") {
-			rtptransport = RTSPConnection::RTPUDPMULTICAST;
-		}
-	}
-	return rtptransport;
-}
-
 RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
-	: m_connection(m_env, this, uri.c_str(), decodeTimeoutOption(opts), decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=3),
+	: m_connection(m_env, this, uri.c_str(), RTSPConnection::decodeTimeoutOption(opts), RTSPConnection::decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=3),
 	m_width(0), m_height(0), m_fps(0)
 {
 	RTC_LOG(INFO) << "RTSPVideoCapturer " << uri ;
@@ -230,6 +203,11 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 	return (res == 0);
 }
 
+void RTSPVideoCapturer::onError(RTSPConnection& connection, const char* error) {
+	RTC_LOG(LS_ERROR) << "RTSPVideoCapturer:onError url:" << m_connection.getUrl() <<  " error:" << error;
+	connection.start(1);
+}		
+
 void RTSPVideoCapturer::DecoderThread() 
 {
 	while (IsRunning()) {
@@ -313,6 +291,7 @@ cricket::CaptureState RTSPVideoCapturer::Start(const cricket::VideoFormat& forma
 	RTC_LOG(INFO) << "RTSPVideoCapturer::start format" << format.ToString();
 	SetCaptureFormat(&format);
 	SetCaptureState(cricket::CS_RUNNING);
+	SetName("RTSPVideoCapturer", NULL);
 	rtc::Thread::Start();
 	m_decoderthread = std::thread(&RTSPVideoCapturer::DecoderThread, this);
 	return cricket::CS_RUNNING;
