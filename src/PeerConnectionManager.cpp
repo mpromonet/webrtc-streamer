@@ -556,7 +556,7 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 		if (it != peer_connectionobs_map_.end())
 		{
 			pcObserver = it->second;
-			RTC_LOG(LS_ERROR) << "Close PeerConnection peerid:" << peerid;
+			RTC_LOG(LS_ERROR) << "Remove PeerConnection peerid:" << peerid;
 			peer_connectionobs_map_.erase(it);
 		}
 	}
@@ -573,7 +573,7 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 			bool stillUsed = this->streamStillUsed(streamLabel);
 			if (!stillUsed)
 			{
-				RTC_LOG(LS_ERROR) << "Close PeerConnection no more used " << streamLabel;
+				RTC_LOG(LS_ERROR) << "hangUp stream is no more used " << streamLabel;
 				
 				rtc::scoped_refptr<webrtc::MediaStreamInterface> mediaStream;
 				{
@@ -585,7 +585,7 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 						stream_map_.erase(it);
 					}
 				}
-				RTC_LOG(LS_ERROR) << "Close PeerConnection removed " << streamLabel;
+				RTC_LOG(LS_ERROR) << "hangUp stream unreferenced " << streamLabel;
 				
 				if (mediaStream.get() != NULL) {
 					// remove video tracks
@@ -600,6 +600,8 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 					}
 					mediaStream.release();
 				}
+
+				RTC_LOG(LS_ERROR) << "hangUp stream closed " << streamLabel;
 			}
 		}
 
@@ -610,6 +612,7 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 	if (result) {
 		answer = result;
 	}
+	RTC_LOG(INFO) << __FUNCTION__ << " " << peerid << " result:" << result;	
 	return answer;
 }
 
