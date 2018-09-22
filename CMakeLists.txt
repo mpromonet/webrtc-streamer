@@ -49,6 +49,8 @@ if (NOT EXISTS ${WEBRTCROOT}/out/${WEBRTCBUILD}/args.gn)
   set (WEBRTCARGS rtc_use_h264=true\nffmpeg_branding="Chrome"\nrtc_include_tests=false\nrtc_enable_protobuf=false\nuse_custom_libcxx=false\nrtc_include_pulse_audio=false\nrtc_build_examples=false\nuse_sysroot=false\nis_clang=false\ntreat_warnings_as_errors=false\n)
   if(WEBRTCBUILD STREQUAL "Debug")
   	set (WEBRTCARGS is_debug=true\n${WEBRTCARGS})
+  else()
+  	set (WEBRTCARGS is_debug=false\n${WEBRTCARGS})
   endif()
   FILE(WRITE ${WEBRTCROOT}/out/${WEBRTCBUILD}/args.gn ${WEBRTCARGS})
 
