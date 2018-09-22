@@ -46,13 +46,14 @@ target_include_directories(civetweb PUBLIC civetweb/include)
 
 # webrtc
 if (NOT EXISTS ${WEBRTCROOT}/out/${WEBRTCBUILD}/args.gn)
-  set (WEBRTCARGS rtc_use_h264=true ffmpeg_branding="Chrome" rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false use_sysroot=false is_clang=false treat_warnings_as_errors=false)
+  set (WEBRTCARGS rtc_use_h264=true\nffmpeg_branding="Chrome"\nrtc_include_tests=false\nrtc_enable_protobuf=false\nuse_custom_libcxx=false\nrtc_include_pulse_audio=false\nrtc_build_examples=false\nuse_sysroot=false\nis_clang=false\ntreat_warnings_as_errors=false\n)
   if(WEBRTCBUILD STREQUAL "Debug")
-  	set (WEBRTCARGS is_debug=true ${WEBRTCARGS})
+  	set (WEBRTCARGS is_debug=true\n${WEBRTCARGS})
   endif()
+  FILE(WRITE ${WEBRTCROOT}/out/${WEBRTCBUILD}/args.gn ${WEBRTCARGS})
 
-  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT} COMMAND gn gen "out/${WEBRTCBUILD}" --args="${WEBRTCARGS}")
-  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT} COMMAND ninja -C "out/${WEBRTCBUILD}" jsoncpp rtc_json webrtc)
+  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/out/${WEBRTCBUILD} COMMAND gn gen .)
+  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/out/${WEBRTCBUILD} COMMAND ninja jsoncpp rtc_json webrtc)
 endif() 
 
 set (WEBRTCINCLUDE ${WEBRTCROOT} ${WEBRTCROOT}/third_party/abseil-cpp ${WEBRTCROOT}/third_party/jsoncpp/source/include ${WEBRTCROOT}/third_party/libyuv/include)
