@@ -1,9 +1,10 @@
 src/*.o*
 *.a
-*.tgz
+*.tar.gz
 webrtc-streamer
 webrtc-streamer.exe
 /node_modules/
+package-lock.json
 *.sln
 *.vcxproj*
 *.tlog
@@ -12,8 +13,12 @@ webrtc-streamer.exe
 *.lib
 *.dir
 *.cmake
+*.ilk
 CMakeCache.txt
 CMakeFiles
 *.manifest
 _CPack_Packages
 live
+/.vs/
+/.vscode/
+install_manifest.txt

@@ -173,8 +173,12 @@ class PeerConnectionManager {
 				RTC_LOG(INFO) << __PRETTY_FUNCTION__;
 				delete m_localChannel;
 				delete m_remoteChannel;
-				if (m_pc.get()) {
-					m_pc->Close();
+				// warning: pc->close call OnIceConnectionChange
+				// release m_pc to indicate this 
+				rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc(m_pc);
+				m_pc.release();
+				if (pc.get()) {
+					pc->Close();
 				}
 			}
 
@@ -202,6 +206,7 @@ class PeerConnectionManager {
 			}
 			virtual void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
 				RTC_LOG(LERROR) << __PRETTY_FUNCTION__;
+				m_videosink.release();
 			}
 			virtual void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
 				RTC_LOG(LERROR) << __PRETTY_FUNCTION__;
@@ -220,9 +225,13 @@ class PeerConnectionManager {
 				RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " state:" << state  << " peerid:" << m_peerid;
 				if ( (state == webrtc::PeerConnectionInterface::kIceConnectionFailed)
 				   ||(state == webrtc::PeerConnectionInterface::kIceConnectionClosed) )
-				{
+				{ 
 					iceCandidateList_.clear();
-					m_peerConnectionManager->hangUp(m_peerid);
+					if (m_pc.get()) {
+						std::thread([this]() {
+							m_peerConnectionManager->hangUp(m_peerid);
+						}).detach();
+					}
 				}
 			}
 			
@@ -276,7 +285,7 @@ class PeerConnectionManager {
 		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>                peer_connection_factory_;
 	    std::mutex                                                                m_peerMapMutex;
 		std::map<std::string, PeerConnectionObserver* >                           peer_connectionobs_map_;
-		std::map<std::string, rtc::scoped_refptr<webrtc::MediaStreamInterface> >  stream_map_;
+		std::map<std::string, std::pair< rtc::scoped_refptr<webrtc::VideoTrackInterface>, rtc::scoped_refptr<webrtc::AudioTrackInterface>> >  stream_map_;
 	    std::mutex                                                                m_streamMapMutex;
 		std::list<std::string>                                                              iceServerList_;
 		const std::map<std::string,std::string>                                   m_urlVideoList;
