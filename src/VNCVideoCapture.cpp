@@ -12,9 +12,7 @@
 #include "libyuv/video_common.h"
 #include "libyuv/convert.h"
 #include <iostream>
-
-char *host = "127.0.0.1";
-int port = 5900;
+#include "url.h"
 
 static char * get_password (rfbClient *client) {
   VNCVideoCapturer* that = (VNCVideoCapturer *) rfbClientGetClientData(client, (void *) "this");
@@ -36,21 +34,14 @@ static void signal_handler(int sig) {
 char* VNCVideoCapturer::onGetPassword() {
   std::cout<< "Starting to get PASSWORD!!!" << std::endl;
   // remove vnc:// prefix from uri before passing along
-  std::string url = uri.substr(6, std::string::npos);
-  // if it contains password, remove it from the URL
-  int index = url.find('@');
-  if (index != std::string::npos) {
-  	std::string password = url.substr(1, index - 1);
-	std::cout<< "Parsed Password: " << password << std::endl;
-    return strdup((char* )password.c_str());
-  }
+  Url url(uri);
+	if (!url.password.length()) {
+		if (getenv("VNCPASS") != NULL) {
+			return strdup(getenv("VNCPASS"));
+		}
+	}
 
-  if (getenv("VNCPASS") != NULL) {
-    return strdup(getenv("VNCPASS"));
-  }
-
-  this->onError("No password defined");
-  return NULL;
+  return strdup((char* )url.password.c_str());
 }
 
 void VNCVideoCapturer::onClick(int x, int y, int buttonMask) {
@@ -128,16 +119,20 @@ bool VNCVideoCapturer::onStart() {
 	client->GetPassword = get_password;
 	client->FinishedFrameBufferUpdate = get_frame;
 
-	// remove vnc:// prefix from uri before passing along
-	std::string url = uri.substr(6, std::string::npos);
-	// if it contains password, remove it from the URL
-	auto index = url.find('@');
-	if (index != std::string::npos) {
-		url = url.substr(index + 1);
-	}
-	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Trying to initialize VNC with: " << url;
+	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Trying to initialize VNC with: " << uri;
+	Url url(uri);
 
-	const char *args[] = { "VNCVideoCapture", url.c_str() };
+	if (url.isEmpty) {
+		this->onError("Can not parse url: " + uri);
+		return false;
+	}
+
+	if (url.scheme != "vnc") {
+		onError("The scheme needs to be vnc:" + url.scheme)
+		return false;
+	}
+
+	const char *args[] = { "VNCVideoCapture", url.host.c_str() };
 	int len = 2;
 	rfbClientSetClientData(client, (void *) "this", (void *) this);
 	if (!rfbInitClient(client, &len, (char **) args)) {
@@ -148,7 +143,7 @@ bool VNCVideoCapturer::onStart() {
 	return true;
 }
 
-void VNCVideoCapturer::onError(char str[]) {
+void VNCVideoCapturer::onError(std::string str) {
 	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << str;
 	this->Stop();
 	// exit(EXIT_FAILURE);
@@ -167,10 +162,10 @@ void VNCVideoCapturer::Run()
 		return;
 	}
 	signal(SIGINT, signal_handler);
+	SendFramebufferUpdateRequest(client, 0, 0, client->width, client->height, FALSE);
 	while (IsRunning()) {
 		// RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "Capturing Frame ...";
-		SendFramebufferUpdateRequest(client, 0, 0, client->width, client->height, FALSE);
-		if (WaitForMessage(client, 50) < 0) {
+		if (WaitForMessage(client, 50000) < 0) {
 			RTC_LOG(LS_ERROR) << "VNCVideoCapturer Frame capture timed out";
 			this->Stop();
 			break;
