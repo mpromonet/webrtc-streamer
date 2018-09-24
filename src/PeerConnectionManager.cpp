@@ -567,7 +567,9 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 			rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams (peerConnection->local_streams());
 			for (unsigned int i = 0; i<localstreams->count(); i++)
 			{
-				std::string streamLabel = localstreams->at(i)->id();
+				auto stream = localstreams->at(i);
+
+				std::string streamLabel = stream->id();
 				bool stillUsed = this->streamStillUsed(streamLabel);
 				if (!stillUsed)
 				{
@@ -581,6 +583,8 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 
 					RTC_LOG(LS_ERROR) << "hangUp stream closed " << streamLabel;
 				}
+
+				peerConnection->RemoveStream(stream);
 			}
 
 			delete pcObserver;
