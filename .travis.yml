@@ -2,21 +2,22 @@ dist: xenial
 env:
   global:
     - GNARGSCOMMON='rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false is_clang=false treat_warnings_as_errors=false' 
-    - PREFIX=$HOME/prefix
   matrix:
     - |
-      GYP_GENERATOR_OUTPUT=x86_64     
+      GYP_GENERATOR_OUTPUT=x86_64-release     
       GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" use_sysroot=false'
+      PREFIX=$HOME/prefix
     - |
       GYP_GENERATOR_OUTPUT=x86_64-debug     
       GNARGS='is_debug=true rtc_use_h264=true ffmpeg_branding="Chrome" use_sysroot=false'
+      PREFIX=$HOME/prefix
     - |
       GYP_GENERATOR_OUTPUT=rpi-armv7  
       GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" target_cpu="arm" use_ozone=true' 
       CROSS=arm-linux-gnueabihf- 
     - |
       GYP_GENERATOR_OUTPUT=rpi-armv6  
-      GNARGS='is_debug=false is_clang=false target_cpu="arm" use_ozone=true treat_warnings_as_errors=false arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false' 
+      GNARGS='is_debug=false is_clang=false target_cpu="arm" use_ozone=true arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false' 
       CROSS=arm-linux-gnueabihf- 
       CFLAGS_EXTRA="-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard"
 addons:
@@ -56,8 +57,6 @@ script:
 - popd
 # build
 - make WEBRTCROOT=./webrtc all tgz
-# clean up
-- rm -rf webrtc rpi_tools depot_tools
 before_deploy:
 - export RELEASE_PKG_FILE=$(ls *.tgz)
 - echo "RELEASE_PKG_FILE=${RELEASE_PKG_FILE}"   
