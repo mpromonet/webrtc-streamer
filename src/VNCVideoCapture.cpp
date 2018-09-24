@@ -112,18 +112,20 @@ void VNCVideoCapturer::onFrameBufferUpdate() {
 	delete[] rgba_buffer;
 }
 
-VNCVideoCapturer::VNCVideoCapturer(const std::string u): client(rfbGetClient(8,3,4)), uri(u)
-{}
+VNCVideoCapturer::VNCVideoCapturer(const std::string u): client(rfbGetClient(8,3,4))
+{
+	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Trying to initialize VNC with: " << uri;
+	url.ParseUrl(u);
+}
 
 bool VNCVideoCapturer::onStart() {
 	client->GetPassword = get_password;
 	client->FinishedFrameBufferUpdate = get_frame;
 
-	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Trying to initialize VNC with: " << uri;
-	Url url(uri);
+	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Trying to start VNC with: " << url.toString();
 
 	if (url.isEmpty) {
-		this->onError("Can not parse url: " + uri);
+		this->onError("Can not parse url: " + url.toString());
 		return false;
 	}
 
@@ -133,7 +135,7 @@ bool VNCVideoCapturer::onStart() {
 	}
 
 	if (url.scheme != "vnc") {
-		onError("The scheme needs to be vnc:" + url.scheme)
+		onError("The scheme needs to be vnc:" + url.scheme);
 		return false;
 	}
 
@@ -144,7 +146,7 @@ bool VNCVideoCapturer::onStart() {
 		onError("Something went wrong in initializing RFB client ");
 		return false;
 	}
-	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Initialized VNC Successfully: " << url;
+	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Initialized VNC Successfully: " << url.toString();
 	return true;
 }
 

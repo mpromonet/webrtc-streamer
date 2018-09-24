@@ -1,15 +1,24 @@
+#include <iostream>
 #include <string>
 #include <regex>
 #pragma once
 
 class Url {
   public:
-		Url(std::string url) {
+    Url() {
+      this->isEmpty = true;
+    }
+    Url(std::string url) {
+      this->ParseUrl(url);
+    }
+
+		void ParseUrl(std::string url) {
       // Official regex specified in https://tools.ietf.org/html/rfc3986#page-50
       std::regex url_regex (
         R"(^(([^:\/?#]+):)?(//([^\/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?)",
         std::regex::extended
       );
+      std::cout << "Parsing URL: " << url << std::endl;
       std::smatch match_result;
       bool matched = std::regex_match(url, match_result, url_regex);
       if (!matched) {
@@ -31,9 +40,11 @@ class Url {
       this->path = match_result[5];
       this->query = match_result[7];
       this->isEmpty = false;
+      std::cout << "Finished parsing URL: " << url << std::endl;
     }
 
     bool isDomainOf(std::string domain) {
+      std::cout << "Starting to find domain name in: " << domain << std::endl;
       auto host = this->host;
       int index = host.find(':');
       if (index != std::string::npos) {
@@ -41,6 +52,7 @@ class Url {
         host = host.substr(index, host.length() - index);
       }
 
+      std::cout << "Finished finding domain name in: " << domain << std::endl;
       // ensure host ends with the domain
       return host.compare(host.size() - domain.size(), domain.size(), domain) == 0;
     }

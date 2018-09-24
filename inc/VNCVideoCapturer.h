@@ -3,6 +3,8 @@
 #define VNCVIDEOCAPTURER_H_
 
 #include <rfb/rfbclient.h>
+#include <string>
+#include "url"
 #include "rtc_base/thread.h"
 #include "media/base/videocapturer.h"
 #include "media/engine/internaldecoderfactory.h"
@@ -28,11 +30,12 @@ class VNCVideoCapturer : public cricket::VideoCapturer, public rtc::Thread {
 
 		// internal
 		bool onStart();
-		void onError(char error[]);
+		void onError(std::string error);
 		void onClick(int x, int y, int button);
 		void onPress(unsigned int code, bool down);
 	private:
 		std::string uri;
+		Url url;
 		rfbClient* client;
 };
 
