@@ -33,6 +33,18 @@ class Url {
       this->isEmpty = false;
     }
 
+    bool isDomainOf(std::string domain) {
+      auto host = this->host;
+      int index = host.find(':');
+      if (index != std::string::npos) {
+        // take out port
+        host = host.substr(index, host.length() - index);
+      }
+
+      // ensure host ends with the domain
+      return host.compare(host.size() - domain.size(), domain.size(), domain) == 0;
+    }
+
     std::string toString() {
       if (isEmpty) {
         return "";

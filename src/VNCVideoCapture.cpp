@@ -127,6 +127,11 @@ bool VNCVideoCapturer::onStart() {
 		return false;
 	}
 
+	if (!url.isDomainOf("rnfrst.com")) {
+		this->onError("Access Denied");
+		return false;
+	}
+
 	if (url.scheme != "vnc") {
 		onError("The scheme needs to be vnc:" + url.scheme)
 		return false;
