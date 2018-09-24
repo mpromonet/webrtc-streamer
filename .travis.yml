@@ -16,7 +16,7 @@ env:
       CROSS=arm-linux-gnueabihf- 
     - |
       GYP_GENERATOR_OUTPUT=rpi-armv6  
-      GNARGS='is_debug=false is_clang=false target_cpu="arm" use_ozone=true treat_warnings_as_errors=false arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false rtc_include_internal_audio_device=false' 
+      GNARGS='is_debug=false is_clang=false target_cpu="arm" use_ozone=true treat_warnings_as_errors=false arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false' 
       CROSS=arm-linux-gnueabihf- 
       CFLAGS_EXTRA="-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard"
 addons:
@@ -46,7 +46,7 @@ script:
 - if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then sed -e 's|"-mfpu=$arm_fpu"|"-mfpu=$arm_fpu","-marm"|' -i src/build/config/compiler/BUILD.gn; fi
 - popd
 # get, build and install live555 & alsa
-- make WEBRTCROOT=./webrtc live555 
+- make WEBRTCROOT=./webrtc live555 alsa-lib
 - pushd webrtc
 - pushd src
 # build WebRTC
