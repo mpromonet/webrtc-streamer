@@ -16,7 +16,7 @@
 
 #ifdef HAVE_LIVE555
 #include "rtspvideocapturer.h"
-#include "rtspaudiocapturer.h"
+#include "filecapturer.h"
 #endif
 
 #ifdef USE_X11
@@ -95,6 +95,12 @@ class CapturerFactory {
 		{
 #ifdef HAVE_LIVE555
 			capturer.reset(new RTSPVideoCapturer(videourl, opts));
+#endif
+		}
+		else if ((videourl.find("file://") == 0) && (std::regex_match("file://", publishFilter)))
+		{
+#ifdef HAVE_LIVE555
+			capturer.reset(new FileVideoCapturer(videourl, opts));
 #endif
 		}
 		else if ( (videourl.find("screen://") == 0) && (std::regex_match("screen://",publishFilter)) )

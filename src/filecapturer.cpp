@@ -68,7 +68,20 @@ bool FileVideoCapturer::onNewSession(const char* id,const char* media, const cha
 
 			struct timeval presentationTime;
 			timerclear(&presentationTime);
-			onData(id, result, resultSize, presentationTime);
+
+			int spssize = htons(*(int16_t*)(result + 6));
+			std::vector<uint8_t> sps;
+			sps.insert(sps.end(), h26xmarker, h26xmarker + sizeof(h26xmarker));
+			sps.insert(sps.end(), result + 8, result + 8 + spssize);
+			onData(id, sps.data(), sps.size(), presentationTime);
+
+			int ppssize = htons(*(int16_t*)(result + 9 + spssize));
+			std::vector<uint8_t> pps;
+			pps.insert(pps.end(), h26xmarker, h26xmarker + sizeof(h26xmarker));
+			pps.insert(pps.end(), result + 11 + spssize, result + 11 + spssize + ppssize);
+			onData(id, pps.data(), pps.size(), presentationTime);
+
+			delete result;
 
 			success = true;
 		}
@@ -78,7 +91,7 @@ bool FileVideoCapturer::onNewSession(const char* id,const char* media, const cha
 			success = true;
 		}
 	}
-	return success;
+	return true; // mkv doesnot read data before all sink are started.
 }
 
 bool FileVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t size, struct timeval presentationTime)
