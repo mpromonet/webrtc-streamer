@@ -69,7 +69,7 @@ class FileVideoCapturer : public cricket::VideoCapturer, public MKVClient::Callb
 		webrtc::InternalDecoderFactory        m_factory;
 		std::unique_ptr<webrtc::VideoDecoder> m_decoder;
 		std::vector<uint8_t>                  m_cfg;
-		std::string                           m_codec;
+		std::map<std::string,std::string>     m_codec;
 		std::queue<Frame>                     m_queue;
 		std::mutex                            m_queuemutex;
 		std::condition_variable               m_queuecond;

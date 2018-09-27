@@ -750,8 +750,13 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 {
 	RTC_LOG(INFO) << "videourl:" << videourl;
 
+	std::string video = videourl;
+	auto videoit = m_urlVideoList.find(video);
+	if (videoit != m_urlVideoList.end()) {
+		video = videoit->second;
+	}
 
-	std::unique_ptr<cricket::VideoCapturer> capturer = CapturerFactory::CreateVideoCapturer(videourl, opts, m_publishFilter);
+	std::unique_ptr<cricket::VideoCapturer> capturer = CapturerFactory::CreateVideoCapturer(video, opts, m_publishFilter);
 	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
 	if (!capturer)
 	{
@@ -786,12 +791,23 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 {
 	RTC_LOG(INFO) << "audiourl:" << audiourl;
 
+	std::string audio = audiourl;
+	auto audioit = m_urlAudioList.find(audio);
+	if (audioit != m_urlAudioList.end()) {
+		audio = audioit->second;
+	}
+
+	std::map<std::string,std::string>::iterator it = m_videoaudiomap.find(audio);
+	if (it != m_videoaudiomap.end()) {
+		audio = it->second;
+	}
+
 	rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource;
-	if ( (audiourl.find("rtsp://") == 0) && (std::regex_match("rtsp://",m_publishFilter)) )
+	if ( (audio.find("rtsp://") == 0) && (std::regex_match("rtsp://",m_publishFilter)) )
 	{
 #ifdef HAVE_LIVE555
 		audioDeviceModule_->Terminate();
-		audioSource = RTSPAudioSource::Create(audioDecoderfactory_, audiourl, opts);
+		audioSource = RTSPAudioSource::Create(audioDecoderfactory_, audio, opts);
 #endif
 	}
 	else if (std::regex_match("audiocap://",m_publishFilter)) 
@@ -805,7 +821,7 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 			char id[webrtc::kAdmMaxGuidSize] = {0};
 			if (audioDeviceModule_->RecordingDeviceName(i, name, id) != -1)
 			{
-				if (audiourl == name)
+				if (audio == name)
 				{
 					idx_audioDevice = i;
 					break;
@@ -840,21 +856,9 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & videourl, const std::string & audiourl, const std::string & options)
 {
 	bool ret = false;
-
-	// look in urlmap
-	std::string video = videourl;
-	auto videoit = m_urlVideoList.find(video);
-	if (videoit != m_urlVideoList.end()) {
-		video = videoit->second;
-	}
-	std::string audio = audiourl;
-	auto audioit = m_urlAudioList.find(audio);
-	if (audioit != m_urlAudioList.end()) {
-		audio = audioit->second;
-	}
 		
 	// compute stream label removing space because SDP use label
-	std::string streamLabel = video + "|" + audio + "|" + options;
+	std::string streamLabel = videourl + "|" + audiourl + "|" + options;
 	streamLabel.erase(std::remove_if(streamLabel.begin(), streamLabel.end(), [](char c) { return c==' '||c==':'|| c=='.' || c=='/'; })
 							, streamLabel.end());
 
@@ -867,15 +871,9 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 	if (!existingStream)
 	{
 		// compute audiourl if not set
+		std::string audio(audiourl);
 		if (audio.empty()) {
-			if (video.find("rtsp://") == 0) {
-				audio = video;
-			} else {
-				std::map<std::string,std::string>::iterator it = m_videoaudiomap.find(video);
-				if (it != m_videoaudiomap.end()) {
-					audio = it->second;
-				}
-			}
+			audio = videourl;
 		}
 
 		// convert options string into map
@@ -900,7 +898,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 		}					
 		
 		// need to create the stream
-		rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(this->CreateVideoTrack(video, opts));
+		rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(this->CreateVideoTrack(videourl, opts));
 		rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(this->CreateAudioTrack(audio, opts));
 		RTC_LOG(INFO) << "Adding Stream to map";
 		std::lock_guard<std::mutex> mlock(m_streamMapMutex);

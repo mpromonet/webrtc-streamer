@@ -61,7 +61,7 @@ bool FileVideoCapturer::onNewSession(const char* id,const char* media, const cha
 		
 		if (strcmp(codec, "H264") == 0)
 		{
-			m_codec = codec;
+			m_codec[id] = codec;
 
 			unsigned resultSize = 0;
 			unsigned char* result = base64Decode(sdp, strlen(sdp), resultSize);
@@ -87,7 +87,7 @@ bool FileVideoCapturer::onNewSession(const char* id,const char* media, const cha
 		}
 		else if (strcmp(codec, "JPEG") == 0) 
 		{
-			m_codec = codec;
+			m_codec[id] = codec;
 			success = true;
 		}
 	}
@@ -101,7 +101,8 @@ bool FileVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 	RTC_LOG(LS_VERBOSE) << "FileVideoCapturer:onData size:" << size << " ts:" << ts;
 	int res = 0;
 
-	if (m_codec == "H264") {
+	std::string codec = m_codec[id];
+	if (codec == "H264") {
 		webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[sizeof(h26xmarker)]);	
 		if (nalu_type == webrtc::H264::NaluType::kSps) {
 			RTC_LOG(LS_VERBOSE) << "FileVideoCapturer:onData SPS";
@@ -160,7 +161,7 @@ bool FileVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			RTC_LOG(LS_ERROR) << "FileVideoCapturer:onData no decoder";
 			res = -1;
 		}
-	} else if (m_codec == "JPEG") {
+	} else if (codec == "JPEG") {
 		int32_t width = 0;
 		int32_t height = 0;
 		if (libyuv::MJPGSize(buffer, size, &width, &height) == 0) {
