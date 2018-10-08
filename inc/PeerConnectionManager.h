@@ -19,7 +19,7 @@
 #include "modules/audio_device/include/audio_device.h"
 
 #include "rtc_base/logging.h"
-#include "rtc_base/json.h"
+#include "rtc_base/strings/json.h"
 
 
 class PeerConnectionManager {
