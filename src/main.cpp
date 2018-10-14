@@ -8,6 +8,7 @@
 ** -------------------------------------------------------------------------*/
 
 #include <iostream>
+#include <fstream>
 
 #include "rtc_base/ssladapter.h"
 #include "rtc_base/thread.h"
@@ -50,7 +51,7 @@ int main(int argc, char* argv[])
 	httpAddress.append(httpPort);
 
 	int c = 0;
-	while ((c = getopt (argc, argv, "hVv::" "c:H:w:T:A:" "t:S::s::" "a::q:" "n:u:U:")) != -1)
+	while ((c = getopt (argc, argv, "hVv::" "c:H:w:T:A:C:" "t:S::s::" "a::q:" "n:u:U:")) != -1)
 	{
 		switch (c)
 		{
@@ -67,6 +68,26 @@ int main(int argc, char* argv[])
 			case 'a': audioLayer = optarg ? (webrtc::AudioDeviceModule::AudioLayer)atoi(optarg) : webrtc::AudioDeviceModule::kDummyAudio; break;
 			case 'q': publishFilter = optarg ; break;
 				
+			case 'C': {
+				Json::Value root;  
+				std::ifstream stream(optarg);
+				stream >> root;
+				if (root.isMember("urls")) {
+					Json::Value urls = root["urls"];
+					for( auto it = urls.begin() ; it != urls.end() ; it++ ) {
+						std::string name = it.key().asString();
+						Json::Value value = *it;
+						if (value.isMember("video")) {
+							urlVideoList[name]=value["video"].asString();
+						} 
+						if (value.isMember("audio")) {
+							urlAudioList[name]=value["audio"].asString();
+						} 
+					}
+				}
+				break;
+			}
+
 			case 'n': streamName = optarg; break;
 			case 'u': {
 				if (!streamName.empty()) {
