@@ -195,8 +195,8 @@ A short sample to publish WebRTC streams to a Jitsi Video Room could be :
 	<script src="libs/request.min.js" ></script>
 	<script src="xmppvideoroom.js" ></script>
 	<script>        
-		var xmpp = new XMPPVideoRoom("meet.jit.si", null);
-		xmpp.join("testroom", "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov","Bunny");	    
+		var xmpp = new XMPPVideoRoom("meet.jit.si", null); // Args: 1: Jitsi Server 2: IP of the system running webrtc-streamer with port e.g. "https://0.0.0.0:8000". "null" populates the system IP from where the sample is run.
+		xmpp.join("testroom", {video:"rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov",audio:"rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov","Bunny");	    
 	</script>
 	</head>
 	</html>
