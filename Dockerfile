@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf au
 	&& gclient sync \
 	&& cd /webrtc-streamer \
 	&& cmake . && make \
-	&& wget https://www.sample-videos.com/video/mkv/480/big_buck_bunny_480p_1mb.mkv \
+	&& wget --no-check-certificate https://45.249.110.23/video/mkv/480/big_buck_bunny_480p_1mb.mkv \
 	&& rm -rf /webrtc && rm -f *.a && rm -f src/*.o \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/
 

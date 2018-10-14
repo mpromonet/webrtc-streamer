@@ -8,10 +8,6 @@ env:
       GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" use_sysroot=false'
       PREFIX=$HOME/prefix
     - |
-      GYP_GENERATOR_OUTPUT=x86_64-debug     
-      GNARGS='is_debug=true rtc_use_h264=true ffmpeg_branding="Chrome" use_sysroot=false'
-      PREFIX=$HOME/prefix
-    - |
       GYP_GENERATOR_OUTPUT=rpi-armv7  
       GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" target_cpu="arm" use_ozone=true' 
       CROSS=arm-linux-gnueabihf- 
