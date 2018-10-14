@@ -14,6 +14,8 @@ install:
   - sh: export PATH=${APPVEYOR_BUILD_FOLDER}/../depot_tools:${PATH}
   - cmd: set GENERATOR="Visual Studio 15 2017 Win64"
   - sh: export GENERATOR="Unix Makefiles"
+  - cmd: set
+  - sh: env
   - git submodule update --init
   - cd ..
   - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git 

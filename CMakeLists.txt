@@ -58,21 +58,34 @@ if (NOT EXISTS ${WEBRTCROOT}/out/${WEBRTCBUILD}/args.gn)
   endif(WIN32)
 
   EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/out/${WEBRTCBUILD} COMMAND ${SHELLCOMMAND} gn gen .)
-  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/out/${WEBRTCBUILD} COMMAND ninja jsoncpp rtc_json webrtc)
+  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/out/${WEBRTCBUILD} COMMAND ninja webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory create_pc_factory peerconnection)
 endif() 
 
 set (WEBRTCINCLUDE ${WEBRTCROOT} ${WEBRTCROOT}/third_party/abseil-cpp ${WEBRTCROOT}/third_party/jsoncpp/source/include ${WEBRTCROOT}/third_party/libyuv/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
 
 set (WEBRTCOBJS ${WEBRTCROOT}/out/${WEBRTCBUILD}/obj)
-set (OBJS ${WEBRTCOBJS}/third_party/jsoncpp/jsoncpp/json_value${CMAKE_C_OUTPUT_EXTENSION}
-			${WEBRTCOBJS}/third_party/jsoncpp/jsoncpp/json_reader${CMAKE_C_OUTPUT_EXTENSION}
-            ${WEBRTCOBJS}/third_party/jsoncpp/jsoncpp/json_writer${CMAKE_C_OUTPUT_EXTENSION}
-			${WEBRTCOBJS}/rtc_base/rtc_json/json${CMAKE_C_OUTPUT_EXTENSION})
-add_library (webrtcextra STATIC ${OBJS})	
+
+# TODO: find a way to do the same for windows & linux
+if (MSVC)
+	FILE(GLOB_RECURSE WEBRTBBRCOBJS ${WEBRTCOBJS}/modules/congestion_controller/bbr/*${CMAKE_C_OUTPUT_EXTENSION})
+	FILE(GLOB_RECURSE WEBRTJSONCPPCOBJS ${WEBRTCOBJS}/third_party/jsoncpp/jsoncpp/*${CMAKE_C_OUTPUT_EXTENSION})
+	SET (WEBRTCEXTRAOBJS ${WEBRTJSONCPPCOBJS} ${WEBRTBBRCOBJS} ${WEBRTCOBJS}/rtc_base/rtc_json/json${CMAKE_C_OUTPUT_EXTENSION})	
+
+	find_library(WEBRTC_LIBRARY NAMES webrtc PATHS ${WEBRTCOBJS})
+	target_link_libraries (${PROJECT_NAME} ${WEBRTC_LIBRARY}) 
+	find_library(WEBRTC_VIDEO_DECODER_LIBRARY NAMES builtin_video_decoder_factory PATHS ${WEBRTCOBJS}/api/video_codecs/)
+	find_library(WEBRTC_VIDEO_ENCODER_LIBRARY NAMES builtin_video_encoder_factory PATHS ${WEBRTCOBJS}/api/video_codecs/)
+	find_library(WEBRTC_PC_LIBRARY NAMES create_pc_factory PATHS ${WEBRTCOBJS}/pc)
+	find_library(WEBRTC_PEERCONNECTION_LIBRARY NAMES peerconnection PATHS ${WEBRTCOBJS}/pc)
+	target_link_libraries (${PROJECT_NAME} ${WEBRTC_VIDEO_DECODER_LIBRARY} ${WEBRTC_VIDEO_ENCODER_LIBRARY} ${WEBRTC_PC_LIBRARY} ${WEBRTC_PEERCONNECTION_LIBRARY}) 
+else()
+	FILE(GLOB_RECURSE WEBRTCEXTRAOBJS ${WEBRTCOBJS}/*${CMAKE_C_OUTPUT_EXTENSION})
+endif()
+add_library (webrtcextra STATIC ${WEBRTCEXTRAOBJS})
 set_target_properties(webrtcextra PROPERTIES LINKER_LANGUAGE CXX)		
-find_library(WEBRTC_LIBRARY NAMES webrtc PATHS ${WEBRTCOBJS})
-target_link_libraries (${PROJECT_NAME} ${WEBRTC_LIBRARY} webrtcextra) 
+target_link_libraries (${PROJECT_NAME} webrtcextra) 
+
 
 # live555helper & live555
 if (NOT EXISTS live)
