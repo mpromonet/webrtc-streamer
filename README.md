@@ -16,9 +16,9 @@ WebRTC-streamer
 
 This is a try to stream video sources through WebRTC using simple mechanism.  
 
-It embeds a HTTP server that implements API and serve a simple HTML page that use them through AJAX.   
+It embeds a HTTP server that implements API and serves a simple HTML page that use them through AJAX.   
 
-The WebRTC signaling is implemented throught HTTP requests:
+The WebRTC signaling is implemented through HTTP requests:
 
  - /api/call   : send offer and get answer
  - /api/hangup : close a call
@@ -28,7 +28,7 @@ The WebRTC signaling is implemented throught HTTP requests:
 
 The list of HTTP API is available using /api/help.
 
-Nowdays there is 3 builds on [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer) :
+Nowadays there are 3 builds on [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer) :
  * for x86_64 on Ubuntu Xenial
  * for armv7 crosscompiling with gcc-linaro-arm-linux-gnueabihf-raspbian-x64 (this build is running on Raspberry Pi2 and NanoPi NEO)
  * for armv6+vfp crosscompiling with gcc-linaro-arm-linux-gnueabihf-raspbian-x64 (this build is running on Raspberry PiB and should run on a Raspberry Zero)
@@ -52,6 +52,12 @@ It is based on :
 
 Build
 ===============
+Install the Chromium depot tools (for WebRTC).
+-------
+	pushd ..
+	git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+	export PATH=$PATH:`realpath depot_tools`
+	popd
 
 Build WebRTC with H264 support
 -------
@@ -99,7 +105,7 @@ Usage
 		-n name -u url     : register a name for an url
          	[url]              : url to register in the source list
 
-Arguments of '-H' is forwarded to option [listening_ports](https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md#listening_ports-8080) of civetweb, then it is possible to use the civetweb syntax like '-H8000,9000' or '-H8080r,8443s'.
+Arguments of '-H' are forwarded to option [listening_ports](https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md#listening_ports-8080) of civetweb, then it is possible to use the civetweb syntax like '-H8000,9000' or '-H8080r,8443s'.
 
 Example
 -----
