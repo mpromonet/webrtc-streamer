@@ -60,7 +60,7 @@ jobs:
             - distrib 
             
   # -------------------------------------
-  # build x86_64
+  # build x86_64 && deploy to heroku
   # -------------------------------------
   build_heroku:
     <<: *defaults
@@ -69,7 +69,7 @@ jobs:
       GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false is_clang=false treat_warnings_as_errors=false' 
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
-      GYP_GENERATOR_OUTPUT: "x86_64"
+      GYP_GENERATOR_OUTPUT: "heroku"
       GNARGS: 'is_debug=false use_ozone=true rtc_use_h264=true ffmpeg_branding="Chrome"'      
       NINJA_TARGET: webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory create_pc_factory peerconnection
 
@@ -83,12 +83,25 @@ jobs:
       - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}" 
       - run: make live555 alsa-lib
       - run: cd ${WEBRTCROOT}/src && ( ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release ${NINJA_TARGET}  || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release ${NINJA_TARGET} || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release ${NINJA_TARGET} )
-      - run: make all tgz 
+      - run: make all zip 
+      - run: mkdir /distrib && cp *.zip /distrib
 
-      # deploy on heroku
+      - persist_to_workspace:
+          root: /
+          paths:
+            - distrib
+
+  deploy_heroku:
+    <<: *defaults
+
+    steps:
+      - attach_workspace:
+          at: /
+
       - run:
           name: Setup Heroku
           command: |  
+            curl -L https://cli-assets.heroku.com/heroku-linux-x64.tar.gz | tar -xz 
             ssh-keyscan -H heroku.com >> ~/.ssh/known_hosts
             cat > ~/.netrc << EOF
             machine api.heroku.com
@@ -104,7 +117,31 @@ jobs:
             - "9d:ef:66:ee:e1:95:2b:e6:98:05:01:ac:48:5c:53:be"
       - deploy:
           name: "Deploy to Heroku"
-          command: git add -f webrtc-streamer && git -c user.name='ci' -c user.email='ci@email.org' commit -m 'force add for heroku deployement' && git push --force git@heroku.com:rtsp2webrtc.git HEAD:refs/heads/master
+          command: |
+            heroku/bin/heroku git:clone -a rtsp2webrtc
+            cd rtsp2webrtc
+            unzip -o /distrib/webrtc-streamer*heroku.zip
+            git add -f webrtc-streamer && git -c user.name='ci' -c user.email='ci@email.org' commit -a -m 'force add for heroku deployement' && git push --force git@heroku.com:rtsp2webrtc.git HEAD:refs/heads/master
+
+  deploy_bluemix:
+    <<: *defaults
+
+    steps:
+      - attach_workspace:
+          at: /
+
+      - run:
+         name: Setup CF CLI
+         command: |
+           curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx 
+           ./cf api https://api.ng.bluemix.net
+           ./cf auth $BLUEMIX_USER $BLUEMIX_PASSWORD
+           ./cf target -o $BLUEMIX_USER -s dev
+
+      - deploy:
+          name: "Deploy to bluemix"
+          command: ./cf push webrtc-streamer -p /distrib/webrtc-streamer*heroku.zip -c './webrtc-streamer -c config.json -a' -b binary_buildpack -m 256m 
+
 
   # -------------------------------------
   # build for RPI2
@@ -249,6 +286,18 @@ workflows:
           filters:
             tags:
               only: /.*/            
+      - deploy_heroku:
+          requires:
+            - build_heroku
+          filters:
+            tags:
+              only: /.*/
+      - deploy_bluemix:
+          requires:
+            - build_heroku
+          filters:
+            tags:
+              only: /.*/
       - github_release:
           requires:
             - store_artifact

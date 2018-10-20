@@ -109,7 +109,11 @@ install: $(TARGET) html/index.html
 	find html -type f -exec install -m 0422 {} $(PREFIX)/etc/$(TARGET)/ \;
 
 tgz: $(TARGET) html/index.html
-	tar cvzf $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).tgz $(TARGET) html
+	tar cvzf $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).tgz $(TARGET) html config.json
+
+zip: $(TARGET) html/index.html
+	zip $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).zip $(TARGET) html config.json
+
 
 live555:
 	wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -
