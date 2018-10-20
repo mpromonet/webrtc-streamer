@@ -98,6 +98,7 @@ jobs:
       - attach_workspace:
           at: /
 
+      - checkout
       - run:
           name: Setup Heroku
           command: |  
@@ -134,7 +135,7 @@ jobs:
          name: Setup CF CLI
          command: |
            curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx 
-           ./cf api https://api.ng.bluemix.net
+           ./cf api https://api.eu-gb.bluemix.net
            ./cf auth $BLUEMIX_USER $BLUEMIX_PASSWORD
            ./cf target -o $BLUEMIX_USER -s dev
 

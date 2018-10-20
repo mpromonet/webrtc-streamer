@@ -16,7 +16,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf au
 	&& gclient sync \
 	&& cd /webrtc-streamer \
 	&& cmake . && make \
-	&& wget --no-check-certificate https://45.249.110.23/video/mkv/480/big_buck_bunny_480p_1mb.mkv \
 	&& rm -rf /webrtc && rm -f *.a && rm -f src/*.o \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/
 
@@ -25,4 +24,4 @@ EXPOSE 8000
 
 # Run when the container launches
 ENTRYPOINT [ "./webrtc-streamer" ]
-CMD [ "-a", "-C", "config.json", "screen://", "file://big_buck_bunny_480p_1mb.mkv"  ]
+CMD [ "-a", "-C", "config.json", "screen://" ]
