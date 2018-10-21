@@ -72,7 +72,6 @@ CFLAGS += -DHAVE_LIVE555
 CFLAGS += -I live555helper/inc
 CFLAGS += -I $(SYSROOT)$(PREFIX)/include/liveMedia  -I $(SYSROOT)$(PREFIX)/include/groupsock -I $(SYSROOT)$(PREFIX)/include/UsageEnvironment -I $(SYSROOT)$(PREFIX)/include/BasicUsageEnvironment/
 
-LDFLAGS += live555helper/live555helper.a
 LDFLAGS += -L $(SYSROOT)$(PREFIX)/lib -l:libliveMedia.a -l:libgroupsock.a -l:libUsageEnvironment.a -l:libBasicUsageEnvironment.a 
 else	
 $(info LIVE555 not found in $(SYSROOT)$(PREFIX)/include)
@@ -112,7 +111,7 @@ tgz: $(TARGET) html/index.html
 	tar cvzf $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).tgz $(TARGET) html config.json
 
 zip: $(TARGET) html/index.html
-	zip $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).zip $(TARGET) html/* config.json
+	zip -r $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).zip $(TARGET) html config.json
 
 
 live555:
