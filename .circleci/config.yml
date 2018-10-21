@@ -102,7 +102,6 @@ jobs:
       - run:
           name: Setup Heroku
           command: |  
-            curl -L https://cli-assets.heroku.com/heroku-linux-x64.tar.gz | tar -xz 
             ssh-keyscan -H heroku.com >> ~/.ssh/known_hosts
             cat > ~/.netrc << EOF
             machine api.heroku.com
@@ -119,12 +118,12 @@ jobs:
       - deploy:
           name: "Deploy to Heroku"
           command: |
-            heroku/bin/heroku git:clone -a rtsp2webrtc
+            git clone  git@heroku.com:rtsp2webrtc.git
             cd rtsp2webrtc
             unzip -o /distrib/webrtc-streamer*heroku.zip
             git add -f webrtc-streamer && git -c user.name='ci' -c user.email='ci@email.org' commit -a -m 'force add for heroku deployement' && git push --force git@heroku.com:rtsp2webrtc.git HEAD:refs/heads/master
 
-  deploy_bluemix:
+  deploy_cf:
     <<: *defaults
 
     steps:
@@ -135,13 +134,13 @@ jobs:
          name: Setup CF CLI
          command: |
            curl -L "https://packages.cloudfoundry.org/stable?release=linux64-binary&source=github" | tar -zx 
-           ./cf api https://api.eu-gb.bluemix.net
-           ./cf auth $BLUEMIX_USER $BLUEMIX_PASSWORD
-           ./cf target -o $BLUEMIX_USER -s dev
+           ./cf api $CF_URL
+           ./cf auth $CF_USER $CF_PASSWORD
+           ./cf target -o $CF_ORG -s $CF_SPACE
 
       - deploy:
-          name: "Deploy to bluemix"
-          command: ./cf push webrtc-streamer -p /distrib/webrtc-streamer*heroku.zip -c './webrtc-streamer -c config.json -a' -b binary_buildpack -m 256m 
+          name: "Deploy to cloudfoundry"
+          command: ./cf push webrtc-streamer -p /distrib/webrtc-streamer*heroku.zip -c './webrtc-streamer -c config.json -a' -b binary_buildpack -m 256m -s cflinuxfs3
 
 
   # -------------------------------------
@@ -293,7 +292,7 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - deploy_bluemix:
+      - deploy_cf:
           requires:
             - build_heroku
           filters:

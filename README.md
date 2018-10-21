@@ -125,7 +125,7 @@ An example displaying grid of WebRTC Streams is available using option "layout=<
 [![Screenshot](images/layout2x4.png)](https://rtsp2webrtc.herokuapp.com/?layout=2x4)
 
 Embed in a HTML page:
-s===============
+===============
 Instead of using the internal HTTP server, it is easy to display a WebRTC stream in a HTML page served by another HTTP server. The URL of the webrtc-streamer to use should be given creating the [WebRtcStreamer](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer-html/blob/master/jsdoc/WebRtcStreamer.html) instance :
 
 	var webRtcServer      = new WebRtcStreamer(<video tag>, <webrtc-streamer url>);

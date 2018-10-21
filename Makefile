@@ -112,7 +112,7 @@ tgz: $(TARGET) html/index.html
 	tar cvzf $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).tgz $(TARGET) html config.json
 
 zip: $(TARGET) html/index.html
-	zip $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).zip $(TARGET) html config.json
+	zip $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).zip $(TARGET) html/* config.json
 
 
 live555:
