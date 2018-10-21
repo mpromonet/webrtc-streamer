@@ -140,7 +140,7 @@ jobs:
 
       - deploy:
           name: "Deploy to cloudfoundry"
-          command: ./cf push webrtc-streamer -p /distrib/webrtc-streamer*heroku.zip -c './webrtc-streamer -c config.json -a' -b binary_buildpack -m 256m -s cflinuxfs3
+          command: ./cf push webrtc-streamer -p /distrib/webrtc-streamer*heroku.zip -c './webrtc-streamer -C config.json -a' -b binary_buildpack -m 256m -k 256m -s cflinuxfs3
 
 
   # -------------------------------------
