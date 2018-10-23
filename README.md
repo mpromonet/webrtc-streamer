@@ -65,7 +65,7 @@ Download WebRTC
 -------
 	mkdir ../webrtc
 	pushd ../webrtc
-	fetch webrtc --no-history
+	fetch --no-history webrtc 
 	popd
 	
 
