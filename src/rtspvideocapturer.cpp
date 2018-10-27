@@ -245,19 +245,8 @@ int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 				<< " decode ts:" << decodedImage.timestamp() 
 				<< " source ts:" << ts;
 
-	// avoid to block the encoder that drop frames when sent too quickly
-	static int64_t previmagets = 0;	
-	static int64_t prevts = 0;
-	if (prevts != 0) {
-		int64_t periodSource = decodedImage.timestamp() - previmagets;
-		int64_t periodDecode = ts-prevts;
-			
-		RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer::Decoded interframe decode:" << periodDecode << " source:" << periodSource;
-		int64_t delayms = periodSource-periodDecode;
-		if ( (delayms > 0) && (delayms < 1000) ) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(delayms));			
-		}
-	}
+	// restore the timestamp that had overflow in the convertion EncodedImage.SetTimeStamp(presentationTime)
+	decodedImage.set_timestamp_us(decodedImage.timestamp()*1000);
 
 	if ( (m_height == 0) && (m_width == 0) ) {
 		this->OnFrame(decodedImage, decodedImage.height(), decodedImage.width());	
@@ -279,10 +268,7 @@ int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 				
 		this->OnFrame(frame, frame.width(), frame.height());
 	}
-	
-	previmagets = decodedImage.timestamp();
-	prevts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
-	
+		
 	return true;
 }
 
