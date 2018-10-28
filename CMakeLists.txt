@@ -1,11 +1,10 @@
 cmake_minimum_required (VERSION 3.0.0)
 project (webrtc-streamer)
 
-set (WEBRTCROOT "../webrtc/src" CACHE STRING "WEBRTC root directory")
+set (WEBRTCROOT "../webrtc" CACHE STRING "WEBRTC root directory")
 set (WEBRTCBUILD "Release" CACHE STRING "WEBRTC build type")
-set (WEBRTCOZONE "No" CACHE STRING "WEBRTC use ozone")
 
-MESSAGE("WEBRTCBUILD = ${WEBRTCBUILD}\nWEBRTCDESKTOP = ${WEBRTCDESKTOP}")
+MESSAGE("WEBRTCBUILD = ${WEBRTCBUILD}\nWEBRTCROOT = ${WEBRTCROOT}")
 
 set (CMAKE_BUILD_TYPE ${WEBRTCBUILD}) 
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -20,7 +19,7 @@ if(GIT_FOUND)
     EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} -C civetweb describe --tags --always --dirty OUTPUT_VARIABLE CIVETVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
 	set (VERSION "${VERSION} civetweb@${CIVETVERSION}")
 
-    EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} -C ${WEBRTCROOT} describe --tags --always --dirty OUTPUT_VARIABLE WEBRTCVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+    EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} -C ${WEBRTCROOT}/src describe --tags --always --dirty OUTPUT_VARIABLE WEBRTCVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
 	set (VERSION "${VERSION} webrtc@${WEBRTCVERSION}")
 
     EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} -C live555helper describe --tags --always --dirty OUTPUT_VARIABLE LIVEVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -43,28 +42,29 @@ target_link_libraries (${PROJECT_NAME} civetweb)
 target_include_directories(civetweb PUBLIC civetweb/include) 
 
 # webrtc
-if (NOT EXISTS ${WEBRTCROOT}/out/${WEBRTCBUILD}/args.gn)
+if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
   set (WEBRTCARGS rtc_use_h264=true\nffmpeg_branding="Chrome"\nrtc_include_tests=false\nrtc_enable_protobuf=false\nuse_custom_libcxx=false\nrtc_include_pulse_audio=false\nrtc_build_examples=false\nuse_sysroot=false\nis_clang=false\ntreat_warnings_as_errors=false\n)
   if(WEBRTCBUILD STREQUAL "Release")
   	set (WEBRTCARGS is_debug=false\n${WEBRTCARGS})
   endif()
-  if(WEBRTCOZONE STREQUAL "Yes")
-  	set (WEBRTCARGS use_ozone=true\n${WEBRTCARGS})
+  find_package(GTK QUIET)
+  if(NOT GTK_FOUND)
+ 	set (WEBRTCARGS use_ozone=true\n${WEBRTCARGS})
   endif()
-  FILE(WRITE ${WEBRTCROOT}/out/${WEBRTCBUILD}/args.gn ${WEBRTCARGS})
+  FILE(WRITE ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn ${WEBRTCARGS})
 
   if (WIN32)
   	SET (SHELLCOMMAND cmd /c )
   endif(WIN32)
 
-  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/out/${WEBRTCBUILD} COMMAND ${SHELLCOMMAND} gn gen .)
-  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/out/${WEBRTCBUILD} COMMAND ninja webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory create_pc_factory peerconnection)
+  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${WEBRTCBUILD} COMMAND ${SHELLCOMMAND} gn gen .)
+  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${WEBRTCBUILD} COMMAND ninja webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory create_pc_factory peerconnection)
 endif() 
 
-set (WEBRTCINCLUDE ${WEBRTCROOT} ${WEBRTCROOT}/third_party/abseil-cpp ${WEBRTCROOT}/third_party/jsoncpp/source/include ${WEBRTCROOT}/third_party/libyuv/include)
+set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include ${WEBRTCROOT}/src/third_party/libyuv/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
 
-set (WEBRTCOBJS ${WEBRTCROOT}/out/${WEBRTCBUILD}/obj)
+set (WEBRTCOBJS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/obj)
 
 # TODO: find a way to do the same for windows & linux
 if (MSVC)
@@ -125,7 +125,7 @@ else(MSVC)
 		add_definitions(-D_GLIBCXX_DEBUG=1)
 	endif()
 	target_link_libraries (${PROJECT_NAME} dl)
-	if (EXISTS ${WEBRTCROOT}/out/${WEBRTCBUILD}/obj/modules/desktop_capture/desktop_capture.ninja)
+	if (EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/obj/modules/desktop_capture/desktop_capture.ninja)
 		add_definitions(-DUSE_X11)
 		target_link_libraries (${PROJECT_NAME} X11 Xext Xdamage Xfixes Xcomposite)
 	endif()
