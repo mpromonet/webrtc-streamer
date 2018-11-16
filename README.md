@@ -87,22 +87,22 @@ Usage
         	-v[v[v]]           : verbosity
         	-V                 : print version
 
-         	-H [hostname:]port : HTTP server binding (default 0.0.0.0:8000)
-			-w webroot         : path to get files
-			-c sslkeycert      : path to private key and certificate for HTTPS
-			-T nbthreads       : number of threads for HTTP server
-			-A passwd          : password file for HTTP server access
+        	-H [hostname:]port : HTTP server binding (default 0.0.0.0:8000)
+		-w webroot         : path to get files
+		-c sslkeycert      : path to private key and certificate for HTTPS
+		-T nbthreads       : number of threads for HTTP server
+		-A passwd          : password file for HTTP server access
 
          	-S[stun_address]   : start embeded STUN server bind to address (default 0.0.0.0:3478)
          	-s[stun_address]   : use an external STUN server (default stun.l.google.com:19302)
          	-t[username:password@]turn_address : use an external TURN relay server (default disabled)		
         	-a[audio layer]    : spefify audio capture layer to use (default:3)		
 
-			-n name -u videourl -U audiourl : register a name for a video url and an audio url
+		-n name -u videourl -U audiourl : register a name for a video url and an audio url
          	[url]                           : url to register in the source list
-			-C config.json                  : load urls from JSON config file 
+		-C config.json                  : load urls from JSON config file 
 
-Arguments of '-H' are forwarded to option [listening_ports](https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md#listening_ports-8080) of civetweb, then it is possible to use the civetweb syntax like '-H8000,9000' or '-H8080r,8443s'.
+Arguments of '-H' are forwarded to option [listening_ports](https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md#listening_ports-8080) of civetweb, then it is possible to use the civetweb syntax like `-H8000,9000` or `-H8080r,8443s`.
 
 Example
 -----
