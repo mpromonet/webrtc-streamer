@@ -30,6 +30,9 @@ class Url {
       int index = this->host.find('@');
       if (index != std::string::npos) {
         std::string auth_credentials = this->host.substr(0, index - 1);
+        int colonIndex = auth_credentials.find(':');
+        this->username = auth_credentials.substr(0, colonIndex - 1);
+        this->password = auth_credentials.substr(colonIndex, auth_credentials.length() - colonIndex);
         this->host = this->host.substr(index, this->host.length() - index);
       } else {
         this->username = "";
@@ -63,10 +66,10 @@ class Url {
       }
 
       return scheme + "://" 
-        + (username.length() || password.length() ? username + ":" + password : "")
+        + (username.length() || password.length() ? username + ":" + password + "@" : "")
         + host + "/"
-        + path + "?"
-        + query;
+        + path
+        + (query.length() ? "?" + query : "");
     }
 	
     std::string username;
