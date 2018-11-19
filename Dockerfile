@@ -8,7 +8,7 @@ COPY . /webrtc-streamer
 RUN git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /webrtc/depot_tools
 ENV PATH /webrtc/depot_tools:$PATH
 
-# Build 
+# Build
 RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils libasound2-dev libgtk-3-dev \
 	&& cd /webrtc \
 	&& fetch --no-history --nohooks webrtc \
