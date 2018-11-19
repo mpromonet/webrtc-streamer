@@ -26,14 +26,16 @@ class Url {
         return;
       }
       this->host = match_result[4];
+      std::cout << "Got back host: " << this->host << std::endl;
 
       int index = this->host.find('@');
       if (index != std::string::npos) {
         std::string auth_credentials = this->host.substr(0, index - 1);
         int colonIndex = auth_credentials.find(':');
-        this->username = auth_credentials.substr(0, colonIndex - 1);
-        this->password = auth_credentials.substr(colonIndex, auth_credentials.length() - colonIndex);
-        this->host = this->host.substr(index, this->host.length() - index);
+        this->username = auth_credentials.substr(0, colonIndex);
+        this->password = auth_credentials.substr(colonIndex + 1, auth_credentials.length() - colonIndex);
+        std::cout << "Slicing host for index: " << index + 1 << ":" << this->host.length() - index << std::endl;
+        this->host = this->host.substr(index + 1, this->host.length() - index);
       } else {
         this->username = "";
         this->password = "";
@@ -43,7 +45,12 @@ class Url {
       this->path = match_result[5];
       this->query = match_result[7];
       this->isEmpty = false;
-      std::cout << "Finished parsing URL: " << url << std::endl;
+      std::cout << "Got back: " << std::endl;
+      std::cout << "Username: " << this->username << std::endl;
+      std::cout << "Password: " << this->password << std::endl;
+      std::cout << "Host: " << this->host << std::endl;
+      std::cout << "Path: " << this->path << std::endl;
+      std::cout << "Finished parsing URL: " << this->toString() << std::endl;
     }
 
     bool isDomainOf(std::string domain) {

@@ -33,8 +33,6 @@ static void signal_handler(int sig) {
 
 char* VNCVideoCapturer::onGetPassword() {
   std::cout<< "Starting to get PASSWORD!!!" << std::endl;
-  // remove vnc:// prefix from uri before passing along
-  Url url(uri);
 	if (!url.password.length()) {
 		if (getenv("VNCPASS") != NULL) {
 			return strdup(getenv("VNCPASS"));
@@ -151,7 +149,7 @@ bool VNCVideoCapturer::onStart() {
 }
 
 void VNCVideoCapturer::onError(std::string str) {
-	RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << str;
+	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << str;
 	this->Stop();
 	// exit(EXIT_FAILURE);
 }
