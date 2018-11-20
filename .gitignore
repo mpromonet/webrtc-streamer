@@ -2,7 +2,8 @@ src/*.o
 *.a
 *.tgz
 webrtc-streamer
-/node_modules/
+node_modules
+package-lock.json
 .vscode
 publish
 .DS_Store
