@@ -1,6 +1,7 @@
 #include <rfb/rfbclient.h>
 #include <signal.h>
 #include <time.h>
+#include <math.h>
 #include "VNCVideoCapturer.h"
 
 #include "rtc_base/thread.h"
@@ -67,7 +68,7 @@ void VNCVideoCapturer::onFrameBufferUpdate() {
 	}
 	struct timespec now;
 	clock_gettime(CLOCK_REALTIME, &now);
-	int64_t ts = now.tv_sec * 1000;
+	int64_t ts = (now.tv_sec * 1000) + round(now.tv_nsec / 1.0e6);
 
 	size_t size = row_stride * client->height;
 
