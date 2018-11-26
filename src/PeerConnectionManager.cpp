@@ -16,6 +16,7 @@
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/test/fakeconstraints.h"
+#include "media/engine/webrtcmediaengine.h"
 
 #include "PeerConnectionManager.h"
 #include "V4l2AlsaMap.h"
@@ -134,15 +135,15 @@ PeerConnectionManager::PeerConnectionManager( const std::list<std::string> & ice
                                             , const std::string& publishFilter)
 	: audioDeviceModule_(webrtc::AudioDeviceModule::Create(0, audioLayer))
 	, audioDecoderfactory_(webrtc::CreateBuiltinAudioDecoderFactory())
-	, peer_connection_factory_(webrtc::CreatePeerConnectionFactory(NULL,
+	, peer_connection_factory_(webrtc::CreateModularPeerConnectionFactory(NULL,
                                                                     rtc::Thread::Current(),
                                                                     NULL,
-                                                                    audioDeviceModule_,
-                                                                    webrtc::CreateBuiltinAudioEncoderFactory(),
-                                                                    audioDecoderfactory_,
-                                                                    webrtc::CreateBuiltinVideoEncoderFactory(),
-                                                                    webrtc::CreateBuiltinVideoDecoderFactory(),
-																	NULL, NULL))
+																	cricket::WebRtcMediaEngineFactory::Create(
+          																audioDeviceModule_, webrtc::CreateBuiltinAudioEncoderFactory(), audioDecoderfactory_,
+          																webrtc::CreateBuiltinVideoEncoderFactory(), webrtc::CreateBuiltinVideoDecoderFactory(), NULL,
+          																webrtc::AudioProcessingBuilder().Create()),
+																	webrtc::CreateCallFactory(),
+																	webrtc::CreateRtcEventLogFactory()))
 	, iceServerList_(iceServerList)
 	, m_urlVideoList(urlVideoList)
 	, m_urlAudioList(urlAudioList)
