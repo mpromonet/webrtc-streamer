@@ -48,7 +48,7 @@ script:
 - pushd src
 # build WebRTC
 - gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}"
-- ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory create_pc_factory peerconnection 
+- ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection 
 - popd
 - popd
 # build
