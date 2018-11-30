@@ -14,6 +14,10 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 
+#include "rtc_base/logging.h"
+#include "rtc_base/thread.h"
+#include "rtc_base/refcountedobject.h"
+
 #include "rtspaudiocapturer.h"
 
 

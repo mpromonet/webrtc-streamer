@@ -110,7 +110,7 @@ if (MSVC)
 	target_include_directories(getopt PUBLIC getopt) 
 	target_link_libraries (${PROJECT_NAME} getopt)
 	# webrtc
-	add_definitions(-DWEBRTC_WIN -EHsc -DNOMINMAX -D__PRETTY_FUNCTION__=__FUNCTION__)
+	add_definitions(-DWEBRTC_WIN -EHsc -DNOMINMAX -D__PRETTY_FUNCTION__=__FUNCTION__ -D_HAS_ITERATOR_DEBUGGING=0)
 	set(CompilerFlags CMAKE_CXX_FLAGS_DEBUG CMAKE_C_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_C_FLAGS_RELEASE)
 	foreach(CompilerFlag ${CompilerFlags})
 	  string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
