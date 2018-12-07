@@ -135,6 +135,7 @@ A short sample HTML page using webrtc-streamer running locally on port 8000 :
 	<html>
 	<head>
 	<script src="libs/request.min.js" ></script>
+	<script src="libs/adapter.min.js" ></script>
 	<script src="webrtcstreamer.js" ></script>
 	<script>        
 	    var webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000");
