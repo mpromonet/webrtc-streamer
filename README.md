@@ -134,7 +134,8 @@ A short sample HTML page using webrtc-streamer running locally on port 8000 :
 
 	<html>
 	<head>
-	<script src="lib/request.min.js" ></script>
+	<script src="libs/request.min.js" ></script>
+	<script src="libs/adapter.min.js" ></script>
 	<script src="webrtcstreamer.js" ></script>
 	<script>        
 	    var webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000");
@@ -157,7 +158,7 @@ A short sample to publish WebRTC streams to Janus Video Room could be :
 
 	<html>
 	<head>
-	<script src="lib/request.min.js" ></script>
+	<script src="libs/request.min.js" ></script>
 	<script src="janusvideoroom.js" ></script>
 	<script>        
 		var janus = new JanusVideoRoom("https://janus.conf.meetecho.com/janus", null);
