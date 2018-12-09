@@ -292,12 +292,12 @@ workflows:
           filters:
             tags:
               only: /.*/
-      - deploy_cf:
-          requires:
-            - build_heroku
-          filters:
-            tags:
-              only: /.*/
+#      - deploy_cf:
+#          requires:
+#            - build_heroku
+#          filters:
+#            tags:
+#              only: /.*/
       - github_release:
           requires:
             - store_artifact
