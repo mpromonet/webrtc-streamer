@@ -8,7 +8,7 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
-      - run: docker build -t rfzia/webrtc-proxy:staging .
+      - run: docker build -t rfzia/webrtc-proxy:staging -f Dockerfile-build .
       - run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASS
           docker push rfzia/webrtc-proxy:staging

@@ -8,9 +8,24 @@ RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make g++ xz-utils nodejs awscli libvncserver-dev pkg-config  libgtk-3-dev libasound2-dev
 RUN git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools
 ENV PATH=/depot_tools:$PATH
-RUN mkdir ${WEBRTCROOT} && cd ${WEBRTCROOT} && fetch --no-history --nohooks webrtc
-RUN cd ${WEBRTCROOT} && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
-RUN cd ${WEBRTCROOT} && gclient sync
+RUN mkdir ${WEBRTCROOT}
+WORKDIR /${WEBRTCROOT}
+RUN gclient root
+RUN gclient config --spec 'solutions = [ \
+  { \
+    "url": "https://webrtc.googlesource.com/src.git@2275439c4e5ba4a2903ed04b1a732a70b3a87d17", \
+    "managed": False, \
+    "name": "src", \
+    "deps_file": "DEPS", \
+    "custom_deps": {}, \
+  }, \
+]'
+RUN gclient sync --nohooks --no-history --with_branch_heads
+RUN cd src && git submodule foreach 'git config -f $toplevel/.git/config submodule.$name.ignore all'
+RUN cd src && git config diff.ignoreSubmodules all
+
+RUN sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
+RUN gclient sync
 RUN cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}"
 RUN cd ${WEBRTCROOT}/src && ( ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release jsoncpp rtc_json webrtc builtin_audio_decoder_factory)
 RUN mkdir /streamer
@@ -28,7 +43,5 @@ COPY --from=0 /streamer/publish/streamer /webrtc
 COPY public/index.html /webrtc/html
 COPY public/dist /webrtc/html/dist
 WORKDIR /webrtc
-# ENTRYPOINT [ "/bin/bash" ]
 ENTRYPOINT [ "/webrtc/streamer" ]
-# CMD [ "-w", "/webrtc/html" ]
 # CMD [ "-w", "/streamer/publish/html", "-a", "rtsp://217.17.220.110/axis-media/media.amp", "rtsp://85.255.175.241/h264", "rtsp://85.255.175.244/h264", "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov", "rtsp://b1.dnsdojo.com:1935/live/sys3.stream", "rtsp://streaming3.webcam.nl:80/n224/n224.stream", "rtsp://streaming3.webcam.nl:80/varik/varik.stream", "screen://"  ]
