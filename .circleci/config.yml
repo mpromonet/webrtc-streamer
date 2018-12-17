@@ -1,5 +1,11 @@
 version: 2
 jobs:
+  publish:
+    working_directory: /webrtc-streamer
+    docker:
+      - image: circleci/node:8.10.0
+    steps:
+      - run: .circleci/deploy.sh staging
   build:
     working_directory: /webrtc-streamer
     docker:
@@ -13,4 +19,11 @@ jobs:
       - run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASS
           docker push rfzia/webrtc-proxy:staging
-      - run: ./deploy.sh staging
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
+      - publish:
+          requires:
+            - build
