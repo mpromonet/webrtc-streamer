@@ -6,6 +6,7 @@ jobs:
       - image: circleci/node:8.10.0
     steps:
       - checkout
+      - run: sudo apt-get install -fy pssh
       - run: .circleci/deploy.sh staging
   build:
     working_directory: ~/webrtc-streamer
