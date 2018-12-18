@@ -1,13 +1,14 @@
 version: 2
 jobs:
   publish:
-    working_directory: /webrtc-streamer
+    working_directory: ~/webrtc-streamer
     docker:
       - image: circleci/node:8.10.0
     steps:
+      - checkout
       - run: .circleci/deploy.sh staging
   build:
-    working_directory: /webrtc-streamer
+    working_directory: ~/webrtc-streamer
     docker:
       - image: docker:17.05.0-ce-git
     steps:
