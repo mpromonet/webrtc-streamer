@@ -1,5 +1,7 @@
 #!/bin/bash
 
+ssh-add -l
+
 set -e
 
 : "${HETZNER_USER=cldrdrinc}"
