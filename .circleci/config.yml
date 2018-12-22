@@ -39,7 +39,7 @@ jobs:
       WEBRTCROOT: /webrtc 
       GYP_GENERATOR_OUTPUT: "x86_64"
       GNARGS: 'is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" use_sysroot=false'      
-      NINJA_TARGET: webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection
+      NINJA_TARGET: webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection p2p_server_utils
 
     steps:
       - attach_workspace:
@@ -71,7 +71,7 @@ jobs:
       WEBRTCROOT: /webrtc 
       GYP_GENERATOR_OUTPUT: "heroku"
       GNARGS: 'is_debug=false use_ozone=true rtc_use_h264=true ffmpeg_branding="Chrome"'      
-      NINJA_TARGET: webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection
+      NINJA_TARGET: webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection p2p_server_utils
 
     steps:
       - attach_workspace:
@@ -156,7 +156,7 @@ jobs:
       GYP_GENERATOR_OUTPUT: "rpi-armv7"  
       GNARGS: 'is_debug=false use_ozone=true rtc_use_h264=true ffmpeg_branding="Chrome" target_cpu="arm"' 
       CROSS: arm-linux-gnueabihf- 
-      NINJA_TARGET: webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection
+      NINJA_TARGET: webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection p2p_server_utils
 
     steps:
       - attach_workspace:
@@ -193,7 +193,7 @@ jobs:
       GNARGS: 'is_debug=false use_ozone=true target_cpu="arm" arm_version=6 arm_float_abi="hard" rtc_include_opus=false use_sysroot=false' 
       CROSS: arm-linux-gnueabihf- 
       CFLAGS_EXTRA: "-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard"
-      NINJA_TARGET: webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection
+      NINJA_TARGET: webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection p2p_server_utils
 
     steps:
       - attach_workspace:
