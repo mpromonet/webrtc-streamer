@@ -34,7 +34,7 @@ jobs:
     <<: *defaults
     
     environment:
-      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=true is_clang=false treat_warnings_as_errors=false' 
+      GNARGSCOMMON: 'rtc_include_tests=true rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false is_clang=false treat_warnings_as_errors=false' 
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
       GYP_GENERATOR_OUTPUT: "x86_64"
@@ -66,7 +66,7 @@ jobs:
     <<: *defaults
     
     environment:
-      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=true is_clang=false treat_warnings_as_errors=false' 
+      GNARGSCOMMON: 'rtc_include_tests=true rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false is_clang=false treat_warnings_as_errors=false' 
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
       GYP_GENERATOR_OUTPUT: "heroku"
@@ -150,7 +150,7 @@ jobs:
     <<: *defaults
     
     environment:
-      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=true is_clang=false treat_warnings_as_errors=false' 
+      GNARGSCOMMON: 'rtc_include_tests=true rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false is_clang=false treat_warnings_as_errors=false' 
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
       GYP_GENERATOR_OUTPUT: "rpi-armv7"  
@@ -186,7 +186,7 @@ jobs:
     <<: *defaults
     
     environment:
-      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=true is_clang=false treat_warnings_as_errors=false' 
+      GNARGSCOMMON: 'rtc_include_tests=true rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false is_clang=false treat_warnings_as_errors=false' 
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
       GYP_GENERATOR_OUTPUT: "rpi-armv6"  
