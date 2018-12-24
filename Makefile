@@ -108,10 +108,10 @@ install: $(TARGET) html/index.html
 	find html -type f -exec install -m 0422 {} $(PREFIX)/etc/$(TARGET)/ \;
 
 tgz: $(TARGET) html/index.html
-	tar cvzf $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).tgz $(TARGET) html config.json
+	tar cvzf $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).tgz $(TARGET) html config.json Procfile
 
 zip: $(TARGET) html/index.html
-	zip -x html/.git -r $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).zip $(TARGET) html config.json
+	zip -x html/.git -r $(TARGET)_$(GITVERSION)_$(GYP_GENERATOR_OUTPUT).zip $(TARGET) html config.json Procfile
 
 
 live555:
