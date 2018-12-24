@@ -119,9 +119,9 @@ jobs:
           name: "Deploy to Heroku"
           command: |
             git clone  git@heroku.com:webrtc-streamer.git
-            cd rtsp2webrtc
+            cd webrtc-streamer
             unzip -o /distrib/webrtc-streamer*heroku.zip
-            git add -f webrtc-streamer && git -c user.name='ci' -c user.email='ci@email.org' commit -a -m 'force add for heroku deployement' && git push --force git@heroku.com:rtsp2webrtc.git HEAD:refs/heads/master
+            git add -f webrtc-streamer && git -c user.name='ci' -c user.email='ci@email.org' commit -a -m 'force add for heroku deployement' && git push --force git@heroku.com:webrtc-streamer.git HEAD:refs/heads/master
 
   deploy_cf:
     <<: *defaults
