@@ -40,5 +40,5 @@ RUN apt-get update; apt-get install -y --no-install-recommends autoconf automake
 RUN apt-get install -y --no-install-recommends libvncserver-dev pkg-config
 RUN mkdir -p /webrtc
 COPY --from=0 /streamer/publish /webrtc
-WORKDIR /webrtc/publish
-ENTRYPOINT [ "/webrtc/publish/streamer" ]
+WORKDIR /webrtc
+ENTRYPOINT [ "/webrtc/streamer" ]

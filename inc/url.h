@@ -54,7 +54,6 @@ class Url {
     }
 
     bool isDomainOf(std::string domain) {
-      std::cout << "Starting to find domain name in: " << domain << std::endl;
       auto host = this->host;
       int index = host.find(':');
       if (index != std::string::npos) {
@@ -62,9 +61,14 @@ class Url {
         host = host.substr(index, host.length() - index);
       }
 
-      std::cout << "Finished finding domain name in: " << domain << std::endl;
       // ensure host ends with the domain
-      return host.compare(host.size() - domain.size(), domain.size(), domain) == 0;
+      auto found = host.compare(host.size() - domain.size(), domain.size(), domain) == 0;
+
+      if (!found) {
+        std::cout << "Can not find " << domain << " in " << host << std::endl;
+      }
+
+      return found;
     }
 
     std::string toString() {
