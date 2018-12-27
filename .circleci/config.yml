@@ -10,6 +10,7 @@ jobs:
             - "82:1a:c2:3d:75:83:2e:63:6a:c7:16:08:87:a9:c6:d5"
             - "89:55:e3:61:6c:80:2e:9e:be:1c:01:ba:57:1a:89:2b"
       - checkout
+      - run: sudo cp .circleci/ssh_config /etc/ssh/ssh_config
       - run: sudo apt-get install -fy pssh
       - run: .circleci/deploy.sh staging
   build:

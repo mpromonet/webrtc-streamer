@@ -1,0 +1,4 @@
+Host *
+  StrictHostKeyChecking no
+  HashKnownHosts no
+  SendEnv LANG LC_*
