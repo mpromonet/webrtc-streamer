@@ -41,6 +41,14 @@ class Url {
         this->password = "";
       }
 
+
+      int portIndex = this->host.find(':');
+      if (portIndex != std::string::npos) {
+        this->port = this->host.substr(portIndex + 1, this->host.size() - portIndex);
+        this->host = this->host.substr(0, portIndex);
+      }
+
+
       this->scheme = match_result[2];
       this->path = match_result[5];
       this->query = match_result[7];
@@ -49,20 +57,20 @@ class Url {
       std::cout << "Username: " << this->username << std::endl;
       std::cout << "Password: " << this->password << std::endl;
       std::cout << "Host: " << this->host << std::endl;
+      std::cout << "Port: " << this->port << std::endl;
       std::cout << "Path: " << this->path << std::endl;
       std::cout << "Finished parsing URL: " << this->toString() << std::endl;
     }
 
     bool isDomainOf(std::string domain) {
-      auto host = this->host;
-      int index = host.find(':');
-      if (index != std::string::npos) {
-        // take out port
-        host = host.substr(index, host.length() - index);
-      }
-
+      bool found = true;
       // ensure host ends with the domain
-      auto found = host.compare(host.size() - domain.size(), domain.size(), domain) == 0;
+      if (host.size() < domain.size()) {
+        found = false;
+      }
+      else {
+        found = host.compare(host.length() - domain.length(), domain.length(), domain) == 0;
+      }
 
       if (!found) {
         std::cout << "Can not find " << domain << " in " << host << std::endl;
@@ -78,8 +86,8 @@ class Url {
 
       return scheme + "://" 
         + (username.length() || password.length() ? username + ":" + password + "@" : "")
-        + host + "/"
-        + path
+        + host + (port.length() ? (":" + port) : "")
+        + "/" + path
         + (query.length() ? "?" + query : "");
     }
 	
@@ -89,5 +97,6 @@ class Url {
     std::string host;
     std::string path;
     std::string query;
+    std::string port;
     bool isEmpty;
 };

@@ -1,4 +1,4 @@
-Host *
+Host *.rainforestqa.com, *.rnfrst.com
   StrictHostKeyChecking no
   HashKnownHosts no
   SendEnv LANG LC_*

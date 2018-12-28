@@ -132,9 +132,9 @@ bool VNCVideoCapturer::onStart() {
 		this->onError("Access Denied");
 		return false;
 	}
-
+	
 	if (url.scheme != "vnc") {
-		onError("The scheme needs to be vnc:" + url.scheme);
+		this->onError("The scheme needs to be vnc:" + url.scheme);
 		return false;
 	}
 
@@ -142,7 +142,7 @@ bool VNCVideoCapturer::onStart() {
 	int len = 2;
 	rfbClientSetClientData(client, (void *) "this", (void *) this);
 	if (!rfbInitClient(client, &len, (char **) args)) {
-		onError("Something went wrong in initializing RFB client ");
+		this->onError("Something went wrong in initializing RFB client ");
 		return false;
 	}
 	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Initialized VNC Successfully: " << url.toString();
