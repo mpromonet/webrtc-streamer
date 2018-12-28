@@ -62,6 +62,10 @@ class Url {
       std::cout << "Finished parsing URL: " << this->toString() << std::endl;
     }
 
+    std::string getHostUrl() {
+      return host + (port.length() ? (":" + port) : "");
+    }
+
     bool isDomainOf(std::string domain) {
       bool found = true;
       // ensure host ends with the domain

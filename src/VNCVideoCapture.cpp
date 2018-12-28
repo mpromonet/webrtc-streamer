@@ -121,8 +121,6 @@ bool VNCVideoCapturer::onStart() {
 	client->GetPassword = get_password;
 	client->FinishedFrameBufferUpdate = get_frame;
 
-	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Trying to start VNC with: " << url.toString();
-
 	if (url.isEmpty) {
 		this->onError("Can not parse url: " + url.toString());
 		return false;
@@ -138,7 +136,9 @@ bool VNCVideoCapturer::onStart() {
 		return false;
 	}
 
-	const char *args[] = { "VNCVideoCapture", url.host.c_str() };
+	auto hostUrl = url.getHostUrl();
+	RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << "Trying to start VNC with: " << hostUrl.c_str();
+	const char *args[] = { "VNCVideoCapture", hostUrl.c_str() };
 	int len = 2;
 	rfbClientSetClientData(client, (void *) "this", (void *) this);
 	if (!rfbInitClient(client, &len, (char **) args)) {
