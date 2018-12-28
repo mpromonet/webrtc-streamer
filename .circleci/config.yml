@@ -23,6 +23,26 @@ jobs:
           docker_layer_caching: true
       - run: docker pull rfzia/webrtc-proxy:staging
       - run: docker build -t rfzia/webrtc-proxy:staging -f Dockerfile-build .
+      - run:
+          name: Run Proxy in Background
+          command: docker run --name proxy -p 8000:8000 -i rfzia/webrtc-proxy:staging -daemon
+          background: true
+      - run:
+          name: Wait for proxy
+          command: |
+            status="unhealthy"
+            until [ $status == "healthy" ]
+            do
+              sleep 10
+              {
+                status=$(docker inspect --format='{{.State.Health.Status}}' proxy)
+              } || {
+                status="unhealthy"
+              }
+            done
+
+            echo get container ip address
+            curl http://127.0.0.1:8000/api/getIceServers
       - run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASS
           docker push rfzia/webrtc-proxy:staging
