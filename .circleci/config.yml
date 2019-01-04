@@ -3,8 +3,10 @@ jobs:
   publish:
     working_directory: ~/webrtc-streamer
     docker:
-      - image: circleci/node:8.10.0
+      - image: docker:17.05.0-ce-git
     steps:
+      - attach_workspace:
+        at: /tmp
       - add_ssh_keys:
           fingerprints:
             - "82:1a:c2:3d:75:83:2e:63:6a:c7:16:08:87:a9:c6:d5"
@@ -13,14 +15,24 @@ jobs:
       - run: sudo cp .circleci/ssh_config /etc/ssh/ssh_config
       - run: sudo apt-get install -fy pssh
       - run:
+          name: Publish Docker Container
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              export DOCKER_REPO="rfzia/webrtc-proxy:production"
+            else
+              export DOCKER_REPO="rfzia/webrtc-proxy:staging"
+            fi
+            docker load -i /tmp/container.tar
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker push $DOCKER_REPO
+      - run:
           name: Reset Hosts
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               .circleci/deploy.sh production
             else
               .circleci/deploy.sh staging
-            fi
-            
+            fi 
   build:
     working_directory: ~/webrtc-streamer
     docker:
@@ -39,8 +51,11 @@ jobs:
               export DOCKER_REPO="rfzia/webrtc-proxy:staging"
             fi
             docker build -t $DOCKER_REPO -f Dockerfile-build .
-            docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker push $DOCKER_REPO
+            docker save $DOCKER_REPO > /tmp/container.tar
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - container.tar
 workflows:
   version: 2
   build:
