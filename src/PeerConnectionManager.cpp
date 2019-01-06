@@ -762,8 +762,7 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 	}
 
 	std::string label = videourl + "_video";
-	label.erase(std::remove_if(label.begin(), label.end(), ignoreInLabel)
-						, label.end());
+	label.erase(std::remove_if(label.begin(), label.end(), ignoreInLabel), label.end());
 
 
 	webrtc::FakeConstraints constraints;
@@ -845,8 +844,7 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 		RTC_LOG(LS_ERROR) << "Cannot create capturer audio:" << audiourl;
 	} else {
 		std::string label = audiourl + "_audio";
-		label.erase(std::remove_if(label.begin(), label.end(), ignoreInLabel)
-							, label.end());
+		label.erase(std::remove_if(label.begin(), label.end(), ignoreInLabel), label.end());
 		audio_track = peer_connection_factory_->CreateAudioTrack(label, audioSource);
 	}
 	
@@ -862,8 +860,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 		
 	// compute stream label removing space because SDP use label
 	std::string streamLabel = videourl + "|" + audiourl + "|" + options;
-	streamLabel.erase(std::remove_if(streamLabel.begin(), streamLabel.end(), [](char c) { return c==' '||c==':'|| c=='.' || c=='/'; })
-							, streamLabel.end());
+	streamLabel.erase(std::remove_if(streamLabel.begin(), streamLabel.end(), ignoreInLabel), streamLabel.end());
 
 	bool existingStream = false;
 	{
