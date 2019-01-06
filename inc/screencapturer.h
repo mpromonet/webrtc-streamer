@@ -55,7 +55,23 @@ class DesktopCapturer : public cricket::VideoCapturer, public rtc::Thread, publi
 class ScreenCapturer : public DesktopCapturer {
 	public:
 		ScreenCapturer(const std::string & url, const std::map<std::string,std::string> & opts) : DesktopCapturer(opts) {
+			const std::string prefix("screen://");
 			m_capturer = webrtc::DesktopCapturer::CreateScreenCapturer(webrtc::DesktopCaptureOptions::CreateDefault());
+			if (m_capturer) {
+				webrtc::DesktopCapturer::SourceList sourceList;
+				if (m_capturer->GetSourceList(&sourceList)) {
+					const std::string screen(url.substr(prefix.length()));
+					if (screen.empty() == false) {
+						for (auto source : sourceList) {
+							RTC_LOG(LS_ERROR) << "ScreenCapturer source:" << source.id << " title:"<< source.title;
+							if (atoi(screen.c_str()) == source.id) {
+								m_capturer->SelectSource(source.id);
+								break;
+							}
+						}
+					}
+				}
+			}			
 		}
 };
 
@@ -69,18 +85,13 @@ class WindowCapturer : public DesktopCapturer {
 				if (m_capturer) {
 					webrtc::DesktopCapturer::SourceList sourceList;
 					if (m_capturer->GetSourceList(&sourceList)) {
-						bool selected = false;
 						const std::string windowtitle(url.substr(windowprefix.length()));
 						for (auto source : sourceList) {
-							RTC_LOG(LS_ERROR) << "ScreenCapturer source:" << source.id << " title:"<< source.title;
+							RTC_LOG(LS_ERROR) << "WindowCapturer source:" << source.id << " title:"<< source.title;
 							if (windowtitle == source.title) {
 								m_capturer->SelectSource(source.id);
-								selected = true;
 								break;
 							}
-						}
-						if (!selected && !sourceList.empty()) {
-							m_capturer->SelectSource(sourceList[0].id);
 						}
 					}
 				}
