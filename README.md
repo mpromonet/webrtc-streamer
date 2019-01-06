@@ -112,17 +112,17 @@ Example
 				rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov
 
 
-[![Screenshot](images/snapshot.png)](https://rtsp2webrtc.herokuapp.com/)
+[![Screenshot](images/snapshot.png)](https://webrtc-streamer.herokuapp.com/)
 
-[Live Demo](https://rtsp2webrtc.herokuapp.com/)
+[Live Demo](https://webrtc-streamer.herokuapp.com/)
 
 We can access to the WebRTC stream using [webrtcstreamer.html](https://github.com/mpromonet/webrtc-streamer-html/blob/master/webrtcstreamer.html) for instance :
 
- * https://rtsp2webrtc.herokuapp.com/webrtcstreamer.html?rtsp://217.17.220.110/axis-media/media.amp
- * https://rtsp2webrtc.herokuapp.com/webrtcstreamer.html?Bunny
+ * https://webrtc-streamer.herokuapp.com/webrtcstreamer.html?rtsp://217.17.220.110/axis-media/media.amp
+ * https://webrtc-streamer.herokuapp.com/webrtcstreamer.html?Bunny
 
 An example displaying grid of WebRTC Streams is available using option "layout=<lines>x<columns>"
-[![Screenshot](images/layout2x4.png)](https://rtsp2webrtc.herokuapp.com/?layout=2x4)
+[![Screenshot](images/layout2x4.png)](https://webrtc-streamer.herokuapp.com/?layout=2x4)
 
 Embed in a HTML page:
 ===============
@@ -168,11 +168,11 @@ A short sample to publish WebRTC streams to Janus Video Room could be :
 	</head>
 	</html>
 
-[![Screenshot](images/janusvideoroom.png)](https://rtsp2webrtc.herokuapp.com/janusvideoroom.html)
+[![Screenshot](images/janusvideoroom.png)](https://webrtc-streamer.herokuapp.com/janusvideoroom.html)
 
-[Live Demo](https://rtsp2webrtc.herokuapp.com/janusvideoroom.html)
+[Live Demo](https://webrtc-streamer.herokuapp.com/janusvideoroom.html)
 
-This way the communication between [Janus API](https://janus.conf.meetecho.com/docs/JS.html) and [WebRTC Streamer API](https://rtsp2webrtc.herokuapp.com/help) is implemented in Javascript running in browser.
+This way the communication between [Janus API](https://janus.conf.meetecho.com/docs/JS.html) and [WebRTC Streamer API](https://webrtc-streamer.herokuapp.com/help) is implemented in Javascript running in browser.
 
 The same logic could be implemented in NodeJS using the same JS API :
 
@@ -205,7 +205,7 @@ A short sample to publish WebRTC streams to a Jitsi Video Room could be :
 	</head>
 	</html>
 
-[Live Demo](https://rtsp2webrtc.herokuapp.com/xmppvideoroom.html)
+[Live Demo](https://webrtc-streamer.herokuapp.com/xmppvideoroom.html)
 
 Docker image
 ===============
