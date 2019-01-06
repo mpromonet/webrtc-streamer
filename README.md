@@ -112,9 +112,9 @@ Example
 				rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov
 
 
-[![Screenshot](images/snapshot.png)](https://rtsp2webrtc.herokuapp.com/)
+[![Screenshot](images/snapshot.png)](https://webrtc-streamer.herokuapp.com/)
 
-[Live Demo](https://rtsp2webrtc.herokuapp.com/)
+[Live Demo](https://webrtc-streamer.herokuapp.com/)
 
 We can access to the WebRTC stream using [webrtcstreamer.html](https://github.com/mpromonet/webrtc-streamer-html/blob/master/webrtcstreamer.html) for instance :
 
@@ -122,7 +122,7 @@ We can access to the WebRTC stream using [webrtcstreamer.html](https://github.co
  * https://webrtc-streamer.herokuapp.com/webrtcstreamer.html?Bunny
 
 An example displaying grid of WebRTC Streams is available using option "layout=<lines>x<columns>"
-[![Screenshot](images/layout2x4.png)](https://rtsp2webrtc.herokuapp.com/?layout=2x4)
+[![Screenshot](images/layout2x4.png)](https://webrtc-streamer.herokuapp.com/?layout=2x4)
 
 Embed in a HTML page:
 ===============
