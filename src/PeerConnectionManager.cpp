@@ -757,33 +757,31 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 		video = videoit->second;
 	}
 
-	std::unique_ptr<cricket::VideoCapturer> capturer = CapturerFactory::CreateVideoCapturer(video, opts, m_publishFilter);
-	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
-	if (!capturer)
-	{
-		RTC_LOG(LS_ERROR) << "Cannot create capturer video:" << videourl;
-	}
-	else
-	{
-		webrtc::FakeConstraints constraints;
-		std::list<std::string> keyList = { webrtc::MediaConstraintsInterface::kMinWidth, webrtc::MediaConstraintsInterface::kMaxWidth,
-										webrtc::MediaConstraintsInterface::kMinHeight, webrtc::MediaConstraintsInterface::kMaxHeight,
-										webrtc::MediaConstraintsInterface::kMinFrameRate, webrtc::MediaConstraintsInterface::kMaxFrameRate,
-										webrtc::MediaConstraintsInterface::kMinAspectRatio, webrtc::MediaConstraintsInterface::kMaxAspectRatio };
-										
-		for (auto key : keyList) {
-			if (opts.find(key) != opts.end()) {
-				constraints.AddMandatory(key, opts.at(key));
-			}
+	std::string label = videourl + "_video";
+	label.erase(std::remove_if(label.begin(), label.end(), [](char c) { return c==' '||c==':'|| c=='.' || c=='/'; })
+						, label.end());
+
+
+	webrtc::FakeConstraints constraints;
+	std::list<std::string> keyList = { webrtc::MediaConstraintsInterface::kMinWidth, webrtc::MediaConstraintsInterface::kMaxWidth,
+									webrtc::MediaConstraintsInterface::kMinHeight, webrtc::MediaConstraintsInterface::kMaxHeight,
+									webrtc::MediaConstraintsInterface::kMinFrameRate, webrtc::MediaConstraintsInterface::kMaxFrameRate,
+									webrtc::MediaConstraintsInterface::kMinAspectRatio, webrtc::MediaConstraintsInterface::kMaxAspectRatio };
+									
+	for (auto key : keyList) {
+		if (opts.find(key) != opts.end()) {
+			constraints.AddMandatory(key, opts.at(key));
 		}
-		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = peer_connection_factory_->CreateVideoSource(std::move(capturer), &constraints);
-		
-		std::string label = videourl + "_video";
-		label.erase(std::remove_if(label.begin(), label.end(), [](char c) { return c==' '||c==':'|| c=='.' || c=='/'; })
-							, label.end());
-	
+	}
+
+	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
+	rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = CapturerFactory::CreateVideoSource(video, opts, m_publishFilter, peer_connection_factory_, constraints);
+	if (!videoSource) {
+		RTC_LOG(LS_ERROR) << "Cannot create capturer video:" << videourl;
+	} else {
 		video_track = peer_connection_factory_->CreateVideoTrack(label, videoSource);
 	}
+
 	return video_track;
 }
 

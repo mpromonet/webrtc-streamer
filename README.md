@@ -48,9 +48,9 @@ The webrtc stream name could be :
 Dependencies :
 -------------
 It is based on :
- * [WebRTC Native Code Package](http://www.webrtc.org)
- * [civetweb HTTP server](https://github.com/civetweb/civetweb)
- * [live555](http://www.live555.com/liveMedia) for RTSP cpaturer
+ * [WebRTC Native Code Package](http://www.webrtc.org) for WebRTC
+ * [civetweb HTTP server](https://github.com/civetweb/civetweb) for HTTP server
+ * [live555](http://www.live555.com/liveMedia) for RTSP/MKV source
 
 Build
 ===============
