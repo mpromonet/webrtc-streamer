@@ -70,7 +70,7 @@ jobs:
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
       GYP_GENERATOR_OUTPUT: "heroku"
-      GNARGS: 'is_debug=false use_ozone=true rtc_use_h264=true ffmpeg_branding="Chrome"'      
+      GNARGS: 'is_debug=false is_desktop_linux=false use_ozone=true rtc_use_h264=true ffmpeg_branding="Chrome"'      
       NINJA_TARGET: webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection p2p_server_utils
 
     steps:
@@ -154,7 +154,7 @@ jobs:
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
       GYP_GENERATOR_OUTPUT: "rpi-armv7"  
-      GNARGS: 'is_debug=false use_ozone=true rtc_use_h264=true ffmpeg_branding="Chrome" target_cpu="arm"' 
+      GNARGS: 'is_debug=false is_desktop_linux=false use_ozone=true rtc_use_h264=true ffmpeg_branding="Chrome" target_cpu="arm"' 
       CROSS: arm-linux-gnueabihf- 
       NINJA_TARGET: webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection p2p_server_utils
 
