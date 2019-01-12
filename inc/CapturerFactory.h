@@ -22,7 +22,7 @@
 #include "screencapturer.h"
 #endif
 
-#include "pc/videotracksource.h"
+#include "pc/video_track_source.h"
 
 class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public rtc::VideoSourceInterface<webrtc::VideoFrame> {
  public:
@@ -233,36 +233,6 @@ class CapturerFactory {
 #ifdef USE_X11
 			capturer.reset(new WindowCapturer(videourl, opts));			
 #endif	
-		}
-		else if (std::regex_match("videocap://",publishFilter)) {		
-
-//			rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> video_device = CapturerTrackSource::Create();
-//			rtc::scoped_refptr<webrtc::VideoCaptureModule> cap = webrtc::VideoCaptureFactory::Create(videourl.c_str());
-
-
-
-			/*
-			cricket::WebRtcVideoDeviceCapturerFactory factory;
-			cricket::Device device = cricket::Device(videourl, 0);
-			capturer = factory.Create(device);
-			if (capturer) {
-				int width = 0;
-				int height = 0;
-				if (opts.find("width") != opts.end()) {
-					width = std::stoi(opts.at("width"));
-				}
-				if (opts.find("height") != opts.end()) {
-					height = std::stoi(opts.at("height"));
-				}
-				if ((width != 0) && (height != 0)) {
-					cricket::VideoFormat maxFormat(width, height, 0, 0);
-					capturer->set_enable_camera_list(true);
-					RTC_LOG(LS_ERROR) << "nb format:" << capturer->GetSupportedFormats()->size();
-					// TODO call in the correct the capture thread (this assert in debug)
-					capturer->ConstrainSupportedFormats(maxFormat);
-					RTC_LOG(LS_ERROR) << "nb format:" << capturer->GetSupportedFormats()->size();
-				}
-			}*/	
 		}
 		
 		return capturer;

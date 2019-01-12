@@ -17,6 +17,7 @@
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/test/fakeconstraints.h"
 #include "media/engine/webrtcmediaengine.h"
+#include "logging/rtc_event_log/rtc_event_log_factory.h"
 
 #include "PeerConnectionManager.h"
 #include "V4l2AlsaMap.h"
