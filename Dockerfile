@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf au
 FROM heroku/heroku:18
 
 WORKDIR /app
-COPY --from=builder /webrtc-streamer/*.tar.gz /app
+COPY --from=builder /webrtc-streamer/*.tar.gz /app/
 
 RUN tar xvzf *.tar.gz
 
