@@ -39,7 +39,6 @@ script:
 - if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm; fi
 # get WebRTC dependencies
 - travis_wait 30 gclient sync
-- if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then sed -i -e "s|const auto iter = FindSourceInList(audio_source, &audio_source_list_);|const auto iter = std::find_if(audio_source_list_.begin(), audio_source_list_.end(), [audio_source](const std::unique_ptr<AudioMixerImpl::SourceStatus> \&p) { return p->audio_source == audio_source; });|" src/modules/audio_mixer/audio_mixer_impl.cc; fi
 - if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then sed -e 's|"-mfpu=$arm_fpu"|"-mfpu=$arm_fpu","-marm"|' -i src/build/config/compiler/BUILD.gn; fi
 - popd
 # get, build and install live555 & alsa

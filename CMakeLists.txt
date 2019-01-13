@@ -45,13 +45,17 @@ target_include_directories(civetweb PUBLIC civetweb/include)
 
 # webrtc
 if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
-  set (WEBRTCARGS rtc_use_h264=true\nffmpeg_branding="Chrome"\nrtc_include_tests=false\nrtc_enable_protobuf=false\nuse_custom_libcxx=false\nrtc_include_pulse_audio=false\nrtc_build_examples=false\nuse_sysroot=false\nis_clang=false\ntreat_warnings_as_errors=false\n)
+  set (WEBRTCARGS rtc_use_h264=true\nffmpeg_branding="Chrome"\nrtc_include_tests=false\nrtc_enable_protobuf=false\nuse_custom_libcxx=false\nrtc_include_pulse_audio=false\nrtc_build_examples=false\nrtc_build_tools=false\nis_clang=false\ntreat_warnings_as_errors=false\n)
   if(WEBRTCBUILD STREQUAL "Release")
 	  set (WEBRTCARGS is_debug=false\n${WEBRTCARGS})
   else()
   	set (WEBRTCARGS is_debug=true\n${WEBRTCARGS})
   endif()
-
+  if(CMAKE_SYSTEM_PROCESSOR STREQUAL "arm")
+  	set (WEBRTCARGS use_sysroot=true\ntarget_cpu="arm"\n${WEBRTCARGS})
+  else()
+  	set (WEBRTCARGS use_sysroot=false\n${WEBRTCARGS})
+  endif()
 
   find_package(PkgConfig QUIET)
   pkg_check_modules(GTK3 QUIET gtk+-3.0)
