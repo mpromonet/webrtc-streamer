@@ -25,8 +25,7 @@ WORKDIR /app
 COPY --from=builder /webrtc-streamer/webrtc-streamer*.tar.gz /app/
 
 RUN apt-get update && apt-get install -y --no-install-recommends libgtk-3-0 libasound2 \
-	&& apt-get clean && rm -rf /var/lib/apt/lists/ \
-	&& tar xvzf webrtc-streamer*.tar.gz --strip=1
+	&& tar xvzf --strip=1 webrtc-streamer*.tar.gz 
 
 EXPOSE 8000
 
