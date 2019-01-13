@@ -14,7 +14,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf au
 	&& gclient sync \
 	&& cd /webrtc-streamer \
 	&& cmake . && make \
-	&& cpack
+	&& cpack \
+	&& rm -rf /webrtc && rm -f *.a && rm -f src/*.o \
+	&& apt-get clean && rm -rf /var/lib/apt/lists/
 
 # run
 FROM heroku/heroku:18
