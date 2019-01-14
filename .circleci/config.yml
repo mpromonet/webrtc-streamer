@@ -50,7 +50,7 @@ jobs:
           docker_layer_caching: true
       - run: docker pull rfzia/webrtc-proxy:staging
       - run:
-          name: Publish Docker Container
+          name: Build Docker Container
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               export DOCKER_REPO="rfzia/webrtc-proxy:production"
