@@ -1,4 +1,11 @@
 version: 2
+
+experimental:
+  notify:
+    branches:
+      only:
+        - master
+
 jobs:
   publish:
     working_directory: ~/webrtc-streamer
