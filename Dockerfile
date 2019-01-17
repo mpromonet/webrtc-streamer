@@ -19,12 +19,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf au
 	&& apt-get clean && rm -rf /var/lib/apt/lists/
 
 # run
-FROM heroku/heroku:18
+FROM alpine
 
 WORKDIR /app
 COPY --from=builder /webrtc-streamer/webrtc-streamer*.tar.gz /app/
 
-RUN apt-get update && apt-get install -y --no-install-recommends libgtk-3-0 libasound2 \
+RUN apk update && aptk add gtk+3-0 alsa-lib \
 	&& tar --strip=1 -xvzf webrtc-streamer*.tar.gz 
 
 EXPOSE 8000
