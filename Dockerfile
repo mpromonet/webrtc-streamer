@@ -24,7 +24,7 @@ FROM alpine
 WORKDIR /app
 COPY --from=builder /webrtc-streamer/webrtc-streamer*.tar.gz /app/
 
-RUN apk update && apk add gtk+3-0 alsa-lib \
+RUN apk update && apk add gtk+3.0 alsa-lib \
 	&& tar --strip=1 -xvzf webrtc-streamer*.tar.gz 
 
 EXPOSE 8000
