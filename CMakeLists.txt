@@ -61,7 +61,7 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
   pkg_check_modules(GTK3 QUIET gtk+-3.0)
   MESSAGE("GTK_FOUND = ${GTK3_FOUND}")
   if(NOT GTK3_FOUND)
- 	set (WEBRTCARGS use_ozone=true\n${WEBRTCARGS})
+ 	set (WEBRTCARGS use_ozone=true\nis_desktop_linux=false\n${WEBRTCARGS})
   endif()
   FILE(WRITE ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn ${WEBRTCARGS})
 

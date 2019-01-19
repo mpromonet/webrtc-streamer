@@ -5,7 +5,6 @@ services:
 variables:
   DOCKER_HOST: tcp://docker:2375
   DOCKER_DRIVER: overlay2
-  IMAGE_TAG: $CI_REGISTRY_IMAGE:latest
   GIT_SUBMODULE_STRATEGY: recursive
 
 before_script:
@@ -14,6 +13,8 @@ before_script:
 build:
   stage: build
   script:
-    - docker build -t $IMAGE_TAG .
-    - docker push $IMAGE_TAG
+    - docker build -t $CI_REGISTRY_IMAGE:latest .
+    - docker push $CI_REGISTRY_IMAGE:latest
+    - docker build -t $CI_REGISTRY_IMAGE:rpi . -f Dockerfile.rpi
+    - docker push $CI_REGISTRY_IMAGE:rpi
 
