@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf au
 	&& cd /webrtc-streamer \
 	&& cmake . && make \
 	&& cpack \
+	&& mkdir /app && tar xvzf webrtc-streamer*.tar.gz --strip=1 -C /app/ \
 	&& rm -rf /webrtc && rm -f *.a && rm -f src/*.o \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/
 
@@ -22,11 +23,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf au
 FROM ubuntu:18.04
 
 WORKDIR /app
-COPY --from=builder /webrtc-streamer/webrtc-streamer*.tar.gz /app/
+COPY --from=builder /app/ /app/
 
 RUN apt-get update && apt-get install -y --no-install-recommends libasound2 libgtk-3-0 \
-	&& apt-get clean && rm -rf /var/lib/apt/lists/ \
-	&& tar --strip=1 -xvzf webrtc-streamer*.tar.gz 
+	&& apt-get clean && rm -rf /var/lib/apt/lists/
 
 EXPOSE 8000
 
