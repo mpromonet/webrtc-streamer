@@ -10,11 +10,15 @@ variables:
 before_script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
 
-build:
+build_x86_64:
   stage: build
   script:
     - docker build -t $CI_REGISTRY_IMAGE:latest .
     - docker push $CI_REGISTRY_IMAGE:latest
+
+build_rpi:
+  stage: build
+  script:
     - docker build -t $CI_REGISTRY_IMAGE:rpi . -f Dockerfile.rpi
     - docker push $CI_REGISTRY_IMAGE:rpi
 
