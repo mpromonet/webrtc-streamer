@@ -159,11 +159,11 @@ jobs:
       - run: echo 'export PATH=/opt/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf/bin:$PATH' >> $BASH_ENV
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
-      - run: cd ${WEBRTCROOT} && gclient sync 
+      - run: cd ${WEBRTCROOT} && gclient sync
 
-	    - run: cmake -DCMAKE_SYSTEM_PROCESSOR=armv7l -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF . && make 
+      - run: cmake -DCMAKE_SYSTEM_PROCESSOR=armv7l -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF . && make 
       - run: cpack
-  
+
       - run: mkdir /distrib && cp *.tar.gz /distrib
       - persist_to_workspace:
           root: /
