@@ -1,0 +1,36 @@
+# build
+FROM microsoft/windowsservercore as builder
+MAINTAINER michel.promonet@free.fr
+
+WORKDIR /webrtc-streamer
+COPY . /webrtc-streamer
+
+SHELL ["powershell"]
+
+RUN Invoke-WebRequest "https://aka.ms/vs/15/release/vs_community.exe" -OutFile "$env:TEMP\vs_community.exe" -UseBasicParsing
+RUN & "$env:TEMP\vs_community.exe" --add Microsoft.VisualStudio.Workload.NetWeb --quiet --wait --norestart --noUpdateInstaller | Out-Default
+
+RUN & 'C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/MSBuild.exe' /version
+
+RUN git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /webrtc/depot_tools \
+	&& export PATH=/webrtc/depot_tools:$PATH \
+	&& cd /webrtc \
+	&& fetch --no-history --nohooks webrtc \
+	&& gclient sync \
+	&& cd /webrtc-streamer \
+	&& cmake -G "Visual Studio 15 2017 Win64" . \
+	&& msbuild INSTALL.vcxproj /p:Configuration=Release /p:Platform=x64 \
+	&& cpack \
+	&& mkdir /app && tar xvzf webrtc-streamer*.tar.gz --strip=1 -C /app/ \
+	&& rmdir /s /q /webrtc-streamer 
+
+# run
+FROM  microsoft/nanoserver
+
+WORKDIR /app
+COPY --from=builder /app/ /app/
+
+EXPOSE 8000
+
+ENTRYPOINT [ "webrtc-streamer.exe" ]
+CMD [ "-a", "-C", "config.json", "screen://" ]
