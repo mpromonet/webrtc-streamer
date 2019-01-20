@@ -34,12 +34,8 @@ jobs:
     <<: *defaults
     
     environment:
-      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false is_clang=false treat_warnings_as_errors=false' 
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
-      GYP_GENERATOR_OUTPUT: "x86_64"
-      GNARGS: 'is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" use_sysroot=false'      
-      NINJA_TARGET: webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection p2p_server_utils
 
     steps:
       - attach_workspace:
@@ -48,12 +44,10 @@ jobs:
       - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make g++ xz-utils libgtk-3-dev libasound2-dev
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: cd ${WEBRTCROOT} && gclient sync 
-      - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}" 
-      - run: cd ${WEBRTCROOT}/src && ( ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release ${NINJA_TARGET} || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release ${NINJA_TARGET} || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release ${NINJA_TARGET} )
-      - run: make live555
-      - run: make all tgz 
+      - run: cmake . && make 
+      - run: cpack 
 
-      - run: mkdir /distrib && cp *.tgz /distrib
+      - run: mkdir /distrib && cp *.tar.gz /distrib
       - persist_to_workspace:
           root: /
           paths:
