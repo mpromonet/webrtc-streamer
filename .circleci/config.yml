@@ -154,7 +154,7 @@ jobs:
           at: /
       - checkout
       - run: git submodule update --init
-      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make g++ xz-utils p7zip-full         
+      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make cmake g++ xz-utils p7zip-full         
       - run: wget -qO- https://releases.linaro.org/components/toolchain/binaries/6.4-2018.05/arm-linux-gnueabihf/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf.tar.xz  | tar xJ -C /opt 
       - run: echo 'export PATH=/opt/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf/bin:$PATH' >> $BASH_ENV
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
