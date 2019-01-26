@@ -10,9 +10,9 @@
 #include <iostream>
 #include <fstream>
 
-#include "rtc_base/ssladapter.h"
+#include "rtc_base/ssl_adapter.h"
 #include "rtc_base/thread.h"
-#include "p2p/base/stunserver.h"
+#include "p2p/base/stun_server.h"
 
 #include "PeerConnectionManager.h"
 #include "HttpServerRequestHandler.h"

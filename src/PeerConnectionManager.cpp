@@ -15,8 +15,8 @@
 #include "api/video_codecs/builtin_video_encoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
-#include "api/test/fakeconstraints.h"
-#include "media/engine/webrtcmediaengine.h"
+#include "api/test/fake_constraints.h"
+#include "media/engine/webrtc_media_engine.h"
 #include "logging/rtc_event_log/rtc_event_log_factory.h"
 
 #include "PeerConnectionManager.h"
@@ -138,7 +138,7 @@ PeerConnectionManager::PeerConnectionManager( const std::list<std::string> & ice
 					    , const std::map<std::string,std::string> & urlAudioList
 					    , const webrtc::AudioDeviceModule::AudioLayer audioLayer
                                             , const std::string& publishFilter)
-	: audioDeviceModule_(webrtc::AudioDeviceModule::Create(0, audioLayer))
+	: audioDeviceModule_(webrtc::AudioDeviceModule::Create(audioLayer))
 	, audioDecoderfactory_(webrtc::CreateBuiltinAudioDecoderFactory())
 	, peer_connection_factory_(webrtc::CreateModularPeerConnectionFactory(NULL,
                                                                     rtc::Thread::Current(),

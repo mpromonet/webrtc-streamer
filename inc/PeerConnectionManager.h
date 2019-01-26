@@ -14,7 +14,7 @@
 #include <regex>
 #include <thread>
 
-#include "api/peerconnectioninterface.h"
+#include "api/peer_connection_interface.h"
 
 #include "modules/audio_device/include/audio_device.h"
 

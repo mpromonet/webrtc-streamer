@@ -21,8 +21,8 @@
 
 #include "rtc_base/thread.h"
 #include "media/base/codec.h"
-#include "media/base/videocapturer.h"
-#include "media/engine/internaldecoderfactory.h"
+#include "media/base/video_capturer.h"
+#include "media/engine/internal_decoder_factory.h"
 #include "api/video_codecs/video_decoder.h"
 
 

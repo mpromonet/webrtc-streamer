@@ -10,7 +10,7 @@
 #pragma once
 
 #include "rtc_base/thread.h"
-#include "media/base/videocapturer.h"
+#include "media/base/video_capturer.h"
 #include "api/video/i420_buffer.h"
 
 #include "libyuv/video_common.h"
