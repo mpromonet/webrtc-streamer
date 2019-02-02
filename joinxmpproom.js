@@ -15,9 +15,9 @@ console.log("videourl: " + videourl);
 
 var jsdom = require("jsdom");
 const { JSDOM } = jsdom;
-const { window } = new JSDOM('');
+const { window } = new JSDOM("");
 
-global.jquery = require('jquery')(window);
+global.jquery = require("jquery")(window);
 global.$ = (selector,context) => {return new jquery.fn.init(selector,context); };
 
 global.window = window;

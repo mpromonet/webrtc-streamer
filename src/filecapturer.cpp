@@ -55,7 +55,6 @@ FileVideoCapturer::~FileVideoCapturer()
 
 bool FileVideoCapturer::onNewSession(const char* id,const char* media, const char* codec, const char* sdp)
 {
-	bool success = false;
 	if (strcmp(media, "video") == 0) {	
 		RTC_LOG(INFO) << "FileVideoCapturer::onNewSession " << media << "/" << codec << " " << sdp;
 		
@@ -82,13 +81,10 @@ bool FileVideoCapturer::onNewSession(const char* id,const char* media, const cha
 			onData(id, pps.data(), pps.size(), presentationTime);
 
 			delete result;
-
-			success = true;
 		}
 		else if (strcmp(codec, "JPEG") == 0) 
 		{
 			m_codec[id] = codec;
-			success = true;
 		}
 	}
 	return true; // mkv doesnot read data before all sink are started.
@@ -116,7 +112,6 @@ bool FileVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			}
 			else
 			{			
-				int fps = 25;
 				if (m_decoder.get()) {
 					if ( (GetCaptureFormat()->width !=  sps->width) || (GetCaptureFormat()->height !=  sps->height) )  {
 						RTC_LOG(INFO) << "format changed => set format from " << GetCaptureFormat()->width << "x" << GetCaptureFormat()->height	 << " to " << sps->width << "x" << sps->height;
@@ -125,6 +120,7 @@ bool FileVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 				}
 
 				if (!m_decoder.get()) {
+					int fps = 25;
 					RTC_LOG(INFO) << "FileVideoCapturer:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
 					cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
 					SetCaptureFormat(&videoFormat);
