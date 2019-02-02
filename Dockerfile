@@ -1,6 +1,6 @@
 # build
 FROM heroku/heroku:18 as builder
-MAINTAINER michel.promonet@free.fr
+LABEL maintainer=michel.promonet@free.fr
 
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
