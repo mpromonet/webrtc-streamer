@@ -108,8 +108,15 @@ target_link_libraries (${PROJECT_NAME} webrtcextra)
 
 # live555helper & live555
 if (NOT EXISTS live)
-	file (DOWNLOAD http://www.live555.com/liveMedia/public/live555-latest.tar.gz ${CMAKE_SOURCE_DIR}/live555-latest.tar.gz )
-    EXECUTE_PROCESS(COMMAND 7z x live555-latest.tar.gz -so COMMAND 7z x -aoa -ttar -si)
+    file (DOWNLOAD http://www.live555.com/liveMedia/public/live555-latest.tar.gz ${CMAKE_SOURCE_DIR}/live555-latest.tar.gz )
+    EXECUTE_PROCESS(
+        COMMAND 7z x live555-latest.tar.gz -so
+        COMMAND 7z x -aoa -ttar -si
+        RESULT_VARIABLE p7z_result
+    )
+    if(NOT p7z_result STREQUAL "0")
+        message(FATAL_ERROR "Fetching and compiling live555 failed!")
+    endif()
 endif(NOT EXISTS live) 
 
 FILE(GLOB LIVEHELPERSOURCE live/groupsock/*.c* live/liveMedia/*.c* live/UsageEnvironment/*.c* live/BasicUsageEnvironment/*.c* live555helper/src/*.cpp)
