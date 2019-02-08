@@ -3,7 +3,7 @@
 ** support, and with no warranty, express or implied, as to its usefulness for
 ** any purpose.
 **
-** capturerfactory.h
+** CapturerFactory.h
 **
 ** -------------------------------------------------------------------------*/
 
@@ -11,7 +11,7 @@
 
 #include <regex>
 
-#include "modules/video_capture/video_capture_factory.h"
+#include "VcmCapturer.h"
 
 #ifdef HAVE_LIVE555
 #include "rtspvideocapturer.h"
@@ -23,109 +23,6 @@
 #endif
 
 #include "pc/video_track_source.h"
-
-class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public rtc::VideoSourceInterface<webrtc::VideoFrame> {
- public:
-  static VcmCapturer* Create(const std::string & videourl, const std::map<std::string, std::string> & opts) {
-	std::unique_ptr<VcmCapturer> vcm_capturer(new VcmCapturer());
-	size_t width = 0;
-	size_t height = 0;
-	size_t fps = 0;
-	if (opts.find("width") != opts.end()) {
-		width = std::stoi(opts.at("width"));
-	}
-	if (opts.find("height") != opts.end()) {
-		height = std::stoi(opts.at("height"));
-	}
-	if (!vcm_capturer->Init(width, height, fps, videourl)) {
-		RTC_LOG(LS_WARNING) << "Failed to create VcmCapturer(w = " << width
-							<< ", h = " << height << ", fps = " << fps
-							<< ")";
-		return nullptr;
-	}
-	return vcm_capturer.release();
-  }
-  virtual ~VcmCapturer() {
-	  Destroy();
-  }
-
-  void OnFrame(const webrtc::VideoFrame& frame) override {
-	  broadcaster_.OnFrame(frame);
-  } 
-
- private:
-  VcmCapturer() : vcm_(nullptr) {}
-  
-  bool Init(size_t width,
-            size_t height,
-            size_t target_fps,
-            const std::string & videourl) {
-	std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> device_info(webrtc::VideoCaptureFactory::CreateDeviceInfo());
-
-	int num_videoDevices = device_info->NumberOfDevices();
-	RTC_LOG(INFO) << "nb video devices:" << num_videoDevices;
-	std::string deviceId;
-	for (int i = 0; i < num_videoDevices; ++i) {
-		const uint32_t kSize = 256;
-		char name[kSize] = {0};
-		char id[kSize] = {0};
-		if (device_info->GetDeviceName(i, name, kSize, id, kSize) == 0)
-		{
-			if (videourl == name) {
-				deviceId = id;
-				break;
-			}
-		}
-	}
-
-	if (deviceId.empty()) {
-		RTC_LOG(LS_WARNING) << "device not found:" << videourl;
-		Destroy();
-		return false;	
-	}
-
-	vcm_ = webrtc::VideoCaptureFactory::Create(deviceId.c_str());
-	vcm_->RegisterCaptureDataCallback(this);
-
-	webrtc::VideoCaptureCapability capability;
-	capability.width = static_cast<int32_t>(width);
-	capability.height = static_cast<int32_t>(height);
-	capability.maxFPS = static_cast<int32_t>(target_fps);
-	capability.videoType = webrtc::VideoType::kI420;
-
-	if (device_info->GetBestMatchedCapability(vcm_->CurrentDeviceName(), capability, capability)<0) {
-		device_info->GetCapability(vcm_->CurrentDeviceName(), 0, capability);
-	}
-
-	if (vcm_->StartCapture(capability) != 0) {
-		Destroy();
-		return false;
-	}
-
-	RTC_CHECK(vcm_->CaptureStarted());
-
-	return true;
-  }
-
-  void Destroy() {
-	if (vcm_) {
-		vcm_->StopCapture();
-		vcm_->DeRegisterCaptureDataCallback();
-		vcm_ = nullptr;
-	} 
-  }
-
-  void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink, const rtc::VideoSinkWants& wants) {
-	broadcaster_.AddOrUpdateSink(sink, wants);
-  }
-
-  void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) {
-	broadcaster_.RemoveSink(sink);
-  }
-
-  rtc::scoped_refptr<webrtc::VideoCaptureModule> vcm_;
-  rtc::VideoBroadcaster broadcaster_;
-};
 
 template<class T>
 class TrackSource : public webrtc::VideoTrackSource {
