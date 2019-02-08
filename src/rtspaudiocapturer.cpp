@@ -23,7 +23,7 @@
 
 RTSPAudioSource::RTSPAudioSource(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri, const std::map<std::string,std::string> & opts) 
 				: m_connection(m_env, this, uri.c_str(), RTSPConnection::decodeTimeoutOption(opts), RTSPConnection::decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=3)
-				, m_factory(audioDecoderFactory), m_sink(NULL), m_freq(8000), m_channel(1) {
+				, m_factory(audioDecoderFactory), m_freq(8000), m_channel(1) {
 	SetName("RTSPAudioSource", NULL);
 	rtc::Thread::Start(); 
 }
@@ -84,37 +84,36 @@ bool RTSPAudioSource::onNewSession(const char* id, const char* media, const char
 		
 bool RTSPAudioSource::onData(const char* id, unsigned char* buffer, ssize_t size, struct timeval presentationTime) {
 	bool success = false;
-	int segmentLength = m_freq/100;
-	if (m_sink) {								
-		if (m_decoder.get() != NULL) {			
-			int16_t* decoded = new int16_t[size];
-			webrtc::AudioDecoder::SpeechType speech_type;
-			int res = m_decoder->Decode(buffer, size, m_freq, size*sizeof(int16_t), decoded, &speech_type);
-			RTC_LOG(LS_VERBOSE) << "RTSPAudioSource::onData size:" << size << " decoded:" << res;
-			if (res > 0) {
-				for (int i = 0 ; i < res*m_channel; ++i) {
-					m_buffer.push(decoded[i]);
-				}
-			} else {
-				RTC_LOG(LS_ERROR) << "RTSPAudioSource::onData error:Decode Audio failed";
-			}	
-			delete [] decoded;
-			while (m_buffer.size() > segmentLength*m_channel) {
-				int16_t* outbuffer = new int16_t[segmentLength*m_channel];
-				for (int i=0; i<segmentLength*m_channel; ++i) {
-					uint16_t value = m_buffer.front();
-					outbuffer[i] = value;
-					m_buffer.pop();
-				}
-				m_sink->OnData(outbuffer, 16, m_freq, m_channel, segmentLength);
-				delete [] outbuffer;
+	int segmentLength = m_freq/100;								
+	if (m_decoder.get() != NULL) {			
+		int16_t* decoded = new int16_t[size];
+		webrtc::AudioDecoder::SpeechType speech_type;
+		int res = m_decoder->Decode(buffer, size, m_freq, size*sizeof(int16_t), decoded, &speech_type);
+		RTC_LOG(LS_VERBOSE) << "RTSPAudioSource::onData size:" << size << " decoded:" << res;
+		if (res > 0) {
+			for (int i = 0 ; i < res*m_channel; ++i) {
+				m_buffer.push(decoded[i]);
 			}
-			success = true;
 		} else {
-			RTC_LOG(LS_ERROR) << "RTSPAudioSource::onData error:No Audio decoder";
+			RTC_LOG(LS_ERROR) << "RTSPAudioSource::onData error:Decode Audio failed";
+		}	
+		delete [] decoded;
+		while (m_buffer.size() > segmentLength*m_channel) {
+			int16_t* outbuffer = new int16_t[segmentLength*m_channel];
+			for (int i=0; i<segmentLength*m_channel; ++i) {
+				uint16_t value = m_buffer.front();
+				outbuffer[i] = value;
+				m_buffer.pop();
+			}
+			rtc::CritScope lock(&m_sink_lock);
+			for (auto* sink : m_sinks) {
+				sink->OnData(outbuffer, 16, m_freq, m_channel, segmentLength);
+			}
+			delete [] outbuffer;
 		}
+		success = true;
 	} else {
-		RTC_LOG(LS_VERBOSE) << "RTSPAudioSource::onData error:No Audio Sink";
+		RTC_LOG(LS_ERROR) << "RTSPAudioSource::onData error:No Audio decoder";
 	}
 	return success;
 }
