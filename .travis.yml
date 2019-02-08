@@ -13,7 +13,7 @@ env:
       CROSS=arm-linux-gnueabihf- 
     - |
       GYP_GENERATOR_OUTPUT=rpi-armv6  
-      GNARGS='is_debug=false is_clang=false target_cpu="arm" use_ozone=true arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false' 
+      GNARGS='is_debug=false target_cpu="arm" use_ozone=true arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false' 
       CROSS=arm-linux-gnueabihf- 
       CFLAGS_EXTRA="-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard"
 addons:
@@ -35,7 +35,7 @@ script:
 - travis_wait 30 fetch --no-history --nohooks webrtc
 # patch webrtc to not download chromium-webrtc-resources
 - sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
-# patch webrtc for std::vector::erase with iterator
+# get arm sysroot
 - if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm; fi
 # get WebRTC dependencies
 - travis_wait 30 gclient sync
