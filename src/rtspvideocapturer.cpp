@@ -33,7 +33,8 @@
 uint8_t marker[] = { 0, 0, 0, 1};
 
 RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
-	: m_connection(m_env, this, uri.c_str(), RTSPConnection::decodeTimeoutOption(opts), RTSPConnection::decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=3),
+	: m_env(m_stop),
+	m_connection(m_env, this, uri.c_str(), RTSPConnection::decodeTimeoutOption(opts), RTSPConnection::decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=3),
 	m_width(0), m_height(0), m_fps(0)
 {
 	RTC_LOG(INFO) << "RTSPVideoCapturer " << uri ;
@@ -46,10 +47,12 @@ RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, const std::map<std
 	if (opts.find("fps") != opts.end()) {
 		m_fps = std::stoi(opts.at("fps"));
 	}	
+	this->Start();
 }
 
 RTSPVideoCapturer::~RTSPVideoCapturer()
 {
+	this->Stop();
 }
 
 bool RTSPVideoCapturer::onNewSession(const char* id,const char* media, const char* codec, const char* sdp)
@@ -125,8 +128,8 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			else
 			{			
 				if (m_decoder.get()) {
-					if ( (GetCaptureFormat()->width !=  sps->width) || (GetCaptureFormat()->height !=  sps->height) )  {
-						RTC_LOG(INFO) << "format changed => set format from " << GetCaptureFormat()->width << "x" << GetCaptureFormat()->height	 << " to " << sps->width << "x" << sps->height;
+					if ( (m_format.width !=  sps->width) || (m_format.height !=  sps->height) )  {
+						RTC_LOG(INFO) << "format changed => set format from " << m_format.width << "x" << m_format.height	 << " to " << sps->width << "x" << sps->height;
 						m_decoder.reset(NULL);
 					}
 				}
@@ -135,7 +138,7 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 					int fps = 25;
 					RTC_LOG(INFO) << "RTSPVideoCapturer:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
 					cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
-					SetCaptureFormat(&videoFormat);
+					m_format = videoFormat;
 
 					m_decoder=m_factory.CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kH264CodecName));
 					webrtc::VideoCodec codec_settings;
@@ -249,7 +252,7 @@ int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 	decodedImage.set_timestamp_us(decodedImage.timestamp()*1000);
 
 	if ( (m_height == 0) && (m_width == 0) ) {
-		this->OnFrame(decodedImage, decodedImage.height(), decodedImage.width());	
+		broadcaster_.OnFrame(decodedImage);
 	} else {
 		int height = m_height;
 		int width = m_width;
@@ -266,21 +269,18 @@ int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 		webrtc::VideoFrame frame = webrtc::VideoFrame(scaled_buffer, decodedImage.timestamp(),
 			decodedImage.render_time_ms(), webrtc::kVideoRotation_0);
 				
-		this->OnFrame(frame, frame.width(), frame.height());
+		broadcaster_.OnFrame(frame);
 	}
 		
 	return true;
 }
 
-cricket::CaptureState RTSPVideoCapturer::Start(const cricket::VideoFormat& format)
+void RTSPVideoCapturer::Start()
 {
-	RTC_LOG(INFO) << "RTSPVideoCapturer::start format" << format.ToString();
-	SetCaptureFormat(&format);
-	SetCaptureState(cricket::CS_RUNNING);
+	RTC_LOG(INFO) << "RTSPVideoCapturer::start";
 	SetName("RTSPVideoCapturer", NULL);
 	rtc::Thread::Start();
 	m_decoderthread = std::thread(&RTSPVideoCapturer::DecoderThread, this);
-	return cricket::CS_RUNNING;
 }
 
 void RTSPVideoCapturer::Stop()
@@ -288,8 +288,6 @@ void RTSPVideoCapturer::Stop()
 	RTC_LOG(INFO) << "RTSPVideoCapturer::stop";
 	m_env.stop();
 	rtc::Thread::Stop();
-	SetCaptureFormat(NULL);
-	SetCaptureState(cricket::CS_STOPPED);
 	Frame frame;			
 	{
 		std::unique_lock<std::mutex> lock(m_queuemutex);
@@ -304,8 +302,4 @@ void RTSPVideoCapturer::Run()
 	m_env.mainloop();
 }
 
-bool RTSPVideoCapturer::GetPreferredFourccs(std::vector<unsigned int>* fourccs)
-{
-	return true;
-}
 #endif

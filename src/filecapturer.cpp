@@ -34,7 +34,8 @@
 uint8_t h26xmarker[] = { 0, 0, 0, 1};
 
 FileVideoCapturer::FileVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
-	: m_mkvclient(m_env, this, uri.c_str()),
+	: m_env(m_stop),
+	m_mkvclient(m_env, this, uri.c_str()),
 	m_width(0), m_height(0), m_fps(0)
 {
 	RTC_LOG(INFO) << "FileVideoCapturer " << uri ;
@@ -46,11 +47,13 @@ FileVideoCapturer::FileVideoCapturer(const std::string & uri, const std::map<std
 	}	
 	if (opts.find("fps") != opts.end()) {
 		m_fps = std::stoi(opts.at("fps"));
-	}	
+	}
+	this->Start();	
 }
 
 FileVideoCapturer::~FileVideoCapturer()
 {
+	this->Stop();	
 }
 
 bool FileVideoCapturer::onNewSession(const char* id,const char* media, const char* codec, const char* sdp)
@@ -113,8 +116,8 @@ bool FileVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			else
 			{			
 				if (m_decoder.get()) {
-					if ( (GetCaptureFormat()->width !=  sps->width) || (GetCaptureFormat()->height !=  sps->height) )  {
-						RTC_LOG(INFO) << "format changed => set format from " << GetCaptureFormat()->width << "x" << GetCaptureFormat()->height	 << " to " << sps->width << "x" << sps->height;
+					if ((m_format.width != sps->width) || (m_format.height != sps->height)) {
+						RTC_LOG(INFO) << "format changed => set format from " << m_format.width << "x" << m_format.height << " to " << sps->width << "x" << sps->height;
 						m_decoder.reset(NULL);
 					}
 				}
@@ -123,7 +126,7 @@ bool FileVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 					int fps = 25;
 					RTC_LOG(INFO) << "FileVideoCapturer:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
 					cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
-					SetCaptureFormat(&videoFormat);
+					m_format = videoFormat;
 
 					m_decoder=m_factory.CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kH264CodecName));
 					webrtc::VideoCodec codec_settings;
@@ -243,7 +246,7 @@ int32_t FileVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 	}
 
 	if ( (m_height == 0) && (m_width == 0) ) {
-		this->OnFrame(decodedImage, decodedImage.height(), decodedImage.width());	
+		broadcaster_.OnFrame(decodedImage);	
 	} else {
 		int height = m_height;
 		int width = m_width;
@@ -260,7 +263,7 @@ int32_t FileVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 		webrtc::VideoFrame frame = webrtc::VideoFrame(scaled_buffer, decodedImage.timestamp(),
 			decodedImage.render_time_ms(), webrtc::kVideoRotation_0);
 				
-		this->OnFrame(frame, frame.width(), frame.height());
+		broadcaster_.OnFrame(decodedImage);
 	}
 	
 	previmagets = decodedImage.timestamp();
@@ -269,14 +272,10 @@ int32_t FileVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 	return true;
 }
 
-cricket::CaptureState FileVideoCapturer::Start(const cricket::VideoFormat& format)
+void FileVideoCapturer::Start()
 {
-	RTC_LOG(INFO) << "FileVideoCapturer::start format" << format.ToString();
-	SetCaptureFormat(&format);
-	SetCaptureState(cricket::CS_RUNNING);
 	rtc::Thread::Start();
 	m_decoderthread = std::thread(&FileVideoCapturer::DecoderThread, this);
-	return cricket::CS_RUNNING;
 }
 
 void FileVideoCapturer::Stop()
@@ -284,8 +283,6 @@ void FileVideoCapturer::Stop()
 	RTC_LOG(INFO) << "FileVideoCapturer::stop";
 	m_env.stop();
 	rtc::Thread::Stop();
-	SetCaptureFormat(NULL);
-	SetCaptureState(cricket::CS_STOPPED);
 	Frame frame;			
 	{
 		std::unique_lock<std::mutex> lock(m_queuemutex);
@@ -300,8 +297,4 @@ void FileVideoCapturer::Run()
 	m_env.mainloop();
 }
 
-bool FileVideoCapturer::GetPreferredFourccs(std::vector<unsigned int>* fourccs)
-{
-	return true;
-}
 #endif

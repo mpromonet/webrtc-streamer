@@ -38,7 +38,7 @@ void DesktopCapturer::OnCaptureResult(webrtc::DesktopCapturer::Result result, st
 		if (conversionResult >= 0) {
 			webrtc::VideoFrame videoFrame(I420buffer, webrtc::VideoRotation::kVideoRotation_0, rtc::TimeMicros());
 			if ( (m_height == 0) && (m_width == 0) ) {
-				this->OnFrame(videoFrame, videoFrame.height(), videoFrame.width());	
+				broadcaster_.OnFrame(videoFrame);	
 
 			} else {
 				int height = m_height;
@@ -55,7 +55,7 @@ void DesktopCapturer::OnCaptureResult(webrtc::DesktopCapturer::Result result, st
 				scaled_buffer->ScaleFrom(*videoFrame.video_frame_buffer()->ToI420());
 				webrtc::VideoFrame frame = webrtc::VideoFrame(scaled_buffer, webrtc::kVideoRotation_0, rtc::TimeMicros());
 						
-				this->OnFrame(frame, frame.width(), frame.height());
+				broadcaster_.OnFrame(videoFrame);
 			}
 		} else {
 			RTC_LOG(LS_ERROR) << "DesktopCapturer:OnCaptureResult conversion error:" << conversionResult;
@@ -73,18 +73,16 @@ void DesktopCapturer::Run() {
 	}
 	RTC_LOG(INFO) << "DesktopCapturer:Run exit";
 }
-cricket::CaptureState DesktopCapturer::Start(const cricket::VideoFormat& format) {
-	SetCaptureFormat(&format);
-	SetCaptureState(cricket::CS_RUNNING);
+bool DesktopCapturer::Start() {
+	m_isrunning = true;
 	rtc::Thread::Start();
 	m_capturer->Start(this);
-	return cricket::CS_RUNNING;
+	return true;
 }
 		
 void DesktopCapturer::Stop() {
-	SetCaptureState(cricket::CS_STOPPED);			
+	m_isrunning = false;
 	rtc::Thread::Stop();
-	SetCaptureFormat(NULL);
 }
 		
 #endif

@@ -26,14 +26,20 @@
 
 class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public rtc::VideoSourceInterface<webrtc::VideoFrame> {
  public:
-  static VcmCapturer* Create(size_t width,
-                             size_t height,
-                             size_t target_fps,
-                             const std::string & videourl) {
+  static VcmCapturer* Create(const std::string & videourl, const std::map<std::string, std::string> & opts) {
 	std::unique_ptr<VcmCapturer> vcm_capturer(new VcmCapturer());
-	if (!vcm_capturer->Init(width, height, target_fps, videourl)) {
+	size_t width = 0;
+	size_t height = 0;
+	size_t fps = 0;
+	if (opts.find("width") != opts.end()) {
+		width = std::stoi(opts.at("width"));
+	}
+	if (opts.find("height") != opts.end()) {
+		height = std::stoi(opts.at("height"));
+	}
+	if (!vcm_capturer->Init(width, height, fps, videourl)) {
 		RTC_LOG(LS_WARNING) << "Failed to create VcmCapturer(w = " << width
-							<< ", h = " << height << ", fps = " << target_fps
+							<< ", h = " << height << ", fps = " << fps
 							<< ")";
 		return nullptr;
 	}
@@ -121,25 +127,26 @@ class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public 
   rtc::VideoBroadcaster broadcaster_;
 };
 
-class CapturerTrackSource : public webrtc::VideoTrackSource {
- public:
-  static rtc::scoped_refptr<CapturerTrackSource> Create(const std::string & videourl, size_t width, size_t height, size_t fps) {
-    std::unique_ptr<VcmCapturer> capturer = absl::WrapUnique(VcmCapturer::Create(width, height, fps, videourl));
-    if (!capturer) {
-      return nullptr;
-    }
-    return new rtc::RefCountedObject<CapturerTrackSource>(std::move(capturer));
-  }
+template<class T>
+class TrackSource : public webrtc::VideoTrackSource {
+public:
+	static rtc::scoped_refptr<TrackSource> Create(const std::string & videourl, const std::map<std::string, std::string> & opts) {
+		std::unique_ptr<T> capturer = absl::WrapUnique(T::Create(videourl, opts));
+		if (!capturer) {
+			return nullptr;
+		}
+		return new rtc::RefCountedObject<TrackSource>(std::move(capturer));
+	}
 
- protected:
-  explicit CapturerTrackSource(std::unique_ptr<VcmCapturer> capturer)
-  	: webrtc::VideoTrackSource(/*remote=*/false), capturer_(std::move(capturer)) {}
+protected:
+	explicit TrackSource(std::unique_ptr<T> capturer)
+		: webrtc::VideoTrackSource(/*remote=*/false), capturer_(std::move(capturer)) {}
 
- private:
-  rtc::VideoSourceInterface<webrtc::VideoFrame>* source() override {
-    return capturer_.get();
-  }
-  std::unique_ptr<VcmCapturer> capturer_;
+private:
+	rtc::VideoSourceInterface<webrtc::VideoFrame>* source() override {
+		return capturer_.get();
+	}
+	std::unique_ptr<T> capturer_;
 };
 
 class CapturerFactory {
@@ -207,54 +214,33 @@ class CapturerFactory {
 		return videoList;
 	}
 
-	
-	static std::unique_ptr<cricket::VideoCapturer> CreateVideoCapturer(const std::string & videourl, const std::map<std::string,std::string> & opts, const std::regex & publishFilter) {
-		std::unique_ptr<cricket::VideoCapturer> capturer;
-		if ( (videourl.find("rtsp://") == 0) && (std::regex_match("rtsp://",publishFilter)) ) 
-		{
+	static rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(const std::string & videourl, const std::map<std::string,std::string> & opts, const std::regex & publishFilter, rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory, const webrtc::FakeConstraints & constraints) {
+		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource;
+		if ((videourl.find("rtsp://") == 0) && (std::regex_match("rtsp://", publishFilter))) {
 #ifdef HAVE_LIVE555
-			capturer.reset(new RTSPVideoCapturer(videourl, opts));
-#endif
+			videoSource = TrackSource<RTSPVideoCapturer>::Create(videourl,opts);
+#endif	
 		}
 		else if ((videourl.find("file://") == 0) && (std::regex_match("file://", publishFilter)))
 		{
 #ifdef HAVE_LIVE555
-			capturer.reset(new FileVideoCapturer(videourl, opts));
+			videoSource = TrackSource<FileVideoCapturer>::Create(videourl, opts);
 #endif
 		}
-		else if ( (videourl.find("screen://") == 0) && (std::regex_match("screen://",publishFilter)) )
+		else if ((videourl.find("screen://") == 0) && (std::regex_match("screen://", publishFilter)))
 		{
 #ifdef USE_X11
-			capturer.reset(new ScreenCapturer(videourl, opts));			
+			videoSource = TrackSource<ScreenCapturer>::Create(videourl, opts);
 #endif	
 		}
-		else if ( (videourl.find("window://") == 0) && (std::regex_match("window://",publishFilter)) )
+		else if ((videourl.find("window://") == 0) && (std::regex_match("window://", publishFilter)))
 		{
 #ifdef USE_X11
-			capturer.reset(new WindowCapturer(videourl, opts));			
+			videoSource = TrackSource<WindowCapturer>::Create(videourl, opts);
 #endif	
-		}
-		
-		return capturer;
-	}	
-
-	static rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(const std::string & videourl, const std::map<std::string,std::string> & opts, const std::regex & publishFilter, rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory, const webrtc::FakeConstraints & constraints) {
-		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource;
-		std::unique_ptr<cricket::VideoCapturer> capturer = CapturerFactory::CreateVideoCapturer(videourl, opts, publishFilter);
-		if (capturer) {
-			videoSource = peer_connection_factory->CreateVideoSource(std::move(capturer), &constraints);
 		}
 		else if (std::regex_match("videocap://",publishFilter)) {
-			size_t width = 0;
-			size_t height = 0;
-			size_t fps = 0;
-			if (opts.find("width") != opts.end()) {
-				width = std::stoi(opts.at("width"));
-			}
-			if (opts.find("height") != opts.end()) {
-				height = std::stoi(opts.at("height"));
-			}
-			videoSource = CapturerTrackSource::Create(videourl, width, height, fps);
+			videoSource = TrackSource<VcmCapturer>::Create(videourl, opts);
 		}
 		return videoSource;
 	}

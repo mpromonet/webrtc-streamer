@@ -27,7 +27,7 @@
 
 
 
-class FileVideoCapturer : public cricket::VideoCapturer, public MKVClient::Callback, public rtc::Thread, public webrtc::DecodedImageCallback
+class FileVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public MKVClient::Callback, public rtc::Thread, public webrtc::DecodedImageCallback
 {
 	class Frame
 	{
@@ -42,6 +42,14 @@ class FileVideoCapturer : public cricket::VideoCapturer, public MKVClient::Callb
 	public:
 		FileVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts);
 		virtual ~FileVideoCapturer();
+	
+		static FileVideoCapturer* Create(const std::string & url, const std::map<std::string, std::string> & opts) {
+			return new FileVideoCapturer(url, opts);
+		}
+
+		void Start();
+		void Stop();
+		bool IsRunning() { return (m_stop == 0); }
 
 		// overide RTSPConnection::Callback
 		virtual bool onNewSession(const char* id, const char* media, const char* codec, const char* sdp);
@@ -53,17 +61,23 @@ class FileVideoCapturer : public cricket::VideoCapturer, public MKVClient::Callb
 		// overide rtc::Thread
 		virtual void Run();
 
-		// overide cricket::VideoCapturer
-		virtual cricket::CaptureState Start(const cricket::VideoFormat& format);
-		virtual void Stop();
-		virtual bool GetPreferredFourccs(std::vector<unsigned int>* fourccs);
-		virtual bool IsScreencast() const { return false; };
-		virtual bool IsRunning() { return this->capture_state() == cricket::CS_RUNNING; }
+		// overide rtc::VideoSourceInterface<webrtc::VideoFrame>
+		void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink, const rtc::VideoSinkWants& wants) {
+			broadcaster_.AddOrUpdateSink(sink, wants);
+		}
+
+		void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) {
+			broadcaster_.RemoveSink(sink);
+		}
+
+		rtc::VideoBroadcaster broadcaster_;
 		
 		void DecoderThread();
 
 
 	private:
+		char m_stop;
+		cricket::VideoFormat                  m_format;	
 		Environment                           m_env;
 		MKVClient                             m_mkvclient;
 		webrtc::InternalDecoderFactory        m_factory;
