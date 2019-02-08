@@ -249,7 +249,8 @@ int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 				<< " source ts:" << ts;
 
 	// restore the timestamp that had overflow in the convertion EncodedImage.SetTimeStamp(presentationTime)
-	decodedImage.set_timestamp_us(decodedImage.timestamp()*1000);
+	// rdp timestamp is just 32 bit, overflow error will occur each ~50 days
+	decodedImage.set_timestamp_us((int64_t)decodedImage.timestamp() * 1000);
 
 	if ( (m_height == 0) && (m_width == 0) ) {
 		broadcaster_.OnFrame(decodedImage);

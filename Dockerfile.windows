@@ -5,30 +5,29 @@ LABEL maintainer=michel.promonet@free.fr
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
-SHELL ["powershell"]
+# disable ssl check
+RUN powershell [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
 
-RUN Invoke-WebRequest "https://aka.ms/vs/15/release/vs_community.exe" -OutFile "$env:TEMP\vs_community.exe" -UseBasicParsing
-RUN & "$env:TEMP\vs_community.exe" --add Microsoft.VisualStudio.Workload.NetWeb --quiet --wait --norestart --noUpdateInstaller | Out-Default
+# Install Chocolatey
+RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 
-RUN & 'C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/MSBuild.exe' /version
+# Install Chocolatey packages
+RUN choco install git 7zip python2 visualcpp-build-tools cmake wget curl -y 
 
-RUN git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /webrtc/depot_tools \
-	&& export PATH=/webrtc/depot_tools:$PATH \
-	&& cd /webrtc \
-	&& fetch --no-history --nohooks webrtc \
-	&& gclient sync \
-	&& cd /webrtc-streamer \
-	&& cmake -G "Visual Studio 15 2017 Win64" . \
-	&& msbuild INSTALL.vcxproj /p:Configuration=Release /p:Platform=x64 \
-	&& cpack \
-	&& mkdir /app && tar xvzf webrtc-streamer*.tar.gz --strip=1 -C /app/ \
-	&& rmdir /s /q /webrtc-streamer 
+# install WebRTC 
+ADD https://storage.googleapis.com/chrome-infra/depot_tools.zip C:\\Downloads\\depot_tools.zip
+RUN mkdir c:\depot_tools && cd c:\depot_tools && 7z x C:\Downloads\depot_tools.zip && SETX PATH "%PATH%;C:\depot_tools"
+
+RUN setx DEPOT_TOOLS_WIN_TOOLCHAIN 0 && mkdir c:\webrtc && cd c:\webrtc && fetch --no-history --nohooks webrtc && gclient sync
+	
+RUN cmake -G "Visual Studio 15 2017 Win64" . && msbuild INSTALL.vcxproj /p:Configuration=Release /p:Platform=x64 && cpack 	
+RUN 7z x webrtc-streamer*.tar.gz -so | 7z x -aoa -ttar -si -o C:\app 
 
 # run
 FROM  microsoft/nanoserver
 
 WORKDIR /app
-COPY --from=builder /app/ /app/
+COPY --from=builder C:\app\webrtc-streamer*\ C:\app
 
 EXPOSE 8000
 
