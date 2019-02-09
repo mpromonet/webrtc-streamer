@@ -10,12 +10,13 @@
 #pragma once
 
 #include "rtc_base/thread.h"
-#include "media/base/video_capturer.h"
 #include "api/video/i420_buffer.h"
 
 #include "libyuv/video_common.h"
 #include "libyuv/convert.h"
 
+#include "media/base/video_common.h"
+#include "media/base/video_broadcaster.h"
 #include "modules/desktop_capture/desktop_capturer.h"
 #include "modules/desktop_capture/desktop_capture_options.h"
 

@@ -767,17 +767,6 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 
 
 	webrtc::FakeConstraints constraints;
-	std::list<std::string> keyList = { webrtc::MediaConstraintsInterface::kMinWidth, webrtc::MediaConstraintsInterface::kMaxWidth,
-									webrtc::MediaConstraintsInterface::kMinHeight, webrtc::MediaConstraintsInterface::kMaxHeight,
-									webrtc::MediaConstraintsInterface::kMinFrameRate, webrtc::MediaConstraintsInterface::kMaxFrameRate,
-									webrtc::MediaConstraintsInterface::kMinAspectRatio, webrtc::MediaConstraintsInterface::kMaxAspectRatio };
-									
-	for (auto key : keyList) {
-		if (opts.find(key) != opts.end()) {
-			constraints.AddMandatory(key, opts.at(key));
-		}
-	}
-
 	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
 	rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = CapturerFactory::CreateVideoSource(video, opts, m_publishFilter, peer_connection_factory_, constraints);
 	if (!videoSource) {
