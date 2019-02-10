@@ -14,6 +14,7 @@ set (CMAKE_CXX_STANDARD 11)
 # build version identifier
 find_package(Git)
 if(GIT_FOUND)
+    EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} submodule update --init)
     EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} describe --tags --always --dirty OUTPUT_VARIABLE PROJECTVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
 	set (VERSION "${PROJECTVERSION}")
 	

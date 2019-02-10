@@ -13,7 +13,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf au
 	&& sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
 	&& gclient sync \
 	&& cd /webrtc-streamer \
-	&& git submodule update --init \
 	&& cmake . && make \
 	&& cpack \
 	&& mkdir /app && tar xvzf webrtc-streamer*.tar.gz --strip=1 -C /app/ \
