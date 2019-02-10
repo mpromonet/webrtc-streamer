@@ -1,14 +1,9 @@
-linux_task:    
+linux_build:    
   docker_builder:
     script: docker build -t $CIRRUS_REPO_FULL_NAME:cirrus-linux . -f Dockerfile
 
-rpi_task:    
+rpi_build:    
   docker_builder:
     script: docker build -t $CIRRUS_REPO_FULL_NAME:cirrus-rpi . -f Dockerfile.rpi
 
-deploy_task:
-  depends_on: 
-    - linux
-    - rpi
-  script: echo todo
 
