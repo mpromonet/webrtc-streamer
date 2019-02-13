@@ -110,13 +110,30 @@ target_link_libraries (${PROJECT_NAME} webrtcextra)
 # live555helper & live555
 if (NOT EXISTS live)
     file (DOWNLOAD http://www.live555.com/liveMedia/public/live555-latest.tar.gz ${CMAKE_SOURCE_DIR}/live555-latest.tar.gz )
+
     EXECUTE_PROCESS(
-        COMMAND 7z x live555-latest.tar.gz -so
-        COMMAND 7z x -aoa -ttar -si
-        RESULT_VARIABLE p7z_result
+        COMMAND tar --help
+        RESULT_VARIABLE use_tar
+        OUTPUT_QUIET
+        ERROR_QUIET
     )
-    if(NOT p7z_result STREQUAL "0")
-        message(FATAL_ERROR "Fetching and compiling live555 failed!")
+    if (use_tar STREQUAL "0")
+        message("Extract live555 with tar.")
+        EXECUTE_PROCESS(
+            COMMAND tar xzf live555-latest.tar.gz -so
+            RESULT_VARIABLE extract_result
+        )
+    else (use_tar STREQUAL "0")
+        message("Extract live555 with 7z.")
+        EXECUTE_PROCESS(
+            COMMAND 7z x live555-latest.tar.gz -so
+            COMMAND 7z x -aoa -ttar -si
+            RESULT_VARIABLE extract_result
+        )
+    endif (use_tar STREQUAL "0")
+
+    if(NOT extract_result STREQUAL "0")
+        message(FATAL_ERROR "Extraction of live555 failed!")
     endif()
 endif(NOT EXISTS live) 
 
