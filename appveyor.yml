@@ -16,7 +16,6 @@ install:
   - sh: export GENERATOR="Unix Makefiles"
   - cmd: set
   - sh: env
-  - git submodule update --init
   - cd ..
   - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git 
   - mkdir webrtc
