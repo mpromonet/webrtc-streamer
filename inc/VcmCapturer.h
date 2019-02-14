@@ -59,7 +59,9 @@ class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public 
 		char id[kSize] = {0};
 		if (device_info->GetDeviceName(i, name, kSize, id, kSize) == 0)
 		{
-			if (videourl == name) {
+			std::stringstream ss;
+			ss << name << i;
+			if (videourl == ss.str()) {
 				deviceId = id;
 				break;
 			}
