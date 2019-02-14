@@ -15,7 +15,6 @@
 #include "api/video_codecs/builtin_video_encoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
-#include "api/test/fake_constraints.h"
 #include "media/engine/webrtc_media_engine.h"
 #include "logging/rtc_event_log/rtc_event_log_factory.h"
 
@@ -765,10 +764,8 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 	std::string label = videourl + "_video";
 	label.erase(std::remove_if(label.begin(), label.end(), ignoreInLabel), label.end());
 
-
-	webrtc::FakeConstraints constraints;
 	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
-	rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = CapturerFactory::CreateVideoSource(video, opts, m_publishFilter, peer_connection_factory_, constraints);
+	rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = CapturerFactory::CreateVideoSource(video, opts, m_publishFilter, peer_connection_factory_);
 	if (!videoSource) {
 		RTC_LOG(LS_ERROR) << "Cannot create capturer video:" << videourl;
 	} else {
