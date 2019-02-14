@@ -760,9 +760,10 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 	auto videoit = m_urlVideoList.find(video);
 	if (videoit != m_urlVideoList.end()) {
 		video = videoit->second;
+                RTC_LOG(LS_VERBOSE) << "videourl map: " << videoit->first << " ---> " << videoit->second;
 	}
 
-	std::string label = videourl + "_video";
+	std::string label = video + "_video";
 	label.erase(std::remove_if(label.begin(), label.end(), ignoreInLabel), label.end());
 
 
@@ -770,7 +771,7 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
 	rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = CapturerFactory::CreateVideoSource(video, opts, m_publishFilter, peer_connection_factory_, constraints);
 	if (!videoSource) {
-		RTC_LOG(LS_ERROR) << "Cannot create capturer video:" << videourl;
+		RTC_LOG(LS_ERROR) << "Cannot create capturer video:" << video;
 	} else {
 		video_track = peer_connection_factory_->CreateVideoTrack(label, videoSource);
 	}
