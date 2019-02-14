@@ -99,6 +99,10 @@ class RTSPVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, 
 		std::thread                           m_decoderthread;
 		int                                   m_width;
 		int                                   m_height;
+		int                                   m_roi_x;
+		int                                   m_roi_y;
+		int                                   m_roi_width;
+		int                                   m_roi_height;
 		int                                   m_fps;
 };
 
