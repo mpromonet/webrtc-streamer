@@ -109,8 +109,8 @@ target_link_libraries (${PROJECT_NAME} webrtcextra)
 
 # live555helper & live555
 if (NOT EXISTS live)
-    file (DOWNLOAD http://www.live555.com/liveMedia/public/live555-latest.tar.gz ${CMAKE_SOURCE_DIR}/live555-latest.tar.gz )
-    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E tar xvf live555-latest.tar.gz  RESULT_VARIABLE unpack_result)
+    file (DOWNLOAD https://download.videolan.org/pub/contrib/live555/live.2019.03.06.tar.gz ${CMAKE_SOURCE_DIR}/live555.tar.gz )
+    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E tar xvf live555.tar.gz  RESULT_VARIABLE unpack_result)
     if(NOT unpack_result STREQUAL "0")
         message(FATAL_ERROR "Fetching and compiling live555 failed!")
     endif()
