@@ -180,6 +180,10 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData PPS";
 			m_cfg.insert(m_cfg.end(), buffer, buffer+size);
 		}
+		else if (nalu_type == webrtc::H264::NaluType::kSei) {
+			RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData SEI";
+			//just ignore for now
+		}
 		else if (m_decoder.get()) {
 			std::vector<uint8_t> content;
 			if (nalu_type == webrtc::H264::NaluType::kIdr) {
