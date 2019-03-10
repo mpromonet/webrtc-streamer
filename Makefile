@@ -115,7 +115,7 @@ zip: $(TARGET) html/index.html
 
 
 live555:
-	wget http://www.live555.com/liveMedia/public/live555-latest.tar.gz -O - | tar xzf -
+	wget https://download.videolan.org/pub/contrib/live555/live.2019.03.06.tar.gz -O - | tar xzf -
 	cd live && ./genMakefiles linux-gdb
 	make -C live CPLUSPLUS_COMPILER="$(CXX) -fno-rtti $(CFLAGS_EXTRA)" C_COMPILER=$(CC) LINK='$(CXX) -o' PREFIX=$(SYSROOT)$(PREFIX) install
 	rm -rf live
