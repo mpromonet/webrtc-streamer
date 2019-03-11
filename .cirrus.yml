@@ -4,4 +4,7 @@ linux_docker_builder:
 rpi_docker_builder:    
   script: docker build -t $CIRRUS_REPO_FULL_NAME:cirrus-rpi . -f Dockerfile.rpi
 
+windows_docker_builder:    
+  platform: windows
+  script: docker build -t $CIRRUS_REPO_FULL_NAME:cirrus-windows . -f Dockerfile.windows
 
