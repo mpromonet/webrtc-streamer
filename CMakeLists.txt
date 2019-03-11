@@ -47,8 +47,9 @@ target_include_directories(civetweb PUBLIC civetweb/include)
 
 # webrtc
 if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
-  set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nuse_custom_libcxx=false\nrtc_include_pulse_audio=false\nrtc_build_examples=false\nrtc_build_tools=false\nis_clang=false\ntreat_warnings_as_errors=false\n)
-  if (MSVC)
+  set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nuse_custom_libcxx=false\nrtc_include_pulse_audio=false\nrtc_build_examples=false\nrtc_build_tools=false\nis_clang=true\ntreat_warnings_as_errors=false\n)
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+          message(WARNING "Visual Studio Compiler is not supported by the Chromium project! Disabling h.264.")
 	  set (WEBRTCARGS rtc_use_h264=false\n${WEBRTCARGS})
   else ()
 	  set (WEBRTCARGS rtc_use_h264=true\nffmpeg_branding="Chrome"\n${WEBRTCARGS})
@@ -97,10 +98,6 @@ SET (WEBRTCEXTRAOBJS ${WEBRTJSONCPPCOBJS} ${WEBRTBBRCOBJS} ${WEBRTP2POBJ} ${WEBR
 
 find_library(WEBRTC_LIBRARY NAMES webrtc PATHS ${WEBRTCOBJS})
 target_link_libraries (${PROJECT_NAME} ${WEBRTC_LIBRARY}) 
-find_library(WEBRTC_VIDEO_DECODER_LIBRARY NAMES builtin_video_decoder_factory PATHS ${WEBRTCOBJS}/api/video_codecs/)
-find_library(WEBRTC_VIDEO_ENCODER_LIBRARY NAMES builtin_video_encoder_factory PATHS ${WEBRTCOBJS}/api/video_codecs/)
-find_library(WEBRTC_PEERCONNECTION_LIBRARY NAMES peerconnection PATHS ${WEBRTCOBJS}/pc)
-target_link_libraries (${PROJECT_NAME} ${WEBRTC_VIDEO_DECODER_LIBRARY} ${WEBRTC_VIDEO_ENCODER_LIBRARY} ${WEBRTC_PC_LIBRARY} ${WEBRTC_PEERCONNECTION_LIBRARY}) 
 
 add_library (webrtcextra STATIC ${WEBRTCEXTRAOBJS})
 set_target_properties(webrtcextra PROPERTIES LINKER_LANGUAGE CXX)		
@@ -109,11 +106,14 @@ target_link_libraries (${PROJECT_NAME} webrtcextra)
 
 # live555helper & live555
 if (NOT EXISTS live)
+    message("Download live555!")
     file (DOWNLOAD https://download.videolan.org/pub/contrib/live555/live.2019.03.06.tar.gz ${CMAKE_SOURCE_DIR}/live555.tar.gz )
     EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E tar xvf live555.tar.gz  RESULT_VARIABLE unpack_result)
     if(NOT unpack_result STREQUAL "0")
         message(FATAL_ERROR "Fetching and compiling live555 failed!")
     endif()
+    else(NOT EXISTS live) 
+        message("Use existing live555!")
 endif(NOT EXISTS live) 
 
 FILE(GLOB LIVEHELPERSOURCE live/groupsock/*.c* live/liveMedia/*.c* live/UsageEnvironment/*.c* live/BasicUsageEnvironment/*.c* live555helper/src/*.cpp)
