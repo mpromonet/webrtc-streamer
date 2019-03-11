@@ -92,6 +92,7 @@ Usage
 		-c sslkeycert      : path to private key and certificate for HTTPS
 		-T nbthreads       : number of threads for HTTP server
 		-A passwd          : password file for HTTP server access
+		-D authDomain      : authentication domain for HTTP server access (default:mydomain.com)
 
          	-S[stun_address]   : start embeded STUN server bind to address (default 0.0.0.0:3478)
          	-s[stun_address]   : use an external STUN server (default stun.l.google.com:19302)

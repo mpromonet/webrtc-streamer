@@ -39,6 +39,7 @@ int main(int argc, char* argv[])
 	std::map<std::string,std::string> urlAudioList;
 	std::string nbthreads;
 	std::string passwdFile;
+	std::string authDomain = "mydomain.com";
 	std::string publishFilter(".*");
 
 	std::string httpAddress("0.0.0.0:");
@@ -51,7 +52,7 @@ int main(int argc, char* argv[])
 	httpAddress.append(httpPort);
 
 	int c = 0;
-	while ((c = getopt (argc, argv, "hVv::" "c:H:w:T:A:C:" "t:S::s::" "a::q:" "n:u:U:")) != -1)
+	while ((c = getopt (argc, argv, "hVv::" "c:H:w:T:A:D:C:" "t:S::s::" "a::q:" "n:u:U:")) != -1)
 	{
 		switch (c)
 		{
@@ -60,6 +61,7 @@ int main(int argc, char* argv[])
 			case 'w': webroot = optarg; break;
 			case 'T': nbthreads = optarg; break;
 			case 'A': passwdFile = optarg; break;
+			case 'D': authDomain = optarg; break;
 
 			case 't': turnurl = optarg; break;
 			case 'S': localstunurl = optarg ? optarg : defaultlocalstunurl; stunurl = localstunurl; break;
@@ -126,6 +128,7 @@ int main(int argc, char* argv[])
 				std::cout << "\t -c sslkeycert      : path to private key and certificate for HTTPS"                              << std::endl;
 				std::cout << "\t -T nbthreads       : number of threads for HTTP server"                                          << std::endl;
 				std::cout << "\t -A passwd          : password file for HTTP server access"                                          << std::endl;
+				std::cout << "\t -D authDomain      : authentication domain for HTTP server access (default:mydomain.com)"                                       << std::endl;
 			
 				std::cout << "\t -S[stun_address]                   : start embeded STUN server bind to address (default " << defaultlocalstunurl << ")" << std::endl;
 				std::cout << "\t -s[stun_address]                   : use an external STUN server (default " << stunurl << ")"                    << std::endl;
@@ -188,6 +191,8 @@ int main(int argc, char* argv[])
 		if (!passwdFile.empty()) {
 			options.push_back("global_auth_file");
 			options.push_back(passwdFile);
+			options.push_back("authentication_domain");
+			options.push_back(authDomain);
 		}
 
 		try {
