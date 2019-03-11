@@ -12,16 +12,14 @@ RUN powershell [System.Net.ServicePointManager]::ServerCertificateValidationCall
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 
 # Install Chocolatey packages
-RUN choco install git 7zip python2 visualcpp-build-tools cmake wget curl llvm -y 
+RUN choco install git python2 cmake llvm -y 
 
 # install WebRTC 
 ADD https://storage.googleapis.com/chrome-infra/depot_tools.zip C:\\Downloads\\depot_tools.zip
 RUN mkdir c:\depot_tools && cd c:\depot_tools && 7z x C:\Downloads\depot_tools.zip && SETX PATH "%PATH%;C:\depot_tools"
-RUN gclient --version
 
 RUN setx DEPOT_TOOLS_WIN_TOOLCHAIN 0
-RUN mkdir c:\webrtc && cd c:\webrtc && fetch --no-history --nohooks webrtc 
-RUN gclient sync
+RUN mkdir c:\webrtc && cd c:\webrtc && fetch --no-history --nohooks webrtc && gclient sync
 	
 RUN cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe . && ninja && cpack 
 
