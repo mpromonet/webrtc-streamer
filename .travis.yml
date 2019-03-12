@@ -22,7 +22,7 @@ addons:
     - git
     - libgtk-3-dev
     - libasound2-dev
-    - g++-7
+    - g++-6
 language: cpp
 compiler:
 - gcc

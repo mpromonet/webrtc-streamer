@@ -42,11 +42,11 @@ jobs:
           at: /          
       - checkout
       - run: git submodule update --init
-      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git cmake make g++ xz-utils libgtk-3-dev libasound2-dev clang++
+      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git cmake make g++ xz-utils libgtk-3-dev libasound2-dev
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: cd ${WEBRTCROOT} && gclient sync 
       
-      - run: cmake -G Ninja . && ninja && cpack 
+      - run: cmake . && make && cpack 
 
       - run: mkdir /distrib && cp webrtc-streamer*.tar.gz /distrib
       - persist_to_workspace:
