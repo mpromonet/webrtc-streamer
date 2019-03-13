@@ -2,6 +2,7 @@ environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+      CLANG_VERSION: ToT
 
 platform: x64
 
