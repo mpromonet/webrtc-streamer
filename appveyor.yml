@@ -3,6 +3,8 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       CLANG_VERSION: ToT
+      MSVC_SETUP_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
+      MSVC_SETUP_ARG: x64
 
 platform: x64
 
@@ -33,6 +35,7 @@ before_build:
   - sh: cmake -G Ninja -D WEBRTCBUILD=${CONFIGURATION} .
 
 build_script:
+  - cmd: call "%MSVC_SETUP_PATH%" %MSVC_SETUP_ARG%
   - ninja
 
 after_build:
