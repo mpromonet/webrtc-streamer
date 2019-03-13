@@ -18,8 +18,7 @@ RUN choco install git 7zip python2 cmake llvm -y
 ADD https://storage.googleapis.com/chrome-infra/depot_tools.zip C:\\Downloads\\depot_tools.zip
 RUN mkdir c:\depot_tools && cd c:\depot_tools && 7z x C:\Downloads\depot_tools.zip && SETX PATH "%PATH%;C:\depot_tools"
 
-#RUN setx DEPOT_TOOLS_WIN_TOOLCHAIN 0
-RUN gclient --version
+RUN powershell.exe gclient --version
 RUN mkdir c:\webrtc && cd c:\webrtc && fetch --no-history --nohooks webrtc
 RUN gclient sync
 	
