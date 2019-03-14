@@ -182,6 +182,8 @@ jobs:
       GYP_GENERATOR_OUTPUT: "rpi-armv6"  
       GNARGS: 'is_debug=false use_ozone=true target_cpu="arm" arm_version=6 arm_float_abi="hard" rtc_include_opus=false use_sysroot=false' 
       CROSS: arm-linux-gnueabihf- 
+      CC: arm-linux-gnueabihf-gcc 
+      CXX: arm-linux-gnueabihf-g++ 
       CFLAGS_EXTRA: "-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard"
       NINJA_TARGET: webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection p2p_server_utils
 

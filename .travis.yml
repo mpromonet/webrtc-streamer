@@ -13,10 +13,14 @@ env:
       GYP_GENERATOR_OUTPUT=rpi-armv7  
       GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" target_cpu="arm" use_ozone=true is_desktop_linux=false' 
       CROSS=arm-linux-gnueabihf- 
+      CC=arm-linux-gnueabihf-gcc 
+      CXX=arm-linux-gnueabihf-g++ 
     - |
       GYP_GENERATOR_OUTPUT=rpi-armv6  
       GNARGS='is_debug=false target_cpu="arm" use_ozone=true arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false' 
       CROSS=arm-linux-gnueabihf- 
+      CC=arm-linux-gnueabihf-gcc 
+      CXX=arm-linux-gnueabihf-g++ 
       CFLAGS_EXTRA="-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard"
 addons:
   apt:
