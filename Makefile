@@ -1,6 +1,6 @@
-CC=$(CROSS)gcc 
-CXX=$(CROSS)g++
-AR=$(CROSS)ar
+CC?=$(CROSS)gcc 
+CXX?=$(CROSS)g++
+AR?=$(CROSS)ar
 CFLAGS = -Wall -pthread -g -std=c++11 -Iinc 
 LDFLAGS = -pthread 
 WEBRTCROOT?=$(CURDIR)/../webrtc
