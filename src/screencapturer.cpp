@@ -55,7 +55,7 @@ void DesktopCapturer::OnCaptureResult(webrtc::DesktopCapturer::Result result, st
 				scaled_buffer->ScaleFrom(*videoFrame.video_frame_buffer()->ToI420());
 				webrtc::VideoFrame frame = webrtc::VideoFrame(scaled_buffer, webrtc::kVideoRotation_0, rtc::TimeMicros());
 						
-				broadcaster_.OnFrame(videoFrame);
+				broadcaster_.OnFrame(frame);
 			}
 		} else {
 			RTC_LOG(LS_ERROR) << "DesktopCapturer:OnCaptureResult conversion error:" << conversionResult;
