@@ -7,12 +7,13 @@ COPY . /webrtc-streamer
 
 # disable ssl check
 RUN powershell [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $true }
+RUN powershell [System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy
 
 # Install Chocolatey
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 
 # Install Chocolatey packages
-RUN choco install git 7zip python2 cmake llvm -y 
+RUN choco install git 7zip python2 cmake llvm wget -y 
 
 # install WebRTC 
 ADD https://storage.googleapis.com/chrome-infra/depot_tools.zip C:\\Downloads\\depot_tools.zip
