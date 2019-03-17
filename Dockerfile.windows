@@ -15,11 +15,8 @@ RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command
 RUN choco install git 7zip python2 cmake llvm wget -y 
 
 # install WebRTC 
-ADD https://storage.googleapis.com/chrome-infra/depot_tools.zip C:\\Downloads\\depot_tools.zip
-RUN mkdir c:\depot_tools && cd c:\depot_tools && 7z x C:\Downloads\depot_tools.zip && SETX PATH "%PATH%;C:\depot_tools"
+RUN cd /d C:\ && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git && SETX PATH "%PATH%;C:\depot_tools"
 
-RUN gclient --version
-RUN powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "C:\depot_tools\cipd.ps1" -CipdBinary "C:\depot_tools\.cipd_client.exe" -BackendURL "https://chrome-infra-packages.appspot.com" -VersionFile "C:\depot_tools\cipd_client_version"
 RUN gclient --version
 RUN wget "https://chrome-infra-packages.appspot.com/client?platform=windows-amd64&https://chrome-infra-packages.appspot.com/client?platform=windows-amd64&version=git_revision:bd09df254cc0d6ca4319f23c16b9039091be5b00" -O C:\depot_tools\.cipd_client.exe --no-check-certificate
 RUN gclient --version
