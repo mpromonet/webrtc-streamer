@@ -3,10 +3,10 @@ env:
   global:
     - GNARGSCOMMON='rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false treat_warnings_as_errors=false' 
   matrix:
-    - |
-      GYP_GENERATOR_OUTPUT=x86_64-release     
-      GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" use_sysroot=false'
-      PREFIX=$HOME/prefix
+#   - |
+#      GYP_GENERATOR_OUTPUT=x86_64-release     
+#      GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" use_sysroot=false'
+#      PREFIX=$HOME/prefix
     - |
       GYP_GENERATOR_OUTPUT=rpi-armv7  
       GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" target_cpu="arm" use_ozone=true is_desktop_linux=false is_clang=false' 
