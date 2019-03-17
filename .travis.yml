@@ -81,3 +81,11 @@ before_deploy:
 #  on:
 #    repo: mpromonet/webrtc-streamer
 #    tags: true
+
+jobs:
+  include:
+    - stage: deploy
+      os: windows 
+      script:
+        - docker info
+        - docker build -f Dockerfile.windows .
