@@ -5,6 +5,13 @@ rpi_docker_builder:
   script: docker build -t $CIRRUS_REPO_FULL_NAME:cirrus-rpi . -f Dockerfile.rpi
 
 windows_docker_builder:    
+  timeout_in: 120m
   platform: windows
   script: docker build -t %CIRRUS_REPO_FULL_NAME%:cirrus-windows . -f Dockerfile.windows
 
+publish_task:
+  depends_on: 
+    - rpi
+    - linux
+    - windows
+  script: echo publishing task 
