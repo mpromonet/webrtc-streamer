@@ -7,20 +7,17 @@ env:
       GYP_GENERATOR_OUTPUT=x86_64-release     
       GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" use_sysroot=false'
       PREFIX=$HOME/prefix
-      CC=gcc-6
-      CXX=g++-6
+      MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
     - |
       GYP_GENERATOR_OUTPUT=rpi-armv7  
       GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" target_cpu="arm" use_ozone=true is_desktop_linux=false' 
       CROSS=arm-linux-gnueabihf- 
-      CC=arm-linux-gnueabihf-gcc 
-      CXX=arm-linux-gnueabihf-g++ 
+      MATRIX_EVAL="CC=arm-linux-gnueabihf-gcc && CXX=arm-linux-gnueabihf-g++"
     - |
       GYP_GENERATOR_OUTPUT=rpi-armv6  
       GNARGS='is_debug=false target_cpu="arm" use_ozone=true arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false' 
       CROSS=arm-linux-gnueabihf- 
-      CC=arm-linux-gnueabihf-gcc 
-      CXX=arm-linux-gnueabihf-g++ 
+      MATRIX_EVAL="CC=arm-linux-gnueabihf-gcc && CXX=arm-linux-gnueabihf-g++"
       CFLAGS_EXTRA="-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard"
 addons:
   apt:
@@ -35,6 +32,7 @@ language: cpp
 compiler:
 - gcc
 script:
+- eval "${MATRIX_EVAL}"
 # get toolchain
 - git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git && export PATH=$PATH:$(pwd)/depot_tools
 - if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then wget -qO- https://releases.linaro.org/components/toolchain/binaries/6.4-2018.05/arm-linux-gnueabihf/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf.tar.xz  | tar xJ -C $(pwd); export PATH=$(pwd)/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf/bin:$PATH; fi
