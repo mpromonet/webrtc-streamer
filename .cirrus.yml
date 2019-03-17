@@ -9,7 +9,7 @@ windows_docker_builder:
   platform: windows
   script: docker build -t %CIRRUS_REPO_FULL_NAME%:cirrus-windows . -f Dockerfile.windows
 
-publish_task:
+publish_docker_builder:
   depends_on: 
     - rpi
     - linux
