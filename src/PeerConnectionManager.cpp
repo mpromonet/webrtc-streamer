@@ -18,6 +18,8 @@
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "media/engine/webrtc_media_engine.h"
 #include "logging/rtc_event_log/rtc_event_log_factory.h"
+#include "modules/audio_device/include/fake_audio_device.h"
+
 
 #include "PeerConnectionManager.h"
 #include "V4l2AlsaMap.h"
@@ -130,6 +132,13 @@ IceServer getIceServerFromUrl(const std::string & url, const std::string& client
 	return srv;
 }
 
+webrtc::AudioDeviceModule* CreateAudioDeviceModule(const webrtc::AudioDeviceModule::AudioLayer audioLayer) {
+#ifdef HAVE_SOUND
+	return webrtc::AudioDeviceModule::Create(audioLayer)
+#else
+	return new webrtc::FakeAudioDeviceModule();
+#endif
+}
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
@@ -138,7 +147,7 @@ PeerConnectionManager::PeerConnectionManager( const std::list<std::string> & ice
 					    , const std::map<std::string,std::string> & urlAudioList
 					    , const webrtc::AudioDeviceModule::AudioLayer audioLayer
                                             , const std::string& publishFilter)
-	: audioDeviceModule_(webrtc::AudioDeviceModule::Create(audioLayer))
+	: audioDeviceModule_(CreateAudioDeviceModule(audioLayer))
 	, audioDecoderfactory_(webrtc::CreateBuiltinAudioDecoderFactory())
 	, peer_connection_factory_(webrtc::CreateModularPeerConnectionFactory(NULL,
                                                                     rtc::Thread::Current(),

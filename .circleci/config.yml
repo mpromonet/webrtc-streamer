@@ -55,18 +55,14 @@ jobs:
             - distrib 
             
   # -------------------------------------
-  # build x86_64 && deploy to heroku
+  # build x86_64 without desktop without sound feature
   # -------------------------------------
   build_heroku:
     <<: *defaults
     
     environment:
-      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false is_clang=false treat_warnings_as_errors=false' 
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
-      GYP_GENERATOR_OUTPUT: "heroku"
-      GNARGS: 'is_debug=false is_desktop_linux=false use_ozone=true rtc_use_h264=true ffmpeg_branding="Chrome"'      
-      NINJA_TARGET: webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection p2p_server_utils
 
     steps:
       - attach_workspace:
@@ -75,17 +71,19 @@ jobs:
       - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git cmake make g++ xz-utils p7zip-full 
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: cd ${WEBRTCROOT} && gclient sync 
-      - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}" 
-      - run: make live555 alsa-lib
-      - run: cd ${WEBRTCROOT}/src && ( ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release ${NINJA_TARGET}  || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release ${NINJA_TARGET} || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release ${NINJA_TARGET} )
-      - run: make all zip 
-      - run: mkdir /distrib && cp *.zip /distrib
 
+      - run: cmake . && make && cpack 
+      - run: mv webrtc-streamer*.tar.gz webrtc-streamer-heroku.tar.gz
+
+      - run: mkdir /distrib && cp webrtc-streamer*.tar.gz /distrib
       - persist_to_workspace:
           root: /
           paths:
             - distrib
 
+  # -------------------------------------
+  # deploy to heroku
+  # -------------------------------------
   deploy_heroku:
     <<: *defaults
 
@@ -115,7 +113,7 @@ jobs:
           command: |
             git clone git@heroku.com:webrtc-streamer.git
             cd webrtc-streamer
-            unzip -o /distrib/webrtc-streamer*heroku.zip
+            tar xzf /distrib/webrtc-streamer*heroku.zip --strip=1
             git add -A && git -c user.name='ci' -c user.email='ci@email.org' commit -m 'heroku deployement' && git push --force git@heroku.com:webrtc-streamer.git HEAD:refs/heads/master
 
   deploy_cf:
