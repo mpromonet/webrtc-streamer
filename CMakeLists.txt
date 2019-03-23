@@ -45,6 +45,9 @@ add_library (civetweb STATIC civetweb/src/civetweb.c civetweb/src/CivetServer.cp
 target_link_libraries (${PROJECT_NAME} civetweb) 
 target_include_directories(civetweb PUBLIC civetweb/include) 
 
+find_package(ALSA QUIET)
+MESSAGE("ALSA_FOUND = ${ALSA_FOUND}")
+
 # webrtc
 if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
   set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nuse_custom_libcxx=false\nrtc_include_pulse_audio=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\n)
