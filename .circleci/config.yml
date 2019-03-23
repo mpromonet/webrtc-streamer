@@ -112,7 +112,7 @@ jobs:
           command: |
             git clone git@heroku.com:webrtc-streamer.git
             cd webrtc-streamer
-            tar xzf /distrib/webrtc-streamer*heroku.zip --strip=1
+            tar xzf /distrib/webrtc-streamer*heroku.tar.gz --strip=1
             git add -A && git -c user.name='ci' -c user.email='ci@email.org' commit -m 'heroku deployement' && git push --force git@heroku.com:webrtc-streamer.git HEAD:refs/heads/master
 
   deploy_cf:
