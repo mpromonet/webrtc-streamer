@@ -12,7 +12,7 @@ RUN powershell [System.Net.ServicePointManager]::ServerCertificateValidationCall
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 
 # Install Chocolatey packages
-RUN choco install git 7zip python2 cmake llvm wget -y 
+RUN choco install git 7zip python2 cmake llvm wget -y  --execution-timeout 5400
 
 # install WebRTC 
 RUN cd /d C:\ && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git && SETX PATH "%PATH%;C:\depot_tools"
