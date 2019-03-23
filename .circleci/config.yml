@@ -41,7 +41,6 @@ jobs:
       - attach_workspace:
           at: /          
       - checkout
-      - run: git submodule update --init
       - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git cmake make g++ xz-utils libgtk-3-dev libasound2-dev
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: cd ${WEBRTCROOT} && gclient sync 
@@ -150,7 +149,6 @@ jobs:
       - attach_workspace:
           at: /
       - checkout
-      - run: git submodule update --init
       - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make cmake g++ xz-utils p7zip-full         
       - run: wget -qO- https://releases.linaro.org/components/toolchain/binaries/6.4-2018.05/arm-linux-gnueabihf/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf.tar.xz  | tar xJ -C /opt 
       - run: echo 'export PATH=/opt/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf/bin:$PATH' >> $BASH_ENV
@@ -174,16 +172,8 @@ jobs:
     <<: *defaults
     
     environment:
-      GNARGSCOMMON: 'rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false is_clang=false treat_warnings_as_errors=false' 
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
-      GYP_GENERATOR_OUTPUT: "rpi-armv6"  
-      GNARGS: 'is_debug=false use_ozone=true target_cpu="arm" arm_version=6 arm_float_abi="hard" rtc_include_opus=false use_sysroot=false' 
-      CROSS: arm-linux-gnueabihf- 
-      CC: arm-linux-gnueabihf-gcc 
-      CXX: arm-linux-gnueabihf-g++ 
-      CFLAGS_EXTRA: "-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard"
-      NINJA_TARGET: webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection p2p_server_utils
 
     steps:
       - attach_workspace:
@@ -195,10 +185,9 @@ jobs:
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: cd ${WEBRTCROOT} && gclient sync 
       - run: sed -e 's|"-mfpu=$arm_fpu"|"-mfpu=$arm_fpu","-marm"|' -i ${WEBRTCROOT}/src/build/config/compiler/BUILD.gn
-      - run: cd ${WEBRTCROOT}/src && gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}"
-      - run: make live555 alsa-lib
-      - run: cd ${WEBRTCROOT}/src && ( ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release ${NINJA_TARGET} || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release ${NINJA_TARGET} || ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release ${NINJA_TARGET} )
-      - run: make all tgz 
+
+      - run: cmake -DCMAKE_SYSTEM_PROCESSOR=armv6l -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF . && make 
+      - run: cpack
 
       - run: mkdir /distrib && cp *.tgz /distrib
       - persist_to_workspace:
