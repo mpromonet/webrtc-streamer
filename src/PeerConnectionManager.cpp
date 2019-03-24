@@ -132,13 +132,6 @@ IceServer getIceServerFromUrl(const std::string & url, const std::string& client
 	return srv;
 }
 
-webrtc::AudioDeviceModule* CreateAudioDeviceModule(const webrtc::AudioDeviceModule::AudioLayer audioLayer) {
-#ifdef HAVE_SOUND
-	return webrtc::AudioDeviceModule::Create(audioLayer).release();
-#else
-	return new webrtc::FakeAudioDeviceModule();
-#endif
-}
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
@@ -147,7 +140,7 @@ PeerConnectionManager::PeerConnectionManager( const std::list<std::string> & ice
 					    , const std::map<std::string,std::string> & urlAudioList
 					    , const webrtc::AudioDeviceModule::AudioLayer audioLayer
                                             , const std::string& publishFilter)
-	: audioDeviceModule_(CreateAudioDeviceModule(audioLayer))
+	: audioDeviceModule_(FakeAudioCaptureModule::Create())
 	, audioDecoderfactory_(webrtc::CreateBuiltinAudioDecoderFactory())
 	, peer_connection_factory_(webrtc::CreateModularPeerConnectionFactory(NULL,
                                                                     rtc::Thread::Current(),
