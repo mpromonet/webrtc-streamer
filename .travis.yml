@@ -1,23 +1,12 @@
 dist: xenial
 env:
-  global:
-    - GNARGSCOMMON='rtc_include_tests=false rtc_enable_protobuf=false use_custom_libcxx=false rtc_include_pulse_audio=false rtc_build_examples=false treat_warnings_as_errors=false' 
   matrix:
 #   - |
-#      GYP_GENERATOR_OUTPUT=x86_64-release     
-#      GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" use_sysroot=false'
-#      PREFIX=$HOME/prefix
+#      CMAKE_OPTIONS=
     - |
-      GYP_GENERATOR_OUTPUT=rpi-armv7  
-      GNARGS='is_debug=false rtc_use_h264=true ffmpeg_branding="Chrome" target_cpu="arm" use_ozone=true is_desktop_linux=false is_clang=false' 
-      CROSS=arm-linux-gnueabihf- 
-      MATRIX_EVAL="CC=arm-linux-gnueabihf-gcc && CXX=arm-linux-gnueabihf-g++"
+      CMAKE_OPTIONS=-DCMAKE_SYSTEM_PROCESSOR=armv6l -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF
     - |
-      GYP_GENERATOR_OUTPUT=rpi-armv6  
-      GNARGS='is_debug=false target_cpu="arm" use_ozone=true arm_version=6 arm_arch="armv6" arm_float_abi="hard" arm_use_neon=false arm_optionally_use_neon=false rtc_build_with_neon=false arm_use_thumb=false rtc_include_opus=false use_sysroot=false  is_clang=false' 
-      CROSS=arm-linux-gnueabihf- 
-      MATRIX_EVAL="CC=arm-linux-gnueabihf-gcc && CXX=arm-linux-gnueabihf-g++"
-      CFLAGS_EXTRA="-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard"
+      CMAKE_OPTIONS=-DCMAKE_SYSTEM_PROCESSOR=armv7l -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF
 addons:
   apt:
     sources:
@@ -26,14 +15,13 @@ addons:
     - git
     - libgtk-3-dev
     - libasound2-dev
+    - crossbuild-essential-armhf
 language: cpp
 compiler:
 - gcc
 script:
-- if [ "${MATRIX_EVAL}" != "" ]; then eval "${MATRIX_EVAL}"; fi
 # get toolchain
 - git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git && export PATH=$PATH:$(pwd)/depot_tools
-- if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then wget -qO- https://releases.linaro.org/components/toolchain/binaries/6.4-2018.05/arm-linux-gnueabihf/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf.tar.xz  | tar xJ -C $(pwd); export PATH=$(pwd)/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf/bin:$PATH; fi
 # get WebRTC
 - mkdir webrtc
 - pushd webrtc
@@ -41,24 +29,16 @@ script:
 # patch webrtc to not download chromium-webrtc-resources
 - sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
 # get arm sysroot
-- if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm; fi
+- src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
 # get WebRTC dependencies
 - travis_wait 30 gclient sync
-- if [ "$CROSS" == "arm-linux-gnueabihf-" ]; then sed -e 's|"-mfpu=$arm_fpu"|"-mfpu=$arm_fpu","-marm"|' -i src/build/config/compiler/BUILD.gn; fi
-- popd
-# get, build and install live555 & alsa
-- make WEBRTCROOT=./webrtc live555 alsa-lib
-- pushd webrtc
-- pushd src
-# build WebRTC
-- gn gen ${GYP_GENERATOR_OUTPUT}/out/Release --args="${GNARGSCOMMON} ${GNARGS}"
-- ninja -C ${GYP_GENERATOR_OUTPUT}/out/Release webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection p2p_server_utils
-- popd
+# patch webrtc compiler option for armv6
+- sed -e 's|"-mfpu=$arm_fpu"|"-mfpu=$arm_fpu","-marm"|' -i src/build/config/compiler/BUILD.gn
 - popd
 # build
-- make WEBRTCROOT=./webrtc all tgz
+- cmake ${CMAKE_OPTIONS} . && make && cpack
 before_deploy:
-- export RELEASE_PKG_FILE=$(ls *.tgz)
+- export RELEASE_PKG_FILE=$(ls *.tar.gz)
 - echo "RELEASE_PKG_FILE=${RELEASE_PKG_FILE}"   
 #deploy:
 #- provider: heroku

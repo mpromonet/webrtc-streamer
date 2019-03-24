@@ -7,10 +7,8 @@ ARG ARCH=armv7l
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates wget git python xz-utils cmake make  \
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates wget git python xz-utils cmake make crossbuild-essential-armhf \
 	&& mkdir /webrtc \
-	&& wget -qO- https://releases.linaro.org/components/toolchain/binaries/6.4-2018.05/arm-linux-gnueabihf/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf.tar.xz  | tar xJ -C /webrtc  \
-	&& export PATH=/webrtc/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf/bin:$PATH \
 	&& git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /webrtc/depot_tools \
 	&& export PATH=/webrtc/depot_tools:$PATH \
 	&& cd /webrtc \
@@ -18,6 +16,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 	&& sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
 	&& /webrtc/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm \
 	&& gclient sync \
+	&& sed -e 's|"-mfpu=$arm_fpu"|"-mfpu=$arm_fpu","-marm"|' -i src/build/config/compiler/BUILD.gn \
 	&& cd /webrtc-streamer \
 	&& cmake -DCMAKE_SYSTEM_PROCESSOR=${ARCH} -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF . && make \
 	&& cpack \
