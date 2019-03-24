@@ -5,7 +5,7 @@ linuxarmv7_docker_builder:
   script: docker build -t $CIRRUS_REPO_FULL_NAME:cirrus-armv7 . -f Dockerfile.rpi
 
 linuxarmv6_docker_builder:    
-  script: docker build -t $CIRRUS_REPO_FULL_NAME:cirrus-armv6 . -f Dockerfile.rpi --buuld-arg ARCH=armv6l
+  script: docker build -t $CIRRUS_REPO_FULL_NAME:cirrus-armv6 . -f Dockerfile.rpi --build-arg ARCH=armv6l
 
 windows_docker_builder:    
   timeout_in: 120m

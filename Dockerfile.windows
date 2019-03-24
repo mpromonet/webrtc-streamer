@@ -12,15 +12,19 @@ COPY . /webrtc-streamer
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 
 # Install Chocolatey packages
-RUN choco install git 7zip python2 cmake llvm wget -y  --execution-timeout 5400
+RUN choco install git 7zip python2 cmake sed llvm wget -y --execution-timeout 5400
 
 # install WebRTC 
-RUN cd /d C:\ && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git && SETX PATH "%PATH%;C:\depot_tools"
-
+RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git && SETX PATH "%PATH%;C:\webrtc-streamer\depot_tools"
 RUN wget "https://chrome-infra-packages.appspot.com/client?platform=windows-amd64&https://chrome-infra-packages.appspot.com/client?platform=windows-amd64&version=git_revision:bd09df254cc0d6ca4319f23c16b9039091be5b00" -O C:\depot_tools\.cipd_client.exe --no-check-certificate
 
-RUN mkdir c:\webrtc && cd c:\webrtc && fetch --no-history --nohooks webrtc && gclient sync \
-      && cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe . && ninja && cpack 
+RUN mkdir c:\webrtc && cd c:\webrtc \
+       && fetch --no-history --nohooks webrtc 
+       && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
+       && gclient sync 
+
+# build
+RUN cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe . && ninja && cpack 
 
 EXPOSE 8000
 ENTRYPOINT [ "webrtc-streamer.exe" ]
