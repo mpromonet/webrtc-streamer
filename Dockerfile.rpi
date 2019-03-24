@@ -7,7 +7,7 @@ ARG ARCH=armv7l
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates wget git python xz-utils cmake  \
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates wget git python xz-utils cmake make  \
 	&& mkdir /webrtc \
 	&& wget -qO- https://releases.linaro.org/components/toolchain/binaries/6.4-2018.05/arm-linux-gnueabihf/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf.tar.xz  | tar xJ -C /webrtc  \
 	&& export PATH=/webrtc/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf/bin:$PATH \
