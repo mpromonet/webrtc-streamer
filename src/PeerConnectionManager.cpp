@@ -134,7 +134,7 @@ IceServer getIceServerFromUrl(const std::string & url, const std::string& client
 
 webrtc::AudioDeviceModule* CreateAudioDeviceModule(const webrtc::AudioDeviceModule::AudioLayer audioLayer) {
 #ifdef HAVE_SOUND
-	return webrtc::AudioDeviceModule::Create(audioLayer);
+	return webrtc::AudioDeviceModule::Create(audioLayer).release();
 #else
 	return new webrtc::FakeAudioDeviceModule();
 #endif

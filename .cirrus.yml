@@ -1,17 +1,22 @@
 linux_docker_builder:    
   script: docker build -t $CIRRUS_REPO_FULL_NAME:cirrus-linux . -f Dockerfile
 
-rpi_docker_builder:    
-  script: docker build -t $CIRRUS_REPO_FULL_NAME:cirrus-rpi . -f Dockerfile.rpi
+linuxarmv7_docker_builder:    
+  script: docker build -t $CIRRUS_REPO_FULL_NAME:cirrus-armv7 . -f Dockerfile.rpi
+
+linuxarmv6_docker_builder:    
+  script: docker build -t $CIRRUS_REPO_FULL_NAME:cirrus-armv6 . -f Dockerfile.rpi --buuld-arg ARCH=armv6l
 
 windows_docker_builder:    
   timeout_in: 120m
+  memory: 8G
   platform: windows
   script: docker build -t %CIRRUS_REPO_FULL_NAME%:cirrus-windows . -f Dockerfile.windows
 
 publish_docker_builder:
   depends_on: 
-    - rpi
+    - linuxarmv6
+    - linuxarmv7
     - linux
     - windows
   env:
