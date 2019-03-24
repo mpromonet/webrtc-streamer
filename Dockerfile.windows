@@ -19,8 +19,8 @@ RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git &
 RUN wget "https://chrome-infra-packages.appspot.com/client?platform=windows-amd64&https://chrome-infra-packages.appspot.com/client?platform=windows-amd64&version=git_revision:bd09df254cc0d6ca4319f23c16b9039091be5b00" -O C:\depot_tools\.cipd_client.exe --no-check-certificate
 
 RUN mkdir c:\webrtc && cd c:\webrtc \
-       && fetch --no-history --nohooks webrtc 
-       && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
+       && fetch --no-history --nohooks webrtc \
+       && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
        && gclient sync 
 
 # build
