@@ -23,8 +23,8 @@ script:
 # get toolchain
 - git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git && export PATH=$PATH:$(pwd)/depot_tools
 # get WebRTC
-- mkdir webrtc
-- pushd webrtc
+- mkdir ../webrtc
+- pushd ../webrtc
 - travis_wait 30 fetch --no-history --nohooks webrtc
 # patch webrtc to not download chromium-webrtc-resources
 - sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
@@ -36,6 +36,7 @@ script:
 - sed -e 's|"-mfpu=$arm_fpu"|"-mfpu=$arm_fpu","-marm"|' -i src/build/config/compiler/BUILD.gn
 - popd
 # build
+- echo CMAKE_OPTIONS=${CMAKE_OPTIONS}
 - cmake ${CMAKE_OPTIONS} . && make && cpack
 before_deploy:
 - export RELEASE_PKG_FILE=$(ls *.tar.gz)
@@ -60,7 +61,7 @@ before_deploy:
 
 jobs:
   include:
-    - stage: deploy
+    - stage: docker
       os: windows 
       script:
         - docker info
