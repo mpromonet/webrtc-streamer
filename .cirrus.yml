@@ -9,7 +9,6 @@ linuxarmv6_docker_builder:
 
 windows_docker_builder:    
   timeout_in: 120m
-  memory: 8G
   platform: windows
   script: docker build -t %CIRRUS_REPO_FULL_NAME%:cirrus-windows . -f Dockerfile.windows
 
