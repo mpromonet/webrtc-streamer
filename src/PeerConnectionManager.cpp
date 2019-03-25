@@ -140,7 +140,7 @@ PeerConnectionManager::PeerConnectionManager( const std::list<std::string> & ice
 					    , const std::map<std::string,std::string> & urlAudioList
 					    , const webrtc::AudioDeviceModule::AudioLayer audioLayer
                                             , const std::string& publishFilter)
-	: audioDeviceModule_(FakeAudioCaptureModule::Create())
+	: audioDeviceModule_(new webrtc::FakeAudioDeviceModule())
 	, audioDecoderfactory_(webrtc::CreateBuiltinAudioDecoderFactory())
 	, peer_connection_factory_(webrtc::CreateModularPeerConnectionFactory(NULL,
                                                                     rtc::Thread::Current(),
