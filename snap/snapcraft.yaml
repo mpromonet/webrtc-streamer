@@ -1,0 +1,35 @@
+  name: v4l2-rtspserver
+  version: git
+  summary: webrtc streamer
+  description: webrtc streamer
+  grade: stable 
+  confinement: strict
+
+  parts:
+    webrtc-streamer:
+      prepare: |
+        git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools
+        cp -r /depot_tools/* /usr/local/bin/
+        mkdir ../webrtc
+        cd ../webrtc
+        fetch --no-history --nohooks webrtc
+        sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
+        gclient sync
+      plugin: cmake
+      source: .
+      source-type: git
+      build-packages:
+      - g++
+      - make
+      - pkg-config
+      - libgtk-3-dev
+      - libasound2-dev
+      stage-packages:
+      - libgtk-3-0
+      - libasound2
+
+  apps:
+    webrtc-streamer:
+      command: webrtc-streamer
+      daemon: simple   
+      plugs: [network-bind]
