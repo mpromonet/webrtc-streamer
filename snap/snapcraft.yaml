@@ -1,4 +1,4 @@
-  name: v4l2-rtspserver
+  name: webrtc-streamer
   version: git
   summary: webrtc streamer
   description: webrtc streamer
