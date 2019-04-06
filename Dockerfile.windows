@@ -11,7 +11,8 @@ COPY . /webrtc-streamer
 # Install Chocolatey & packages
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
 RUN choco install -y --no-progress --execution-timeout 5400 git python2 cmake sed wget 
-RUN choco install -y --no-progress --execution-timeout 5400 visualstudio2017buildtools --package-parameters "--norestart --quiet --wait" || echo "ignore reboot" 
+RUN choco install -y --no-progress --execution-timeout 5400 visualstudio2017buildtools visualstudio2017-workload-vctools --package-parameters "--norestart --quiet --wait" || echo ignore   
+RUN call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
 
 # install WebRTC 
 RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git C:\webrtc\depot_tools && SETX PATH "%PATH%;C:\webrtc\depot_tools" && SETX DEPOT_TOOLS_WIN_TOOLCHAIN 0 
