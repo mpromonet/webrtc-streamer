@@ -13,7 +13,7 @@ RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command
 RUN choco install git python2 cmake sed wget -y --execution-timeout 5400
 
 # install WebRTC 
-RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git C:\webrtc\depot_tools && SETX PATH "%PATH%;C:\webrtc\depot_tools"
+RUN git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git C:\webrtc\depot_tools && SETX PATH "%PATH%;C:\webrtc\depot_tools" && SETX DEPOT_TOOLS_WIN_TOOLCHAIN 0 
 RUN wget "https://chrome-infra-packages.appspot.com/client?platform=windows-amd64&https://chrome-infra-packages.appspot.com/client?platform=windows-amd64&version=git_revision:bd09df254cc0d6ca4319f23c16b9039091be5b00" -O C:\webrtc\depot_tools\.cipd_client.exe --no-check-certificate
 
 RUN cd c:\webrtc \
