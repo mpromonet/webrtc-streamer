@@ -149,9 +149,7 @@ jobs:
       - attach_workspace:
           at: /
       - checkout
-      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make cmake g++ xz-utils 
-      - run: wget -qO- https://releases.linaro.org/components/toolchain/binaries/6.4-2018.05/arm-linux-gnueabihf/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf.tar.xz  | tar xJ -C /opt 
-      - run: echo 'export PATH=/opt/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf/bin:$PATH' >> $BASH_ENV
+      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make cmake g++ xz-utils crossbuild-essential-armhf
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
       - run: cd ${WEBRTCROOT} && gclient sync
@@ -179,13 +177,10 @@ jobs:
       - attach_workspace:
           at: /
       - checkout
-      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git cmake make g++ xz-utils          
-      - run: wget -qO- https://releases.linaro.org/components/toolchain/binaries/6.4-2018.05/arm-linux-gnueabihf/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf.tar.xz  | tar xJ -C /opt 
-      - run: echo 'export PATH=/opt/gcc-linaro-6.4.1-2018.05-x86_64_arm-linux-gnueabihf/bin:$PATH' >> $BASH_ENV
+      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git cmake make g++ xz-utils crossbuild-essential-armhf         
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: cd ${WEBRTCROOT} && gclient sync 
-      - run: sed -e 's|"-mfpu=$arm_fpu"|"-mfpu=$arm_fpu","-marm"|' -i ${WEBRTCROOT}/src/build/config/compiler/BUILD.gn
-      - run: echo "#define PFFFT_SIMD_DISABLE 1" >> src/third_party/pffft/src/pffft.h
+      - run: sed -e 's|"-mfpu=$arm_fpu"|"-mfpu=$arm_fpu","-marm","-DPFFFT_SIMD_DISABLE=1"|' -i src/build/config/compiler/BUILD.gn
 
       - run: cmake -DCMAKE_SYSTEM_PROCESSOR=armv6l -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF . && make 
       - run: cpack
