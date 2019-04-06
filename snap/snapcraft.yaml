@@ -2,8 +2,8 @@
   version: git
   summary: webrtc streamer
   description: webrtc streamer
-  grade: stable 
-  confinement: strict
+  grade: devel 
+  confinement: devmode
 
   parts:
     webrtc-streamer:
@@ -19,6 +19,7 @@
       source: .
       source-type: git
       build-packages:
+      - curl
       - g++
       - make
       - pkg-config
