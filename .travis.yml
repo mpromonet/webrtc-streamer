@@ -26,6 +26,7 @@ script:
 - travis_wait 30 gclient sync
 # patch webrtc compiler option for armv6
 - sed -e 's|"-mfpu=$arm_fpu"|"-mfpu=$arm_fpu","-marm"|' -i src/build/config/compiler/BUILD.gn
+- echo "#define PFFFT_SIMD_DISABLE 1" >> src/third_party/pffft/src/pffft.h
 - popd
 # build
 - echo CMAKE_OPTIONS=${CMAKE_OPTIONS}
