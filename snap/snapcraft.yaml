@@ -12,8 +12,7 @@
       source: https://chromium.googlesource.com/chromium/tools/depot_tools.git
       source-type: git
       override-build: |
-        pwd
-        cp -r src/* /usr/local/bin/
+        cp -r ../src/* /usr/local/bin/
         mkdir /webrtc
         cd /webrtc
         fetch --no-history --nohooks webrtc
