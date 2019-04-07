@@ -11,8 +11,9 @@
       plugin: dump
       source: https://chromium.googlesource.com/chromium/tools/depot_tools.git
       source-type: git
-      override-build: |
-        cp -r depot_tools/* /usr/local/bin/
+      override-install: |
+        pwd
+        cp -r src/* /usr/local/bin/
         mkdir /webrtc
         cd /webrtc
         fetch --no-history --nohooks webrtc
