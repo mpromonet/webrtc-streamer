@@ -10,20 +10,22 @@ RUN powershell [System.Net.ServicePointManager]::ServerCertificateValidationCall
 
 # Install Chocolatey & packages
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin" 
-RUN choco install -y git python2 cmake sed curl 
-RUN choco install -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools" || echo ignore   
+RUN choco install -y git python2 sed curl \
+       && choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=User'
+       && choco install -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools" || echo ignore   
 
 # install WebRTC 
 RUN git config --global core.autocrlf false \
-       && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git C:\webrtc\depot_tools && SETX PATH "%PATH%;C:\webrtc\depot_tools" \
+       && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git C:\depot_tools \
+       && SETX PATH "%PATH%;C:\depot_tools" \
        && SETX DEPOT_TOOLS_WIN_TOOLCHAIN 0 \
        && SETX CLANG_VERSION ToT \
        && SETX GYP_MSVS_OVERRIDE_PATH "C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools"
 RUN gclient --version
-RUN curl "https://chrome-infra-packages.appspot.com/client?platform=windows-amd64&version=git_revision:bd09df254cc0d6ca4319f23c16b9039091be5b00" -o C:\webrtc\depot_tools\.cipd_client.exe -k -L
+RUN curl "https://chrome-infra-packages.appspot.com/client?platform=windows-amd64&version=git_revision:bd09df254cc0d6ca4319f23c16b9039091be5b00" -o C:\depot_tools\.cipd_client.exe -k -L
 
 RUN call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
-       && cd c:\webrtc \
+       && mkdir c:\webrtc && cd c:\webrtc \
        && fetch --no-history --nohooks webrtc \
        && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
        && gclient sync \

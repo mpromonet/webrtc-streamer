@@ -7,18 +7,25 @@
   base: core18
 
   parts:
-    webrtc-streamer:
-      prepare: |
-        git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools
-        cp -r /depot_tools/* /usr/local/bin/
-        mkdir ../webrtc
-        cd ../webrtc
+    webrtc:
+      plugin: dump
+      source: https://chromium.googlesource.com/chromium/tools/depot_tools.git
+      source-type: git
+      override-build: |
+        cp -r depot_tools/* /usr/local/bin/
+        mkdir /webrtc
+        cd /webrtc
         fetch --no-history --nohooks webrtc
         sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
         gclient sync
+
+    webrtc-streamer:
+      after: [webrtc]
       plugin: cmake
       source: .
       source-type: git
+      configflags:
+      - -DWEBRTCROOT=/webrtc
       build-packages:
       - curl
       - g++
