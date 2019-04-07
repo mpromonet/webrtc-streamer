@@ -5,6 +5,8 @@
   grade: devel 
   confinement: devmode
   base: core18
+  architectures:
+    - build-on: [amd64, i386]
 
   parts:
     webrtc:
