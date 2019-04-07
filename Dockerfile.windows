@@ -10,7 +10,7 @@ RUN powershell [System.Net.ServicePointManager]::ServerCertificateValidationCall
 
 # Install Chocolatey & packages
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin" 
-RUN choco install -y git python2 cmake sed wget 
+RUN choco install -y git python2 cmake sed curl 
 RUN choco install -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools" || echo ignore   
 
 # install WebRTC 
@@ -20,7 +20,7 @@ RUN git config --global core.autocrlf false \
        && SETX CLANG_VERSION ToT \
        && SETX GYP_MSVS_OVERRIDE_PATH "C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools"
 RUN gclient --version
-RUN wget "https://chrome-infra-packages.appspot.com/client?platform=windows-amd64&version=git_revision:bd09df254cc0d6ca4319f23c16b9039091be5b00" -O C:\webrtc\depot_tools\.cipd_client.exe --no-check-certificate
+RUN curl "https://chrome-infra-packages.appspot.com/client?platform=windows-amd64&version=git_revision:bd09df254cc0d6ca4319f23c16b9039091be5b00" -o C:\webrtc\depot_tools\.cipd_client.exe -k
 
 RUN call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
        && cd c:\webrtc \
