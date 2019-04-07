@@ -4,6 +4,7 @@
   description: webrtc streamer
   grade: devel 
   confinement: devmode
+  base: core18
 
   parts:
     webrtc-streamer:
