@@ -20,7 +20,7 @@ RUN git config --global core.autocrlf false \
        && SETX CLANG_VERSION ToT \
        && SETX GYP_MSVS_OVERRIDE_PATH "C:/Program Files (x86)/Microsoft Visual Studio/2017/BuildTools"
 RUN gclient --version
-RUN curl "https://chrome-infra-packages.appspot.com/client?platform=windows-amd64&version=git_revision:bd09df254cc0d6ca4319f23c16b9039091be5b00" -o C:\webrtc\depot_tools\.cipd_client.exe -k
+RUN curl "https://chrome-infra-packages.appspot.com/client?platform=windows-amd64&version=git_revision:bd09df254cc0d6ca4319f23c16b9039091be5b00" -o C:\webrtc\depot_tools\.cipd_client.exe -k -L
 
 RUN call "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
        && cd c:\webrtc \
