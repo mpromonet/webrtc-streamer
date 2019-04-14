@@ -16,7 +16,7 @@
         "Scheveningen-1": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys1.stream"}, 
         "Scheveningen-3": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys3.stream"}, 
 
-        "Arrifana": {"video": "rtsp://46.105.54.176:80/64connections/arrifana.stream"}
+        "Arrifana": {"video": "rtsp://46.105.54.176:80/64connections/arrifana.stream"},
         "CapBreton": {"video": "rtsp://46.105.54.176:80/64connections/capbreton.stream"}, 
         "Chamrousse": {"video": "rtsp://46.105.54.176:80/64connections/chamrousse2.stream"}, 
         "Hendaye": {"video": "rtsp://46.105.54.176:80/64connections/hendaye.stream"}, 
