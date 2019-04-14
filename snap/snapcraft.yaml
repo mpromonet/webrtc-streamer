@@ -1,13 +1,22 @@
   name: webrtc-streamer
   version: git
   summary: webrtc streamer
-  description: webrtc streamer
-  grade: devel 
-  confinement: devmode
+  description: |
+     WebRTC-streamer is an experiment to stream video capture devices and RTSP sources through WebRTC using simple mechanism.
+
+     It embeds a HTTP server that implements API and serves a simple HTML page that use them through AJAX.
+
+     The WebRTC signaling is implemented through HTTP requests:
+     * /api/call : send offer and get answer
+     * /api/hangup : close a call
+     * /api/addIceCandidate : add a candidate
+     * /api/getIceCandidate : get the list of candidates
+
+  grade: stable 
+  confinement: strict
   base: core18
   architectures:
     - build-on: amd64
-    - build-on: i386
 
   parts:
     webrtc:
@@ -21,6 +30,9 @@
         fetch --no-history --nohooks webrtc
         sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
         gclient sync
+      build-packages:
+      - curl
+      - python
 
     webrtc-streamer:
       after: [webrtc]
@@ -30,10 +42,8 @@
       configflags:
       - -DWEBRTCROOT=/webrtc
       build-packages:
-      - curl
       - g++
       - make
-      - python
       - pkg-config
       - libgtk-3-dev
       - libasound2-dev
@@ -43,6 +53,6 @@
 
   apps:
     webrtc-streamer:
-      command: webrtc-streamer
+      command: webrtc-streamer -C $SNAP/share/webrtc-streamer/config.json -w $SNAP/share/webrtc-streamer/html
       daemon: simple   
       plugs: [network-bind]
