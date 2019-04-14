@@ -14,7 +14,7 @@ ENV DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin" 
 RUN choco install -y git python2 sed curl \
        && choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=User' \
-       && choco install -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --installPath %GYP_MSVS_OVERRIDE_PATH%" || IF "%ERRORLEVEL%"=="3010" EXIT 0   
+       && choco install -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --installPath C:\BuildTools" || IF "%ERRORLEVEL%"=="3010" EXIT 0   
 
 # install WebRTC 
 RUN git config --global core.autocrlf false \
