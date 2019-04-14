@@ -1,12 +1,10 @@
 {
     "urls":{
-        "Norway": {"video":"rtsp://217.17.220.110/axis-media/media.amp"},
-        "Hamburg": {"video": "rtsp://stream.livespotting.tv/windit-edge/LS_b5586_720p.stream"}, 
+        "Bunny": {"video": "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov"}, 
+        
         "Karlowo-1": {"video": "rtsp://85.255.175.241/h264"}, 
         "Karlowo-2": {"video": "rtsp://85.255.175.244/h264"}, 
-        "Bunny": {"video": "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov"}, 
         "Texel": {"video": "rtsp://webcamserverdh.dyndns-remote.com:1935/live/mp4:ehtx.stream"}, 
-        "Rotterdam": {"video": "rtsp://streaming2.camvista.com:1935/rtplive/paulmartens101034.stream"}, 
         "Havenmond": {"video": "rtsp://85.25.218.202:1935/live/mp4:havenmond.stream"}, 
         "LilaDelman": {"video": "rtsp://narr-cam.liladelman.com/axis-media/media.amp"}, 
         "VirginiaTech": {"video": "rtsp://198.82.159.136:554/axis-media/media.amp"},
@@ -18,10 +16,15 @@
         "Scheveningen-1": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys1.stream"}, 
         "Scheveningen-3": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys3.stream"}, 
 
+        "Arrifana": {"video": "rtsp://46.105.54.176:80/64connections/arrifana.stream"}
+        "CapBreton": {"video": "rtsp://46.105.54.176:80/64connections/capbreton.stream"}, 
+        "Chamrousse": {"video": "rtsp://46.105.54.176:80/64connections/chamrousse2.stream"}, 
+        "Hendaye": {"video": "rtsp://46.105.54.176:80/64connections/hendaye.stream"}, 
+        "Marseille": {"video": "rtsp://46.105.54.176:80/64connections/marseille.stream"}, 
+        "PaçoDeArcos": {"video": "rtsp://46.105.54.176:80/64connections/parcos.stream"},
         "Paris-1": {"video": "rtsp://46.105.54.176:80/64connections/Pariscam1.stream"}, 
         "Paris-3": {"video": "rtsp://46.105.54.176:80/64connections/Pariscam3.stream"},
-        "Chamrousse": {"video": "rtsp://46.105.54.176:80/64connections/chamrousse2.stream"}, 
-        "Marseille": {"video": "rtsp://46.105.54.176:80/64connections/marseille.stream"}, 
+        "Paris-4": {"video": "rtsp://46.105.54.176:80/64connections/Pariscam4.stream"},
 
         "Curacao": {"video": "rtsp://srv13.arkasis.nl:80/498/default.stream"}, 
         "Volendam": {"video": "rtsp://srv13.arkasis.nl:80/508/default.stream"}, 
