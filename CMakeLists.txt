@@ -137,7 +137,7 @@ endif()
 
 FILE(GLOB LIVEHELPERSOURCE ${LIVE}/groupsock/*.c* ${LIVE}/liveMedia/*.c* ${LIVE}/UsageEnvironment/*.c* ${LIVE}/BasicUsageEnvironment/*.c* live555helper/src/*.cpp)
 add_library (live555helper STATIC ${LIVEHELPERSOURCE})	
-target_include_directories(live555helper PUBLIC live/groupsock/include live/liveMedia/include live/UsageEnvironment/include live/BasicUsageEnvironment/include live555helper/inc)
+target_include_directories(live555helper PUBLIC ${LIVE}/groupsock/include ${LIVE}/liveMedia/include ${LIVE}/UsageEnvironment/include ${LIVE}/BasicUsageEnvironment/include live555helper/inc)
 target_link_libraries (${PROJECT_NAME} live555helper) 
 add_definitions(-DHAVE_LIVE555 -DHAVE_JPEG)
 
