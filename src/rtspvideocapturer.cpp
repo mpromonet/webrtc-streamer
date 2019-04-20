@@ -34,7 +34,7 @@ uint8_t marker[] = { 0, 0, 0, 1};
 
 RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
 	: m_env(m_stop),
-	m_connection(m_env, this, uri.c_str(), RTSPConnection::decodeTimeoutOption(opts), RTSPConnection::decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=3),
+	m_connection(m_env, this, uri.c_str(), RTSPConnection::decodeTimeoutOption(opts), RTSPConnection::decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=2),
 	m_width(0), m_height(0), m_roi_x(0), m_roi_y(0), m_roi_width(0), m_roi_height(0), m_fps(0)
 {
 	RTC_LOG(INFO) << "RTSPVideoCapturer " << uri ;
