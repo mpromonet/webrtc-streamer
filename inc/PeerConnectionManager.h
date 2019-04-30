@@ -206,7 +206,7 @@ class PeerConnectionManager {
 			}
 			virtual void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
 				RTC_LOG(LERROR) << __PRETTY_FUNCTION__;
-				m_videosink.release();
+				m_videosink.reset();
 			}
 			virtual void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
 				RTC_LOG(LERROR) << __PRETTY_FUNCTION__;
