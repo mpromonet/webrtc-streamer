@@ -765,7 +765,6 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 		video = videoit->second;
 	}
 
-
 	std::string label = this->sanitizeLabel(videourl + "_video");
 
 	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;

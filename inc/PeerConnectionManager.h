@@ -22,7 +22,6 @@
 #include "rtc_base/strings/json.h"
 
 
-
 class PeerConnectionManager {
 	class VideoSink : public rtc::VideoSinkInterface<webrtc::VideoFrame> {
 		public:
@@ -271,7 +270,6 @@ class PeerConnectionManager {
 		void              setAnswer(const std::string &peerid, const Json::Value& jmessage);
 
 
-				
 	protected:
 		PeerConnectionObserver*                             CreatePeerConnection(const std::string& peerid);
 		bool                                                AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & videourl, const std::string & audiourl, const std::string & options);
