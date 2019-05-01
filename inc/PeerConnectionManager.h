@@ -151,7 +151,8 @@ class PeerConnectionManager {
 			, m_peerid(peerid)
 			, m_localChannel(NULL)
 			, m_remoteChannel(NULL)
-			, iceCandidateList_(Json::arrayValue) {
+			, m_iceCandidateList(Json::arrayValue)
+			, m_deleting(false) {
 				RTC_LOG(INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
 				m_pc = m_peerConnectionManager->peer_connection_factory_->CreatePeerConnection(config,
 							    NULL,
@@ -173,16 +174,14 @@ class PeerConnectionManager {
 				RTC_LOG(INFO) << __PRETTY_FUNCTION__;
 				delete m_localChannel;
 				delete m_remoteChannel;
-				// warning: pc->close call OnIceConnectionChange
-				// release m_pc to indicate this 
-				rtc::scoped_refptr<webrtc::PeerConnectionInterface> pc(m_pc);
-				m_pc.release();
-				if (pc.get()) {
-					pc->Close();
+				if (m_pc.get()) {
+					// warning: pc->close call OnIceConnectionChange
+					m_deleting = true;
+					m_pc->Close();
 				}
 			}
 
-			Json::Value getIceCandidateList() { return iceCandidateList_; 	}
+			Json::Value getIceCandidateList() { return m_iceCandidateList; }
 			
 			Json::Value getStats() {
 				m_statsCallback->clearReport();
@@ -226,8 +225,8 @@ class PeerConnectionManager {
 				if ( (state == webrtc::PeerConnectionInterface::kIceConnectionFailed)
 				   ||(state == webrtc::PeerConnectionInterface::kIceConnectionClosed) )
 				{ 
-					iceCandidateList_.clear();
-					if (m_pc.get()) {
+					m_iceCandidateList.clear();
+					if (!m_deleting) {
 						std::thread([this]() {
 							m_peerConnectionManager->hangUp(m_peerid);
 						}).detach();
@@ -240,14 +239,15 @@ class PeerConnectionManager {
 
 
 		private:
-			PeerConnectionManager* m_peerConnectionManager;
-			const std::string m_peerid;
-			rtc::scoped_refptr<webrtc::PeerConnectionInterface> m_pc;
-			DataChannelObserver*    m_localChannel;
-			DataChannelObserver*    m_remoteChannel;
-			Json::Value iceCandidateList_;
+			PeerConnectionManager*                                   m_peerConnectionManager;
+			const std::string                                        m_peerid;
+			rtc::scoped_refptr<webrtc::PeerConnectionInterface>      m_pc;
+			DataChannelObserver*                                     m_localChannel;
+			DataChannelObserver*                                     m_remoteChannel;
+			Json::Value                                              m_iceCandidateList;
 			rtc::scoped_refptr<PeerConnectionStatsCollectorCallback> m_statsCallback;
 			std::unique_ptr<VideoSink>                               m_videosink;
+			bool                                                     m_deleting;
 	};
 
 	public:
@@ -271,23 +271,24 @@ class PeerConnectionManager {
 
 
 	protected:
-		PeerConnectionObserver*                 CreatePeerConnection(const std::string& peerid);
-		bool                                    AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & videourl, const std::string & audiourl, const std::string & options);
-		rtc::scoped_refptr<webrtc::VideoTrackInterface> CreateVideoTrack(const std::string & videourl, const std::map<std::string,std::string> & opts);
-		rtc::scoped_refptr<webrtc::AudioTrackInterface> CreateAudioTrack(const std::string & audiourl, const std::map<std::string,std::string> & opts);
-		bool                                    streamStillUsed(const std::string & streamLabel);
-		const std::list<std::string>            getVideoCaptureDeviceList();
+		PeerConnectionObserver*                             CreatePeerConnection(const std::string& peerid);
+		bool                                                AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & videourl, const std::string & audiourl, const std::string & options);
+		rtc::scoped_refptr<webrtc::VideoTrackInterface>     CreateVideoTrack(const std::string & videourl, const std::map<std::string,std::string> & opts);
+		rtc::scoped_refptr<webrtc::AudioTrackInterface>     CreateAudioTrack(const std::string & audiourl, const std::map<std::string,std::string> & opts);
+		bool                                                streamStillUsed(const std::string & streamLabel);
+		const std::list<std::string>                        getVideoCaptureDeviceList();
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> getPeerConnection(const std::string& peerid);
 
 	protected:
+		typedef std::pair< rtc::scoped_refptr<webrtc::VideoTrackInterface>, rtc::scoped_refptr<webrtc::AudioTrackInterface>> AudioVideoPair;
 		rtc::scoped_refptr<webrtc::AudioDeviceModule>                             audioDeviceModule_;
 		rtc::scoped_refptr<webrtc::AudioDecoderFactory>                           audioDecoderfactory_;
 		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>                peer_connection_factory_;
-	    std::mutex                                                                m_peerMapMutex;
+		std::mutex                                                                m_peerMapMutex;
 		std::map<std::string, PeerConnectionObserver* >                           peer_connectionobs_map_;
-		std::map<std::string, std::pair< rtc::scoped_refptr<webrtc::VideoTrackInterface>, rtc::scoped_refptr<webrtc::AudioTrackInterface>> >  stream_map_;
-	    std::mutex                                                                m_streamMapMutex;
-		std::list<std::string>                                                              iceServerList_;
+		std::map<std::string, AudioVideoPair>                                     stream_map_;
+		std::mutex                                                                m_streamMapMutex;
+		std::list<std::string>                                                    iceServerList_;
 		const std::map<std::string,std::string>                                   m_urlVideoList;
 		const std::map<std::string,std::string>                                   m_urlAudioList;
 		std::map<std::string,std::string>                                         m_videoaudiomap;

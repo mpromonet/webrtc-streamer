@@ -962,7 +962,7 @@ void PeerConnectionManager::PeerConnectionObserver::OnIceCandidate(const webrtc:
 		jmessage[kCandidateSdpMidName] = candidate->sdp_mid();
 		jmessage[kCandidateSdpMlineIndexName] = candidate->sdp_mline_index();
 		jmessage[kCandidateSdpName] = sdp;
-		iceCandidateList_.append(jmessage);
+		m_iceCandidateList.append(jmessage);
 	}
 }
 
