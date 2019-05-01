@@ -11,6 +11,7 @@
 #include <iostream>
 #include <fstream>
 #include <utility>
+#include <functional>
 
 #include "api/video_codecs/builtin_video_decoder_factory.h"
 #include "api/video_codecs/builtin_video_encoder_factory.h"
@@ -764,8 +765,8 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 		video = videoit->second;
 	}
 
-	std::string label = videourl + "_video";
-	label.erase(std::remove_if(label.begin(), label.end(), ignoreInLabel), label.end());
+
+	std::string label = this->sanitizeLabel(videourl + "_video");
 
 	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
 	rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = CapturerFactory::CreateVideoSource(video, opts, m_publishFilter, peer_connection_factory_);
@@ -833,14 +834,29 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 	if (!audioSource) {
 		RTC_LOG(LS_ERROR) << "Cannot create capturer audio:" << audiourl;
 	} else {
-		std::string label = audiourl + "_audio";
-		label.erase(std::remove_if(label.begin(), label.end(), ignoreInLabel), label.end());
-		audio_track = peer_connection_factory_->CreateAudioTrack(label, audioSource);
+		std::string label = this->sanitizeLabel(audiourl + "_audio");
 	}
 	
 	return audio_track;
 }
-  
+
+const std::string PeerConnectionManager::sanitizeLabel(const std::string &label)
+{
+	std::string out(label);
+	
+	// conceal labels that contain rtsp URL to prevent sensitive data leaks.
+	if (label.find("rtsp:") != std::string::npos) 
+	{
+		std::hash<std::string> hash_fn;
+		size_t hash = hash_fn(out);
+		return std::to_string(hash);
+	}
+	
+	out.erase(std::remove_if(out.begin(), out.end(), ignoreInLabel), out.end());
+	return out;
+}
+
+
 /* ---------------------------------------------------------------------------
 **  Add a stream to a PeerConnection
 ** -------------------------------------------------------------------------*/
@@ -849,8 +865,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 	bool ret = false;
 		
 	// compute stream label removing space because SDP use label
-	std::string streamLabel = videourl + "|" + audiourl + "|" + options;
-	streamLabel.erase(std::remove_if(streamLabel.begin(), streamLabel.end(), ignoreInLabel), streamLabel.end());
+	std::string streamLabel = this->sanitizeLabel(videourl + "|" + audiourl + "|" + options);
 
 	bool existingStream = false;
 	{
@@ -962,7 +977,7 @@ void PeerConnectionManager::PeerConnectionObserver::OnIceCandidate(const webrtc:
 		jmessage[kCandidateSdpMidName] = candidate->sdp_mid();
 		jmessage[kCandidateSdpMlineIndexName] = candidate->sdp_mline_index();
 		jmessage[kCandidateSdpName] = sdp;
-		iceCandidateList_.append(jmessage);
+		m_iceCandidateList.append(jmessage);
 	}
 }
 
