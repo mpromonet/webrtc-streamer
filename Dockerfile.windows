@@ -1,5 +1,5 @@
 # build
-FROM microsoft/windowsservercore as builder
+FROM mcr.microsoft.com/windows/servercore:ltsc2019 as builder
 LABEL maintainer=michel.promonet@free.fr
 
 WORKDIR /webrtc-streamer
