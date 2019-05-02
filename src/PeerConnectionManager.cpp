@@ -834,6 +834,7 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 		RTC_LOG(LS_ERROR) << "Cannot create capturer audio:" << audiourl;
 	} else {
 		std::string label = this->sanitizeLabel(audiourl + "_audio");
+		audio_track = peer_connection_factory_->CreateAudioTrack(label, audioSource);
 	}
 	
 	return audio_track;
