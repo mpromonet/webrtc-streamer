@@ -278,6 +278,7 @@ class PeerConnectionManager {
 		bool                                                streamStillUsed(const std::string & streamLabel);
 		const std::list<std::string>                        getVideoCaptureDeviceList();
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> getPeerConnection(const std::string& peerid);
+		const std::string                                   sanitizeLabel(const std::string &label);
 
 	protected:
 		typedef std::pair< rtc::scoped_refptr<webrtc::VideoTrackInterface>, rtc::scoped_refptr<webrtc::AudioTrackInterface>> AudioVideoPair;
