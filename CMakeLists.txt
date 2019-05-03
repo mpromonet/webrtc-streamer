@@ -51,7 +51,16 @@ MESSAGE("ALSA_FOUND = ${ALSA_FOUND}")
 # webrtc
 if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
   set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nuse_custom_libcxx=false\nrtc_include_pulse_audio=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\n)
-  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+
+  # debug/release
+  if(WEBRTCBUILD STREQUAL "Release")
+    set (WEBRTCARGS is_debug=false\n${WEBRTCARGS})
+  else()
+    set (WEBRTCARGS is_debug=true\n${WEBRTCARGS})
+  endif()
+
+  # H264 support
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     message(WARNING "Visual Studio Compiler is not supported by the Chromium project! Disabling h.264.")
     set (WEBRTCARGS rtc_use_h264=false\n${WEBRTCARGS})
   else ()
@@ -61,15 +70,16 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
     else ()
       set (WEBRTCARGS rtc_use_h264=true\nffmpeg_branding="Chrome"\n${WEBRTCARGS})
     endif()
+  endif()
+
+  # sound support
+  if (NOT WIN32)
     if (NOT ALSA_FOUND)
       set (WEBRTCARGS rtc_include_internal_audio_device=false\n${WEBRTCARGS})
     endif()
   endif()
-  if(WEBRTCBUILD STREQUAL "Release")
-    set (WEBRTCARGS is_debug=false\n${WEBRTCARGS})
-  else()
-    set (WEBRTCARGS is_debug=true\n${WEBRTCARGS})
-  endif()
+
+  # compilation mode depending on target
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
     set (WEBRTCARGS target_cpu="arm"\narm_version=6\narm_float_abi="hard"\nrtc_include_opus=false\n${WEBRTCARGS})
     set (WEBRTCARGS use_sysroot=false\n${WEBRTCARGS})
@@ -83,12 +93,15 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
     set (WEBRTCARGS is_clang=true\n${WEBRTCARGS})
   endif()
 
+  # screen capture support
   find_package(PkgConfig QUIET)
   pkg_check_modules(GTK3 QUIET gtk+-3.0)
   MESSAGE("GTK_FOUND = ${GTK3_FOUND}")
   if(NOT GTK3_FOUND OR (WEBRTCDESKTOPCAPTURE STREQUAL "OFF"))
     set (WEBRTCARGS use_ozone=true\nis_desktop_linux=false\n${WEBRTCARGS})
   endif()
+
+  # write conf file
   FILE(WRITE ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn ${WEBRTCARGS})
 
   if (WIN32)
