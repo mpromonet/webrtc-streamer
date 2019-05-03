@@ -13,6 +13,7 @@
 #include <mutex>
 #include <regex>
 #include <thread>
+#include <future>
 
 #include "api/peer_connection_interface.h"
 
@@ -46,20 +47,22 @@ class PeerConnectionManager {
 	
 	class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver {
 		public:
-			static SetSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc)
+			static SetSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise)
 			{
-				return  new rtc::RefCountedObject<SetSessionDescriptionObserver>(pc);
+				return  new rtc::RefCountedObject<SetSessionDescriptionObserver>(pc, promise);
 			}
 			virtual void OnSuccess()
 			{
 				std::string sdp;
 				if (m_pc->local_description())
 				{
+					m_promise.set_value(m_pc->local_description());
 					m_pc->local_description()->ToString(&sdp);
 					RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " Local SDP:" << sdp;
 				}
-				if (m_pc->remote_description())
+				else if (m_pc->remote_description())
 				{
+					m_promise.set_value(m_pc->remote_description());
 					m_pc->remote_description()->ToString(&sdp);
 					RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " Remote SDP:" << sdp;
 				}
@@ -67,35 +70,39 @@ class PeerConnectionManager {
 			virtual void OnFailure(const std::string& error)
 			{
 				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
+				m_promise.set_value(NULL);
 			}
 		protected:
-			SetSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc) : m_pc(pc) {};
+			SetSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise) : m_pc(pc), m_promise(promise) {};
 
 		private:
 			webrtc::PeerConnectionInterface* m_pc;
+			std::promise<const webrtc::SessionDescriptionInterface*> & m_promise;		
 	};
 
 	class CreateSessionDescriptionObserver : public webrtc::CreateSessionDescriptionObserver {
 		public:
-			static CreateSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc)
+			static CreateSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise)
 			{
-				return  new rtc::RefCountedObject<CreateSessionDescriptionObserver>(pc);
+				return new rtc::RefCountedObject<CreateSessionDescriptionObserver>(pc,promise);
 			}
 			virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc)
 			{
 				std::string sdp;
 				desc->ToString(&sdp);
 				RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " type:" << desc->type() << " sdp:" << sdp;
-				m_pc->SetLocalDescription(SetSessionDescriptionObserver::Create(m_pc), desc);
+				m_pc->SetLocalDescription(SetSessionDescriptionObserver::Create(m_pc, m_promise), desc);
 			}
 			virtual void OnFailure(const std::string& error) {
 				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
+				m_promise.set_value(NULL);
 			}
 		protected:
-			CreateSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc) : m_pc(pc) {};
+			CreateSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise) : m_pc(pc), m_promise(promise) {};
 
 		private:
-			webrtc::PeerConnectionInterface* m_pc;
+			webrtc::PeerConnectionInterface*                           m_pc;
+			std::promise<const webrtc::SessionDescriptionInterface*> & m_promise;
 	};
 
 	class PeerConnectionStatsCollectorCallback : public webrtc::RTCStatsCollectorCallback {
