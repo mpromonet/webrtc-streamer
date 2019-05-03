@@ -19,6 +19,7 @@
 #include "media/engine/webrtc_media_engine.h"
 #include "logging/rtc_event_log/rtc_event_log_factory.h"
 #include "modules/audio_device/include/fake_audio_device.h"
+#include "api/task_queue/default_task_queue_factory.h"
 
 
 #include "PeerConnectionManager.h"
@@ -140,17 +141,22 @@ PeerConnectionManager::PeerConnectionManager( const std::list<std::string> & ice
 					    , const std::map<std::string,std::string> & urlAudioList
 					    , const webrtc::AudioDeviceModule::AudioLayer audioLayer
                                             , const std::string& publishFilter)
-	: audioDeviceModule_(new webrtc::FakeAudioDeviceModule())
-	, audioDecoderfactory_(webrtc::CreateBuiltinAudioDecoderFactory())
+	: audioDecoderfactory_(webrtc::CreateBuiltinAudioDecoderFactory())	
+	, task_queue_factory_(webrtc::CreateDefaultTaskQueueFactory())
+#ifdef HAVE_SOUND
+	, audioDeviceModule_(webrtc::AudioDeviceModule::Create(audioLayer,task_queue_factory_.get()))
+#else
+	, audioDeviceModule_(new webrtc::FakeAudioDeviceModule())
+#endif
 	, peer_connection_factory_(webrtc::CreateModularPeerConnectionFactory(NULL,
-                                                                    rtc::Thread::Current(),
-                                                                    NULL,
-																	cricket::WebRtcMediaEngineFactory::Create(
-          																audioDeviceModule_, webrtc::CreateBuiltinAudioEncoderFactory(), audioDecoderfactory_,
-          																webrtc::CreateBuiltinVideoEncoderFactory(), webrtc::CreateBuiltinVideoDecoderFactory(), NULL,
-          																webrtc::AudioProcessingBuilder().Create()),
-																	webrtc::CreateCallFactory(),
-																	webrtc::CreateRtcEventLogFactory()))
+		rtc::Thread::Current(),
+		NULL,
+		cricket::WebRtcMediaEngineFactory::Create(
+		audioDeviceModule_, webrtc::CreateBuiltinAudioEncoderFactory(), audioDecoderfactory_,
+		webrtc::CreateBuiltinVideoEncoderFactory(), webrtc::CreateBuiltinVideoDecoderFactory(), NULL,
+		webrtc::AudioProcessingBuilder().Create()),
+		webrtc::CreateCallFactory(),
+		webrtc::CreateRtcEventLogFactory()))
 	, iceServerList_(iceServerList)
 	, m_urlVideoList(urlVideoList)
 	, m_urlAudioList(urlAudioList)

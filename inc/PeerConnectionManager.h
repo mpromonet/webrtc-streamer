@@ -281,6 +281,7 @@ class PeerConnectionManager {
 
 	protected:
 		typedef std::pair< rtc::scoped_refptr<webrtc::VideoTrackInterface>, rtc::scoped_refptr<webrtc::AudioTrackInterface>> AudioVideoPair;
+		std::unique_ptr<webrtc::TaskQueueFactory>                                 task_queue_factory_;
 		rtc::scoped_refptr<webrtc::AudioDeviceModule>                             audioDeviceModule_;
 		rtc::scoped_refptr<webrtc::AudioDecoderFactory>                           audioDecoderfactory_;
 		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>                peer_connection_factory_;
