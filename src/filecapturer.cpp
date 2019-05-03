@@ -213,7 +213,7 @@ void FileVideoCapturer::DecoderThread()
 		if (size) {
 			webrtc::EncodedImage input_image(data, size, size);		
 			input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
-			m_decoder->Decode(input_image, false, NULL,0);
+			m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
 		}
 	}
 }

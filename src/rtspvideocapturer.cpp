@@ -34,7 +34,7 @@ uint8_t marker[] = { 0, 0, 0, 1};
 
 RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
 	: m_env(m_stop),
-	m_connection(m_env, this, uri.c_str(), RTSPConnection::decodeTimeoutOption(opts), RTSPConnection::decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=3),
+	m_connection(m_env, this, uri.c_str(), RTSPConnection::decodeTimeoutOption(opts), RTSPConnection::decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=2),
 	m_width(0), m_height(0), m_roi_x(0), m_roi_y(0), m_roi_width(0), m_roi_height(0), m_fps(0)
 {
 	RTC_LOG(INFO) << "RTSPVideoCapturer " << uri ;
@@ -262,7 +262,7 @@ void RTSPVideoCapturer::DecoderThread()
 		if (size) {
 			webrtc::EncodedImage input_image(data, size, size);		
 			input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
-			m_decoder->Decode(input_image, false, NULL,0);
+			m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
 		}
 	}
 }
