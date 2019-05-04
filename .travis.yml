@@ -24,8 +24,6 @@ script:
 - src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
 # get WebRTC dependencies
 - travis_wait 30 gclient sync
-# patch webrtc compiler option for armv6
-- sed -e 's|"-mfpu=$arm_fpu"|"-mfpu=$arm_fpu","-marm","-DPFFFT_SIMD_DISABLE=1"|' -i src/build/config/compiler/BUILD.gn
 - popd
 # build
 - echo CMAKE_OPTIONS=${CMAKE_OPTIONS}
@@ -58,3 +56,6 @@ jobs:
       script:
         - docker info
         - docker build -f Dockerfile.windows .
+stages:
+  - docker
+  - test
