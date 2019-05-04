@@ -55,7 +55,7 @@ jobs:
       os: windows 
       script:
         - docker info
-        - docker build -f Dockerfile.windows .
+        - travis_wait 30 docker build -f Dockerfile.windows .
 stages:
   - docker
   - test
