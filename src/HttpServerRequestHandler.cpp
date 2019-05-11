@@ -45,9 +45,7 @@ class RequestHandler : public CivetHandler
         
         HttpServerRequestHandler::httpFunction fct = httpServer->getFunction(req_info->request_uri);
         if (fct != NULL)
-        {
-            Json::Value  jmessage;			
-            
+        {   
             // read input
             Json::Value  in = this->getInputMessage(req_info, conn);
             
