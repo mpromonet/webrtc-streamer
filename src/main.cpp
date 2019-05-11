@@ -278,10 +278,25 @@ int main(int argc, char* argv[])
 			return webRtcServer.getPeerConnectionList();
 		};
 		
-		func["/api/getStreamList"] = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+		func["/api/getStreamList"]         = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
 			return webRtcServer.getStreamList();
 		};
 
+		func["/api/version"]               = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+        		Json::Value answer(VERSION);
+		        return answer;
+		};
+                func["/api/log"]                   = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+                        std::string loglevel;
+                        if (req_info->query_string) {
+                            CivetServer::getParam(req_info->query_string, "level", loglevel);
+                            if (!loglevel.empty()) {
+                                rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)atoi(loglevel.c_str()));
+                            }
+                        }
+                        Json::Value answer(rtc::LogMessage::GetLogToDebug());
+                        return answer;
+                };
 		func["/api/help"]           = [func](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
 			Json::Value answer;
 			for (auto it : func) {
