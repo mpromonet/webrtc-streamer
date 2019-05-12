@@ -150,6 +150,21 @@ A short sample HTML page using webrtc-streamer running locally on port 8000 :
 	</body>
 	</html>
 
+Using WebComponent
+==================
+Using web-component could be a simple way to display some webrtc stream, a minimal page could be :
+
+	<html>
+	<head>
+	<link rel="import" href="webrtc-streamer-element.html">
+	</head>
+	<body>
+	  <webrtc-streamer videostream="Bunny"></webrtc-streamer>
+	</body>
+	</html>
+
+[Live Demo](https://webrtc-streamer.herokuapp.com/Bunny.html)
+
 Connect to Janus Gateway Video Room
 ===============
 A simple way to publish WebRTC stream to a [Janus Gateway](https://janus.conf.meetecho.com) Video Room is to use the [JanusVideoRoom](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer-html/blob/master/jsdoc/JanusVideoRoom.html) interface
