@@ -162,6 +162,7 @@ Using web-component could be a simple way to display some webrtc stream, a minim
 	</head>
 	<body>
 	   <webrtc-streamer videostream="Bunny"></webrtc-streamer>
+	   <webrtc-streamer videostream="rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov"></webrtc-streamer>
 	</body>
 	</html>
 
