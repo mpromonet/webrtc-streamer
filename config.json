@@ -13,7 +13,11 @@
         "Marina": {"video": "rtsp://stream5.kukaj.sk:1935/live/MARINA.stream"},     
         "Sokolylm": {"video": "rtsp://stream5.kukaj.sk:1935/live/SOKOLYLM.stream"},   
         "Demanova": {"video": "rtsp://stream5.kukaj.sk:1935/live/DEMANOVA.stream"}, 
-        "Vysokaprimorave": {"video": "rtsp://stream5.kukaj.sk:1935/live/VYSOKAPRIMORAVE.stream"},       
+        "Vysokaprimorave": {"video": "rtsp://stream5.kukaj.sk:1935/live/VYSOKAPRIMORAVE.stream"}, 
+        
+        "KonskyGrun": {"video": "rtsp://stream.tmr.sk:1935/tmr/STREAM17.stream"}, 
+        "VyhladJazero": {"video": "rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.stream"}, 
+        "Lomnicak": {"video": "rtsp://stream.zivekamery.sk:1935/live/LOMNICAK.stream"}, 
 
         "Scheveningen-1": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys1.stream"}, 
         "Scheveningen-3": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys3.stream"}, 
