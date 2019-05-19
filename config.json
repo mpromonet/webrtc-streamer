@@ -11,6 +11,9 @@
         "Prib": {"video": "rtsp://stream5.kukaj.sk:1935/live/BOCIANY_PRIB.stream"}, 
         "Vavrisovo": {"video": "rtsp://stream5.kukaj.sk:1935/live/VAVRISOVO.stream"}, 
         "Marina": {"video": "rtsp://stream5.kukaj.sk:1935/live/MARINA.stream"},     
+        "Sokolylm": {"video": "rtsp://stream5.kukaj.sk:1935/live/SOKOLYLM.stream"},   
+        "Demanova": {"video": "rtsp://stream5.kukaj.sk:1935/live/DEMANOVA.stream"}, 
+        "Vysokaprimorave": {"video": "rtsp://stream5.kukaj.sk:1935/live/VYSOKAPRIMORAVE.stream"},       
 
         "Scheveningen-1": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys1.stream"}, 
         "Scheveningen-3": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys3.stream"}, 
