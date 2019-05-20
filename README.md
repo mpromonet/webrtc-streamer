@@ -140,9 +140,12 @@ A short sample HTML page using webrtc-streamer running locally on port 8000 :
 	<script src="libs/adapter.min.js" ></script>
 	<script src="webrtcstreamer.js" ></script>
 	<script>        
-	    var webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000");
-	    window.onload         = function() { webRtcServer.connect("rtsp://pi2.local:8554/unicast") }
-	    window.onbeforeunload = function() { webRtcServer.disconnect() }
+	    var webRtcServer      = null;
+	    window.onload         = function() { 
+	        webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000");
+		webRtcServer.connect("rtsp://pi2.local:8554/unicast");
+	    }
+	    window.onbeforeunload = function() { webRtcServer.disconnect(); }
 	</script>
 	</head>
 	<body> 
