@@ -272,12 +272,8 @@ int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 	int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
 
 	RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer::Decoded size:" << decodedImage.size() 
-				<< " decode ts:" << decodedImage.timestamp() 
+				<< " decode ts:" << decodedImage.ntp_time_ms()
 				<< " source ts:" << ts;
-
-	// restore the timestamp that had overflow in the convertion EncodedImage.SetTimeStamp(presentationTime)
-	// rdp timestamp is just 32 bit, overflow error will occur each ~50 days
-	decodedImage.set_timestamp_us((int64_t)decodedImage.timestamp() * 1000);
 
 	if(m_roi_x >= decodedImage.width()) {
 		RTC_LOG(LS_ERROR) << "The ROI position protrudes beyond the right edge of the image. Ignore roi_x.";
