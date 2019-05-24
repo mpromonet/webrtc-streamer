@@ -23,7 +23,7 @@
 
 class DesktopCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public rtc::Thread, public webrtc::DesktopCapturer::Callback  {
 	public:
-		DesktopCapturer(const std::map<std::string,std::string> & opts) : m_width(0), m_height(0) {
+		DesktopCapturer(const std::map<std::string,std::string> & opts) : rtc::Thread(NULL), m_width(0), m_height(0) {
 			if (opts.find("width") != opts.end()) {
 				m_width = std::stoi(opts.at("width"));
 			}	

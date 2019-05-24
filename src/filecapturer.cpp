@@ -34,7 +34,8 @@
 uint8_t h26xmarker[] = { 0, 0, 0, 1};
 
 FileVideoCapturer::FileVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
-	: m_env(m_stop),
+	: rtc::Thread(NULL),
+	m_env(m_stop),
 	m_mkvclient(m_env, this, uri.c_str()),
 	m_width(0), m_height(0), m_fps(0)
 {

@@ -22,7 +22,7 @@
 
 
 RTSPAudioSource::RTSPAudioSource(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri, const std::map<std::string,std::string> & opts) 
-				: m_connection(m_env, this, uri.c_str(), RTSPConnection::decodeTimeoutOption(opts), RTSPConnection::decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=2)
+				: rtc::Thread(NULL), m_connection(m_env, this, uri.c_str(), RTSPConnection::decodeTimeoutOption(opts), RTSPConnection::decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=2)
 				, m_factory(audioDecoderFactory), m_freq(8000), m_channel(1) {
 	SetName("RTSPAudioSource", NULL);
 	rtc::Thread::Start(); 
