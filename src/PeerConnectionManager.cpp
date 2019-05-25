@@ -134,6 +134,25 @@ IceServer getIceServerFromUrl(const std::string & url, const std::string& client
 	return srv;
 }
 
+
+webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencies(std::unique_ptr<cricket::MediaEngineInterface> mediaEngine) {
+	webrtc::PeerConnectionFactoryDependencies dependencies;
+	dependencies.network_thread = NULL;
+	dependencies.worker_thread = rtc::Thread::Current();
+	dependencies.signaling_thread = NULL;
+	dependencies.media_engine = std::move(mediaEngine);
+	dependencies.call_factory = webrtc::CreateCallFactory();
+	dependencies.event_log_factory = webrtc::CreateRtcEventLogFactory();
+	return dependencies;
+}
+
+std::unique_ptr<cricket::MediaEngineInterface> CreateMediaEngine(rtc::scoped_refptr<webrtc::AudioDeviceModule> audioDeviceModule, rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderfactory) {
+	return cricket::WebRtcMediaEngineFactory::Create(
+			audioDeviceModule, webrtc::CreateBuiltinAudioEncoderFactory(), audioDecoderfactory,
+			webrtc::CreateBuiltinVideoEncoderFactory(), webrtc::CreateBuiltinVideoDecoderFactory(), NULL,
+			webrtc::AudioProcessingBuilder().Create());
+}
+
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
@@ -149,15 +168,7 @@ PeerConnectionManager::PeerConnectionManager( const std::list<std::string> & ice
 #else
 	, m_audioDeviceModule(new webrtc::FakeAudioDeviceModule())
 #endif
-	, m_peer_connection_factory(webrtc::CreateModularPeerConnectionFactory(NULL,
-		rtc::Thread::Current(),
-		NULL,
-		cricket::WebRtcMediaEngineFactory::Create(
-		m_audioDeviceModule, webrtc::CreateBuiltinAudioEncoderFactory(), m_audioDecoderfactory,
-		webrtc::CreateBuiltinVideoEncoderFactory(), webrtc::CreateBuiltinVideoDecoderFactory(), NULL,
-		webrtc::AudioProcessingBuilder().Create()),
-		webrtc::CreateCallFactory(),
-		webrtc::CreateRtcEventLogFactory()))
+	, m_peer_connection_factory(webrtc::CreateModularPeerConnectionFactory(CreatePeerConnectionFactoryDependencies(CreateMediaEngine(m_audioDeviceModule, m_audioDecoderfactory))))
 	, m_iceServerList(iceServerList)
 	, m_urlVideoList(urlVideoList)
 	, m_urlAudioList(urlAudioList)
