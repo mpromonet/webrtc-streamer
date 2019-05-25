@@ -33,8 +33,7 @@
 uint8_t marker[] = { 0, 0, 0, 1};
 
 RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
-	: rtc::Thread(NULL),
-	m_env(m_stop),
+	: m_env(m_stop),
 	m_connection(m_env, this, uri.c_str(), RTSPConnection::decodeTimeoutOption(opts), RTSPConnection::decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=2),
 	m_width(0), m_height(0), m_roi_x(0), m_roi_y(0), m_roi_width(0), m_roi_height(0), m_fps(0)
 {
@@ -341,8 +340,8 @@ int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 void RTSPVideoCapturer::Start()
 {
 	RTC_LOG(INFO) << "RTSPVideoCapturer::start";
-	SetName("RTSPVideoCapturer", NULL);
-	rtc::Thread::Start();
+//	SetName("RTSPVideoCapturer", NULL);
+	m_capturethread = std::thread(&RTSPVideoCapturer::CaptureThread, this);
 	m_decoderthread = std::thread(&RTSPVideoCapturer::DecoderThread, this);
 }
 
@@ -350,7 +349,7 @@ void RTSPVideoCapturer::Stop()
 {
 	RTC_LOG(INFO) << "RTSPVideoCapturer::stop";
 	m_env.stop();
-	rtc::Thread::Stop();
+	m_capturethread.join();
 	Frame frame;			
 	{
 		std::unique_lock<std::mutex> lock(m_queuemutex);
@@ -358,11 +357,6 @@ void RTSPVideoCapturer::Stop()
 	}
 	m_queuecond.notify_all();
 	m_decoderthread.join();
-}
-
-void RTSPVideoCapturer::Run()
-{
-	m_env.mainloop();
 }
 
 #endif

@@ -75,14 +75,14 @@ void DesktopCapturer::Run() {
 }
 bool DesktopCapturer::Start() {
 	m_isrunning = true;
-	rtc::Thread::Start();
+	m_capturethread = std::thread(&DesktopCapturer::CaptureThread, this); 
 	m_capturer->Start(this);
 	return true;
 }
 		
 void DesktopCapturer::Stop() {
 	m_isrunning = false;
-	rtc::Thread::Stop();
+	m_capturethread.join(); 
 }
 		
 #endif

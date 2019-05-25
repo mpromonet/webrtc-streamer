@@ -34,8 +34,7 @@
 uint8_t h26xmarker[] = { 0, 0, 0, 1};
 
 FileVideoCapturer::FileVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
-	: rtc::Thread(NULL),
-	m_env(m_stop),
+	: m_env(m_stop),
 	m_mkvclient(m_env, this, uri.c_str()),
 	m_width(0), m_height(0), m_fps(0)
 {
@@ -270,7 +269,7 @@ int32_t FileVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
 
 void FileVideoCapturer::Start()
 {
-	rtc::Thread::Start();
+	m_capturethread = std::thread(&FileVideoCapturer::CaptureThread, this);	
 	m_decoderthread = std::thread(&FileVideoCapturer::DecoderThread, this);
 }
 
@@ -278,7 +277,7 @@ void FileVideoCapturer::Stop()
 {
 	RTC_LOG(INFO) << "FileVideoCapturer::stop";
 	m_env.stop();
-	rtc::Thread::Stop();
+	m_capturethread.join();
 	Frame frame;			
 	{
 		std::unique_lock<std::mutex> lock(m_queuemutex);
@@ -286,11 +285,6 @@ void FileVideoCapturer::Stop()
 	}
 	m_queuecond.notify_all();
 	m_decoderthread.join();
-}
-
-void FileVideoCapturer::Run()
-{
-	m_env.mainloop();
 }
 
 #endif

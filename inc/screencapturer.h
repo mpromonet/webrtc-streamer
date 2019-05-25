@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "rtc_base/thread.h"
 #include "api/video/i420_buffer.h"
 
 #include "libyuv/video_common.h"
@@ -21,7 +20,7 @@
 #include "modules/desktop_capture/desktop_capture_options.h"
 
 
-class DesktopCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public rtc::Thread, public webrtc::DesktopCapturer::Callback  {
+class DesktopCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public webrtc::DesktopCapturer::Callback  {
 	public:
 		DesktopCapturer(const std::map<std::string,std::string> & opts) : rtc::Thread(NULL), m_width(0), m_height(0) {
 			if (opts.find("width") != opts.end()) {
@@ -37,6 +36,9 @@ class DesktopCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, pu
 		virtual ~DesktopCapturer() {
 			this->Stop();
 		}
+		
+		void CaptureThread();
+		
 
 		bool Start();
 		void Stop();
@@ -45,9 +47,6 @@ class DesktopCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, pu
 		// overide webrtc::DesktopCapturer::Callback
 		virtual void OnCaptureResult(webrtc::DesktopCapturer::Result result, std::unique_ptr<webrtc::DesktopFrame> frame);
 		
-		// overide rtc::Thread
-		virtual void Run();
-
 		// overide rtc::VideoSourceInterface<webrtc::VideoFrame>
 		void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink, const rtc::VideoSinkWants& wants) {
 			broadcaster_.AddOrUpdateSink(sink, wants);

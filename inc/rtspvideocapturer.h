@@ -27,7 +27,7 @@
 #include "api/video_codecs/video_decoder.h"
 
 
-class RTSPVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public RTSPConnection::Callback, public rtc::Thread, public webrtc::DecodedImageCallback
+class RTSPVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public RTSPConnection::Callback, public webrtc::DecodedImageCallback
 {
 	class Frame
 	{
@@ -46,6 +46,14 @@ class RTSPVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, 
 		static RTSPVideoCapturer* Create(const std::string & url, const std::map<std::string, std::string> & opts) {
 			return new RTSPVideoCapturer(url, opts);
 		}
+		
+		void Start();
+		void Stop();
+		bool IsRunning() { return (m_stop == 0); }
+		void CaptureThread() {
+			m_env.mainloop();
+		}
+		void DecoderThread();
 
 		// overide RTSPConnection::Callback
 		virtual bool onNewSession(const char* id, const char* media, const char* codec, const char* sdp);
@@ -58,15 +66,9 @@ class RTSPVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, 
 		}
 		virtual void    onError(RTSPConnection& connection,const char* erro);
 
-		void Start();
-		void Stop();
-		bool IsRunning() { return (m_stop == 0); }
-
 		// overide webrtc::DecodedImageCallback
 		virtual int32_t Decoded(webrtc::VideoFrame& decodedImage);
 
-		// overide rtc::Thread
-		virtual void Run();
 
 		// overide rtc::VideoSourceInterface<webrtc::VideoFrame>
 		void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink, const rtc::VideoSinkWants& wants) {
@@ -75,17 +77,11 @@ class RTSPVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, 
 
 		void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) {
 			broadcaster_.RemoveSink(sink);
-		}
-
-		rtc::VideoBroadcaster broadcaster_;
-
-
-		
-		void DecoderThread();
-
+		}		
 
 	private:
-		char m_stop;
+		std::thread                           m_capturethread;
+		char                                  m_stop;
 		cricket::VideoFormat                  m_format;
 		Environment                           m_env;
 		RTSPConnection                        m_connection;
@@ -104,6 +100,7 @@ class RTSPVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, 
 		int                                   m_roi_width;
 		int                                   m_roi_height;
 		int                                   m_fps;
+		rtc::VideoBroadcaster                 broadcaster_;
 };
 
 

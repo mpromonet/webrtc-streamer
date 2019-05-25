@@ -19,7 +19,6 @@
 #include "environment.h"
 #include "mkvclient.h"
 
-#include "rtc_base/thread.h"
 #include "media/base/codec.h"
 #include "media/base/video_common.h"
 #include "media/base/video_broadcaster.h"
@@ -28,7 +27,7 @@
 
 
 
-class FileVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public MKVClient::Callback, public rtc::Thread, public webrtc::DecodedImageCallback
+class FileVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public MKVClient::Callback, public webrtc::DecodedImageCallback
 {
 	class Frame
 	{
@@ -51,16 +50,18 @@ class FileVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, 
 		void Start();
 		void Stop();
 		bool IsRunning() { return (m_stop == 0); }
-
+		
+		void CaptureThread() {
+			m_env.mainloop();
+		}
+		void DecoderThread();
+		
 		// overide RTSPConnection::Callback
 		virtual bool onNewSession(const char* id, const char* media, const char* codec, const char* sdp);
 		virtual bool onData(const char* id, unsigned char* buffer, ssize_t size, struct timeval presentationTime);
 
 		// overide webrtc::DecodedImageCallback
 		virtual int32_t Decoded(webrtc::VideoFrame& decodedImage);
-
-		// overide rtc::Thread
-		virtual void Run();
 
 		// overide rtc::VideoSourceInterface<webrtc::VideoFrame>
 		void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink, const rtc::VideoSinkWants& wants) {
@@ -69,14 +70,10 @@ class FileVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, 
 
 		void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) {
 			broadcaster_.RemoveSink(sink);
-		}
-
-		rtc::VideoBroadcaster broadcaster_;
-		
-		void DecoderThread();
-
+		}		
 
 	private:
+		std::thread                           m_capturethread;		
 		char m_stop;
 		cricket::VideoFormat                  m_format;	
 		Environment                           m_env;
@@ -92,6 +89,7 @@ class FileVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, 
 		int                                   m_width;
 		int                                   m_height;
 		int                                   m_fps;
+		rtc::VideoBroadcaster                 broadcaster_;
 };
 
 

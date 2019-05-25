@@ -15,22 +15,24 @@
 #endif
 
 #include "rtc_base/logging.h"
-#include "rtc_base/thread.h"
 #include "rtc_base/ref_counted_object.h"
 
 #include "rtspaudiocapturer.h"
 
 
 RTSPAudioSource::RTSPAudioSource(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri, const std::map<std::string,std::string> & opts) 
-				: rtc::Thread(NULL), m_connection(m_env, this, uri.c_str(), RTSPConnection::decodeTimeoutOption(opts), RTSPConnection::decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=2)
+				: m_connection(m_env, this, uri.c_str()
+					, RTSPConnection::decodeTimeoutOption(opts)
+					, RTSPConnection::decodeRTPTransport(opts)
+					, rtc::LogMessage::GetLogToDebug()<=2)
 				, m_factory(audioDecoderFactory), m_freq(8000), m_channel(1) {
-	SetName("RTSPAudioSource", NULL);
-	rtc::Thread::Start(); 
+//	SetName("RTSPAudioSource", NULL);
+	m_capturethread = std::thread(&RTSPAudioSource::CaptureThread, this); 
 }
 
 RTSPAudioSource::~RTSPAudioSource()  { 
 	m_env.stop(); 
-	rtc::Thread::Stop(); 
+	m_capturethread.join();
 }
 
 
@@ -105,7 +107,7 @@ bool RTSPAudioSource::onData(const char* id, unsigned char* buffer, ssize_t size
 				outbuffer[i] = value;
 				m_buffer.pop();
 			}
-			rtc::CritScope lock(&m_sink_lock);
+			std::lock_guard<std::mutex> lock(m_sink_lock);
 			for (auto* sink : m_sinks) {
 				sink->OnData(outbuffer, 16, m_freq, m_channel, segmentLength);
 			}

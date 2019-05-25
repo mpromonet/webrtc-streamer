@@ -10,6 +10,9 @@
 #pragma once
 
 #include <iostream>
+#include <thread>
+#include <mutex>
+#include <queue>
 
 #include "environment.h"
 #include "rtspconnectionclient.h"
@@ -17,7 +20,7 @@
 #include "pc/local_audio_source.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 
-class RTSPAudioSource : public webrtc::Notifier<webrtc::AudioSourceInterface>, public rtc::Thread, public RTSPConnection::Callback {
+class RTSPAudioSource : public webrtc::Notifier<webrtc::AudioSourceInterface>, public RTSPConnection::Callback {
 	public:
 		static rtc::scoped_refptr<RTSPAudioSource> Create(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri, const std::map<std::string,std::string> & opts) {
 			rtc::scoped_refptr<RTSPAudioSource> source(new rtc::RefCountedObject<RTSPAudioSource>(audioDecoderFactory, uri, opts));
@@ -29,17 +32,16 @@ class RTSPAudioSource : public webrtc::Notifier<webrtc::AudioSourceInterface>, p
 		
 		void AddSink(webrtc::AudioTrackSinkInterface* sink) override {
 			RTC_LOG(INFO) << "RTSPAudioSource::AddSink ";
-			rtc::CritScope lock(&m_sink_lock);
+			std::lock_guard<std::mutex> lock(m_sink_lock);
 			m_sinks.push_back(sink);
 		}
 		void RemoveSink(webrtc::AudioTrackSinkInterface* sink) override {
 			RTC_LOG(INFO) << "RTSPAudioSource::RemoveSink ";
-			rtc::CritScope lock(&m_sink_lock);
+			std::lock_guard<std::mutex> lock(m_sink_lock);
 			m_sinks.remove(sink);
 		}
-		
-		// overide rtc::Thread
-		virtual void Run() { m_env.mainloop(); } 		
+
+		void CaptureThread() { m_env.mainloop(); } 		
 
 		// overide RTSPConnection::Callback
 		virtual bool onNewSession(const char* id, const char* media, const char* codec, const char* sdp);		
@@ -50,6 +52,7 @@ class RTSPAudioSource : public webrtc::Notifier<webrtc::AudioSourceInterface>, p
 		virtual ~RTSPAudioSource();
 
 	private:
+		std::thread                                     m_capturethread;
 		Environment                                     m_env;
 		RTSPConnection                                  m_connection; 
 		rtc::scoped_refptr<webrtc::AudioDecoderFactory> m_factory;
@@ -58,7 +61,7 @@ class RTSPAudioSource : public webrtc::Notifier<webrtc::AudioSourceInterface>, p
 		int                                             m_channel;
 		std::queue<uint16_t>                            m_buffer;
 		std::list<webrtc::AudioTrackSinkInterface*>     m_sinks;
-		rtc::CriticalSection                            m_sink_lock;
+		std::mutex                                      m_sink_lock;
 };
 
 
