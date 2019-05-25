@@ -71,11 +71,11 @@ class RTSPVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, 
 
 
 		// overide rtc::VideoSourceInterface<webrtc::VideoFrame>
-		void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink, const rtc::VideoSinkWants& wants) {
+		virtual void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink, const rtc::VideoSinkWants& wants) {
 			broadcaster_.AddOrUpdateSink(sink, wants);
 		}
 
-		void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) {
+		virtual void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) {
 			broadcaster_.RemoveSink(sink);
 		}		
 

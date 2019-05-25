@@ -30,12 +30,12 @@ class RTSPAudioSource : public webrtc::Notifier<webrtc::AudioSourceInterface>, p
 		SourceState state() const override { return kLive; }
 		bool remote() const override { return true; }
 		
-		void AddSink(webrtc::AudioTrackSinkInterface* sink) override {
+		virtual void AddSink(webrtc::AudioTrackSinkInterface* sink) override {
 			RTC_LOG(INFO) << "RTSPAudioSource::AddSink ";
 			std::lock_guard<std::mutex> lock(m_sink_lock);
 			m_sinks.push_back(sink);
 		}
-		void RemoveSink(webrtc::AudioTrackSinkInterface* sink) override {
+		virtual void RemoveSink(webrtc::AudioTrackSinkInterface* sink) override {
 			RTC_LOG(INFO) << "RTSPAudioSource::RemoveSink ";
 			std::lock_guard<std::mutex> lock(m_sink_lock);
 			m_sinks.remove(sink);

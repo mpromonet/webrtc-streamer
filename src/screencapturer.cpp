@@ -66,7 +66,7 @@ void DesktopCapturer::OnCaptureResult(webrtc::DesktopCapturer::Result result, st
 	}
 }
 		
-void DesktopCapturer::Run() {
+void DesktopCapturer::CaptureThread() {
 	RTC_LOG(INFO) << "DesktopCapturer:Run start";
 	while (IsRunning()) {
 		m_capturer->CaptureFrame();
