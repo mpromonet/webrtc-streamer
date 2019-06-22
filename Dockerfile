@@ -25,7 +25,7 @@ FROM ubuntu:18.04
 WORKDIR /app
 COPY --from=builder /app/ /app/
 
-RUN apt-get update && apt-get install -y --no-install-recommends libasound2 libgtk-3-0 \
+RUN apt-get update && apt-get install -y --no-install-recommends libasound2 libgtk-3-0 libssl1.0 \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/
 
 EXPOSE 8000
