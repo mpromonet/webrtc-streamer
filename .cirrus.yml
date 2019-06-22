@@ -10,6 +10,7 @@ linuxarmv6_docker_builder:
 windows_docker_builder:    
   timeout_in: 120m
   platform: windows
+  os_version: 2019  
   script: |
     docker info
     docker build -t %CIRRUS_REPO_FULL_NAME%:cirrus-windows . -f Dockerfile.windows
