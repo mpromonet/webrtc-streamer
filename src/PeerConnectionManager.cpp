@@ -17,10 +17,10 @@
 #include "api/video_codecs/builtin_video_encoder_factory.h"
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
-#include "media/engine/webrtc_media_engine.h"
-#include "logging/rtc_event_log/rtc_event_log_factory.h"
-#include "modules/audio_device/include/fake_audio_device.h"
+#include "api/rtc_event_log/rtc_event_log_factory.h"
 #include "api/task_queue/default_task_queue_factory.h"
+#include "media/engine/webrtc_media_engine.h"
+#include "modules/audio_device/include/fake_audio_device.h"
 
 
 #include "PeerConnectionManager.h"
@@ -142,7 +142,8 @@ webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencie
 	dependencies.signaling_thread = NULL;
 	dependencies.media_engine = std::move(mediaEngine);
 	dependencies.call_factory = webrtc::CreateCallFactory();
-	dependencies.event_log_factory = webrtc::CreateRtcEventLogFactory();
+	dependencies.task_queue_factory = webrtc::CreateDefaultTaskQueueFactory();
+	dependencies.event_log_factory = absl::make_unique<webrtc::RtcEventLogFactory>(dependencies.task_queue_factory.get());	
 	return dependencies;
 }
 
