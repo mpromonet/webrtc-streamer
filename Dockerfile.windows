@@ -1,5 +1,5 @@
 # build
-FROM mcr.microsoft.com/windows/servercore:1803 as builder
+FROM mcr.microsoft.com/windows/servercore:1903 as builder
 LABEL maintainer=michel.promonet@free.fr
 
 WORKDIR /webrtc-streamer
