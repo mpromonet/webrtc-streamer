@@ -18,17 +18,19 @@ RUN choco install -y git python2 sed curl \
 
 # install WebRTC 
 RUN git config --global core.autocrlf false \
-       && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git C:\depot_tools \
+       && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git --depth 1 C:\depot_tools \
        && SETX PATH "%PATH%;C:\depot_tools" 
 # workaround bootstraping that delete the cipd.ps1 file       
 RUN powershell -NoProfile -ExecutionPolicy RemoteSigned -Command C:\depot_tools\cipd.ps1 -CipdBinary C:\depot_tools\.cipd_client.exe -BackendURL https://chrome-infra-packages.appspot.com -VersionFile C:\depot_tools\cipd_client_version   
 
 RUN  mkdir c:\webrtc && cd c:\webrtc \
+       && time /t \
        && fetch --no-history --nohooks webrtc \
-       && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS 
-
-RUN call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
+       && time /t \
+       && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
+       && call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
        && gclient sync \
+       && time /t \
        && SETX PATH "%PATH%;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin"
 
 # build
