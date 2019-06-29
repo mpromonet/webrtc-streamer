@@ -34,6 +34,9 @@ const struct CivetCallbacks * getCivetCallbacks()
 class RequestHandler : public CivetHandler
 {
   public:
+	RequestHandler(HttpServerRequestHandler::httpFunction & func): m_func(func) {
+	}	  
+	
     bool handle(CivetServer *server, struct mg_connection *conn)
     {
         bool ret = false;
@@ -43,32 +46,28 @@ class RequestHandler : public CivetHandler
         
         HttpServerRequestHandler* httpServer = (HttpServerRequestHandler*)server;
         
-        HttpServerRequestHandler::httpFunction fct = httpServer->getFunction(req_info->request_uri);
-        if (fct != NULL)
-        {   
-            // read input
-            Json::Value  in = this->getInputMessage(req_info, conn);
-            
-            // invoke API implementation
-            Json::Value out(fct(req_info, in));
-            
-            // fill out
-            if (out.isNull() == false)
-            {
-                std::string answer(Json::StyledWriter().write(out));
-                std::cout << "answer:" << answer << std::endl;	
+		// read input
+		Json::Value  in = this->getInputMessage(req_info, conn);
+		
+		// invoke API implementation
+		Json::Value out(m_func(req_info, in));
+		
+		// fill out
+		if (out.isNull() == false)
+		{
+			std::string answer(Json::StyledWriter().write(out));
+			std::cout << "answer:" << answer << std::endl;	
 
-                mg_printf(conn,"HTTP/1.1 200 OK\r\n");
-                mg_printf(conn,"Access-Control-Allow-Origin: *\r\n");
-                mg_printf(conn,"Content-Type: text/plain\r\n");
-                mg_printf(conn,"Content-Length: %zd\r\n", answer.size());
-                mg_printf(conn,"Connection: close\r\n");
-                mg_printf(conn,"\r\n");
-                mg_printf(conn,answer.c_str());	
-                
-                ret = true;
-            }			
-        }		
+			mg_printf(conn,"HTTP/1.1 200 OK\r\n");
+			mg_printf(conn,"Access-Control-Allow-Origin: *\r\n");
+			mg_printf(conn,"Content-Type: text/plain\r\n");
+			mg_printf(conn,"Content-Length: %zd\r\n", answer.size());
+			mg_printf(conn,"Connection: close\r\n");
+			mg_printf(conn,"\r\n");
+			mg_printf(conn,answer.c_str());	
+			
+			ret = true;
+		}			
         
         return ret;
     }
@@ -82,6 +81,8 @@ class RequestHandler : public CivetHandler
     }
 
   private:
+    HttpServerRequestHandler::httpFunction      m_func;	
+  
     Json::Value getInputMessage(const struct mg_request_info *req_info, struct mg_connection *conn) {
         Json::Value  jmessage;
 
@@ -122,24 +123,13 @@ class RequestHandler : public CivetHandler
 **  Constructor
 ** -------------------------------------------------------------------------*/
 HttpServerRequestHandler::HttpServerRequestHandler(std::map<std::string,httpFunction>& func, const std::vector<std::string>& options) 
-    : CivetServer(options, getCivetCallbacks()), m_func(func)
+    : CivetServer(options, getCivetCallbacks())
 {
     // register handlers
-    for (auto it : m_func) {
-        this->addHandler(it.first, new RequestHandler());
+    for (auto it : func) {
+        this->addHandler(it.first, new RequestHandler(it.second));
     } 	
 }	
     
 
-HttpServerRequestHandler::httpFunction HttpServerRequestHandler::getFunction(const std::string& uri)
-{
-    httpFunction fct = NULL;
-    std::map<std::string,httpFunction>::iterator it = m_func.find(uri);
-    if (it != m_func.end())
-    {
-        fct = it->second;
-    }
-    
-    return fct;
-}
 
