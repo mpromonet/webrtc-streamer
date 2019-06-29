@@ -27,8 +27,9 @@ RUN  mkdir c:\webrtc && cd c:\webrtc \
        && time /t \
        && fetch --no-history --nohooks webrtc \
        && time /t \
-       && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
-       && call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
+       && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS 
+       
+RUN call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
        && gclient sync \
        && time /t \
        && SETX PATH "%PATH%;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin"
