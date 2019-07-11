@@ -169,7 +169,7 @@ PeerConnectionManager::PeerConnectionManager( const std::list<std::string> & ice
                                             , const std::string& publishFilter)
 	: m_audioDecoderfactory(webrtc::CreateBuiltinAudioDecoderFactory())	
 	, m_task_queue_factory(webrtc::CreateDefaultTaskQueueFactory())
-#ifndef HAVE_SOUND
+#ifdef HAVE_SOUND
 	, m_audioDeviceModule(webrtc::AudioDeviceModule::Create(audioLayer,m_task_queue_factory.get()))
 #else
 	, m_audioDeviceModule(new webrtc::FakeAudioDeviceModule())
