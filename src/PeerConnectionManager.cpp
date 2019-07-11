@@ -135,23 +135,28 @@ IceServer getIceServerFromUrl(const std::string & url, const std::string& client
 }
 
 
-webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencies(std::unique_ptr<cricket::MediaEngineInterface> mediaEngine) {
+webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencies(rtc::scoped_refptr<webrtc::AudioDeviceModule> audioDeviceModule, rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderfactory) {
 	webrtc::PeerConnectionFactoryDependencies dependencies;
 	dependencies.network_thread = NULL;
-	dependencies.worker_thread = rtc::Thread::Current();
+	dependencies.worker_thread = NULL;
 	dependencies.signaling_thread = NULL;
-	dependencies.media_engine = std::move(mediaEngine);
 	dependencies.call_factory = webrtc::CreateCallFactory();
-	dependencies.task_queue_factory = webrtc::CreateDefaultTaskQueueFactory();
+	dependencies.task_queue_factory = webrtc::CreateDefaultTaskQueueFactory();	
 	dependencies.event_log_factory = absl::make_unique<webrtc::RtcEventLogFactory>(dependencies.task_queue_factory.get());	
-	return dependencies;
-}
+	
+	cricket::MediaEngineDependencies mediaDependencies;	
+	mediaDependencies.task_queue_factory = dependencies.task_queue_factory.get();
+	mediaDependencies.adm = std::move(audioDeviceModule);
+	mediaDependencies.audio_encoder_factory = std::move(webrtc::CreateBuiltinAudioEncoderFactory());
+	mediaDependencies.audio_decoder_factory = std::move(audioDecoderfactory);
+	mediaDependencies.audio_processing = webrtc::AudioProcessingBuilder().Create();
+	
+	mediaDependencies.video_encoder_factory = std::move(webrtc::CreateBuiltinVideoEncoderFactory());
+	mediaDependencies.video_decoder_factory = std::move(webrtc::CreateBuiltinVideoDecoderFactory());
 
-std::unique_ptr<cricket::MediaEngineInterface> CreateMediaEngine(rtc::scoped_refptr<webrtc::AudioDeviceModule> audioDeviceModule, rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderfactory) {
-	return cricket::WebRtcMediaEngineFactory::Create(
-			audioDeviceModule, webrtc::CreateBuiltinAudioEncoderFactory(), audioDecoderfactory,
-			webrtc::CreateBuiltinVideoEncoderFactory(), webrtc::CreateBuiltinVideoDecoderFactory(), NULL,
-			webrtc::AudioProcessingBuilder().Create());
+	dependencies.media_engine = cricket::CreateMediaEngine(std::move(mediaDependencies));
+	
+	return std::move(dependencies);
 }
 
 /* ---------------------------------------------------------------------------
@@ -164,12 +169,12 @@ PeerConnectionManager::PeerConnectionManager( const std::list<std::string> & ice
                                             , const std::string& publishFilter)
 	: m_audioDecoderfactory(webrtc::CreateBuiltinAudioDecoderFactory())	
 	, m_task_queue_factory(webrtc::CreateDefaultTaskQueueFactory())
-#ifdef HAVE_SOUND
+#ifndef HAVE_SOUND
 	, m_audioDeviceModule(webrtc::AudioDeviceModule::Create(audioLayer,m_task_queue_factory.get()))
 #else
 	, m_audioDeviceModule(new webrtc::FakeAudioDeviceModule())
 #endif
-	, m_peer_connection_factory(webrtc::CreateModularPeerConnectionFactory(CreatePeerConnectionFactoryDependencies(CreateMediaEngine(m_audioDeviceModule, m_audioDecoderfactory))))
+	, m_peer_connection_factory(webrtc::CreateModularPeerConnectionFactory(std::move(CreatePeerConnectionFactoryDependencies(m_audioDeviceModule, m_audioDecoderfactory))))
 	, m_iceServerList(iceServerList)
 	, m_urlVideoList(urlVideoList)
 	, m_urlAudioList(urlAudioList)

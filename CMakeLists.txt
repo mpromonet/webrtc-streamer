@@ -50,7 +50,7 @@ MESSAGE("ALSA_FOUND = ${ALSA_FOUND}")
 
 # webrtc
 if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
-  set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nuse_custom_libcxx=false\nrtc_include_pulse_audio=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\n)
+  set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nuse_custom_libcxx=false\nrtc_include_pulse_audio=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nrtc_enable_libevent=false\nrtc_build_libevent=false\n)
 
   # debug/release
   if(WEBRTCBUILD STREQUAL "Release")
@@ -110,7 +110,7 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
 
   EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${WEBRTCBUILD} COMMAND ${SHELLCOMMAND} gn gen .)
   
-  SET(NINJA_TARGET webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection p2p_server_utils)
+  SET(NINJA_TARGET webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection p2p_server_utils task_queue default_task_queue_factory)
   EXECUTE_PROCESS(ERROR_QUIET WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${WEBRTCBUILD} COMMAND ninja ${NINJA_TARGET})
   EXECUTE_PROCESS(ERROR_QUIET WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${WEBRTCBUILD} COMMAND ninja ${NINJA_TARGET})
   EXECUTE_PROCESS(ERROR_QUIET WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${WEBRTCBUILD} COMMAND ninja ${NINJA_TARGET})
@@ -125,7 +125,8 @@ set (WEBRTCOBJS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/obj)
 FILE(GLOB_RECURSE WEBRTBBRCOBJS ${WEBRTCOBJS}/modules/congestion_controller/bbr/*${CMAKE_C_OUTPUT_EXTENSION})
 FILE(GLOB_RECURSE WEBRTJSONCPPCOBJS ${WEBRTCOBJS}/third_party/jsoncpp/jsoncpp/*${CMAKE_C_OUTPUT_EXTENSION})
 FILE(GLOB_RECURSE WEBRTP2POBJ ${WEBRTCOBJS}/p2p/p2p_server_utils/*${CMAKE_C_OUTPUT_EXTENSION})
-SET (WEBRTCEXTRAOBJS ${WEBRTJSONCPPCOBJS} ${WEBRTBBRCOBJS} ${WEBRTP2POBJ} ${WEBRTCOBJS}/rtc_base/rtc_json/json${CMAKE_C_OUTPUT_EXTENSION})	
+FILE(GLOB_RECURSE WEBRTTASK ${WEBRTCOBJS}/api/task_queue/*${CMAKE_C_OUTPUT_EXTENSION} ${WEBRTCOBJS}/rtc_base/rtc_task_queue_stdlib/*${CMAKE_C_OUTPUT_EXTENSION})
+SET (WEBRTCEXTRAOBJS ${WEBRTJSONCPPCOBJS} ${WEBRTBBRCOBJS} ${WEBRTP2POBJ} ${WEBRTTASK} ${WEBRTCOBJS}/rtc_base/rtc_json/json${CMAKE_C_OUTPUT_EXTENSION})	
 
 find_library(WEBRTC_LIBRARY NAMES webrtc PATHS ${WEBRTCOBJS})
 target_link_libraries (${PROJECT_NAME} ${WEBRTC_LIBRARY}) 
@@ -176,7 +177,7 @@ else()
     add_definitions(-DBSD=1 -DSOCKLEN_T=socklen_t -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE=1)
     # webrtc
     add_definitions(-DWEBRTC_POSIX -fno-rtti)
-    target_link_libraries (${PROJECT_NAME} dl -static-libgcc -static-libstdc++)
+    target_link_libraries (${PROJECT_NAME} dl)
     if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
         target_link_libraries (${PROJECT_NAME} -Wl,-Bstatic -lm -latomic -Wl,-Bdynamic)
         add_definitions(-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard)
