@@ -14,6 +14,9 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 
+#include <cwctype>
+#include <locale>
+
 #include "rtc_base/logging.h"
 #include "rtc_base/ref_counted_object.h"
 
@@ -43,24 +46,9 @@ bool RTSPAudioSource::onNewSession(const char* id, const char* media, const char
 	if (strcmp(media, "audio") == 0) {								
 		RTC_LOG(INFO) << "RTSPAudioSource::onNewSession " << media << "/" << codec << " " << sdp;
 		
-		std::string sdp_codec(codec);
-		if (strcmp(codec, "PCMU") == 0 || strcmp(codec, "L16") == 0) 
-		{
-			success = true;
-		}
-		else if (strcmp(codec, "OPUS") == 0) 
-		{
-			sdp_codec = "opus";
-			success = true;
-		}
-		else
-		{
-			RTC_LOG(LS_ERROR) << "RTSPAudioSource::onNewSession not support codec" << sdp;
-			return success;
-		}
 		// parse sdp to extract freq and channel
-		std::string fmt(sdp);
-		size_t pos = fmt.find(sdp_codec);
+		std::string fmt(std::tolower(sdp,std::locale()));
+		size_t pos = fmt.find(std::tolower(codec,std::locale()));
 		if (pos != std::string::npos) {
 			fmt.erase(0, pos+strlen(codec));
 			fmt.erase(fmt.find_first_of(" \r\n"));
@@ -83,7 +71,7 @@ bool RTSPAudioSource::onNewSession(const char* id, const char* media, const char
 		m_decoder = m_factory->MakeAudioDecoder(webrtc::SdpAudioFormat(codec, m_freq, m_channel),absl::optional<webrtc::AudioCodecPairId>());
 		if(m_decoder.get() == NULL)
 		{
-			RTC_LOG(LS_ERROR) << "RTSPAudioSource::onNewSession No Audio decoder " << sdp;
+			RTC_LOG(LS_ERROR) << "RTSPAudioSource::onNewSession not support codec" << sdp;
 			success = false;
 		}
 		
