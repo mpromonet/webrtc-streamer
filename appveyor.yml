@@ -19,7 +19,7 @@ install:
   - cmd: set
   - sh: env
   - cd ..
-  - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git 
+  - git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git 
   - mkdir webrtc
   - cd webrtc
   - fetch --no-history --nohooks webrtc 
