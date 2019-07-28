@@ -5,16 +5,17 @@ LABEL maintainer=michel.promonet@free.fr
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
-ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=1 \
+ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
        CLANG_VERSION=ToT \
        PYTHONIOENCODING=UTF-8 \
-       GYP_MSVS_OVERRIDE_PATH=C:\\BuildTools
+       GYP_MSVS_OVERRIDE_PATH=C:\\BuildTools \
+       GYP_MSVS_VERSION=2015
 
 # Install Chocolatey & packages
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin" 
 RUN choco install --no-progress -y git python2 sed curl \
        && choco install --no-progress -y cmake --installargs 'ADD_CMAKE_TO_PATH=User' \
-       && choco install --no-progress -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath C:\BuildTools" || IF "%ERRORLEVEL%"=="3010" EXIT 0   
+       && choco install --no-progress -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath C:\BuildTools" || IF "%ERRORLEVEL%"=="3010" EXIT 0   
 
 # install WebRTC 
 RUN git config --global core.autocrlf false \
@@ -31,6 +32,8 @@ RUN  mkdir c:\webrtc && cd c:\webrtc \
        && time /t \
        && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
        && time /t \
+       && call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
+       && cd c:\webrtc \
        && gclient sync \
        && time /t \
        && SETX PATH "%PATH%;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin" \
