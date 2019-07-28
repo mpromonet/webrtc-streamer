@@ -5,7 +5,8 @@ LABEL maintainer=michel.promonet@free.fr
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
-ENV    CLANG_VERSION=ToT \
+ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=1 \
+       CLANG_VERSION=ToT \
        PYTHONIOENCODING=UTF-8 \
        GYP_MSVS_OVERRIDE_PATH=C:\\BuildTools
 
