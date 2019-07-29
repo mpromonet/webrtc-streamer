@@ -34,7 +34,7 @@ windows_docker_builder:
     DOCKERHUB_PASS: ENCRYPTED[7b81d2ca7878761ea497619cae892e267c0e0fdee71d8ce48dcd4ba11b9351a9d3f2f781dce84a7f8aab92a278007509]
   script: |
     docker info
-    docker build -t %CIRRUS_REPO_FULL_NAME%:cirrus-windows . -f Dockerfile.windows
+    docker build --rm=false -t %CIRRUS_REPO_FULL_NAME%:cirrus-windows . -f Dockerfile.windows
     docker login --username=%DOCKERHUB_USER% --password=%DOCKERHUB_PASS% 
     docker push %CIRRUS_REPO_FULL_NAME%:windows   
     
