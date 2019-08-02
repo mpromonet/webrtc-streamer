@@ -33,10 +33,11 @@ class FileVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, 
 	{
 		public:
 			Frame(): m_timestamp_ms(0) {}
-			Frame(std::vector<uint8_t> && content, uint64_t timestamp_ms) : m_content(content), m_timestamp_ms(timestamp_ms) {}
+			Frame(std::vector<uint8_t> && content, uint64_t timestamp_ms, webrtc::VideoFrameType frameType) : m_content(content), m_timestamp_ms(timestamp_ms), m_frameType(frameType) {}
 		
 			std::vector<uint8_t> m_content;
 			uint64_t m_timestamp_ms;
+			webrtc::VideoFrameType m_frameType;
 	};
 
 	public:

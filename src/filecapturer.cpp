@@ -14,6 +14,7 @@
 #endif
 
 #include <chrono>
+#include <iostream>
 
 #include "rtc_base/time_utils.h"
 #include "rtc_base/logging.h"
@@ -23,6 +24,7 @@
 #include "common_video/h264/sps_parser.h"
 
 #include "modules/video_coding/h264_sprop_parameter_sets.h"
+#include "modules/video_coding/include/video_error_codes.h"
 #include "api/video/i420_buffer.h"
 
 #include "libyuv/video_common.h"
@@ -89,6 +91,10 @@ bool FileVideoCapturer::onNewSession(const char* id,const char* media, const cha
 		{
 			m_codec[id] = codec;
 		}
+		else if (strcmp(codec, "VP9") == 0) 
+		{
+			m_codec[id] = codec;
+		}
 	}
 	return true; // mkv doesnot read data before all sink are started.
 }
@@ -97,7 +103,7 @@ bool FileVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 {
 	int64_t ts = presentationTime.tv_sec;
 	ts = ts*1000 + presentationTime.tv_usec/1000;
-	RTC_LOG(LS_VERBOSE) << "FileVideoCapturer:onData size:" << size << " ts:" << ts;
+	RTC_LOG(LS_VERBOSE) << "FileVideoCapturer:onData id:" << id << " size:" << size << " ts:" << ts;
 	int res = 0;
 
 	std::string codec = m_codec[id];
@@ -141,8 +147,10 @@ bool FileVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			m_cfg.insert(m_cfg.end(), buffer, buffer+size);
 		}
 		else if (m_decoder.get()) {
+			webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameDelta;
 			std::vector<uint8_t> content;
 			if (nalu_type == webrtc::H264::NaluType::kIdr) {
+				frameType = webrtc::VideoFrameType::kVideoFrameKey;
 				RTC_LOG(LS_VERBOSE) << "FileVideoCapturer:onData IDR";				
 				content.insert(content.end(), m_cfg.begin(), m_cfg.end());
 			}
@@ -150,7 +158,7 @@ bool FileVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 				RTC_LOG(LS_VERBOSE) << "FileVideoCapturer:onData SLICE NALU:" << nalu_type;
 			}
 			content.insert(content.end(), buffer, buffer+size);
-			Frame frame(std::move(content), ts);			
+			Frame frame(std::move(content), ts, frameType);			
 			{
 				std::unique_lock<std::mutex> lock(m_queuemutex);
 				m_queue.push(frame);
@@ -188,7 +196,25 @@ bool FileVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			RTC_LOG(LS_ERROR) << "FileVideoCapturer:onData cannot JPEG dimension";
 			res = -1;
 		}
-			    
+	} else if (codec == "VP9") {
+			if (!m_decoder.get()) {
+				m_decoder=m_factory.CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kVp9CodecName));
+				webrtc::VideoCodec codec_settings;
+				codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecVP9;
+				m_decoder->InitDecode(&codec_settings,2);
+				m_decoder->RegisterDecodeCompleteCallback(this);			    
+			}
+			if (m_decoder.get()) {
+				webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameKey;
+				std::vector<uint8_t> content;
+				content.insert(content.end(), buffer, buffer+size);
+				Frame frame(std::move(content), ts, frameType);			
+				{
+					std::unique_lock<std::mutex> lock(m_queuemutex);
+					m_queue.push(frame);
+				}
+				m_queuecond.notify_all();
+			}
 	}
 
 	return (res == 0);
@@ -212,8 +238,13 @@ void FileVideoCapturer::DecoderThread()
 		
 		if (size) {
 			webrtc::EncodedImage input_image(data, size, size);		
+			input_image._frameType = frame.m_frameType;
+			input_image._completeFrame = true;
 			input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
-			m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
+			int res = m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
+			if (res != WEBRTC_VIDEO_CODEC_OK) {
+				RTC_LOG(LS_ERROR) << "FileVideoCapturer::DecoderThread failure:" << res;
+			}
 		}
 	}
 }
