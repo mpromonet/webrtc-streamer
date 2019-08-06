@@ -248,7 +248,7 @@ jobs:
           command: |
             export TAG=${CIRCLE_TAG:-latest}
             docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
-            docker build --pull -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v7 -f Dockerfile.rpi .
+            docker build ARCH=armv7l --build-arg CROSSCOMPILER=https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/GCC%209.1.0/Raspberry%20Pi%202%2C%203/cross-gcc-9.1.0-pi_2-3.tar.gz --build-arg IMAGE=balenalib/raspberry-pi2 --pull -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v7 -f Dockerfile.rpi .
             docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v7
 
   # -------------------------------------
@@ -264,7 +264,7 @@ jobs:
           command: |
             export TAG=${CIRCLE_TAG:-latest}
             docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
-            docker build --build-arg ARCH=armv6l --pull -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v6 -f Dockerfile.rpi . 
+            docker build --pull -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v6 -f Dockerfile.rpi . 
             docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v6
 
   # -------------------------------------
