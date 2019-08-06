@@ -1,3 +1,5 @@
+ARG IMAGE=balenalib/raspberry-pi
+
 # build
 FROM ubuntu:18.04 as builder
 LABEL maintainer=michel.promonet@free.fr
@@ -14,7 +16,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 	&& export PATH=$(ls -d /webrtc/cross-pi-gcc-*/bin):$PATH \
 	&& git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /webrtc/depot_tools \
 	&& export PATH=/webrtc/depot_tools:$PATH \
-	&& echo "PATH=$PATH" \
 	&& cd /webrtc \
 	&& fetch --no-history --nohooks webrtc \
 	&& sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
@@ -28,7 +29,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 	&& apt-get clean && rm -rf /var/lib/apt/lists/
 
 # run
-ARG IMAGE=balenalib/raspberry-pi
 FROM $IMAGE
 
 WORKDIR /app
