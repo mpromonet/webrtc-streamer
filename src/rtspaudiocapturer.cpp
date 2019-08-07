@@ -47,8 +47,11 @@ bool RTSPAudioSource::onNewSession(const char* id, const char* media, const char
 		RTC_LOG(INFO) << "RTSPAudioSource::onNewSession " << media << "/" << codec << " " << sdp;
 		
 		// parse sdp to extract freq and channel
-		std::string fmt(std::tolower(sdp,std::locale()));
-		size_t pos = fmt.find(std::tolower(codec,std::locale()));
+		std::string fmt(sdp);
+	        std::transform(fmt.begin(), fmt.end(), fmt.begin(), [](unsigned char c){ return std::tolower(c); });
+		std::string codecstr(codec);
+	        std::transform(codecstr.begin(), codecstr.end(), codecstr.begin(), [](unsigned char c){ return std::tolower(c); });
+		size_t pos = fmt.find(codec);
 		if (pos != std::string::npos) {
 			fmt.erase(0, pos+strlen(codec));
 			fmt.erase(fmt.find_first_of(" \r\n"));
@@ -113,7 +116,7 @@ bool RTSPAudioSource::onData(const char* id, unsigned char* buffer, ssize_t size
 		}
 		success = true;
 	} else {
-		RTC_LOG(LS_ERROR) << "RTSPAudioSource::onData error:No Audio decoder";
+		RTC_LOG(LS_VERBOSE) << "RTSPAudioSource::onData error:No Audio decoder";
 	}
 	return success;
 }
