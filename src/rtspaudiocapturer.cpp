@@ -68,7 +68,10 @@ bool RTSPAudioSource::onNewSession(const char* id, const char* media, const char
 		}
 		RTC_LOG(INFO) << "RTSPAudioSource::onNewSession freq:" << m_freq << " channel:" << m_channel;
 		
-		m_decoder = m_factory->MakeAudioDecoder(webrtc::SdpAudioFormat(codec, m_freq, m_channel),absl::optional<webrtc::AudioCodecPairId>());
+		webrtc::SdpAudioFormat format = webrtc::SdpAudioFormat(codec, m_freq, m_channel);
+		if (m_factory->IsSupportedDecoder(format)) {
+			m_decoder = m_factory->MakeAudioDecoder(format,absl::optional<webrtc::AudioCodecPairId>());
+		}
 		if(m_decoder.get() == NULL)
 		{
 			RTC_LOG(LS_ERROR) << "RTSPAudioSource::onNewSession not support codec" << sdp;
