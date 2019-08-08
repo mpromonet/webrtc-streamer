@@ -177,7 +177,7 @@ else()
     add_definitions(-DBSD=1 -DSOCKLEN_T=socklen_t -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE=1)
     # webrtc
     add_definitions(-DWEBRTC_POSIX -fno-rtti)
-    target_link_libraries (${PROJECT_NAME} dl)
+    target_link_libraries (${PROJECT_NAME} dl -static-libstdc++)
     if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
         target_link_libraries (${PROJECT_NAME} -Wl,-Bstatic -lm -latomic -Wl,-Bdynamic -static-libstdc++)
         add_definitions(-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard)
