@@ -19,6 +19,8 @@ install:
   - cmd: set
   - sh: env
   - sh: df -h
+  - sh: sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/ && sudo apt-get update && sudo apt-get install -y --no-install-recommends autoconf automake libtool xz-utils libgtk-3-dev libasound2-dev
+  - sh: df -h
   - git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git 
   - mkdir webrtc
   - cd webrtc
@@ -27,7 +29,6 @@ install:
   - ps: echo CONFIGURATION=$env:CONFIGURATION PLATFORM=$env:PLATFORM
   - ps: (get-content DEPS) | foreach-object {$_ -replace "'src/resources'],", "'src/resources'],'condition':'rtc_include_tests==true',"} | set-content DEPS
   - gclient sync
-  - sh: sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/ && sudo apt-get update && sudo apt-get install -y --no-install-recommends autoconf automake libtool xz-utils libgtk-3-dev libasound2-dev
 
 before_build:
   - cmd: call "%MSVC_SETUP_PATH%" %MSVC_SETUP_ARG%
