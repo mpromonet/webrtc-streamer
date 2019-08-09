@@ -147,12 +147,12 @@ webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencie
 	cricket::MediaEngineDependencies mediaDependencies;	
 	mediaDependencies.task_queue_factory = dependencies.task_queue_factory.get();
 	mediaDependencies.adm = std::move(audioDeviceModule);
-	mediaDependencies.audio_encoder_factory = std::move(webrtc::CreateBuiltinAudioEncoderFactory());
+	mediaDependencies.audio_encoder_factory = webrtc::CreateBuiltinAudioEncoderFactory();
 	mediaDependencies.audio_decoder_factory = std::move(audioDecoderfactory);
 	mediaDependencies.audio_processing = webrtc::AudioProcessingBuilder().Create();
 	
-	mediaDependencies.video_encoder_factory = std::move(webrtc::CreateBuiltinVideoEncoderFactory());
-	mediaDependencies.video_decoder_factory = std::move(webrtc::CreateBuiltinVideoDecoderFactory());
+	mediaDependencies.video_encoder_factory = webrtc::CreateBuiltinVideoEncoderFactory();
+	mediaDependencies.video_decoder_factory = webrtc::CreateBuiltinVideoDecoderFactory();
 
 	dependencies.media_engine = cricket::CreateMediaEngine(std::move(mediaDependencies));
 	
