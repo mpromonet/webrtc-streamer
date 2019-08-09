@@ -14,11 +14,11 @@ configuration:
 
 install:
   - cmd: set DEPOT_TOOLS_WIN_TOOLCHAIN=0
-  - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\..\depot_tools;%PATH%
-  - sh: export PATH=${APPVEYOR_BUILD_FOLDER}/../depot_tools:${PATH}
+  - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\depot_tools;%PATH%
+  - sh: export PATH=${APPVEYOR_BUILD_FOLDER}/depot_tools:${PATH}
   - cmd: set
   - sh: env
-  - cd ..
+  - sh: du -sh ..
   - git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git 
   - mkdir webrtc
   - cd webrtc
@@ -32,8 +32,8 @@ install:
 before_build:
   - cmd: call "%MSVC_SETUP_PATH%" %MSVC_SETUP_ARG%
   - ps: cd $env:APPVEYOR_BUILD_FOLDER
-  - cmd: cmake -G Ninja -D WEBRTCBUILD=%CONFIGURATION% -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe .
-  - sh: cmake -G Ninja -D WEBRTCBUILD=${CONFIGURATION} .
+  - cmd: cmake -G Ninja -D WEBRTCBUILD=%CONFIGURATION% -DWEBRTCROOT=%APPVEYOR_BUILD_FOLDER%\webrtc -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe .
+  - sh: cmake -G Ninja -D WEBRTCBUILD=${CONFIGURATION} -DWEBRTCROOT=${APPVEYOR_BUILD_FOLDER}/webrtc .
 
 build_script:
   - ninja
