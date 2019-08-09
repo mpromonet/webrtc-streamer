@@ -15,7 +15,7 @@
 #endif
 
 #include <cwctype>
-#include <locale>
+#include <cctype>
 
 #include "rtc_base/logging.h"
 #include "rtc_base/ref_counted_object.h"
