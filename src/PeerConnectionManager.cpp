@@ -138,7 +138,7 @@ IceServer getIceServerFromUrl(const std::string & url, const std::string& client
 webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencies(rtc::scoped_refptr<webrtc::AudioDeviceModule> audioDeviceModule, rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderfactory) {
 	webrtc::PeerConnectionFactoryDependencies dependencies;
 	dependencies.network_thread = NULL;
-	dependencies.worker_thread = NULL;
+	dependencies.worker_thread = rtc::Thread::Current();
 	dependencies.signaling_thread = NULL;
 	dependencies.call_factory = webrtc::CreateCallFactory();
 	dependencies.task_queue_factory = webrtc::CreateDefaultTaskQueueFactory();	
