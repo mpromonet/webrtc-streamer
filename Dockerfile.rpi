@@ -37,4 +37,4 @@ COPY --from=builder /app/ /app/
 EXPOSE 8000
 
 ENTRYPOINT [ "./webrtc-streamer" ]
-CMD [ "-a", "-C", "config.json", "screen://" ]
+CMD [ "-a", "-C", "config.json" ]

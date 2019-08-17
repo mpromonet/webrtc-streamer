@@ -46,4 +46,4 @@ RUN time /t  && call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
 
 EXPOSE 8000
 ENTRYPOINT [ "webrtc-streamer.exe" ]
-CMD [ "-a", "-C", "config.json", "screen://" ]
+CMD [ "-a", "-C", "config.json" ]

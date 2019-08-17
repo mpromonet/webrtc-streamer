@@ -250,6 +250,9 @@ The container entry point is the webrtc-streamer application, then you can :
 
         docker run -p 8000:8000 -it mpromonet/webrtc-streamer -n raspicam -u rtsp://pi2.local:8554/unicast
 
+* run the container giving config.json file using :
+
+        docker run -p 8000:8000 -v $PWD/config.json:/app/config.json mpromonet/webrtc-streamer
 
 
 

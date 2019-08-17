@@ -31,4 +31,4 @@ RUN apt-get update && apt-get install -y --no-install-recommends libasound2 libg
 EXPOSE 8000
 
 ENTRYPOINT [ "./webrtc-streamer" ]
-CMD [ "-a", "-C", "config.json", "screen://" ]
+CMD [ "-a", "-C", "config.json" ]
