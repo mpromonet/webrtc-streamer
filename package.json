@@ -1,6 +1,6 @@
 {
   "name": "webrtc-streamer",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "",
   "main": "joinjanusvideoroom.js",
   "dependencies": {
@@ -13,9 +13,12 @@
     "strophejs-plugin-muc": "^1.1.0",
     "then-request": "^6.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "git-repo-info": "^2.1.0",
+    "npm": "^6.10.3"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepublish": "node prepublish.js"
   },
   "repository": {
     "type": "git",

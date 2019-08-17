@@ -1,0 +1,16 @@
+CMakeFiles/
+*.cmake
+CMake*
+Makefile
+inc/
+src/
+snap/
+civetweb/
+getopt/
+images/
+live555helper/
+*.gz
+*.a
+webrtc-streamer
+Dockerfile*
+*.yml
