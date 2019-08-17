@@ -135,31 +135,14 @@ add_library (webrtcextra STATIC ${WEBRTCEXTRAOBJS})
 set_target_properties(webrtcextra PROPERTIES LINKER_LANGUAGE CXX)		
 target_link_libraries (${PROJECT_NAME} webrtcextra) 
 
+# live555helper 
+add_subdirectory(live555helper)
+target_link_libraries (${PROJECT_NAME} liblive555helper) 
 
-# live555helper & live555
-set(LIVE ${CMAKE_BINARY_DIR}/live)
-if (NOT EXISTS ${LIVE})
-    message("Download live555!")
-    file (DOWNLOAD http://www.live555.com/liveMedia/public/live555-latest.tar.gz ${CMAKE_BINARY_DIR}/live555.tar.gz )
-    EXECUTE_PROCESS(COMMAND ${CMAKE_COMMAND} -E tar xvf ${CMAKE_BINARY_DIR}/live555.tar.gz  RESULT_VARIABLE unpack_result)
-    if(NOT unpack_result STREQUAL "0")
-        message(FATAL_ERROR "Fetching live555 failed!")
-    endif()
-else() 
-    message("Use existing live555!")
-endif() 
-
-FILE(GLOB LIVEHELPERSOURCE ${LIVE}/groupsock/*.c* ${LIVE}/liveMedia/*.c* ${LIVE}/UsageEnvironment/*.c* ${LIVE}/BasicUsageEnvironment/*.c* live555helper/src/*.cpp)
-add_library (live555helper STATIC ${LIVEHELPERSOURCE})	
-target_include_directories(live555helper PUBLIC ${LIVE}/groupsock/include ${LIVE}/liveMedia/include ${LIVE}/UsageEnvironment/include ${LIVE}/BasicUsageEnvironment/include live555helper/inc)
-target_link_libraries (${PROJECT_NAME} live555helper) 
 add_definitions(-DHAVE_LIVE555 -DHAVE_JPEG)
 
 # compiler specific
 if (WIN32)
-    # live555
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-    target_link_libraries (${PROJECT_NAME} ws2_32)
     # getopt
     add_library (getopt getopt/getopt.c)
     target_include_directories(getopt PUBLIC getopt) 
@@ -173,8 +156,6 @@ if (WIN32)
     add_definitions(-DUSE_X11 -DHAVE_SOUND)
     target_link_libraries (${PROJECT_NAME} secur32 dmoguids wmcodecdspuuid strmiids msdmo winmm dxgi d3d11)
 else()
-    # live555
-    add_definitions(-DBSD=1 -DSOCKLEN_T=socklen_t -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE=1)
     # webrtc
     add_definitions(-DWEBRTC_POSIX -fno-rtti)
     target_link_libraries (${PROJECT_NAME} dl)
