@@ -45,6 +45,7 @@ add_library (civetweb STATIC civetweb/src/civetweb.c civetweb/src/CivetServer.cp
 target_link_libraries (${PROJECT_NAME} civetweb) 
 target_include_directories(civetweb PUBLIC civetweb/include) 
 
+# alsa ?
 find_package(ALSA QUIET)
 MESSAGE("ALSA_FOUND = ${ALSA_FOUND}")
 
@@ -135,11 +136,7 @@ add_library (webrtcextra STATIC ${WEBRTCEXTRAOBJS})
 set_target_properties(webrtcextra PROPERTIES LINKER_LANGUAGE CXX)		
 target_link_libraries (${PROJECT_NAME} webrtcextra) 
 
-# live555helper 
-add_subdirectory(live555helper)
-target_link_libraries (${PROJECT_NAME} liblive555helper) 
-
-add_definitions(-DHAVE_LIVE555 -DHAVE_JPEG)
+add_definitions(-DHAVE_JPEG)
 
 # compiler specific
 if (WIN32)
@@ -174,6 +171,11 @@ else()
         add_definitions(-DHAVE_SOUND)
     endif()
 endif()
+
+# live555helper 
+add_subdirectory(live555helper EXCLUDE_FROM_ALL)
+target_link_libraries (${PROJECT_NAME} liblive555helper) 
+add_definitions(-DHAVE_LIVE555)
 
 #cpack
 install (TARGETS ${PROJECT_NAME} RUNTIME DESTINATION .)
