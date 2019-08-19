@@ -36,7 +36,7 @@ windows_docker_builder:
     docker info
     docker build --no-cache -t %CIRRUS_REPO_FULL_NAME%:cirrus-windows . -f Dockerfile.windows
     docker login --username=%DOCKERHUB_USER% --password=%DOCKERHUB_PASS% 
-    docker push %CIRRUS_REPO_FULL_NAME%:windows   
+    docker push %CIRRUS_REPO_FULL_NAME%:cirrus-windows   
     
 publish_docker_builder:
   depends_on: 
