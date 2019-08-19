@@ -26,11 +26,8 @@ COPY . /webrtc-streamer
 # workaround bootstraping that delete the cipd.ps1 file       
 #RUN powershell -NoProfile -ExecutionPolicy RemoteSigned -Command C:\depot_tools\cipd.ps1 -CipdBinary C:\depot_tools\.cipd_client.exe -BackendURL https://chrome-infra-packages.appspot.com -VersionFile C:\depot_tools\cipd_client_version   
 
-RUN set \
-    && dir /s /b "C:\Program Files\cmake.exe" \
-    && dir /s /b "C:\BuildTool\cmake.exe" 
-    
-    
+RUN setx PATH "%PATH%;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win;C:\Program Files\CMake\bin" 
+
 RUN  mkdir c:\webrtc && cd c:\webrtc \
        && time /t \
        && fetch --no-history --nohooks webrtc \
@@ -39,7 +36,6 @@ RUN  mkdir c:\webrtc && cd c:\webrtc \
        && call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
        && cd c:\webrtc \
        && gclient sync \
-       && SET PATH="%PATH%;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win;C:\Program Files\CMake\bin" \
        && time /t \
        && cd C:\webrtc-streamer \
        && cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe . \
