@@ -43,10 +43,11 @@ windows_docker_builder:
     DOCKERHUB_PASS: ENCRYPTED[7b81d2ca7878761ea497619cae892e267c0e0fdee71d8ce48dcd4ba11b9351a9d3f2f781dce84a7f8aab92a278007509]
   script: |
     docker info
-    export TAG=${CIRRUS_TAG:-latest}
-    docker build --no-cache -t %CIRRUS_REPO_FULL_NAME%:${TAG}-windows . -f Dockerfile.windows
+    set TAG=latest
+    if DEFINED CIRRUS_TAG set TAG=%CIRRUS_TAG% 
+    docker build --no-cache -t %CIRRUS_REPO_FULL_NAME%:%TAG%-windows . -f Dockerfile.windows
     docker login --username=%DOCKERHUB_USER% --password=%DOCKERHUB_PASS% 
-    docker push %CIRRUS_REPO_FULL_NAME%:${TAG}-windows   
+    docker push %CIRRUS_REPO_FULL_NAME%:%TAG%-windows   
     
 publish_docker_builder:
   depends_on: 
