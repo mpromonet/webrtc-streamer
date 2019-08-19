@@ -26,7 +26,7 @@ COPY . /webrtc-streamer
 # workaround bootstraping that delete the cipd.ps1 file       
 #RUN powershell -NoProfile -ExecutionPolicy RemoteSigned -Command C:\depot_tools\cipd.ps1 -CipdBinary C:\depot_tools\.cipd_client.exe -BackendURL https://chrome-infra-packages.appspot.com -VersionFile C:\depot_tools\cipd_client_version   
 
-RUN set PATH \
+RUN set \
     && dir /s /b "C:\Program Files\cmake.exe" \
     && dir /s /b "C:\BuildTool\cmake.exe" 
     
