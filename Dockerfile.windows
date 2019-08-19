@@ -28,20 +28,18 @@ COPY . /webrtc-streamer
 
 RUN setx PATH "%PATH%;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win;C:\Program Files\CMake\bin" 
 
-RUN  mkdir c:\webrtc && cd c:\webrtc \
+RUN  call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
+       && mkdir c:\webrtc && cd c:\webrtc \
        && time /t \
        && fetch --no-history --nohooks webrtc \
        && time /t \
        && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
-       && call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
-       && cd c:\webrtc \
        && gclient sync \
        && time /t \
        && cd C:\webrtc-streamer \
        && cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe . \
        && time /t \
        && ninja \
-       && cpack \
        && time /t \
        && rmdir /s /q c:\webrtc
 
