@@ -13,11 +13,11 @@ COPY . /webrtc-streamer
 
 # Install Chocolatey & packages
 #RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin" 
-#RUN choco install --no-progress -y git python2 sed curl windows-sdk-8.1 \
+#RUN choco install --no-progress -y git python2 sed curl windows-sdk-10 \
 #       && choco install --no-progress -y cmake --installargs 'ADD_CMAKE_TO_PATH=User' \
 #       && choco install --no-progress -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath C:\BuildTools" || IF "%ERRORLEVEL%"=="3010" EXIT 0   
 
-# install WebRTC 
+# install depot_tools
 #RUN git config --global core.autocrlf false \
 #       && git config --global core.filemode false \
 #       && git config --global branch.autosetuprebase always \
@@ -34,15 +34,15 @@ RUN  mkdir c:\webrtc && cd c:\webrtc \
        && call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
        && cd c:\webrtc \
        && gclient sync \
+       && SET PATH="%PATH%;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win" \
        && time /t \
-       && SETX PATH "%PATH%;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win" \
-       && time /t 
-
-# build
-RUN time /t  && call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
        && cd C:\webrtc-streamer \
        && cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe . \
-       && ninja && cpack 
+       && time /t \
+       && ninja \
+       && cpack \
+       && time /t \
+       && rmdir /s /q c:\webrtc
 
 EXPOSE 8000
 ENTRYPOINT [ "webrtc-streamer.exe" ]
