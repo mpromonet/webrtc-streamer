@@ -230,7 +230,7 @@ jobs:
       - run: git submodule update --init
       - run:
           command: |
-            export TAG=${CIRCLE_TAG:-latest}
+            export TAG=${CIRCLE_TAG:-circle-latest}
             docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
             docker build --pull -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-amd64 -f Dockerfile .
             docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-amd64
@@ -246,7 +246,7 @@ jobs:
       - run: git submodule update --init
       - run:
           command: |
-            export TAG=${CIRCLE_TAG:-latest}
+            export TAG=${CIRCLE_TAG:-circle-latest}
             docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
             docker build --build-arg ARCH=armv7l --build-arg CROSSCOMPILER=https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/GCC%209.1.0/Raspberry%20Pi%202%2C%203/cross-gcc-9.1.0-pi_2-3.tar.gz --build-arg IMAGE=balenalib/raspberry-pi2 --pull -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v7 -f Dockerfile.rpi .
             docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v7
@@ -262,7 +262,7 @@ jobs:
       - run: git submodule update --init
       - run:
           command: |
-            export TAG=${CIRCLE_TAG:-latest}
+            export TAG=${CIRCLE_TAG:-circle-latest}
             docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
             docker build --pull -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v6 -f Dockerfile.rpi . 
             docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v6
@@ -280,7 +280,7 @@ jobs:
             sh -c 'echo "{ \"experimental\": \"enabled\" }" >> $HOME/.docker/config.json'
             #
             docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
-            export TAG=${CIRCLE_TAG:-latest}
+            export TAG=${CIRCLE_TAG:-circle-latest}
             docker manifest create --amend $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG} $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-amd64 $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v7 $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v6
             docker manifest annotate $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG} $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-amd64 --os linux --arch amd64
             docker manifest annotate $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG} $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v7 --os linux --arch arm --variant v7
