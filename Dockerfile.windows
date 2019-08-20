@@ -5,11 +5,11 @@ LABEL maintainer=michel.promonet@free.fr
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
-#ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
-#       CLANG_VERSION=ToT \
-#       PYTHONIOENCODING=UTF-8 \
-#       GYP_MSVS_OVERRIDE_PATH=C:\\BuildTools \
-#       GYP_MSVS_VERSION=2017
+ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
+       CLANG_VERSION=ToT \
+       PYTHONIOENCODING=UTF-8 \
+       GYP_MSVS_OVERRIDE_PATH=C:\\BuildTools \
+       GYP_MSVS_VERSION=2017
 
 # Install Chocolatey & packages
 #RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin" 
@@ -23,8 +23,6 @@ COPY . /webrtc-streamer
 #       && git config --global branch.autosetuprebase always \
 #       && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git --depth 1 C:\depot_tools \
 #       && SETX PATH "%PATH%;C:\depot_tools" 
-# workaround bootstraping that delete the cipd.ps1 file       
-#RUN powershell -NoProfile -ExecutionPolicy RemoteSigned -Command C:\depot_tools\cipd.ps1 -CipdBinary C:\depot_tools\.cipd_client.exe -BackendURL https://chrome-infra-packages.appspot.com -VersionFile C:\depot_tools\cipd_client_version   
 
 RUN setx PATH "%PATH%;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win;C:\Program Files\CMake\bin" 
 
@@ -41,7 +39,16 @@ RUN  call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
        && time /t \
        && ninja \
        && time /t \
+       && mkdir c:\app && copy webrtc-streamer.exe c:\app && copy config.json c:\app && xcopy /E html c:\app\html\ \
        && rmdir /s /q c:\webrtc
+
+# run
+FROM mcr.microsoft.com/windows/nanoserver:ltsc2019
+
+WORKDIR /app
+COPY --from=builder /app/ /app/
+
+RUN  webrtc-streamer.exe -V
 
 EXPOSE 8000
 ENTRYPOINT [ "webrtc-streamer.exe" ]
