@@ -43,7 +43,7 @@ RUN  call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
        && rmdir /s /q c:\webrtc
 
 # run
-FROM mcr.microsoft.com/windows/nanoserver:1809
+FROM mcr.microsoft.com/windows/servercore:ltsc2019
 
 WORKDIR /app
 COPY --from=builder /app/ /app/
