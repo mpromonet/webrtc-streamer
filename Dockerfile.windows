@@ -18,13 +18,11 @@ ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
 #       && choco install --no-progress -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath C:\BuildTools" || IF "%ERRORLEVEL%"=="3010" EXIT 0   
 
 # install depot_tools
-#RUN git config --global core.autocrlf false \
-#       && git config --global core.filemode false \
-#       && git config --global branch.autosetuprebase always \
-#       && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git --depth 1 C:\depot_tools \
-#       && SETX PATH "%PATH%;C:\depot_tools" 
-
-RUN setx PATH "%PATH%;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win;C:\Program Files\CMake\bin" 
+RUN git config --global core.autocrlf false \
+       && git config --global core.filemode false \
+       && git config --global branch.autosetuprebase always \
+       && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git --depth 1 C:\depot_tools \
+       && SETX PATH "%PATH%;C:\depot_tools\;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win" 
 
 RUN  call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
        && mkdir c:\webrtc && cd c:\webrtc \
@@ -40,7 +38,8 @@ RUN  call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
        && ninja \
        && time /t \
        && mkdir c:\app && copy webrtc-streamer.exe c:\app && copy config.json c:\app && xcopy /E html c:\app\html\ \
-       && rmdir /s /q c:\webrtc
+       && rmdir /s /q c:\webrtc \
+       && webrtc-streamer.exe -V
 
 # run
 FROM mcr.microsoft.com/windows/servercore:ltsc2019
