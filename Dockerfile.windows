@@ -38,9 +38,10 @@ RUN  call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
        && ninja \
        && time /t \
        && mkdir c:\app && copy webrtc-streamer.exe c:\app && copy config.json c:\app && xcopy /E html c:\app\html\ \
-       && rmdir /s /q c:\webrtc \
        && dumpbin /imports  webrtc-streamer.exe \
-       && webrtc-streamer.exe -V
+       && webrtc-streamer.exe -h \
+       && webrtc-streamer.exe -V \
+       && rmdir /s /q c:\webrtc 
 
 # run
 FROM mcr.microsoft.com/windows/nanoserver:1809
