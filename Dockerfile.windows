@@ -39,10 +39,11 @@ RUN  call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
        && time /t \
        && mkdir c:\app && copy webrtc-streamer.exe c:\app && copy config.json c:\app && xcopy /E html c:\app\html\ \
        && rmdir /s /q c:\webrtc \
+       && dumpbin /imports  webrtc-streamer.exe \
        && webrtc-streamer.exe -V
 
 # run
-FROM mcr.microsoft.com/windows/servercore:ltsc2019
+FROM mcr.microsoft.com/windows/nanoserver:1809
 
 WORKDIR /app
 COPY --from=builder /app/ /app/
