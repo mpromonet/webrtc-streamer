@@ -17,6 +17,8 @@ ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
 #       && choco install --no-progress -y cmake --installargs 'ADD_CMAKE_TO_PATH=System' \
 #       && choco install --no-progress -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath C:\BuildTools" || IF "%ERRORLEVEL%"=="3010" EXIT 0   
 
+RUN choco install --no-progress -y unzip \
+
 # install depot_tools
 RUN git config --global core.autocrlf false \
        && git config --global core.filemode false \
@@ -39,6 +41,9 @@ RUN  call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
        && time /t \
        && mkdir c:\app && copy webrtc-streamer.exe c:\app && copy config.json c:\app && xcopy /E html c:\app\html\ \
        && dumpbin /imports  webrtc-streamer.exe \
+       && curl -L -o Dependencies_x64_Release.zip https://github.com/lucasg/Dependencies/releases/download/v1.9/Dependencies_x64_Release.zip && unzip Dependencies_x64_Release.zip \
+       && Dependencies.exe -knowndll webrtc-streamer.exe \
+       && Dependencies.exe -imports webrtc-streamer.exe \
        && webrtc-streamer.exe -h \
        && webrtc-streamer.exe -V \
        && rmdir /s /q c:\webrtc 
