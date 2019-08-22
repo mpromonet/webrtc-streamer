@@ -17,7 +17,7 @@ ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
 #       && choco install --no-progress -y cmake --installargs 'ADD_CMAKE_TO_PATH=System' \
 #       && choco install --no-progress -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath C:\BuildTools" || IF "%ERRORLEVEL%"=="3010" EXIT 0   
 
-RUN choco install --no-progress -y unzip \
+RUN choco install --no-progress -y unzip
 
 # install depot_tools
 RUN git config --global core.autocrlf false \
