@@ -41,10 +41,12 @@ RUN  call "C:\BuildTools\VC\Auxiliary\Build\vcvars64.bat" \
        && rmdir /s /q c:\webrtc 
 
 # run
-FROM mcr.microsoft.com/windows/nanoserver:1809
+FROM mcr.microsoft.com/windows:1809
 
 WORKDIR /app
 COPY --from=builder /app/ /app/
+
+RUN  webrtc-streamer.exe -V
 
 EXPOSE 8000
 ENTRYPOINT [ "webrtc-streamer.exe" ]
