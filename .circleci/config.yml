@@ -152,7 +152,12 @@ jobs:
       - checkout
       - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make cmake g++ xz-utils 
       - run: wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
-      - run: export PATH=$(ls -d /opt/cross-pi-gcc-*/bin):$PATH >> $BASH_ENV
+      - run: echo export PATH=$(ls -d /opt/cross-pi-gcc-*/bin):$PATH 
+      - run: echo export PATH=$(ls -d /opt/cross-pi-gcc-*/bin):\$PATH 
+      - run: which arm-linux-gnueabihf-gcc
+      - run: cat $BASH_ENV
+      - run: export PATH=$(ls -d /opt/cross-pi-gcc-*/bin):\$PATH >> $BASH_ENV
+      - run: cat $BASH_ENV
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
       - run: cd ${WEBRTCROOT} && gclient sync
