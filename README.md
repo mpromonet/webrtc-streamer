@@ -126,6 +126,9 @@ We can access to the WebRTC stream using [webrtcstreamer.html](https://github.co
 An example displaying grid of WebRTC Streams is available using option "layout=<lines>x<columns>"
 [![Screenshot](images/layout2x4.png)](https://webrtc-streamer.herokuapp.com/?layout=2x4)
 
+[Live Demo](https://webrtc-streamer.herokuapp.com/?layout=2x4)
+
+
 Embed in a HTML page:
 ===============
 Instead of using the internal HTTP server, it is easy to display a WebRTC stream in a HTML page served by another HTTP server. The URL of the webrtc-streamer to use should be given creating the [WebRtcStreamer](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer-html/blob/master/jsdoc/WebRtcStreamer.html) instance :
@@ -169,10 +172,16 @@ Using web-component could be a simple way to display some webrtc stream, a minim
 
 [Live Demo](https://webrtc-streamer.herokuapp.com/Bunny.html)  
 
+Using the webcomponent with a stream selector :
+
 [![Screenshot](images/wc-selector.jpg)](https://webrtc-streamer.herokuapp.com/webrtc-streamer-element.html)
+
 [Live Demo](https://webrtc-streamer.herokuapp.com/webrtc-streamer-element.html)
 
+Using the webcomponent over google map :
+
 [![Screenshot](images/wc-map.jpg)](https://webrtc-streamer.herokuapp.com/map.html)
+
 [Live Demo](https://webrtc-streamer.herokuapp.com/map.html)
 
 Connect to Janus Gateway Video Room
