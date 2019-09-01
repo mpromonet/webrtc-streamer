@@ -169,7 +169,11 @@ Using web-component could be a simple way to display some webrtc stream, a minim
 
 [Live Demo](https://webrtc-streamer.herokuapp.com/Bunny.html)  
 
+[![Screenshot](images/wc-selector.jpg)](https://webrtc-streamer.herokuapp.com/webrtc-streamer-element.html)
 [Live Demo](https://webrtc-streamer.herokuapp.com/webrtc-streamer-element.html)
+
+[![Screenshot](images/wc-map.jpg)](https://webrtc-streamer.herokuapp.com/map.html)
+[Live Demo](https://webrtc-streamer.herokuapp.com/map.html)
 
 Connect to Janus Gateway Video Room
 ===============
