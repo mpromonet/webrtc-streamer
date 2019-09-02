@@ -103,11 +103,11 @@ class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public 
 	} 
   }
 
-  void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink, const rtc::VideoSinkWants& wants) {
+  void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink, const rtc::VideoSinkWants& wants) override {
 	m_broadcaster.AddOrUpdateSink(sink, wants);
   }
 
-  void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) {
+  void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) override {
 	m_broadcaster.RemoveSink(sink);
   }
 

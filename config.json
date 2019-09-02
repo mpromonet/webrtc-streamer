@@ -8,13 +8,13 @@
 
         "LilaDelman": {"video": "rtsp://narr-cam.liladelman.com/axis-media/media.amp"}, 
 
-        "VirginiaTech": {"video": "rtsp://198.82.159.136:554/axis-media/media.amp"},
+        "VirginiaTech": {"video": "rtsp://198.82.159.136:554/axis-media/media.amp", "position":"37.223357,-80.417004"},
 
-        "hk": {"video": "rtsp://weathercam.gsis.edu.hk/axis-media/media.amp"},
+        "Honk-Kong": {"video": "rtsp://weathercam.gsis.edu.hk/axis-media/media.amp", "position":"22.352734,114.1277"},
 
         "Velkafatra": {"video": "rtsp://stream5.kukaj.sk:1935/live/VF1212.stream"}, 
         "Prib": {"video": "rtsp://stream5.kukaj.sk:1935/live/BOCIANY_PRIB.stream"}, 
-        "Vavrisovo": {"video": "rtsp://stream5.kukaj.sk:1935/live/VAVRISOVO.stream","audio": "rtsp://stream5.kukaj.sk:1935/live/VAVRISOVO.stream"}, 
+        "Vavrisovo": {"video": "rtsp://stream5.kukaj.sk:1935/live/VAVRISOVO.stream","audio": "rtsp://stream5.kukaj.sk:1935/live/VAVRISOVO.stream", "position":"49.0758931,19.7501234"}, 
         "Marina": {"video": "rtsp://stream5.kukaj.sk:1935/live/MARINA.stream"},     
         "Sokolylm": {"video": "rtsp://stream5.kukaj.sk:1935/live/SOKOLYLM.stream"},   
         "Demanova": {"video": "rtsp://stream5.kukaj.sk:1935/live/DEMANOVA.stream"}, 
@@ -22,10 +22,10 @@
         
         "KonskyGrun": {"video": "rtsp://stream.tmr.sk:1935/tmr/STREAM17.stream"}, 
         "VyhladJazero": {"video": "rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.stream"}, 
-        
+
         "Lomnicak": {"video": "rtsp://stream.zivekamery.sk:1935/live/LOMNICAK.stream"}, 
 
-        "Scheveningen-1": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys1.stream"}, 
+        "Scheveningen-1": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys1.stream", "position":"52.1042263,4.2494571"}, 
         "Scheveningen-3": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys3.stream"}, 
 
         "Arrifana": {"video": "rtsp://46.105.54.176:80/64connections/arrifana.stream"},
@@ -33,12 +33,12 @@
         "Chamrousse": {"video": "rtsp://46.105.54.176:80/64connections/chamrousse2.stream"}, 
         "Hendaye": {"video": "rtsp://46.105.54.176:80/64connections/hendaye.stream"}, 
         "Marseille": {"video": "rtsp://46.105.54.176:80/64connections/marseille.stream"}, 
-        "PaçoDeArcos": {"video": "rtsp://46.105.54.176:80/64connections/parcos.stream"},
+        "PaçoDeArcos": {"video": "rtsp://46.105.54.176:80/64connections/parcos.stream", "position":"38.701468,-9.3101928"},
         "Paris-1": {"video": "rtsp://46.105.54.176:80/64connections/Pariscam1.stream"}, 
         "Paris-3": {"video": "rtsp://46.105.54.176:80/64connections/Pariscam3.stream"},
         "Paris-4": {"video": "rtsp://46.105.54.176:80/64connections/Pariscam4.stream"},
 
-        "Curacao": {"video": "rtsp://srv13.arkasis.nl:80/498/default.stream"}, 
+        "Curacao": {"video": "rtsp://srv13.arkasis.nl:80/498/default.stream", "position":"12.2376122,-69.1801954"}, 
         "Volendam": {"video": "rtsp://srv13.arkasis.nl:80/508/default.stream"}, 
         "Maasstricht": {"video": "rtsp://srv13.arkasis.nl:80/639/default.stream"}, 
         "DeDam": {"video": "rtsp://srv13.arkasis.nl:80/731/default.stream"}

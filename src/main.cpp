@@ -37,6 +37,7 @@ int main(int argc, char* argv[])
 	std::string streamName;
 	std::map<std::string,std::string> urlVideoList;
 	std::map<std::string,std::string> urlAudioList;
+	std::map<std::string,std::string> positionList;	
 	std::string nbthreads;
 	std::string passwdFile;
 	std::string authDomain = "mydomain.com";
@@ -84,6 +85,9 @@ int main(int argc, char* argv[])
 						} 
 						if (value.isMember("audio")) {
 							urlAudioList[name]=value["audio"].asString();
+						} 
+						if (value.isMember("position")) {
+							positionList[name]=value["position"].asString();
 						} 
 					}
 				}
@@ -165,7 +169,7 @@ int main(int argc, char* argv[])
 	if (strlen(turnurl)) {
 		iceServerList.push_back(std::string("turn:")+turnurl);
 	}
-	PeerConnectionManager webRtcServer(iceServerList, urlVideoList, urlAudioList, audioLayer, publishFilter);
+	PeerConnectionManager webRtcServer(iceServerList, urlVideoList, urlAudioList, positionList, audioLayer, publishFilter);
 	if (!webRtcServer.InitializePeerConnection())
 	{
 		std::cout << "Cannot Initialize WebRTC server" << std::endl;
@@ -286,17 +290,17 @@ int main(int argc, char* argv[])
         		Json::Value answer(VERSION);
 		        return answer;
 		};
-                func["/api/log"]                   = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
-                        std::string loglevel;
-                        if (req_info->query_string) {
-                            CivetServer::getParam(req_info->query_string, "level", loglevel);
-                            if (!loglevel.empty()) {
-                                rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)atoi(loglevel.c_str()));
-                            }
-                        }
-                        Json::Value answer(rtc::LogMessage::GetLogToDebug());
-                        return answer;
-                };
+		func["/api/log"]                   = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+				std::string loglevel;
+				if (req_info->query_string) {
+					CivetServer::getParam(req_info->query_string, "level", loglevel);
+					if (!loglevel.empty()) {
+						rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)atoi(loglevel.c_str()));
+					}
+				}
+				Json::Value answer(rtc::LogMessage::GetLogToDebug());
+				return answer;
+		};
 		func["/api/help"]           = [func](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
 			Json::Value answer;
 			for (auto it : func) {
