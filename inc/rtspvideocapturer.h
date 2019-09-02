@@ -56,26 +56,26 @@ class RTSPVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, 
 		void DecoderThread();
 
 		// overide RTSPConnection::Callback
-		virtual bool onNewSession(const char* id, const char* media, const char* codec, const char* sdp);
-		virtual bool onData(const char* id, unsigned char* buffer, ssize_t size, struct timeval presentationTime);
-		virtual void    onConnectionTimeout(RTSPConnection& connection) {
+		virtual bool onNewSession(const char* id, const char* media, const char* codec, const char* sdp) override;
+		virtual bool onData(const char* id, unsigned char* buffer, ssize_t size, struct timeval presentationTime) override;
+		virtual void    onConnectionTimeout(RTSPConnection& connection) override {
 				connection.start();
 		}
-		virtual void    onDataTimeout(RTSPConnection& connection) {
+		virtual void    onDataTimeout(RTSPConnection& connection) override {
 				connection.start();
 		}
-		virtual void    onError(RTSPConnection& connection,const char* erro);
+		virtual void    onError(RTSPConnection& connection,const char* erro) override;
 
 		// overide webrtc::DecodedImageCallback
-		virtual int32_t Decoded(webrtc::VideoFrame& decodedImage);
+		virtual int32_t Decoded(webrtc::VideoFrame& decodedImage) override;
 
 
 		// overide rtc::VideoSourceInterface<webrtc::VideoFrame>
-		virtual void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink, const rtc::VideoSinkWants& wants) {
+		virtual void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink, const rtc::VideoSinkWants& wants) override {
 			broadcaster_.AddOrUpdateSink(sink, wants);
 		}
 
-		virtual void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) {
+		virtual void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) override {
 			broadcaster_.RemoveSink(sink);
 		}		
 

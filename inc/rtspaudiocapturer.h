@@ -44,8 +44,8 @@ class RTSPAudioSource : public webrtc::Notifier<webrtc::AudioSourceInterface>, p
 		void CaptureThread() { m_env.mainloop(); } 		
 
 		// overide RTSPConnection::Callback
-		virtual bool onNewSession(const char* id, const char* media, const char* codec, const char* sdp);		
-		virtual bool onData(const char* id, unsigned char* buffer, ssize_t size, struct timeval presentationTime);
+		virtual bool onNewSession(const char* id, const char* media, const char* codec, const char* sdp) override;		
+		virtual bool onData(const char* id, unsigned char* buffer, ssize_t size, struct timeval presentationTime) override;
 		
 	protected:
 		RTSPAudioSource(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri, const std::map<std::string,std::string> & opts); 
