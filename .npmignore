@@ -10,6 +10,7 @@ civetweb/
 getopt/
 images/
 live555helper/
+live/
 *.gz
 *.a
 webrtc-streamer
