@@ -69,9 +69,14 @@ bool RTSPAudioSource::onNewSession(const char* id, const char* media, const char
 				m_channel = std::stoi(channel);
 			}
 		}
-		RTC_LOG(INFO) << "RTSPAudioSource::onNewSession code:"<< codec << " freq:" << m_freq << " channel:" << m_channel;
+		RTC_LOG(INFO) << "RTSPAudioSource::onNewSession code:"<< codecstr << " freq:" << m_freq << " channel:" << m_channel;
+		std::map<std::string, std::string> params;
+		if (m_channel == 2)
+		{
+			params["stereo"] = "1";
+		}
 		
-		webrtc::SdpAudioFormat format = webrtc::SdpAudioFormat(codec, m_freq, m_channel);
+		webrtc::SdpAudioFormat format = webrtc::SdpAudioFormat(codecstr, m_freq, m_channel, std::move(params));
 		if (m_factory->IsSupportedDecoder(format)) {
 			m_decoder = m_factory->MakeAudioDecoder(format,absl::optional<webrtc::AudioCodecPairId>());
 			success = true;
@@ -85,14 +90,19 @@ bool RTSPAudioSource::onNewSession(const char* id, const char* media, const char
 		
 bool RTSPAudioSource::onData(const char* id, unsigned char* buffer, ssize_t size, struct timeval presentationTime) {
 	bool success = false;
-	int segmentLength = m_freq/100;								
-	if (m_decoder.get() != NULL) {			
-		int16_t* decoded = new int16_t[size];
+	int segmentLength = m_freq/100;
+	if (m_decoder.get() != NULL) {
+		int maxDecodedBufferSize = size*sizeof(int16_t);
+		if (m_channel == 2)
+		{
+			maxDecodedBufferSize = (segmentLength * m_channel)*(m_channel*sizeof(int16_t));
+		}
+		int16_t* decoded = new int16_t[maxDecodedBufferSize];
 		webrtc::AudioDecoder::SpeechType speech_type;
-		int res = m_decoder->Decode(buffer, size, m_freq, size*sizeof(int16_t), decoded, &speech_type);
-		RTC_LOG(LS_VERBOSE) << "RTSPAudioSource::onData size:" << size << " decoded:" << res;
-		if (res > 0) {
-			for (int i = 0 ; i < res*m_channel; ++i) {
+		int decodedBufferSize = m_decoder->Decode(buffer, size, m_freq, maxDecodedBufferSize, decoded, &speech_type);
+		RTC_LOG(LS_VERBOSE) << "RTSPAudioSource::onData size:" << size << " decodedBufferSize:" << decodedBufferSize << " maxDecodedBufferSize: " << maxDecodedBufferSize << " channels: " << m_channel;
+		if (decodedBufferSize > 0) {
+			for (int i = 0 ; i < decodedBufferSize; ++i) {
 				m_buffer.push(decoded[i]);
 			}
 		} else {
