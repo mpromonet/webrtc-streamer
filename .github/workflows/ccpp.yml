@@ -14,10 +14,13 @@ jobs:
     - name: fetch webrtc
       run: |
           export PATH=$(pwd)/depot_tools:$PATH
+          mkdir webrtc
+          pushd webrtc
           fetch --no-history --nohooks webrtc
           sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS 
           gclient sync 
+          popd
     - name: cmake
-      run: cmake -DWEBRTC_ROOT=$(pwd)/webrtc .
+      run: cmake -DWEBRTCROOT=$(pwd)/webrtc .
     - name: make 
       run: make 
