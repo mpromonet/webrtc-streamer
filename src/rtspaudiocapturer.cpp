@@ -48,9 +48,9 @@ bool RTSPAudioSource::onNewSession(const char* id, const char* media, const char
 		
 		// parse sdp to extract freq and channel
 		std::string fmt(sdp);
-	        std::transform(fmt.begin(), fmt.end(), fmt.begin(), [](unsigned char c){ return std::tolower(c); });
+		std::transform(fmt.begin(), fmt.end(), fmt.begin(), [](unsigned char c){ return std::tolower(c); });
 		std::string codecstr(codec);
-	        std::transform(codecstr.begin(), codecstr.end(), codecstr.begin(), [](unsigned char c){ return std::tolower(c); });
+		std::transform(codecstr.begin(), codecstr.end(), codecstr.begin(), [](unsigned char c){ return std::tolower(c); });
 		size_t pos = fmt.find(codecstr);
 		if (pos != std::string::npos) {
 			fmt.erase(0, pos+strlen(codec));
@@ -92,11 +92,7 @@ bool RTSPAudioSource::onData(const char* id, unsigned char* buffer, ssize_t size
 	bool success = false;
 	int segmentLength = m_freq/100;
 	if (m_decoder.get() != NULL) {
-		int maxDecodedBufferSize = size*sizeof(int16_t);
-		if (m_channel == 2)
-		{
-			maxDecodedBufferSize = (segmentLength * m_channel)*(m_channel*sizeof(int16_t));
-		}
+		int maxDecodedBufferSize = m_decoder->PacketDuration(buffer, size)*m_channel*sizeof(int16_t);
 		int16_t* decoded = new int16_t[maxDecodedBufferSize];
 		webrtc::AudioDecoder::SpeechType speech_type;
 		int decodedBufferSize = m_decoder->Decode(buffer, size, m_freq, maxDecodedBufferSize, decoded, &speech_type);
