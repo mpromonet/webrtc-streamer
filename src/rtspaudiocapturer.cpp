@@ -69,7 +69,7 @@ bool RTSPAudioSource::onNewSession(const char* id, const char* media, const char
 				m_channel = std::stoi(channel);
 			}
 		}
-		RTC_LOG(INFO) << "RTSPAudioSource::onNewSession code:"<< codecstr << " freq:" << m_freq << " channel:" << m_channel;
+		RTC_LOG(INFO) << "RTSPAudioSource::onNewSession codec:"<< codecstr << " freq:" << m_freq << " channel:" << m_channel;
 		std::map<std::string, std::string> params;
 		if (m_channel == 2)
 		{
