@@ -21,6 +21,10 @@ jobs:
           gclient sync 
           popd
     - name: cmake
-      run: cmake -DWEBRTCROOT=$(pwd)/webrtc .
+      run: |
+          export PATH=$(pwd)/depot_tools:$PATH
+          cmake -DWEBRTCROOT=$(pwd)/webrtc .
     - name: make 
       run: make 
+    - name: cpack 
+      run: cpack       
