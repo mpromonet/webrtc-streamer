@@ -1,0 +1,23 @@
+name: C/C++ CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: depot_tools
+      run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+    - name: fetch webrtc
+      run: |
+          export PATH=$(pwd)/depot_tools:$PATH
+          fetch --no-history --nohooks webrtc
+          sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS 
+          gclient sync 
+    - name: cmake
+      run: cmake -DWEBRTC_ROOT=$(pwd)/webrtc .
+    - name: make 
+      run: make 
