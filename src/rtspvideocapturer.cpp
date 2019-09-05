@@ -130,6 +130,11 @@ bool RTSPVideoCapturer::onNewSession(const char* id,const char* media, const cha
 			m_codec = codec;
 			success = true;
 		}
+		else if (strcmp(codec, "VP9") == 0) 
+		{
+			m_codec = codec;
+			success = true;
+		}		
 	}
 	return success;
 }
@@ -185,8 +190,10 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			//just ignore for now
 		}
 		else if (m_decoder.get()) {
+			webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameDelta;
 			std::vector<uint8_t> content;
 			if (nalu_type == webrtc::H264::NaluType::kIdr) {
+				frameType = webrtc::VideoFrameType::kVideoFrameKey;
 				RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData IDR";				
 				content.insert(content.end(), m_cfg.begin(), m_cfg.end());
 			}
@@ -194,7 +201,7 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 				RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData SLICE NALU:" << nalu_type;
 			}
 			content.insert(content.end(), buffer, buffer+size);
-			Frame frame(std::move(content), ts);			
+			Frame frame(std::move(content), ts, frameType);			
 			{
 				std::unique_lock<std::mutex> lock(m_queuemutex);
 				m_queue.push(frame);
@@ -232,7 +239,25 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			RTC_LOG(LS_ERROR) << "RTSPVideoCapturer:onData cannot JPEG dimension";
 			res = -1;
 		}
-
+	} else if (m_codec == "VP9") {
+		if (!m_decoder.get()) {
+			m_decoder=m_factory.CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kVp9CodecName));
+			webrtc::VideoCodec codec_settings;
+			codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecVP9;
+			m_decoder->InitDecode(&codec_settings,2);
+			m_decoder->RegisterDecodeCompleteCallback(this);			    
+		}
+		if (m_decoder.get()) {
+			webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameKey;
+			std::vector<uint8_t> content;
+			content.insert(content.end(), buffer, buffer+size);
+			Frame frame(std::move(content), ts, frameType);			
+			{
+				std::unique_lock<std::mutex> lock(m_queuemutex);
+				m_queue.push(frame);
+			}
+			m_queuecond.notify_all();
+		}
 	}
 
 	return (res == 0);
@@ -261,6 +286,8 @@ void RTSPVideoCapturer::DecoderThread()
 		
 		if (size) {
 			webrtc::EncodedImage input_image(data, size, size);		
+			input_image._frameType = frame.m_frameType;
+			input_image._completeFrame = true;			
 			input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
 			m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
 		}
