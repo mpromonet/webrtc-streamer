@@ -26,20 +26,11 @@
 #include "media/engine/internal_decoder_factory.h"
 #include "api/video_codecs/video_decoder.h"
 
+#include "decoder.h"
 
-class RTSPVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public RTSPConnection::Callback, public webrtc::DecodedImageCallback
+
+class RTSPVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public RTSPConnection::Callback
 {
-	class Frame
-	{
-		public:
-			Frame(): m_timestamp_ms(0) {}
-			Frame(std::vector<uint8_t> && content, uint64_t timestamp_ms, webrtc::VideoFrameType frameType) : m_content(content), m_timestamp_ms(timestamp_ms), m_frameType(frameType) {}
-		
-			std::vector<uint8_t>   m_content;
-			uint64_t               m_timestamp_ms;
-			webrtc::VideoFrameType m_frameType;
-	};
-
 	public:
 		RTSPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts);
 		virtual ~RTSPVideoCapturer();
@@ -54,7 +45,6 @@ class RTSPVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, 
 		void CaptureThread() {
 			m_env.mainloop();
 		}
-		void DecoderThread();
 
 		// overide RTSPConnection::Callback
 		virtual bool onNewSession(const char* id, const char* media, const char* codec, const char* sdp) override;
@@ -67,41 +57,28 @@ class RTSPVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, 
 		}
 		virtual void    onError(RTSPConnection& connection,const char* erro) override;
 
-		// overide webrtc::DecodedImageCallback
-		virtual int32_t Decoded(webrtc::VideoFrame& decodedImage) override;
-
 
 		// overide rtc::VideoSourceInterface<webrtc::VideoFrame>
 		virtual void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink, const rtc::VideoSinkWants& wants) override {
-			broadcaster_.AddOrUpdateSink(sink, wants);
+			m_broadcaster.AddOrUpdateSink(sink, wants);
 		}
 
 		virtual void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) override {
-			broadcaster_.RemoveSink(sink);
+			m_broadcaster.RemoveSink(sink);
 		}		
 
 	private:
-		std::thread                           m_capturethread;
-		char                                  m_stop;
-		cricket::VideoFormat                  m_format;
-		Environment                           m_env;
-		RTSPConnection                        m_connection;
-		webrtc::InternalDecoderFactory        m_factory;
-		std::unique_ptr<webrtc::VideoDecoder> m_decoder;
-		std::vector<uint8_t>                  m_cfg;
-		std::string                           m_codec;
-		std::queue<Frame>                     m_queue;
-		std::mutex                            m_queuemutex;
-		std::condition_variable               m_queuecond;
-		std::thread                           m_decoderthread;
-		int                                   m_width;
-		int                                   m_height;
-		int                                   m_roi_x;
-		int                                   m_roi_y;
-		int                                   m_roi_width;
-		int                                   m_roi_height;
-		int                                   m_fps;
-		rtc::VideoBroadcaster                 broadcaster_;
+		std::thread                              m_capturethread;
+		char                                     m_stop;
+		cricket::VideoFormat                     m_format;
+		Environment                              m_env;
+		RTSPConnection                           m_connection;
+
+		std::vector<uint8_t>                     m_cfg;
+		std::string                              m_codec;
+
+		rtc::VideoBroadcaster                    m_broadcaster;
+		Decoder                                  m_decoder;
 };
 
 

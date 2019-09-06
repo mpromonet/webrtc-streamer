@@ -24,7 +24,6 @@
 #include "common_video/h264/sps_parser.h"
 
 #include "modules/video_coding/h264_sprop_parameter_sets.h"
-#include "modules/video_coding/include/video_error_codes.h"
 #include "api/video/i420_buffer.h"
 
 #include "libyuv/video_common.h"
@@ -38,18 +37,9 @@ uint8_t h26xmarker[] = { 0, 0, 0, 1};
 FileVideoCapturer::FileVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
 	: m_env(m_stop),
 	m_mkvclient(m_env, this, uri.c_str()),
-	m_width(0), m_height(0), m_fps(0)
+	m_decoder(m_broadcaster, opts, true)
 {
 	RTC_LOG(INFO) << "FileVideoCapturer " << uri ;
-	if (opts.find("width") != opts.end()) {
-		m_width = std::stoi(opts.at("width"));
-	}	
-	if (opts.find("height") != opts.end()) {
-		m_height = std::stoi(opts.at("height"));
-	}	
-	if (opts.find("fps") != opts.end()) {
-		m_fps = std::stoi(opts.at("fps"));
-	}
 	this->Start();	
 }
 
@@ -120,33 +110,29 @@ bool FileVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 				res = -1;
 			}
 			else
-			{			
-				if (m_decoder.get()) {
-					if ((m_format.width != sps->width) || (m_format.height != sps->height)) {
-						RTC_LOG(INFO) << "format changed => set format from " << m_format.width << "x" << m_format.height << " to " << sps->width << "x" << sps->height;
-						m_decoder.reset(NULL);
+			{	
+				if (m_decoder.hasDecoder()) {
+					if ( (m_format.width !=  sps->width) || (m_format.height !=  sps->height) )  {
+						RTC_LOG(INFO) << "format changed => set format from " << m_format.width << "x" << m_format.height	 << " to " << sps->width << "x" << sps->height;
+						m_decoder.destroyDecoder();
 					}
 				}
 
-				if (!m_decoder.get()) {
+				if (!m_decoder.hasDecoder()) {
 					int fps = 25;
 					RTC_LOG(INFO) << "FileVideoCapturer:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
 					cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
 					m_format = videoFormat;
 
-					m_decoder=m_factory.CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kH264CodecName));
-					webrtc::VideoCodec codec_settings;
-					codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecH264;
-					m_decoder->InitDecode(&codec_settings,2);
-					m_decoder->RegisterDecodeCompleteCallback(this);
-				}
+					m_decoder.createDecoder(codec);
+				}						
 			}
 		}
 		else if (nalu_type == webrtc::H264::NaluType::kPps) {
 			RTC_LOG(LS_VERBOSE) << "FileVideoCapturer:onData PPS";
 			m_cfg.insert(m_cfg.end(), buffer, buffer+size);
 		}
-		else if (m_decoder.get()) {
+		else if (m_decoder.hasDecoder()) {
 			webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameDelta;
 			std::vector<uint8_t> content;
 			if (nalu_type == webrtc::H264::NaluType::kIdr) {
@@ -158,12 +144,7 @@ bool FileVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 				RTC_LOG(LS_VERBOSE) << "FileVideoCapturer:onData SLICE NALU:" << nalu_type;
 			}
 			content.insert(content.end(), buffer, buffer+size);
-			Frame frame(std::move(content), ts, frameType);			
-			{
-				std::unique_lock<std::mutex> lock(m_queuemutex);
-				m_queue.push(frame);
-			}
-			m_queuecond.notify_all();
+			m_decoder.PostFrame(std::move(content), ts, frameType);
 		} else {
 			RTC_LOG(LS_ERROR) << "FileVideoCapturer:onData no decoder";
 			res = -1;
@@ -187,7 +168,7 @@ bool FileVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 									
 			if (conversionResult >= 0) {
 				webrtc::VideoFrame frame(I420buffer, 0, ts, webrtc::kVideoRotation_0);
-				this->Decoded(frame);
+				m_decoder.Decoded(frame);
 			} else {
 				RTC_LOG(LS_ERROR) << "FileVideoCapturer:onData decoder error:" << conversionResult;
 				res = -1;
@@ -197,111 +178,26 @@ bool FileVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			res = -1;
 		}
 	} else if (codec == "VP9") {
-			if (!m_decoder.get()) {
-				m_decoder=m_factory.CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kVp9CodecName));
-				webrtc::VideoCodec codec_settings;
-				codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecVP9;
-				m_decoder->InitDecode(&codec_settings,2);
-				m_decoder->RegisterDecodeCompleteCallback(this);			    
-			}
-			if (m_decoder.get()) {
-				webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameKey;
-				std::vector<uint8_t> content;
-				content.insert(content.end(), buffer, buffer+size);
-				Frame frame(std::move(content), ts, frameType);			
-				{
-					std::unique_lock<std::mutex> lock(m_queuemutex);
-					m_queue.push(frame);
-				}
-				m_queuecond.notify_all();
-			}
+		if (!m_decoder.hasDecoder()) {
+			m_decoder.createDecoder(codec);			    
+		}
+		if (m_decoder.hasDecoder()) {
+			webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameKey;
+			std::vector<uint8_t> content;
+			content.insert(content.end(), buffer, buffer+size);
+			m_decoder.PostFrame(std::move(content), ts, frameType);
+		}
 	}
 
 	return (res == 0);
 }
 
-void FileVideoCapturer::DecoderThread() 
-{
-	while (IsRunning()) {
-		std::unique_lock<std::mutex> mlock(m_queuemutex);
-		while (m_queue.empty())
-		{
-			m_queuecond.wait(mlock);
-		}
-		Frame frame = m_queue.front();
-		m_queue.pop();		
-		mlock.unlock();
-		
-		RTC_LOG(LS_VERBOSE) << "FileVideoCapturer::DecoderThread size:" << frame.m_content.size() << " ts:" << frame.m_timestamp_ms;
-		uint8_t* data = frame.m_content.data();
-		ssize_t size = frame.m_content.size();
-		
-		if (size) {
-			webrtc::EncodedImage input_image(data, size, size);		
-			input_image._frameType = frame.m_frameType;
-			input_image._completeFrame = true;
-			input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
-			int res = m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
-			if (res != WEBRTC_VIDEO_CODEC_OK) {
-				RTC_LOG(LS_ERROR) << "FileVideoCapturer::DecoderThread failure:" << res;
-			}
-		}
-	}
-}
-
-int32_t FileVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
-{
-	int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
-
-	RTC_LOG(LS_VERBOSE) << "FileVideoCapturer::Decoded size:" << decodedImage.size() 
-				<< " decode ts:" << decodedImage.timestamp() 
-				<< " source ts:" << ts;
-
-	// avoid to block the encoder that drop frames when sent too quickly
-	static int64_t previmagets = 0;	
-	static int64_t prevts = 0;
-	if (prevts != 0) {
-		int64_t periodSource = decodedImage.timestamp() - previmagets;
-		int64_t periodDecode = ts-prevts;
-			
-		RTC_LOG(LS_VERBOSE) << "FileVideoCapturer::Decoded interframe decode:" << periodDecode << " source:" << periodSource;
-		int64_t delayms = periodSource-periodDecode;
-		if ( (delayms > 0) && (delayms < 1000) ) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(delayms));			
-		}
-	}
-
-	if ( (m_height == 0) && (m_width == 0) ) {
-		broadcaster_.OnFrame(decodedImage);	
-	} else {
-		int height = m_height;
-		int width = m_width;
-		if (height == 0) {
-			height = (decodedImage.height() * width) / decodedImage.width();
-		}
-		else if (width == 0) {
-			width = (decodedImage.width() * height) / decodedImage.height();
-		}
-		int stride_y = width;
-		int stride_uv = (width + 1) / 2;
-		rtc::scoped_refptr<webrtc::I420Buffer> scaled_buffer = webrtc::I420Buffer::Create(width, height, stride_y, stride_uv, stride_uv);
-		scaled_buffer->ScaleFrom(*decodedImage.video_frame_buffer()->ToI420());
-		webrtc::VideoFrame frame = webrtc::VideoFrame(scaled_buffer, decodedImage.timestamp(),
-			decodedImage.render_time_ms(), webrtc::kVideoRotation_0);
-				
-		broadcaster_.OnFrame(decodedImage);
-	}
-	
-	previmagets = decodedImage.timestamp();
-	prevts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
-	
-	return true;
-}
 
 void FileVideoCapturer::Start()
 {
+	RTC_LOG(INFO) << "FileVideoCapturer::Start";
 	m_capturethread = std::thread(&FileVideoCapturer::CaptureThread, this);	
-	m_decoderthread = std::thread(&FileVideoCapturer::DecoderThread, this);
+	m_decoder.Start();
 }
 
 void FileVideoCapturer::Stop()
@@ -309,13 +205,7 @@ void FileVideoCapturer::Stop()
 	RTC_LOG(INFO) << "FileVideoCapturer::stop";
 	m_env.stop();
 	m_capturethread.join();
-	Frame frame;			
-	{
-		std::unique_lock<std::mutex> lock(m_queuemutex);
-		m_queue.push(frame);
-	}
-	m_queuecond.notify_all();
-	m_decoderthread.join();
+	m_decoder.Stop();
 }
 
 #endif

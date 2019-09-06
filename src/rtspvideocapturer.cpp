@@ -35,46 +35,10 @@ uint8_t marker[] = { 0, 0, 0, 1};
 RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
 	: m_env(m_stop),
 	m_connection(m_env, this, uri.c_str(), RTSPConnection::decodeTimeoutOption(opts), RTSPConnection::decodeRTPTransport(opts), rtc::LogMessage::GetLogToDebug()<=2),
-	m_width(0), m_height(0), m_roi_x(0), m_roi_y(0), m_roi_width(0), m_roi_height(0), m_fps(0)
+	m_decoder(m_broadcaster, opts, false)
 {
 	RTC_LOG(INFO) << "RTSPVideoCapturer " << uri ;
-	if (opts.find("width") != opts.end()) {
-		m_width = std::stoi(opts.at("width"));
-	}
-	if (opts.find("height") != opts.end()) {
-		m_height = std::stoi(opts.at("height"));
-	}
-	if (opts.find("roi_x") != opts.end()) {
-		m_roi_x = std::stoi(opts.at("roi_x"));
-	if (m_roi_x<0) {
-			RTC_LOG(LS_ERROR) << "Ignore roi_x=" << m_roi_x << ", it muss be >=0";
-			m_roi_x = 0;
-		}
-	}	
-	if (opts.find("roi_y") != opts.end()) {
-		m_roi_y = std::stoi(opts.at("roi_y"));
-		if (m_roi_y<0) {
-			RTC_LOG(LS_ERROR) << "Ignore roi_<=" << m_roi_y << ", it muss be >=0";
-			m_roi_y = 0;
-		}
-	}	
-	if (opts.find("roi_width") != opts.end()) {
-		m_roi_width = std::stoi(opts.at("roi_width"));
-		if (m_roi_width<=0) {
-			RTC_LOG(LS_ERROR) << "Ignore roi_width<=" << m_roi_width << ", it muss be >0";
-			m_roi_width = 0;
-		}
-	}	
-	if (opts.find("roi_height") != opts.end()) {
-		m_roi_height = std::stoi(opts.at("roi_height"));
-		if (m_roi_height<=0) {
-			RTC_LOG(LS_ERROR) << "Ignore roi_height<=" << m_roi_height << ", it muss be >0";
-			m_roi_height = 0;
-		}
-	}
-	if (opts.find("fps") != opts.end()) {
-		m_fps = std::stoi(opts.at("fps"));
-	}
+
 	this->Start();
 }
 
@@ -124,7 +88,7 @@ bool RTSPVideoCapturer::onNewSession(const char* id,const char* media, const cha
 				}
 			}
 			success = true;
-		}
+		} 
 		else if (strcmp(codec, "JPEG") == 0) 
 		{
 			m_codec = codec;
@@ -160,24 +124,20 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			}
 			else
 			{			
-				if (m_decoder.get()) {
+				if (m_decoder.hasDecoder()) {
 					if ( (m_format.width !=  sps->width) || (m_format.height !=  sps->height) )  {
 						RTC_LOG(INFO) << "format changed => set format from " << m_format.width << "x" << m_format.height	 << " to " << sps->width << "x" << sps->height;
-						m_decoder.reset(NULL);
+						m_decoder.destroyDecoder();
 					}
 				}
 
-				if (!m_decoder.get()) {
+				if (!m_decoder.hasDecoder()) {
 					int fps = 25;
 					RTC_LOG(INFO) << "RTSPVideoCapturer:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
 					cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
 					m_format = videoFormat;
 
-					m_decoder=m_factory.CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kH264CodecName));
-					webrtc::VideoCodec codec_settings;
-					codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecH264;
-					m_decoder->InitDecode(&codec_settings,2);
-					m_decoder->RegisterDecodeCompleteCallback(this);
+					m_decoder.createDecoder(m_codec);
 				}
 			}
 		}
@@ -189,7 +149,7 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 			RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData SEI";
 			//just ignore for now
 		}
-		else if (m_decoder.get()) {
+		else if (m_decoder.hasDecoder()) {
 			webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameDelta;
 			std::vector<uint8_t> content;
 			if (nalu_type == webrtc::H264::NaluType::kIdr) {
@@ -201,12 +161,8 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 				RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData SLICE NALU:" << nalu_type;
 			}
 			content.insert(content.end(), buffer, buffer+size);
-			Frame frame(std::move(content), ts, frameType);			
-			{
-				std::unique_lock<std::mutex> lock(m_queuemutex);
-				m_queue.push(frame);
-			}
-			m_queuecond.notify_all();
+			m_decoder.PostFrame(std::move(content), ts, frameType);
+
 		} else {
 			RTC_LOG(LS_ERROR) << "RTSPVideoCapturer:onData no decoder";
 			res = -1;
@@ -230,7 +186,7 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 									
 			if (conversionResult >= 0) {
 				webrtc::VideoFrame frame(I420buffer, 0, ts, webrtc::kVideoRotation_0);
-				this->Decoded(frame);
+				m_decoder.Decoded(frame);
 			} else {
 				RTC_LOG(LS_ERROR) << "RTSPVideoCapturer:onData decoder error:" << conversionResult;
 				res = -1;
@@ -238,25 +194,16 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 		} else {
 			RTC_LOG(LS_ERROR) << "RTSPVideoCapturer:onData cannot JPEG dimension";
 			res = -1;
-		}
+		}		
 	} else if (m_codec == "VP9") {
-		if (!m_decoder.get()) {
-			m_decoder=m_factory.CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kVp9CodecName));
-			webrtc::VideoCodec codec_settings;
-			codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecVP9;
-			m_decoder->InitDecode(&codec_settings,2);
-			m_decoder->RegisterDecodeCompleteCallback(this);			    
+		if (!m_decoder.hasDecoder()) {
+			m_decoder.createDecoder(m_codec);			    
 		}
-		if (m_decoder.get()) {
+		if (m_decoder.hasDecoder()) {
 			webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameKey;
 			std::vector<uint8_t> content;
 			content.insert(content.end(), buffer, buffer+size);
-			Frame frame(std::move(content), ts, frameType);			
-			{
-				std::unique_lock<std::mutex> lock(m_queuemutex);
-				m_queue.push(frame);
-			}
-			m_queuecond.notify_all();
+			m_decoder.PostFrame(std::move(content), ts, frameType);
 		}
 	}
 
@@ -268,104 +215,12 @@ void RTSPVideoCapturer::onError(RTSPConnection& connection, const char* error) {
 	connection.start(1);
 }		
 
-void RTSPVideoCapturer::DecoderThread() 
-{
-	while (IsRunning()) {
-		std::unique_lock<std::mutex> mlock(m_queuemutex);
-		while (m_queue.empty())
-		{
-			m_queuecond.wait(mlock);
-		}
-		Frame frame = m_queue.front();
-		m_queue.pop();		
-		mlock.unlock();
-		
-		RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:DecoderThread size:" << frame.m_content.size() << " ts:" << frame.m_timestamp_ms;
-		uint8_t* data = frame.m_content.data();
-		ssize_t size = frame.m_content.size();
-		
-		if (size) {
-			webrtc::EncodedImage input_image(data, size, size);		
-			input_image._frameType = frame.m_frameType;
-			input_image._completeFrame = true;			
-			input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
-			m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
-		}
-	}
-}
-
-int32_t RTSPVideoCapturer::Decoded(webrtc::VideoFrame& decodedImage)
-{
-	int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
-
-	RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer::Decoded size:" << decodedImage.size() 
-				<< " decode ts:" << decodedImage.ntp_time_ms()
-				<< " source ts:" << ts;
-
-	if(m_roi_x >= decodedImage.width()) {
-		RTC_LOG(LS_ERROR) << "The ROI position protrudes beyond the right edge of the image. Ignore roi_x.";
-		m_roi_x = 0;
-	}
-	if(m_roi_y >= decodedImage.height()) {
-		RTC_LOG(LS_ERROR) << "The ROI position protrudes beyond the bottom edge of the image. Ignore roi_y.";
-		m_roi_y = 0;
-	}
-	if(m_roi_width != 0 && (m_roi_width + m_roi_x) > decodedImage.width()) {
-		RTC_LOG(LS_ERROR) << "The ROI protrudes beyond the right edge of the image. Ignore roi_width.";
-		m_roi_width = 0;
-	}
-	if(m_roi_height != 0 && (m_roi_height + m_roi_y) > decodedImage.height()) {
-		RTC_LOG(LS_ERROR) << "The ROI protrudes beyond the bottom edge of the image. Ignore roi_height.";
-		m_roi_height = 0;
-	}
-	
-	if(m_roi_width == 0) {
-		m_roi_width = decodedImage.width() - m_roi_x;
-	}
-	if(m_roi_height == 0) {
-		m_roi_height = decodedImage.height() - m_roi_y;
-	}
-
-	// source image is croped but destination image size is not set
-	if((m_roi_width != decodedImage.width() || m_roi_height != decodedImage.height()) && (m_height == 0 && m_width == 0)) {
-		m_height = m_roi_height;
-		m_width = m_roi_width;
-	}
-
-	if ( (m_height == 0) && (m_width == 0) ) {
-		broadcaster_.OnFrame(decodedImage);
-	} else {
-		int height = m_height;
-		int width = m_width;
-		if (height == 0) {
-			height = (m_roi_height * width) / m_roi_width;
-		}
-		else if (width == 0) {
-			width = (m_roi_width * height) / m_roi_height;
-		}
-		int stride_y = width;
-		int stride_uv = (width + 1) / 2;
-		rtc::scoped_refptr<webrtc::I420Buffer> scaled_buffer = webrtc::I420Buffer::Create(width, height, stride_y, stride_uv, stride_uv);
-		if(m_roi_width != decodedImage.width() || m_roi_height != decodedImage.height()) {
-			scaled_buffer->CropAndScaleFrom(*decodedImage.video_frame_buffer()->ToI420(), m_roi_x, m_roi_y, m_roi_width, m_roi_height);
-		} else {
-			scaled_buffer->ScaleFrom(*decodedImage.video_frame_buffer()->ToI420());
-		}
-		webrtc::VideoFrame frame = webrtc::VideoFrame(scaled_buffer, decodedImage.timestamp(),
-			decodedImage.render_time_ms(), webrtc::kVideoRotation_0);
-				
-		broadcaster_.OnFrame(frame);
-	}
-		
-	return true;
-}
 
 void RTSPVideoCapturer::Start()
 {
 	RTC_LOG(INFO) << "RTSPVideoCapturer::start";
-//	SetName("RTSPVideoCapturer", NULL);
 	m_capturethread = std::thread(&RTSPVideoCapturer::CaptureThread, this);
-	m_decoderthread = std::thread(&RTSPVideoCapturer::DecoderThread, this);
+	m_decoder.Start();
 }
 
 void RTSPVideoCapturer::Stop()
@@ -373,13 +228,7 @@ void RTSPVideoCapturer::Stop()
 	RTC_LOG(INFO) << "RTSPVideoCapturer::stop";
 	m_env.stop();
 	m_capturethread.join();
-	Frame frame;			
-	{
-		std::unique_lock<std::mutex> lock(m_queuemutex);
-		m_queue.push(frame);
-	}
-	m_queuecond.notify_all();
-	m_decoderthread.join();
+	m_decoder.Stop();
 }
 
 #endif
