@@ -13,8 +13,6 @@
 #define WIN32_LEAN_AND_MEAN 
 #endif
 
-#include <chrono>
-
 #include "rtc_base/time_utils.h"
 #include "rtc_base/logging.h"
 
@@ -29,8 +27,6 @@
 #include "libyuv/convert.h"
 
 #include "rtspvideocapturer.h"
-
-uint8_t marker[] = { 0, 0, 0, 1};
 
 RTSPVideoCapturer::RTSPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
 	: m_env(m_stop),
@@ -56,36 +52,13 @@ bool RTSPVideoCapturer::onNewSession(const char* id,const char* media, const cha
 		if (strcmp(codec, "H264") == 0)
 		{
 			m_codec = codec;
-			const char* pattern="sprop-parameter-sets=";
-			const char* sprop=strstr(sdp, pattern);
-			if (sprop)
-			{
-				std::string sdpstr(sprop+strlen(pattern));
-				size_t pos = sdpstr.find_first_of(" ;\r\n");
-				if (pos != std::string::npos)
-				{
-					sdpstr.erase(pos);
-				}
-				webrtc::H264SpropParameterSets sprops;
-				if (sprops.DecodeSprop(sdpstr))
-				{
-					struct timeval presentationTime;
-					timerclear(&presentationTime);
 
-					std::vector<uint8_t> sps;
-					sps.insert(sps.end(), marker, marker+sizeof(marker));
-					sps.insert(sps.end(), sprops.sps_nalu().begin(), sprops.sps_nalu().end());
-					onData(id, sps.data(), sps.size(), presentationTime);
+			struct timeval presentationTime;
+			timerclear(&presentationTime);
 
-					std::vector<uint8_t> pps;
-					pps.insert(pps.end(), marker, marker+sizeof(marker));
-					pps.insert(pps.end(), sprops.pps_nalu().begin(), sprops.pps_nalu().end());
-					onData(id, pps.data(), pps.size(), presentationTime);
-				}
-				else
-				{
-					RTC_LOG(WARNING) << "Cannot decode SPS:" << sprop;
-				}
+			std::vector< std::vector<uint8_t> > initFrames = m_decoder.getInitFrames(codec, sdp);
+			for (auto frame : initFrames) {
+				onData(id, frame.data(), frame.size(), presentationTime);
 			}
 			success = true;
 		} 
@@ -111,13 +84,13 @@ bool RTSPVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 	int res = 0;
 
 	if (m_codec == "H264") {
-		webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[sizeof(marker)]);	
+		webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[sizeof(H26X_marker)]);	
 		if (nalu_type == webrtc::H264::NaluType::kSps) {
 			RTC_LOG(LS_VERBOSE) << "RTSPVideoCapturer:onData SPS";
 			m_cfg.clear();
 			m_cfg.insert(m_cfg.end(), buffer, buffer+size);
 
-			absl::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(buffer+sizeof(marker)+webrtc::H264::kNaluTypeSize, size-sizeof(marker)-webrtc::H264::kNaluTypeSize);
+			absl::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(buffer+sizeof(H26X_marker)+webrtc::H264::kNaluTypeSize, size-sizeof(H26X_marker)-webrtc::H264::kNaluTypeSize);
 			if (!sps) {	
 				RTC_LOG(LS_ERROR) << "cannot parse sps";
 				res = -1;

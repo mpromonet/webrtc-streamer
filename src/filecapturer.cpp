@@ -13,7 +13,6 @@
 #define WIN32_LEAN_AND_MEAN 
 #endif
 
-#include <chrono>
 #include <iostream>
 
 #include "rtc_base/time_utils.h"
@@ -30,9 +29,6 @@
 #include "libyuv/convert.h"
 
 #include "filecapturer.h"
-#include "Base64.hh"
-
-uint8_t h26xmarker[] = { 0, 0, 0, 1};
 
 FileVideoCapturer::FileVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
 	: m_env(m_stop),
@@ -57,25 +53,13 @@ bool FileVideoCapturer::onNewSession(const char* id,const char* media, const cha
 		{
 			m_codec[id] = codec;
 
-			unsigned resultSize = 0;
-			unsigned char* result = base64Decode(sdp, strlen(sdp), resultSize);
-
 			struct timeval presentationTime;
 			timerclear(&presentationTime);
 
-			int spssize = htons(*(int16_t*)(result + 6));
-			std::vector<uint8_t> sps;
-			sps.insert(sps.end(), h26xmarker, h26xmarker + sizeof(h26xmarker));
-			sps.insert(sps.end(), result + 8, result + 8 + spssize);
-			onData(id, sps.data(), sps.size(), presentationTime);
-
-			int ppssize = htons(*(int16_t*)(result + 9 + spssize));
-			std::vector<uint8_t> pps;
-			pps.insert(pps.end(), h26xmarker, h26xmarker + sizeof(h26xmarker));
-			pps.insert(pps.end(), result + 11 + spssize, result + 11 + spssize + ppssize);
-			onData(id, pps.data(), pps.size(), presentationTime);
-
-			delete result;
+			std::vector< std::vector<uint8_t> > initFrames = m_decoder.getInitFrames(codec, sdp);
+			for (auto frame : initFrames) {
+				onData(id, frame.data(), frame.size(), presentationTime);
+			}
 		}
 		else if (strcmp(codec, "JPEG") == 0) 
 		{
@@ -98,13 +82,13 @@ bool FileVideoCapturer::onData(const char* id, unsigned char* buffer, ssize_t si
 
 	std::string codec = m_codec[id];
 	if (codec == "H264") {
-		webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[sizeof(h26xmarker)]);	
+		webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[sizeof(H26X_marker)]);	
 		if (nalu_type == webrtc::H264::NaluType::kSps) {
 			RTC_LOG(LS_VERBOSE) << "FileVideoCapturer:onData SPS";
 			m_cfg.clear();
 			m_cfg.insert(m_cfg.end(), buffer, buffer+size);
 
-			absl::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(buffer+sizeof(h26xmarker)+webrtc::H264::kNaluTypeSize, size-sizeof(h26xmarker)-webrtc::H264::kNaluTypeSize);
+			absl::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(buffer+sizeof(H26X_marker)+webrtc::H264::kNaluTypeSize, size-sizeof(H26X_marker)-webrtc::H264::kNaluTypeSize);
 			if (!sps) {	
 				RTC_LOG(LS_ERROR) << "cannot parse sps";
 				res = -1;

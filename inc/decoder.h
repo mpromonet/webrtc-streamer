@@ -9,8 +9,13 @@
 
 #pragma once
 
+#include <string.h>
+#include <vector>
+
 #include "api/video/i420_buffer.h"
 #include "modules/video_coding/include/video_error_codes.h"
+#include "modules/video_coding/h264_sprop_parameter_sets.h"
+
 
 class Decoder : public webrtc::DecodedImageCallback {
     private:
@@ -123,6 +128,41 @@ class Decoder : public webrtc::DecodedImageCallback {
             m_decoderthread.join();
         }
 
+        std::vector< std::vector<uint8_t> > getInitFrames(const std::string & codec, const char* sdp) {
+            std::vector< std::vector<uint8_t> > frames;
+
+			const char* pattern="sprop-parameter-sets=";
+			const char* sprop=strstr(sdp, pattern);
+			if (sprop)
+			{
+				std::string sdpstr(sprop+strlen(pattern));
+				size_t pos = sdpstr.find_first_of(" ;\r\n");
+				if (pos != std::string::npos)
+				{
+					sdpstr.erase(pos);
+				}
+				webrtc::H264SpropParameterSets sprops;
+				if (sprops.DecodeSprop(sdpstr))
+				{
+					std::vector<uint8_t> sps;
+					sps.insert(sps.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
+					sps.insert(sps.end(), sprops.sps_nalu().begin(), sprops.sps_nalu().end());
+                    frames.push_back(sps);
+
+					std::vector<uint8_t> pps;
+					pps.insert(pps.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
+					pps.insert(pps.end(), sprops.pps_nalu().begin(), sprops.pps_nalu().end());
+                    frames.push_back(pps);
+				}
+				else
+				{
+					RTC_LOG(WARNING) << "Cannot decode SPS:" << sprop;
+				}
+			}
+
+            return frames;
+        }
+
         void createDecoder(const std::string & codec) {
             if (codec == "H264") {
                     m_decoder=m_factory.CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kH264CodecName));
@@ -138,6 +178,7 @@ class Decoder : public webrtc::DecodedImageCallback {
                 m_decoder->RegisterDecodeCompleteCallback(this);	                
             }
         }
+
         void destroyDecoder() {
             m_decoder.reset(NULL);
         }
