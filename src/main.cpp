@@ -257,9 +257,7 @@ int main(int argc, char* argv[])
 			if (req_info->query_string) {
 				CivetServer::getParam(req_info->query_string, "peerid", peerid);
 			}
-			webRtcServer.setAnswer(peerid, in);
-			Json::Value answer(1);
-			return answer;
+			return webRtcServer.setAnswer(peerid, in);
 		};
 		
 		func["/api/getIceCandidate"]       = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {

@@ -429,9 +429,10 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 /* ---------------------------------------------------------------------------
 ** set answer to a call initiated by createOffer
 ** -------------------------------------------------------------------------*/
-void PeerConnectionManager::setAnswer(const std::string &peerid, const Json::Value& jmessage)
+const Json::Value PeerConnectionManager::setAnswer(const std::string &peerid, const Json::Value& jmessage)
 {
 	RTC_LOG(INFO) << jmessage;
+	Json::Value answer;
 
 	std::string type;
 	std::string sdp;
@@ -439,6 +440,7 @@ void PeerConnectionManager::setAnswer(const std::string &peerid, const Json::Val
 	   || !rtc::GetStringFromJsonObject(jmessage, kSessionDescriptionSdpName, &sdp))
 	{
 		RTC_LOG(WARNING) << "Can't parse received message.";
+		answer["error"] = "Can't parse received message.";
 	}
 	else
 	{
@@ -446,6 +448,7 @@ void PeerConnectionManager::setAnswer(const std::string &peerid, const Json::Val
 		if (!session_description)
 		{
 			RTC_LOG(WARNING) << "Can't parse received session description message.";
+			answer["error"] = "Can't parse received session description message.";
 		}
 		else
 		{
@@ -455,11 +458,20 @@ void PeerConnectionManager::setAnswer(const std::string &peerid, const Json::Val
 			rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = this->getPeerConnection(peerid);
 			if (peerConnection)
 			{
-				std::promise<const webrtc::SessionDescriptionInterface*> promise;
-				peerConnection->SetRemoteDescription(SetSessionDescriptionObserver::Create(peerConnection, promise), session_description);
+				std::promise<const webrtc::SessionDescriptionInterface*> remotepromise;
+				peerConnection->SetRemoteDescription(SetSessionDescriptionObserver::Create(peerConnection, remotepromise), session_description);
+				// waiting for remote description
+				std::future<const webrtc::SessionDescriptionInterface*> remotefuture = remotepromise.get_future();
+				if (remotefuture.wait_for(std::chrono::milliseconds(5000)) == std::future_status::ready ) {
+					RTC_LOG(INFO) << "remote_description is ready";
+				} else {
+					RTC_LOG(WARNING) << "remote_description is NULL";
+					RTC_LOG(WARNING) << "Can't get remote description.";
+				}
 			}
 		}
 	}
+	return answer;
 }
 
 /* ---------------------------------------------------------------------------
