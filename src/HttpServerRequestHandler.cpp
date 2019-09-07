@@ -44,8 +44,6 @@ class RequestHandler : public CivetHandler
         
         std::cout << "uri:" << req_info->request_uri << std::endl;
         
-        HttpServerRequestHandler* httpServer = (HttpServerRequestHandler*)server;
-        
 		// read input
 		Json::Value  in = this->getInputMessage(req_info, conn);
 		
@@ -55,7 +53,10 @@ class RequestHandler : public CivetHandler
 		// fill out
 		if (out.isNull() == false)
 		{
-			std::string answer(Json::StyledWriter().write(out));
+            std::unique_ptr<Json::StreamWriter> writer(m_writerBuilder.newStreamWriter());
+            std::ostringstream os;
+            writer->write(out, &os);
+			std::string answer(os.str());
 			std::cout << "answer:" << answer << std::endl;	
 
 			mg_printf(conn,"HTTP/1.1 200 OK\r\n");
@@ -64,7 +65,7 @@ class RequestHandler : public CivetHandler
 			mg_printf(conn,"Content-Length: %zd\r\n", answer.size());
 			mg_printf(conn,"Connection: close\r\n");
 			mg_printf(conn,"\r\n");
-			mg_printf(conn,answer.c_str());	
+			mg_write(conn,answer.c_str(),answer.size());
 			
 			ret = true;
 		}			
@@ -82,6 +83,9 @@ class RequestHandler : public CivetHandler
 
   private:
     HttpServerRequestHandler::httpFunction      m_func;	
+    Json::StreamWriterBuilder                   m_writerBuilder;
+    Json::CharReaderBuilder                     m_readerBuilder;
+
   
     Json::Value getInputMessage(const struct mg_request_info *req_info, struct mg_connection *conn) {
         Json::Value  jmessage;
@@ -109,10 +113,11 @@ class RequestHandler : public CivetHandler
             }
 
             // parse in
-            Json::Reader reader;
-            if (!reader.parse(body, jmessage))
+            std::unique_ptr<Json::CharReader> reader(m_readerBuilder.newCharReader());
+            std::string errors;
+            if (!reader->parse(body.c_str(), body.c_str() + body.size(), &jmessage, &errors))
             {
-                std::cout << "Received unknown message:" << body << std::endl;
+                std::cout << "Received unknown message:" << body << " errors:" << errors << std::endl;
             }
         }
         return jmessage;
