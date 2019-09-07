@@ -53,10 +53,7 @@ class RequestHandler : public CivetHandler
 		// fill out
 		if (out.isNull() == false)
 		{
-            std::unique_ptr<Json::StreamWriter> writer(m_writerBuilder.newStreamWriter());
-            std::ostringstream os;
-            writer->write(out, &os);
-			std::string answer(os.str());
+            std::string answer(Json::writeString(m_writerBuilder,out));
 			std::cout << "answer:" << answer << std::endl;	
 
 			mg_printf(conn,"HTTP/1.1 200 OK\r\n");
