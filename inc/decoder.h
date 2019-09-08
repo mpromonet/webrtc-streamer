@@ -16,8 +16,6 @@
 #include "modules/video_coding/include/video_error_codes.h"
 #include "modules/video_coding/h264_sprop_parameter_sets.h"
 
-#include "scaler.h"
-
 class Decoder : public webrtc::DecodedImageCallback {
     private:
         class Frame
@@ -33,7 +31,7 @@ class Decoder : public webrtc::DecodedImageCallback {
 
     public:
         Decoder(rtc::VideoBroadcaster& broadcaster, const std::map<std::string,std::string> & opts, bool wait) : 
-                m_scaler(broadcaster, opts),
+                m_broadcaster(broadcaster),
                 m_stop(false),
                 m_wait(wait),
                 m_previmagets(0),
@@ -180,7 +178,7 @@ class Decoder : public webrtc::DecodedImageCallback {
                 }
             }                        
 
-            m_scaler.OnFrame(decodedImage);
+            m_broadcaster.OnFrame(decodedImage);
 
 	        m_previmagets = decodedImage.timestamp();
 	        m_prevts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
@@ -188,7 +186,7 @@ class Decoder : public webrtc::DecodedImageCallback {
             return 1;
         }
 
-        Scaler                                m_scaler;
+        rtc::VideoBroadcaster&                m_broadcaster;
         webrtc::InternalDecoderFactory        m_factory;
         std::unique_ptr<webrtc::VideoDecoder> m_decoder;
 

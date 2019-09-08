@@ -278,17 +278,17 @@ class PeerConnectionManager {
 
 
 	protected:
-		PeerConnectionObserver*                             CreatePeerConnection(const std::string& peerid);
-		bool                                                AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & videourl, const std::string & audiourl, const std::string & options);
-		rtc::scoped_refptr<webrtc::VideoTrackInterface>     CreateVideoTrack(const std::string & videourl, const std::map<std::string,std::string> & opts);
-		rtc::scoped_refptr<webrtc::AudioTrackInterface>     CreateAudioTrack(const std::string & audiourl, const std::map<std::string,std::string> & opts);
-		bool                                                streamStillUsed(const std::string & streamLabel);
-		const std::list<std::string>                        getVideoCaptureDeviceList();
-		rtc::scoped_refptr<webrtc::PeerConnectionInterface> getPeerConnection(const std::string& peerid);
-		const std::string                                   sanitizeLabel(const std::string &label);
+		PeerConnectionObserver*                               CreatePeerConnection(const std::string& peerid);
+		bool                                                  AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & videourl, const std::string & audiourl, const std::string & options);
+		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(const std::string & videourl, const std::map<std::string,std::string> & opts);
+		rtc::scoped_refptr<webrtc::AudioSourceInterface>      CreateAudioSource(const std::string & audiourl, const std::map<std::string,std::string> & opts);
+		bool                                                  streamStillUsed(const std::string & streamLabel);
+		const std::list<std::string>                          getVideoCaptureDeviceList();
+		rtc::scoped_refptr<webrtc::PeerConnectionInterface>   getPeerConnection(const std::string& peerid);
+		const std::string                                     sanitizeLabel(const std::string &label);
 
 	protected:
-		typedef std::pair< rtc::scoped_refptr<webrtc::VideoTrackInterface>, rtc::scoped_refptr<webrtc::AudioTrackInterface>> AudioVideoPair;
+		typedef std::pair< rtc::scoped_refptr<webrtc::VideoTrackSourceInterface>, rtc::scoped_refptr<webrtc::AudioSourceInterface>> AudioVideoPair;
 		rtc::scoped_refptr<webrtc::AudioDecoderFactory>                           m_audioDecoderfactory;
 		std::unique_ptr<webrtc::TaskQueueFactory>                                 m_task_queue_factory;
 		rtc::scoped_refptr<webrtc::AudioDeviceModule>                             m_audioDeviceModule;

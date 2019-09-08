@@ -1,12 +1,14 @@
 #pragma once
 
 #include "media/base/video_broadcaster.h"
+#include "api/media_stream_interface.h"
 
-class Scaler : public rtc::VideoSinkInterface<webrtc::VideoFrame>, public rtc::VideoSourceInterface<webrtc::VideoFrame>
+class Scaler :  public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public rtc::VideoSourceInterface<webrtc::VideoFrame> 
 {
 public:
-    Scaler(rtc::VideoBroadcaster& broadcaster, const std::map<std::string, std::string> &opts) :
-                m_broadcaster(broadcaster),
+
+    Scaler(rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource, const std::map<std::string, std::string> &opts) :
+                m_videoSource(videoSource),
                 m_width(0), m_height(0), 
                 m_roi_x(0), m_roi_y(0), m_roi_width(0), m_roi_height(0) 
     {
@@ -54,10 +56,13 @@ public:
                 m_roi_height = 0;
             }
         }
+        const rtc::VideoSinkWants wants;
+        m_videoSource->AddOrUpdateSink(this,wants);
     }
 
     virtual ~Scaler()
     {
+        m_videoSource->RemoveSink(this);
     }
 
     void OnFrame(const webrtc::VideoFrame &frame) override
@@ -143,7 +148,8 @@ public:
         m_broadcaster.RemoveSink(sink);
     }
 
-    rtc::VideoBroadcaster& m_broadcaster;
+    rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> m_videoSource;
+    rtc::VideoBroadcaster  m_broadcaster;
 
     int                    m_width;
     int                    m_height;
@@ -151,4 +157,27 @@ public:
     int                    m_roi_y;
     int                    m_roi_width;
     int                    m_roi_height;    
+};
+
+#include "pc/video_track_source.h"
+template<class T>
+class Filter : public webrtc::VideoTrackSource {
+public:
+	static rtc::scoped_refptr<Filter> Create(rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource, const std::map<std::string, std::string> &opts) {
+		std::unique_ptr<T> source = absl::WrapUnique(new T(videoSource, opts));
+		if (!source) {
+			return nullptr;
+		}
+		return new rtc::RefCountedObject<Filter>(std::move(source));
+	}
+
+protected:
+	explicit Filter(std::unique_ptr<T> source)
+		: webrtc::VideoTrackSource(/*remote=*/false), m_source(std::move(source)) {}
+
+private:
+	rtc::VideoSourceInterface<webrtc::VideoFrame>* source() override {
+		return m_source.get();
+	}
+	std::unique_ptr<T> m_source;
 };

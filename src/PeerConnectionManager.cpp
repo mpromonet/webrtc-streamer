@@ -27,6 +27,8 @@
 #include "V4l2AlsaMap.h"
 #include "CapturerFactory.h"
 
+#include "scaler.h"
+
 #ifdef HAVE_LIVE555
 #include "rtspaudiocapturer.h"
 #endif
@@ -624,7 +626,7 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 				{
 					RTC_LOG(LS_ERROR) << "hangUp stream is no more used " << streamLabel;
 					std::lock_guard<std::mutex> mlock(m_streamMapMutex);
-					std::map < std::string, std::pair< rtc::scoped_refptr<webrtc::VideoTrackInterface>, rtc::scoped_refptr<webrtc::AudioTrackInterface>> >::iterator it = m_stream_map.find(streamLabel);
+					std::map < std::string, std::pair< rtc::scoped_refptr<webrtc::VideoTrackSourceInterface>, rtc::scoped_refptr<webrtc::AudioSourceInterface>> >::iterator it = m_stream_map.find(streamLabel);
 					if (it != m_stream_map.end())
 					{
 						m_stream_map.erase(it);
@@ -795,7 +797,9 @@ PeerConnectionManager::PeerConnectionObserver* PeerConnectionManager::CreatePeer
 /* ---------------------------------------------------------------------------
 **  get the capturer from its URL
 ** -------------------------------------------------------------------------*/
-rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVideoTrack(const std::string & videourl, const std::map<std::string,std::string> & opts)
+
+
+rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> PeerConnectionManager::CreateVideoSource(const std::string & videourl, const std::map<std::string,std::string> & opts)
 {
 	RTC_LOG(INFO) << "videourl:" << videourl;
 
@@ -805,21 +809,11 @@ rtc::scoped_refptr<webrtc::VideoTrackInterface> PeerConnectionManager::CreateVid
 		video = videoit->second;
 	}
 
-	std::string label = this->sanitizeLabel(videourl + "_video");
-
-	rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
-	rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = CapturerFactory::CreateVideoSource(video, opts, m_publishFilter, m_peer_connection_factory);
-	if (!videoSource) {
-		RTC_LOG(LS_ERROR) << "Cannot create capturer video:" << videourl;
-	} else {
-		video_track = m_peer_connection_factory->CreateVideoTrack(label, videoSource);
-	}
-
-	return video_track;
+	return CapturerFactory::CreateVideoSource(video, opts, m_publishFilter, m_peer_connection_factory);
 }
 
 
-rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAudioTrack(const std::string & audiourl, const std::map<std::string,std::string> & opts)
+rtc::scoped_refptr<webrtc::AudioSourceInterface> PeerConnectionManager::CreateAudioSource(const std::string & audiourl, const std::map<std::string,std::string> & opts)
 {
 	RTC_LOG(INFO) << "audiourl:" << audiourl;
 
@@ -869,15 +863,7 @@ rtc::scoped_refptr<webrtc::AudioTrackInterface> PeerConnectionManager::CreateAud
 		}
 	}
 	
-	rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track;
-	if (!audioSource) {
-		RTC_LOG(LS_ERROR) << "Cannot create capturer audio:" << audiourl;
-	} else {
-		std::string label = this->sanitizeLabel(audiourl + "_audio");
-		audio_track = m_peer_connection_factory->CreateAudioTrack(label, audioSource);
-	}
-	
-	return audio_track;
+	return audioSource;
 }
 
 const std::string PeerConnectionManager::sanitizeLabel(const std::string &label)
@@ -904,8 +890,16 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 {
 	bool ret = false;
 		
+	// convert options string into map
+	std::istringstream is(options);
+	std::map<std::string,std::string> opts;
+	std::string key, value;
+	while(std::getline(std::getline(is, key, '='), value,'&')) {
+		opts[key] = value;	
+	}
+
 	// compute stream label removing space because SDP use label
-	std::string streamLabel = this->sanitizeLabel(videourl + "|" + audiourl + "|" + options);
+	std::string streamLabel = this->sanitizeLabel(videourl + "|" + audiourl); // + "|" + options);
 
 	bool existingStream = false;
 	{
@@ -919,14 +913,6 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 		std::string audio(audiourl);
 		if (audio.empty()) {
 			audio = videourl;
-		}
-
-		// convert options string into map
-		std::istringstream is(options);
-		std::map<std::string,std::string> opts;
-		std::string key, value;
-		while(std::getline(std::getline(is, key, '='), value,'&')) {
-			opts[key] = value;	
 		}
 
 		// set bandwidth
@@ -943,18 +929,23 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 		}					
 		
 		// need to create the stream
-		rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(this->CreateVideoTrack(videourl, opts));
-		rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(this->CreateAudioTrack(audio, opts));
+		std::string video = videourl;
+			auto videoit = m_urlVideoList.find(video);
+			if (videoit != m_urlVideoList.end()) {
+			video = videoit->second;
+		}
+		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoCapture(this->CreateVideoSource(audio, opts));
+		rtc::scoped_refptr<webrtc::AudioSourceInterface> audio_track(this->CreateAudioSource(audio, opts));
 		RTC_LOG(INFO) << "Adding Stream to map";
 		std::lock_guard<std::mutex> mlock(m_streamMapMutex);
-		m_stream_map[streamLabel] = std::make_pair(video_track,audio_track);
+		m_stream_map[streamLabel] = std::make_pair(videoCapture,audio_track);
 
 	}
 
 
 	{
 		std::lock_guard<std::mutex> mlock(m_streamMapMutex);
-		std::map<std::string, std::pair<rtc::scoped_refptr<webrtc::VideoTrackInterface>,rtc::scoped_refptr<webrtc::AudioTrackInterface>> >::iterator it = m_stream_map.find(streamLabel);
+		std::map<std::string, std::pair<rtc::scoped_refptr<webrtc::VideoTrackSourceInterface>,rtc::scoped_refptr<webrtc::AudioSourceInterface>> >::iterator it = m_stream_map.find(streamLabel);
 		if (it != m_stream_map.end())
 		{
 			rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = m_peer_connection_factory->CreateLocalMediaStream(streamLabel);
@@ -964,14 +955,30 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface* peer_con
 			}
 			else
 			{
-				std::pair < rtc::scoped_refptr<webrtc::VideoTrackInterface>, rtc::scoped_refptr<webrtc::AudioTrackInterface> > pair = it->second;
-				rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track(pair.first);
+				std::pair < rtc::scoped_refptr<webrtc::VideoTrackSourceInterface>, rtc::scoped_refptr<webrtc::AudioSourceInterface> > pair = it->second;
+				rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoCapture(pair.first);
+				rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource = Filter<Scaler>::Create(videoCapture, opts);
+				rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
+				if (!videoSource) {
+					RTC_LOG(LS_ERROR) << "Cannot create capturer video:" << videourl;
+				} else {
+					std::string label = this->sanitizeLabel(videourl + "_video");
+					video_track = m_peer_connection_factory->CreateVideoTrack(label, videoSource);
+				}
+
 				if ( (video_track) && (!stream->AddTrack(video_track)) )
 				{
 					RTC_LOG(LS_ERROR) << "Adding VideoTrack to MediaStream failed";
 				} 
 
-				rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track(pair.second);
+				rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource(pair.second);
+				rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track;
+				if (!audioSource) {
+					RTC_LOG(LS_ERROR) << "Cannot create capturer audio:" << audiourl;
+				} else {
+					std::string label = this->sanitizeLabel(audiourl + "_audio");
+					audio_track = m_peer_connection_factory->CreateAudioTrack(label, audioSource);
+				}				
 				if ( (audio_track) && (!stream->AddTrack(audio_track)) )
 				{
 					RTC_LOG(LS_ERROR) << "Adding AudioTrack to MediaStream failed";
