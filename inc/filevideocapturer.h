@@ -45,7 +45,7 @@ class FileVideoCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, 
 			m_env.mainloop();
 		}
 		
-		// overide RTSPConnection::Callback
+		// overide MKVClient::Callback
 		virtual bool onNewSession(const char* id, const char* media, const char* codec, const char* sdp);
 		virtual bool onData(const char* id, unsigned char* buffer, ssize_t size, struct timeval presentationTime);
 

@@ -10,6 +10,7 @@
 
         "VirginiaTech": {"video": "rtsp://198.82.159.136:554/axis-media/media.amp", "position":"37.223357,-80.417004"},
 
+        "Bahia": {"video": "rtsp://187.1.147.77:2000/axis-media/media.amp", "position": "-12.618330,-38.955830" },
         "Honk-Kong": {"video": "rtsp://weathercam.gsis.edu.hk/axis-media/media.amp", "position":"22.352734,114.1277"},
 
         "Velkafatra": {"video": "rtsp://stream5.kukaj.sk:1935/live/VF1212.stream"}, 

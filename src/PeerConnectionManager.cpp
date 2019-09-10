@@ -828,42 +828,7 @@ rtc::scoped_refptr<webrtc::AudioSourceInterface> PeerConnectionManager::CreateAu
 		audio = it->second;
 	}
 
-	rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource;
-	if ( (audio.find("rtsp://") == 0) && (std::regex_match("rtsp://",m_publishFilter)) )
-	{
-#ifdef HAVE_LIVE555
-		m_audioDeviceModule->Terminate();
-		audioSource = RTSPAudioSource::Create(m_audioDecoderfactory, audio, opts);
-#endif
-	}
-	else if (std::regex_match("audiocap://",m_publishFilter)) 
-	{
-		m_audioDeviceModule->Init();
-		int16_t num_audioDevices = m_audioDeviceModule->RecordingDevices();
-		int16_t idx_audioDevice = -1;
-		for (int i = 0; i < num_audioDevices; ++i)
-		{
-			char name[webrtc::kAdmMaxDeviceNameSize] = {0};
-			char id[webrtc::kAdmMaxGuidSize] = {0};
-			if (m_audioDeviceModule->RecordingDeviceName(i, name, id) != -1)
-			{
-				if (audio == name)
-				{
-					idx_audioDevice = i;
-					break;
-				}
-			}
-		}
-		RTC_LOG(LS_ERROR) << "audiourl:" << audiourl << " idx_audioDevice:" << idx_audioDevice;
-		if ( (idx_audioDevice >= 0) && (idx_audioDevice < num_audioDevices) )
-		{
-			m_audioDeviceModule->SetRecordingDevice(idx_audioDevice);
-			cricket::AudioOptions opt;
-			audioSource = m_peer_connection_factory->CreateAudioSource(opt);
-		}
-	}
-	
-	return audioSource;
+	return CapturerFactory::CreateAudioSource(audio, opts, m_publishFilter, m_peer_connection_factory, m_audioDecoderfactory, m_audioDeviceModule);
 }
 
 const std::string PeerConnectionManager::sanitizeLabel(const std::string &label)

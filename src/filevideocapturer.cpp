@@ -28,7 +28,7 @@
 #include "libyuv/video_common.h"
 #include "libyuv/convert.h"
 
-#include "filecapturer.h"
+#include "filevideocapturer.h"
 
 FileVideoCapturer::FileVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts) 
 	: m_env(m_stop),

@@ -15,7 +15,9 @@
 
 #ifdef HAVE_LIVE555
 #include "rtspvideocapturer.h"
-#include "filecapturer.h"
+#include "filevideocapturer.h"
+#include "rtspaudiocapturer.h"
+#include "fileaudiocapturer.h"
 #endif
 
 #ifdef USE_X11
@@ -142,4 +144,54 @@ class CapturerFactory {
 		return videoSource;
 	}
 
+	static rtc::scoped_refptr<webrtc::AudioSourceInterface> CreateAudioSource(const std::string & audiourl, 
+							const std::map<std::string,std::string> & opts, 
+							const std::regex & publishFilter, 
+							rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory,
+							rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderfactory,
+							rtc::scoped_refptr<webrtc::AudioDeviceModule>   audioDeviceModule) {
+		rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource;
+
+		if ( (audiourl.find("rtsp://") == 0) && (std::regex_match("rtsp://",publishFilter)) )
+		{
+	#ifdef HAVE_LIVE555
+			audioDeviceModule->Terminate();
+			audioSource = RTSPAudioSource::Create(audioDecoderfactory, audiourl, opts);
+	#endif
+		}
+		else if ( (audiourl.find("file://") == 0) && (std::regex_match("file://",publishFilter)) )
+		{
+	#ifdef HAVE_LIVE555
+			audioDeviceModule->Terminate();
+			audioSource = FileAudioSource::Create(audioDecoderfactory, audiourl, opts);
+	#endif
+		}
+		else if (std::regex_match("audiocap://",publishFilter)) 
+		{
+			audioDeviceModule->Init();
+			int16_t num_audioDevices = audioDeviceModule->RecordingDevices();
+			int16_t idx_audioDevice = -1;
+			for (int i = 0; i < num_audioDevices; ++i)
+			{
+				char name[webrtc::kAdmMaxDeviceNameSize] = {0};
+				char id[webrtc::kAdmMaxGuidSize] = {0};
+				if (audioDeviceModule->RecordingDeviceName(i, name, id) != -1)
+				{
+					if (audiourl == name)
+					{
+						idx_audioDevice = i;
+						break;
+					}
+				}
+			}
+			RTC_LOG(LS_ERROR) << "audiourl:" << audiourl << " idx_audioDevice:" << idx_audioDevice;
+			if ( (idx_audioDevice >= 0) && (idx_audioDevice < num_audioDevices) )
+			{
+				audioDeviceModule->SetRecordingDevice(idx_audioDevice);
+				cricket::AudioOptions opt;
+				audioSource = peer_connection_factory->CreateAudioSource(opt);
+			}
+		}
+		return audioSource;
+	}
 };
