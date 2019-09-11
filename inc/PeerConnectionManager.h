@@ -22,6 +22,7 @@
 #include "rtc_base/logging.h"
 #include "rtc_base/strings/json.h"
 
+#include "HttpServerRequestHandler.h"
 
 class PeerConnectionManager {
 	class VideoSink : public rtc::VideoSinkInterface<webrtc::VideoFrame> {
@@ -258,7 +259,7 @@ class PeerConnectionManager {
 	};
 
 	public:
-		PeerConnectionManager(const std::list<std::string> & iceServerList, const std::map<std::string,std::string> & urlVideoList, const std::map<std::string,std::string> & urlAudioList, const std::map<std::string,std::string> & positionList, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter);
+		PeerConnectionManager(std::map<std::string,HttpServerRequestHandler::httpFunction>& func, const std::list<std::string> & iceServerList, const std::map<std::string,std::string> & urlVideoList, const std::map<std::string,std::string> & urlAudioList, const std::map<std::string,std::string> & positionList, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter);
 		virtual ~PeerConnectionManager();
 
 		bool InitializePeerConnection();

@@ -169,7 +169,8 @@ int main(int argc, char* argv[])
 	if (strlen(turnurl)) {
 		iceServerList.push_back(std::string("turn:")+turnurl);
 	}
-	PeerConnectionManager webRtcServer(iceServerList, urlVideoList, urlAudioList, positionList, audioLayer, publishFilter);
+	std::map<std::string,HttpServerRequestHandler::httpFunction> func;
+	PeerConnectionManager webRtcServer(func, iceServerList, urlVideoList, urlAudioList, positionList, audioLayer, publishFilter);
 	if (!webRtcServer.InitializePeerConnection())
 	{
 		std::cout << "Cannot Initialize WebRTC server" << std::endl;
@@ -198,114 +199,6 @@ int main(int argc, char* argv[])
 			options.push_back("authentication_domain");
 			options.push_back(authDomain);
 		}
-
-		// http api callbacks
-		std::map<std::string,HttpServerRequestHandler::httpFunction> func;
-		func["/api/getMediaList"]          = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
-			return webRtcServer.getMediaList();
-		};
-		
-		func["/api/getVideoDeviceList"]    = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
-			return webRtcServer.getVideoDeviceList();
-		};
-		
-		func["/api/getAudioDeviceList"]    = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
-			return webRtcServer.getAudioDeviceList();
-		};
-		
-		func["/api/getIceServers"]         = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
-			return webRtcServer.getIceServers(req_info->remote_addr);
-		};
-		
-		func["/api/call"]                  = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
-			std::string peerid;
-			std::string url;
-			std::string audiourl;
-			std::string options;
-			if (req_info->query_string) {
-				CivetServer::getParam(req_info->query_string, "peerid", peerid);
-				CivetServer::getParam(req_info->query_string, "url", url);
-				CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
-				CivetServer::getParam(req_info->query_string, "options", options);
-			}
-			return webRtcServer.call(peerid, url, audiourl, options, in);
-		};
-		
-		func["/api/hangup"]                = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
-			std::string peerid;
-			if (req_info->query_string) {
-				CivetServer::getParam(req_info->query_string, "peerid", peerid);
-			}
-			return webRtcServer.hangUp(peerid);
-		};
-		
-		func["/api/createOffer"]           = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
-			std::string peerid;
-			std::string url;
-			std::string audiourl;
-			std::string options;
-			if (req_info->query_string) {
-				CivetServer::getParam(req_info->query_string, "peerid", peerid);
-				CivetServer::getParam(req_info->query_string, "url", url);
-				CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
-				CivetServer::getParam(req_info->query_string, "options", options);
-			}
-			return webRtcServer.createOffer(peerid, url, audiourl, options);
-		};
-		func["/api/setAnswer"]             = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
-			std::string peerid;
-			if (req_info->query_string) {
-				CivetServer::getParam(req_info->query_string, "peerid", peerid);
-			}
-			return webRtcServer.setAnswer(peerid, in);
-		};
-		
-		func["/api/getIceCandidate"]       = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
-			std::string peerid;
-			if (req_info->query_string) {
-				CivetServer::getParam(req_info->query_string, "peerid", peerid);
-			}
-			return webRtcServer.getIceCandidateList(peerid);
-		};
-		
-		func["/api/addIceCandidate"]       = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
-			std::string peerid;
-			if (req_info->query_string) {
-				CivetServer::getParam(req_info->query_string, "peerid", peerid);
-			}
-			return webRtcServer.addIceCandidate(peerid, in);
-		};
-		
-		func["/api/getPeerConnectionList"] = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
-			return webRtcServer.getPeerConnectionList();
-		};
-		
-		func["/api/getStreamList"]         = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
-			return webRtcServer.getStreamList();
-		};
-
-		func["/api/version"]               = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
-        		Json::Value answer(VERSION);
-		        return answer;
-		};
-		func["/api/log"]                   = [&webRtcServer](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
-				std::string loglevel;
-				if (req_info->query_string) {
-					CivetServer::getParam(req_info->query_string, "level", loglevel);
-					if (!loglevel.empty()) {
-						rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)atoi(loglevel.c_str()));
-					}
-				}
-				Json::Value answer(rtc::LogMessage::GetLogToDebug());
-				return answer;
-		};
-		func["/api/help"]           = [func](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
-			Json::Value answer;
-			for (auto it : func) {
-			    answer.append(it.first);
-			}
-			return answer;
-		};		
 		
 		try {
 			std::cout << "HTTP Listen at " << httpAddress << std::endl;

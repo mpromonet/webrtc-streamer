@@ -29,10 +29,6 @@
 
 #include "scaler.h"
 
-#ifdef HAVE_LIVE555
-#include "rtspaudiocapturer.h"
-#endif
-
 
 // Names used for a IceCandidate JSON object.
 const char kCandidateSdpMidName[] = "sdpMid";
@@ -164,7 +160,8 @@ webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencie
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionManager( const std::list<std::string> & iceServerList
+PeerConnectionManager::PeerConnectionManager( std::map<std::string,HttpServerRequestHandler::httpFunction>& func
+						, const std::list<std::string> & iceServerList
 					    , const std::map<std::string,std::string> & urlVideoList
 					    , const std::map<std::string,std::string> & urlAudioList
 					    , const std::map<std::string,std::string> & positionList
@@ -186,6 +183,113 @@ PeerConnectionManager::PeerConnectionManager( const std::list<std::string> & ice
 {
 	// build video audio map
 	m_videoaudiomap = getV4l2AlsaMap();
+
+	// register api in http server
+	func["/api/getMediaList"]          = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+		return this->getMediaList();
+	};
+	
+	func["/api/getVideoDeviceList"]    = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+		return this->getVideoDeviceList();
+	};
+	
+	func["/api/getAudioDeviceList"]    = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+		return this->getAudioDeviceList();
+	};
+	
+	func["/api/getIceServers"]         = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+		return this->getIceServers(req_info->remote_addr);
+	};
+	
+	func["/api/call"]                  = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+		std::string peerid;
+		std::string url;
+		std::string audiourl;
+		std::string options;
+		if (req_info->query_string) {
+			CivetServer::getParam(req_info->query_string, "peerid", peerid);
+			CivetServer::getParam(req_info->query_string, "url", url);
+			CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
+			CivetServer::getParam(req_info->query_string, "options", options);
+		}
+		return this->call(peerid, url, audiourl, options, in);
+	};
+	
+	func["/api/hangup"]                = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+		std::string peerid;
+		if (req_info->query_string) {
+			CivetServer::getParam(req_info->query_string, "peerid", peerid);
+		}
+		return this->hangUp(peerid);
+	};
+	
+	func["/api/createOffer"]           = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+		std::string peerid;
+		std::string url;
+		std::string audiourl;
+		std::string options;
+		if (req_info->query_string) {
+			CivetServer::getParam(req_info->query_string, "peerid", peerid);
+			CivetServer::getParam(req_info->query_string, "url", url);
+			CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
+			CivetServer::getParam(req_info->query_string, "options", options);
+		}
+		return this->createOffer(peerid, url, audiourl, options);
+	};
+	func["/api/setAnswer"]             = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+		std::string peerid;
+		if (req_info->query_string) {
+			CivetServer::getParam(req_info->query_string, "peerid", peerid);
+		}
+		return this->setAnswer(peerid, in);
+	};
+	
+	func["/api/getIceCandidate"]       = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+		std::string peerid;
+		if (req_info->query_string) {
+			CivetServer::getParam(req_info->query_string, "peerid", peerid);
+		}
+		return this->getIceCandidateList(peerid);
+	};
+	
+	func["/api/addIceCandidate"]       = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+		std::string peerid;
+		if (req_info->query_string) {
+			CivetServer::getParam(req_info->query_string, "peerid", peerid);
+		}
+		return this->addIceCandidate(peerid, in);
+	};
+	
+	func["/api/getPeerConnectionList"] = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+		return this->getPeerConnectionList();
+	};
+	
+	func["/api/getStreamList"]         = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+		return this->getStreamList();
+	};
+
+	func["/api/version"]               = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+			Json::Value answer(VERSION);
+			return answer;
+	};
+	func["/api/log"]                   = [this](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value {
+			std::string loglevel;
+			if (req_info->query_string) {
+				CivetServer::getParam(req_info->query_string, "level", loglevel);
+				if (!loglevel.empty()) {
+					rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)atoi(loglevel.c_str()));
+				}
+			}
+			Json::Value answer(rtc::LogMessage::GetLogToDebug());
+			return answer;
+	};
+	func["/api/help"]           = [func](const struct mg_request_info *req_info, const Json::Value & in) -> Json::Value { 
+		Json::Value answer;
+		for (auto it : func) {
+			answer.append(it.first);
+		}
+		return answer;
+	};		
 }
 
 /* ---------------------------------------------------------------------------
