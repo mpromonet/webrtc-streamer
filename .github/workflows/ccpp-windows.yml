@@ -13,20 +13,19 @@ jobs:
       run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
     - name: fetch webrtc
       run: |
-          set PATH=%CD:\=/%/depot_tools;%PATH%
+          set PATH=%CD%\depot_tools;%PATH%
           mkdir webrtc
           pushd webrtc
           fetch --no-history --nohooks webrtc
-          sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS 
           gclient sync 
           popd
     - name: cmake
       run: |
-          set PATH=%CD:\=/%/depot_tools;%PATH%
+          set PATH=%CD%\depot_tools;%CD%\webrtc\src\third_party\llvm-build\Release+Asserts\bin;%CD%\webrtc\src\build\toolchain\win\rc\win;%PATH%
           cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=%CD:\=/%/webrtc .
     - name: make 
       run: |
-          set PATH=%CD:\=/%/depot_tools;%PATH%
+          set PATH=%CD%\depot_tools;%PATH%
           ninja 
     - name: cpack 
       run: cpack       
