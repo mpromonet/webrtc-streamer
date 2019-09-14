@@ -169,8 +169,8 @@ int main(int argc, char* argv[])
 	if (strlen(turnurl)) {
 		iceServerList.push_back(std::string("turn:")+turnurl);
 	}
-	std::map<std::string,HttpServerRequestHandler::httpFunction> func;
-	PeerConnectionManager webRtcServer(func, iceServerList, urlVideoList, urlAudioList, positionList, audioLayer, publishFilter);
+
+	PeerConnectionManager webRtcServer(iceServerList, urlVideoList, urlAudioList, positionList, audioLayer, publishFilter);
 	if (!webRtcServer.InitializePeerConnection())
 	{
 		std::cout << "Cannot Initialize WebRTC server" << std::endl;
@@ -201,6 +201,7 @@ int main(int argc, char* argv[])
 		}
 		
 		try {
+			const std::map<std::string,HttpServerRequestHandler::httpFunction> func = webRtcServer.getHttpApi();
 			std::cout << "HTTP Listen at " << httpAddress << std::endl;
 			HttpServerRequestHandler httpServer(func, options);
 

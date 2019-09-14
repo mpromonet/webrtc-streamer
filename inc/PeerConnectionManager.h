@@ -259,10 +259,11 @@ class PeerConnectionManager {
 	};
 
 	public:
-		PeerConnectionManager(std::map<std::string,HttpServerRequestHandler::httpFunction>& func, const std::list<std::string> & iceServerList, const std::map<std::string,std::string> & urlVideoList, const std::map<std::string,std::string> & urlAudioList, const std::map<std::string,std::string> & positionList, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter);
+		PeerConnectionManager(const std::list<std::string> & iceServerList, const std::map<std::string,std::string> & urlVideoList, const std::map<std::string,std::string> & urlAudioList, const std::map<std::string,std::string> & positionList, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter);
 		virtual ~PeerConnectionManager();
 
 		bool InitializePeerConnection();
+		const std::map<std::string,HttpServerRequestHandler::httpFunction> getHttpApi() { return m_func; };  
 
 		const Json::Value getIceCandidateList(const std::string &peerid);
 		const Json::Value addIceCandidate(const std::string &peerid, const Json::Value& jmessage);
@@ -304,5 +305,6 @@ class PeerConnectionManager {
 		const std::map<std::string,std::string>                                   m_positionList;
 		std::map<std::string,std::string>                                         m_videoaudiomap;
 		const std::regex                                                          m_publishFilter;
+		std::map<std::string,HttpServerRequestHandler::httpFunction>              m_func;
 };
 
