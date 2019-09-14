@@ -201,7 +201,7 @@ int main(int argc, char* argv[])
 		}
 		
 		try {
-			const std::map<std::string,HttpServerRequestHandler::httpFunction> func = webRtcServer.getHttpApi();
+			std::map<std::string,HttpServerRequestHandler::httpFunction> func = webRtcServer.getHttpApi();
 			std::cout << "HTTP Listen at " << httpAddress << std::endl;
 			HttpServerRequestHandler httpServer(func, options);
 
