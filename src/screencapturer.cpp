@@ -9,10 +9,6 @@
 
 #ifdef USE_X11
 
-#ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
-#endif
-
 #include "rtc_base/logging.h"
 
 #include "screencapturer.h"
