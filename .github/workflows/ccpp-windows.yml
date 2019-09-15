@@ -15,12 +15,10 @@ jobs:
       run: |
           git config --global core.autocrlf false 
           git config --global core.filemode false 
-          git config --global branch.autosetuprebase always
           set PATH=%CD%\depot_tools;%PATH%
           mkdir webrtc
           pushd webrtc
-          fetch --no-history --nohooks webrtc
-          gclient sync 
+          fetch --no-history webrtc
           popd
     - name: cmake
       run: |
