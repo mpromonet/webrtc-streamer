@@ -20,9 +20,12 @@ jobs:
           pushd webrtc
           fetch --no-history webrtc
           popd
+      env:
+        DEPOT_TOOLS_WIN_TOOLCHAIN: 0
+        CLANG_VERSION: ToT
     - name: cmake
       run: |
-          set PATH=%CD%\depot_tools;%CD%\webrtc\src\third_party\llvm-build\Release+Asserts\bin;%CD%\webrtc\src\build\toolchain\win\rc\win;%PATH%
+          set PATH=%CD%\depot_tools;%PATH%
           cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=%CD:\=/%/webrtc .
     - name: make 
       run: |
