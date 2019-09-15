@@ -23,6 +23,7 @@ jobs:
       env:
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
         CLANG_VERSION: ToT
+        PYTHONIOENCODING: UTF-8
     - name: cmake
       run: |
           set PATH=%CD%\depot_tools;%PATH%
