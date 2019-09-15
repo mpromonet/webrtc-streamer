@@ -13,6 +13,9 @@ jobs:
       run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
     - name: fetch webrtc
       run: |
+          git config --global core.autocrlf false 
+          git config --global core.filemode false 
+          git config --global branch.autosetuprebase always
           set PATH=%CD%\depot_tools;%PATH%
           mkdir webrtc
           pushd webrtc
