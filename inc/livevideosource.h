@@ -17,7 +17,6 @@
 #include <condition_variable>
 
 #include "environment.h"
-#include "mkvclient.h"
 
 #include "libyuv/video_common.h"
 #include "libyuv/convert.h"
@@ -51,13 +50,13 @@ public:
 
     void Start()
     {
-        RTC_LOG(INFO) << "FileVideoCapturer::Start";
+        RTC_LOG(INFO) << "LiveVideoSource::Start";
         m_capturethread = std::thread(&LiveVideoSource::CaptureThread, this);
         m_decoder.Start();
     }
     void Stop()
     {
-        RTC_LOG(INFO) << "FileVideoCapturer::stop";
+        RTC_LOG(INFO) << "LiveVideoSource::stop";
         m_env.stop();
         m_capturethread.join();
         m_decoder.Stop();

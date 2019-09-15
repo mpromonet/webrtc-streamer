@@ -16,7 +16,6 @@
 #include <cctype>
 
 #include "environment.h"
-#include "rtspconnectionclient.h"
 
 #include "pc/local_audio_source.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
@@ -31,13 +30,13 @@ public:
 
     virtual void AddSink(webrtc::AudioTrackSinkInterface *sink) override
     {
-        RTC_LOG(INFO) << "RTSPAudioSource::AddSink ";
+        RTC_LOG(INFO) << "LiveVideoSource::AddSink ";
         std::lock_guard<std::mutex> lock(m_sink_lock);
         m_sinks.push_back(sink);
     }
     virtual void RemoveSink(webrtc::AudioTrackSinkInterface *sink) override
     {
-        RTC_LOG(INFO) << "RTSPAudioSource::RemoveSink ";
+        RTC_LOG(INFO) << "LiveVideoSource::RemoveSink ";
         std::lock_guard<std::mutex> lock(m_sink_lock);
         m_sinks.remove(sink);
     }
@@ -50,7 +49,7 @@ public:
         bool success = false;
         if (strcmp(media, "audio") == 0)
         {
-            RTC_LOG(INFO) << "RTSPAudioSource::onNewSession " << media << "/" << codec << " " << sdp;
+            RTC_LOG(INFO) << "LiveVideoSource::onNewSession " << media << "/" << codec << " " << sdp;
 
             // parse sdp to extract freq and channel
             std::string fmt(sdp);
@@ -78,7 +77,7 @@ public:
                     m_channel = std::stoi(channel);
                 }
             }
-            RTC_LOG(INFO) << "RTSPAudioSource::onNewSession codec:" << codecstr << " freq:" << m_freq << " channel:" << m_channel;
+            RTC_LOG(INFO) << "LiveVideoSource::onNewSession codec:" << codecstr << " freq:" << m_freq << " channel:" << m_channel;
             std::map<std::string, std::string> params;
             if (m_channel == 2)
             {
@@ -93,7 +92,7 @@ public:
             }
             else
             {
-                RTC_LOG(LS_ERROR) << "RTSPAudioSource::onNewSession not support codec" << sdp;
+                RTC_LOG(LS_ERROR) << "LiveVideoSource::onNewSession not support codec" << sdp;
             }
         }
         return success;
@@ -108,7 +107,7 @@ public:
             int16_t *decoded = new int16_t[maxDecodedBufferSize];
             webrtc::AudioDecoder::SpeechType speech_type;
             int decodedBufferSize = m_decoder->Decode(buffer, size, m_freq, maxDecodedBufferSize, decoded, &speech_type);
-            RTC_LOG(LS_VERBOSE) << "RTSPAudioSource::onData size:" << size << " decodedBufferSize:" << decodedBufferSize << " maxDecodedBufferSize: " << maxDecodedBufferSize << " channels: " << m_channel;
+            RTC_LOG(LS_VERBOSE) << "LiveVideoSource::onData size:" << size << " decodedBufferSize:" << decodedBufferSize << " maxDecodedBufferSize: " << maxDecodedBufferSize << " channels: " << m_channel;
             if (decodedBufferSize > 0)
             {
                 for (int i = 0; i < decodedBufferSize; ++i)
@@ -118,7 +117,7 @@ public:
             }
             else
             {
-                RTC_LOG(LS_ERROR) << "RTSPAudioSource::onData error:Decode Audio failed";
+                RTC_LOG(LS_ERROR) << "LiveVideoSource::onData error:Decode Audio failed";
             }
             delete[] decoded;
             while (m_buffer.size() > segmentLength * m_channel)
@@ -141,7 +140,7 @@ public:
         }
         else
         {
-            RTC_LOG(LS_VERBOSE) << "RTSPAudioSource::onData error:No Audio decoder";
+            RTC_LOG(LS_VERBOSE) << "LiveVideoSource::onData error:No Audio decoder";
         }
         return success;
     }

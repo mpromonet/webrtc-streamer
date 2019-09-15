@@ -9,8 +9,6 @@
 
 #ifdef HAVE_LIVE555
 
-#include <iostream>
-
 #include "rtc_base/logging.h"
 
 #include "filevideocapturer.h"
