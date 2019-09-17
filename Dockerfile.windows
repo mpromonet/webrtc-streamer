@@ -20,7 +20,6 @@ RUN choco install --no-progress -y git python2 sed curl windows-sdk-10 \
 # install depot_tools
 RUN git config --global core.autocrlf false \
        && git config --global core.filemode false \
-       && git config --global branch.autosetuprebase always \
        && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git --depth 1 C:\depot_tools \
        && SETX PATH "%PATH%;C:\depot_tools\;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win" 
 
