@@ -71,6 +71,7 @@ public:
     // overide T::Callback
     virtual bool onNewSession(const char *id, const char *media, const char *codec, const char *sdp)
     {
+        bool success = false;
         if (strcmp(media, "video") == 0)
         {
             RTC_LOG(INFO) << "FileVideoCapturer::onNewSession " << media << "/" << codec << " " << sdp;
@@ -78,6 +79,7 @@ public:
             if (strcmp(codec, "H264") == 0)
             {
                 m_codec[id] = codec;
+                success = true;
 
                 struct timeval presentationTime;
                 timerclear(&presentationTime);
@@ -91,13 +93,15 @@ public:
             else if (strcmp(codec, "JPEG") == 0)
             {
                 m_codec[id] = codec;
+                success = true;
             }
             else if (strcmp(codec, "VP9") == 0)
             {
                 m_codec[id] = codec;
+                success = true;
             }
         }
-        return true; // mkv doesnot read data before all sink are started.
+        return success;
     }
     virtual bool onData(const char *id, unsigned char *buffer, ssize_t size, struct timeval presentationTime)
     {
