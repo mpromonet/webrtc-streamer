@@ -579,11 +579,22 @@ const Json::Value PeerConnectionManager::setAnswer(const std::string &peerid, co
 				if (remotefuture.wait_for(std::chrono::milliseconds(5000)) == std::future_status::ready)
 				{
 					RTC_LOG(INFO) << "remote_description is ready";
+					const webrtc::SessionDescriptionInterface *desc = remotefuture.get();
+					if (desc)
+					{
+						std::string sdp;
+						desc->ToString(&sdp);
+
+						answer[kSessionDescriptionTypeName] = desc->type();
+						answer[kSessionDescriptionSdpName] = sdp;
+					} else {
+						answer["error"] = "Can't get remote description.";
+					}
 				}
 				else
 				{
-					RTC_LOG(WARNING) << "remote_description is NULL";
 					RTC_LOG(WARNING) << "Can't get remote description.";
+					answer["error"] = "Can't get remote description.";
 				}
 			}
 		}
