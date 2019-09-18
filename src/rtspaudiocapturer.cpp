@@ -17,7 +17,7 @@
 
 
 RTSPAudioSource::RTSPAudioSource(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri, const std::map<std::string,std::string> & opts) 
-				: LiveAudioSource(audioDecoderFactory, uri, opts) {
+				: LiveAudioSource(audioDecoderFactory, uri, opts, false) {
 }
 
 RTSPAudioSource::~RTSPAudioSource()  { 
