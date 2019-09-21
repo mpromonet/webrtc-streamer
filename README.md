@@ -31,15 +31,12 @@ The WebRTC signaling is implemented through HTTP requests:
 
 The list of HTTP API is available using /api/help.
 
-Nowdays there is 3 builds on [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer) :
+Nowdays there is builds on [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer), [Appveyor](https://ci.appveyor.com/project/mpromonet/webrtc-streamer), [CirrusCI](https://cirrus-ci.com/github/mpromonet/webrtc-streamer) and [GitHub CI](https://github.com/mpromonet/webrtc-streamer/actions) :
  * for x86_64 on Ubuntu Bionic
- * for armv7 crosscompiling with gcc-linaro-arm-linux-gnueabihf-raspbian-x64 (this build is running on Raspberry Pi2 and NanoPi NEO)
- * for armv6+vfp crosscompiling with gcc-linaro-arm-linux-gnueabihf-raspbian-x64 (this build is running on Raspberry PiB and should run on a Raspberry Zero)
+ * for armv7 crosscompiled (this build is running on Raspberry Pi2 and NanoPi NEO)
+ * for armv6+vfp crosscompiled (this build is running on Raspberry PiB and should run on a Raspberry Zero)
+ * Windows x64 build with clang
  
-and 4 builds on [Appveyor](https://ci.appveyor.com/project/mpromonet/webrtc-streamer) :
-* for Windows using Visual 2017 64bits Release/Debug
-* for x86_64 Ubuntu Xenial Release/Debug
-
 The webrtc stream name could be :
  * an alias defined using -n argument then the corresponding -u argument will be used to create the capturer
  * an "rtsp://" url that will be openned using an RTSP capturer based on live555
