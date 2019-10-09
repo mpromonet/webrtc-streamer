@@ -74,7 +74,7 @@ public:
         bool success = false;
         if (strcmp(media, "video") == 0)
         {
-            RTC_LOG(INFO) << "FileVideoCapturer::onNewSession " << media << "/" << codec << " " << sdp;
+            RTC_LOG(INFO) << "LiveVideoSource::onNewSession " << media << "/" << codec << " " << sdp;
 
             if (strcmp(codec, "H264") == 0)
             {
@@ -107,7 +107,7 @@ public:
     {
         int64_t ts = presentationTime.tv_sec;
         ts = ts * 1000 + presentationTime.tv_usec / 1000;
-        RTC_LOG(LS_VERBOSE) << "FileVideoCapturer:onData id:" << id << " size:" << size << " ts:" << ts;
+        RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData id:" << id << " size:" << size << " ts:" << ts;
         int res = 0;
 
         std::string codec = m_codec[id];
@@ -116,7 +116,7 @@ public:
             webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[sizeof(H26X_marker)]);
             if (nalu_type == webrtc::H264::NaluType::kSps)
             {
-                RTC_LOG(LS_VERBOSE) << "FileVideoCapturer:onData SPS";
+                RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SPS";
                 m_cfg.clear();
                 m_cfg.insert(m_cfg.end(), buffer, buffer + size);
 
@@ -140,7 +140,7 @@ public:
                     if (!m_decoder.hasDecoder())
                     {
                         int fps = 25;
-                        RTC_LOG(INFO) << "FileVideoCapturer:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
+                        RTC_LOG(INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
                         cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
                         m_format = videoFormat;
 
@@ -150,7 +150,7 @@ public:
             }
             else if (nalu_type == webrtc::H264::NaluType::kPps)
             {
-                RTC_LOG(LS_VERBOSE) << "FileVideoCapturer:onData PPS";
+                RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData PPS";
                 m_cfg.insert(m_cfg.end(), buffer, buffer + size);
             }
             else if (m_decoder.hasDecoder())
@@ -160,19 +160,19 @@ public:
                 if (nalu_type == webrtc::H264::NaluType::kIdr)
                 {
                     frameType = webrtc::VideoFrameType::kVideoFrameKey;
-                    RTC_LOG(LS_VERBOSE) << "FileVideoCapturer:onData IDR";
+                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData IDR";
                     content.insert(content.end(), m_cfg.begin(), m_cfg.end());
                 }
                 else
                 {
-                    RTC_LOG(LS_VERBOSE) << "FileVideoCapturer:onData SLICE NALU:" << nalu_type;
+                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SLICE NALU:" << nalu_type;
                 }
                 content.insert(content.end(), buffer, buffer + size);
                 m_decoder.PostFrame(std::move(content), ts, frameType);
             }
             else
             {
-                RTC_LOG(LS_ERROR) << "FileVideoCapturer:onData no decoder";
+                RTC_LOG(LS_ERROR) << "LiveVideoSource:onData no decoder";
                 res = -1;
             }
         }
@@ -202,13 +202,13 @@ public:
                 }
                 else
                 {
-                    RTC_LOG(LS_ERROR) << "FileVideoCapturer:onData decoder error:" << conversionResult;
+                    RTC_LOG(LS_ERROR) << "LiveVideoSource:onData decoder error:" << conversionResult;
                     res = -1;
                 }
             }
             else
             {
-                RTC_LOG(LS_ERROR) << "FileVideoCapturer:onData cannot JPEG dimension";
+                RTC_LOG(LS_ERROR) << "LiveVideoSource:onData cannot JPEG dimension";
                 res = -1;
             }
         }
