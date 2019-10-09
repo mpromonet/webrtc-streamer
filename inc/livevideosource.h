@@ -153,6 +153,9 @@ public:
                 RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData PPS";
                 m_cfg.insert(m_cfg.end(), buffer, buffer + size);
             }
+            else if (nalu_type == webrtc::H264::NaluType::kSei) 
+            {
+            }            
             else if (m_decoder.hasDecoder())
             {
                 webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameDelta;
