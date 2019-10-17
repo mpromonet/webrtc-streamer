@@ -231,8 +231,6 @@ jobs:
   # publish docker amd64
   # -------------------------------------
   publish_docker_linuxamd64:
-    machine:
-      docker_layer_caching: true
     steps:
       - checkout  
       - run: git submodule update --init
@@ -247,8 +245,6 @@ jobs:
   # publish docker arm
   # -------------------------------------
   publish_docker_linuxarm32v7:
-    machine:
-      docker_layer_caching: true
     steps:
       - checkout  
       - run: git submodule update --init
@@ -263,8 +259,6 @@ jobs:
   # publish docker arm
   # -------------------------------------
   publish_docker_linuxarm32v6:
-    machine:
-      docker_layer_caching: true
     steps:
       - checkout  
       - run: git submodule update --init
