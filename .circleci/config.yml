@@ -232,6 +232,7 @@ jobs:
   # -------------------------------------
   publish_docker_linuxamd64:
     machine:
+      image: circleci/classic:201808-01    
     steps:
       - checkout  
       - run: git submodule update --init
@@ -247,6 +248,7 @@ jobs:
   # -------------------------------------
   publish_docker_linuxarm32v7:
     machine:
+      image: circleci/classic:201808-01
     steps:
       - checkout  
       - run: git submodule update --init
@@ -262,6 +264,7 @@ jobs:
   # -------------------------------------
   publish_docker_linuxarm32v6:
     machine:
+      image: circleci/classic:201808-01
     steps:
       - checkout  
       - run: git submodule update --init
