@@ -231,6 +231,7 @@ jobs:
   # publish docker amd64
   # -------------------------------------
   publish_docker_linuxamd64:
+    machine:
     steps:
       - checkout  
       - run: git submodule update --init
@@ -245,6 +246,7 @@ jobs:
   # publish docker arm
   # -------------------------------------
   publish_docker_linuxarm32v7:
+    machine:
     steps:
       - checkout  
       - run: git submodule update --init
@@ -259,6 +261,7 @@ jobs:
   # publish docker arm
   # -------------------------------------
   publish_docker_linuxarm32v6:
+    machine:
     steps:
       - checkout  
       - run: git submodule update --init
