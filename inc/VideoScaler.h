@@ -1,13 +1,22 @@
+/* ---------------------------------------------------------------------------
+** This software is in the public domain, furnished "as is", without technical
+** support, and with no warranty, express or implied, as to its usefulness for
+** any purpose.
+**
+** VideoScaler.h
+**
+** -------------------------------------------------------------------------*/
+
 #pragma once
 
 #include "media/base/video_broadcaster.h"
 #include "api/media_stream_interface.h"
 
-class Scaler :  public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public rtc::VideoSourceInterface<webrtc::VideoFrame> 
+class VideoScaler :  public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public rtc::VideoSourceInterface<webrtc::VideoFrame> 
 {
 public:
 
-    Scaler(rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource, const std::map<std::string, std::string> &opts) :
+    VideoScaler(rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource, const std::map<std::string, std::string> &opts) :
                 m_videoSource(videoSource),
                 m_width(0), m_height(0), 
                 m_roi_x(0), m_roi_y(0), m_roi_width(0), m_roi_height(0) 
@@ -60,7 +69,7 @@ public:
         m_videoSource->AddOrUpdateSink(this,wants);
     }
 
-    virtual ~Scaler()
+    virtual ~VideoScaler()
     {
         m_videoSource->RemoveSink(this);
     }

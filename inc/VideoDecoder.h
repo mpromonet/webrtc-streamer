@@ -3,7 +3,7 @@
 ** support, and with no warranty, express or implied, as to its usefulness for
 ** any purpose.
 **
-** decoder.h
+** VideoDecoder.h
 **
 ** -------------------------------------------------------------------------*/
 
@@ -16,7 +16,7 @@
 #include "modules/video_coding/include/video_error_codes.h"
 #include "modules/video_coding/h264_sprop_parameter_sets.h"
 
-class Decoder : public webrtc::DecodedImageCallback {
+class VideoDecoder : public webrtc::DecodedImageCallback {
     private:
         class Frame
         {
@@ -30,7 +30,7 @@ class Decoder : public webrtc::DecodedImageCallback {
         };
 
     public:
-        Decoder(rtc::VideoBroadcaster& broadcaster, const std::map<std::string,std::string> & opts, bool wait) : 
+        VideoDecoder(rtc::VideoBroadcaster& broadcaster, const std::map<std::string,std::string> & opts, bool wait) : 
                 m_broadcaster(broadcaster),
                 m_stop(false),
                 m_wait(wait),
@@ -38,7 +38,7 @@ class Decoder : public webrtc::DecodedImageCallback {
                 m_prevts(0) {
         }
 
-        virtual ~Decoder() {
+        virtual ~VideoDecoder() {
         }
 
         void DecoderThread() 
@@ -53,7 +53,7 @@ class Decoder : public webrtc::DecodedImageCallback {
                 m_queue.pop();		
                 mlock.unlock();
                 
-                RTC_LOG(LS_VERBOSE) << "Decoder:DecoderThread size:" << frame.m_content.size() << " ts:" << frame.m_timestamp_ms;
+                RTC_LOG(LS_VERBOSE) << "VideoDecoder::DecoderThread size:" << frame.m_content.size() << " ts:" << frame.m_timestamp_ms;
                 uint8_t* data = frame.m_content.data();
                 ssize_t size = frame.m_content.size();
                 
@@ -64,7 +64,7 @@ class Decoder : public webrtc::DecodedImageCallback {
                     input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
                     int res = m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
                     if (res != WEBRTC_VIDEO_CODEC_OK) {
-                        RTC_LOG(LS_ERROR) << "Decoder::DecoderThread failure:" << res;
+                        RTC_LOG(LS_ERROR) << "VideoDecoder::DecoderThread failure:" << res;
                     }
                 }
             }
@@ -72,14 +72,14 @@ class Decoder : public webrtc::DecodedImageCallback {
 
         void Start()
         {
-            RTC_LOG(INFO) << "Decoder::start";
+            RTC_LOG(INFO) << "VideoDecoder::start";
             m_stop = false;
-            m_decoderthread = std::thread(&Decoder::DecoderThread, this);
+            m_decoderthread = std::thread(&VideoDecoder::DecoderThread, this);
         }
 
         void Stop()
         {
-            RTC_LOG(INFO) << "Decoder::stop";
+            RTC_LOG(INFO) << "VideoDecoder::stop";
             m_stop = true;
             Frame frame;			
             {
@@ -162,7 +162,7 @@ class Decoder : public webrtc::DecodedImageCallback {
 		virtual int32_t Decoded(webrtc::VideoFrame& decodedImage) override {
             int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
 
-            RTC_LOG(LS_VERBOSE) << "Decoder::Decoded size:" << decodedImage.size() 
+            RTC_LOG(LS_VERBOSE) << "VideoDecoder::Decoded size:" << decodedImage.size() 
                         << " decode ts:" << decodedImage.ntp_time_ms()
                         << " source ts:" << ts;
 
@@ -171,7 +171,7 @@ class Decoder : public webrtc::DecodedImageCallback {
                 int64_t periodSource = decodedImage.timestamp() - m_previmagets;
                 int64_t periodDecode = ts-m_prevts;
                     
-                RTC_LOG(LS_VERBOSE) << "Decoder::Decoded interframe decode:" << periodDecode << " source:" << periodSource;
+                RTC_LOG(LS_VERBOSE) << "VideoDecoder::Decoded interframe decode:" << periodDecode << " source:" << periodSource;
                 int64_t delayms = periodSource-periodDecode;
                 if ( (delayms > 0) && (delayms < 1000) ) {
                     std::this_thread::sleep_for(std::chrono::milliseconds(delayms));			

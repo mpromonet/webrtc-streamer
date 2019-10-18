@@ -26,7 +26,7 @@
 #include "V4l2AlsaMap.h"
 #include "CapturerFactory.h"
 
-#include "scaler.h"
+#include "VideoScaler.h"
 
 // Names used for a IceCandidate JSON object.
 const char kCandidateSdpMidName[] = "sdpMid";
@@ -1083,7 +1083,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 				}
 				else
 				{
-					rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoScaled = Filter<Scaler>::Create(videoSource, opts);
+					rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoScaled = Filter<VideoScaler>::Create(videoSource, opts);
 					video_track = m_peer_connection_factory->CreateVideoTrack(streamLabel + "_video", videoScaled);
 				}
 

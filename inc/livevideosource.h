@@ -32,7 +32,7 @@
 
 #include "api/video_codecs/video_decoder.h"
 
-#include "decoder.h"
+#include "VideoDecoder.h"
 
 template <typename T>
 class LiveVideoSource : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public T::Callback
@@ -245,18 +245,18 @@ public:
     }
 
 private:
-    char m_stop;
+    char        m_stop;
     Environment m_env;
 
 protected:
     T m_liveclient;
 
 private:
-    std::thread m_capturethread;
-    cricket::VideoFormat m_format;
-    std::vector<uint8_t> m_cfg;
+    std::thread                        m_capturethread;
+    cricket::VideoFormat               m_format;
+    std::vector<uint8_t>               m_cfg;
     std::map<std::string, std::string> m_codec;
 
-    rtc::VideoBroadcaster m_broadcaster;
-    Decoder m_decoder;
+    rtc::VideoBroadcaster              m_broadcaster;
+    VideoDecoder                       m_decoder;
 };
