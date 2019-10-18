@@ -42,6 +42,7 @@ int main(int argc, char* argv[])
 	std::string passwdFile;
 	std::string authDomain = "mydomain.com";
 	std::string publishFilter(".*");
+	Json::Value config;  
 
 	std::string httpAddress("0.0.0.0:");
 	std::string httpPort = "8000";
@@ -72,38 +73,21 @@ int main(int argc, char* argv[])
 			case 'q': publishFilter = optarg ; break;
 				
 			case 'C': {
-				Json::Value root;  
 				std::ifstream stream(optarg);
-				stream >> root;
-				if (root.isMember("urls")) {
-					Json::Value urls = root["urls"];
-					for( auto it = urls.begin() ; it != urls.end() ; it++ ) {
-						std::string name = it.key().asString();
-						Json::Value value = *it;
-						if (value.isMember("video")) {
-							urlVideoList[name]=value["video"].asString();
-						} 
-						if (value.isMember("audio")) {
-							urlAudioList[name]=value["audio"].asString();
-						} 
-						if (value.isMember("position")) {
-							positionList[name]=value["position"].asString();
-						} 
-					}
-				}
+				stream >> config;
 				break;
 			}
 
 			case 'n': streamName = optarg; break;
 			case 'u': {
 				if (!streamName.empty()) {
-					urlVideoList[streamName]=optarg;
+					config["urls"][streamName]["video"] = optarg; 
 				}
 			}
 			break;
 			case 'U': {
 				if (!streamName.empty()) {
-					urlAudioList[streamName]=optarg;
+					config["urls"][streamName]["audio"] = optarg; 
 				}
 			}
 			break;
@@ -151,9 +135,11 @@ int main(int argc, char* argv[])
 	while (optind<argc)
 	{
 		std::string url(argv[optind]);
-		urlVideoList[url]=url;
+		config["urls"][url]["video"] = url; 
 		optind++;
 	}
+
+	std::cout  << config;
 
 	rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)logLevel);
 	rtc::LogMessage::LogTimestamps();
@@ -170,7 +156,7 @@ int main(int argc, char* argv[])
 		iceServerList.push_back(std::string("turn:")+turnurl);
 	}
 
-	PeerConnectionManager webRtcServer(iceServerList, urlVideoList, urlAudioList, positionList, audioLayer, publishFilter);
+	PeerConnectionManager webRtcServer(iceServerList, config["urls"], audioLayer, publishFilter);
 	if (!webRtcServer.InitializePeerConnection())
 	{
 		std::cout << "Cannot Initialize WebRTC server" << std::endl;

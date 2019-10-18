@@ -165,14 +165,15 @@ webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencie
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const std::map<std::string, std::string> &urlVideoList, const std::map<std::string, std::string> &urlAudioList, const std::map<std::string, std::string> &positionList, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter)
+PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter)
 	: m_audioDecoderfactory(webrtc::CreateBuiltinAudioDecoderFactory()), m_task_queue_factory(webrtc::CreateDefaultTaskQueueFactory()),
 #ifdef HAVE_SOUND
 	  m_audioDeviceModule(webrtc::AudioDeviceModule::Create(audioLayer, m_task_queue_factory.get())),
 #else
 	  m_audioDeviceModule(new webrtc::FakeAudioDeviceModule()),
 #endif
-	  m_peer_connection_factory(webrtc::CreateModularPeerConnectionFactory(CreatePeerConnectionFactoryDependencies(m_audioDeviceModule, m_audioDecoderfactory))), m_iceServerList(iceServerList), m_urlVideoList(urlVideoList), m_urlAudioList(urlAudioList), m_positionList(positionList), m_publishFilter(publishFilter)
+	  m_peer_connection_factory(webrtc::CreateModularPeerConnectionFactory(CreatePeerConnectionFactoryDependencies(m_audioDeviceModule, m_audioDecoderfactory))), 
+	  m_iceServerList(iceServerList), m_config(config), m_publishFilter(publishFilter)
 {
 	// build video audio map
 	m_videoaudiomap = getV4l2AlsaMap();
@@ -330,20 +331,15 @@ const Json::Value PeerConnectionManager::getMediaList()
 		value.append(media);
 	}
 
-	for (auto url : m_urlVideoList)
-	{
-		Json::Value media;
-		media["video"] = url.first;
-		auto audioIt = m_urlAudioList.find(url.first);
-		if (audioIt != m_urlAudioList.end())
-		{
-			media["audio"] = audioIt->first;
-		}
-		auto positionIt = m_positionList.find(url.first);
-		if (positionIt != m_positionList.end())
-		{
-			media["position"] = positionIt->second;
-		}
+	for( auto it = m_config.begin() ; it != m_config.end() ; it++ ) {
+		std::string name = it.key().asString();
+		Json::Value media(*it);
+		if (media.isMember("video")) {
+			media["video"]=name;
+		} 
+		if (media.isMember("audio")) {
+			media["audio"]=name;
+		} 
 		value.append(media);
 	}
 
@@ -940,10 +936,8 @@ rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> PeerConnectionManager::Cre
 	RTC_LOG(INFO) << "videourl:" << videourl;
 
 	std::string video = videourl;
-	auto videoit = m_urlVideoList.find(video);
-	if (videoit != m_urlVideoList.end())
-	{
-		video = videoit->second;
+	if (m_config.isMember(video)) {
+		video = m_config[video]["video"].asString();
 	}
 
 	return CapturerFactory::CreateVideoSource(video, opts, m_publishFilter, m_peer_connection_factory);
@@ -954,10 +948,8 @@ rtc::scoped_refptr<webrtc::AudioSourceInterface> PeerConnectionManager::CreateAu
 	RTC_LOG(INFO) << "audiourl:" << audiourl;
 
 	std::string audio = audiourl;
-	auto audioit = m_urlAudioList.find(audio);
-	if (audioit != m_urlAudioList.end())
-	{
-		audio = audioit->second;
+	if (m_config.isMember(audio)) {
+		audio = m_config[audio]["audio"].asString();
 	}
 
 	std::map<std::string, std::string>::iterator it = m_videoaudiomap.find(audio);
@@ -1002,11 +994,10 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 	}
 
 	std::string video = videourl;
-	auto videoit = m_urlVideoList.find(video);
-	if (videoit != m_urlVideoList.end())
-	{
-		video = videoit->second;
+	if (m_config.isMember(video)) {
+		video = m_config[video]["video"].asString();
 	}
+
 	// compute audiourl if not set
 	std::string audio(audiourl);
 	if (audio.empty())
