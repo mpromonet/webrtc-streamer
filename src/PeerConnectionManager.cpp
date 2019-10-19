@@ -984,8 +984,21 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 {
 	bool ret = false;
 
+	// compute options
+	std::string optstring = options;
+	if (m_config.isMember(videourl)) {
+		std::string urlopts = m_config[videourl]["options"].asString();
+		if (options.empty()) {
+			optstring = urlopts;
+		} else if (options.find_first_of("&")==0) {
+			optstring = urlopts + options;
+		} else {
+			optstring = options;
+		}
+	}
+
 	// convert options string into map
-	std::istringstream is(options);
+	std::istringstream is(optstring);
 	std::map<std::string, std::string> opts;
 	std::string key, value;
 	while (std::getline(std::getline(is, key, '='), value, '&'))
