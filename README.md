@@ -160,11 +160,10 @@ Using web-component could be a simple way to display some webrtc stream, a minim
 
 	<html>
 	<head>
-           <script src="webrtcstreamer.json"></script>
-           <script type="module" src="webrtc-streamer-element.js"></script>
+        <script type="module" src="webrtc-streamer-element.js"></script>
 	</head>
 	<body>
-	   <webrtc-streamer videostream="Bunny"></webrtc-streamer>
+	   <webrtc-streamer url="Bunny"></webrtc-streamer>
 	</body>
 	</html>
 
