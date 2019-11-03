@@ -157,6 +157,10 @@ public:
         m_broadcaster.RemoveSink(sink);
     }
 
+    int width() { return m_roi_width;  }
+    int height() { return m_roi_height;  }
+
+private:
     rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> m_videoSource;
     rtc::VideoBroadcaster  m_broadcaster;
 
@@ -183,6 +187,20 @@ public:
 protected:
 	explicit Filter(std::unique_ptr<T> source)
 		: webrtc::VideoTrackSource(/*remote=*/false), m_source(std::move(source)) {}
+
+  SourceState state() const override { 
+	  return kLive; 
+  }
+  bool GetStats(Stats* stats) override {
+      bool result = false;
+      T* source =  m_source.get();
+      if (source) {
+        stats->input_height = source->height();
+        stats->input_width = source->width();
+        result = true;
+      }
+      return result; 
+  }        
 
 private:
 	rtc::VideoSourceInterface<webrtc::VideoFrame>* source() override {
