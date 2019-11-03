@@ -27,6 +27,7 @@
 #include "CapturerFactory.h"
 
 #include "VideoScaler.h"
+#include "VideoFilter.h"
 
 // Names used for a IceCandidate JSON object.
 const char kCandidateSdpMidName[] = "sdpMid";
@@ -268,11 +269,11 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 		return this->getStreamList();
 	};
 
-	m_func["/api/version"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
+	m_func["/api/version"] = [](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
 		Json::Value answer(VERSION);
 		return answer;
 	};
-	m_func["/api/log"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
+	m_func["/api/log"] = [](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
 		std::string loglevel;
 		if (req_info->query_string)
 		{
@@ -1087,7 +1088,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 				}
 				else
 				{
-					rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoScaled = Filter<VideoScaler>::Create(videoSource, opts);
+					rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoScaled = VideoFilter<VideoScaler>::Create(videoSource, opts);
 					video_track = m_peer_connection_factory->CreateVideoTrack(streamLabel + "_video", videoScaled);
 				}
 
