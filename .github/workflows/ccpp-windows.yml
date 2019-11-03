@@ -15,9 +15,9 @@ jobs:
       run: |
           git config --global core.autocrlf false 
           git config --global core.filemode false 
-          set PATH=%CD%\depot_tools;%PATH%
-          mkdir webrtc
-          pushd webrtc
+          $env:Path += (Get-Location).path + "\depot_tools"
+          mkdir ..\webrtc
+          pushd ..\webrtc
           fetch --no-history webrtc
           popd
       env:
@@ -26,11 +26,8 @@ jobs:
         PYTHONIOENCODING: UTF-8
     - name: cmake
       run: |
-          set PATH=%CD%\depot_tools;%PATH%
-          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=%CD:\=/%/webrtc .
-    - name: make 
-      run: |
-          set PATH=%CD%\depot_tools;%PATH%
+          $env:Path += (Get-Location).path + "\depot_tools"
+          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe  .
           ninja 
     - name: cpack 
       run: cpack       
