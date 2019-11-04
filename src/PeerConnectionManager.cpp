@@ -817,6 +817,10 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it.second->getPeerConnection();
 		if ((peerConnection) && (peerConnection->local_description()))
 		{
+			content["pc_state"] = (int)(peerConnection->peer_connection_state());
+			content["signaling_state"] = (int)(peerConnection->signaling_state());
+			content["ice_state"] = (int)(peerConnection->ice_connection_state());			
+
 			std::string sdp;
 			peerConnection->local_description()->ToString(&sdp);
 			content["sdp"] = sdp;
