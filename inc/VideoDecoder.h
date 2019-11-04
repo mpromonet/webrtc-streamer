@@ -60,7 +60,7 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
                 if (size) {
                     webrtc::EncodedImage input_image(data, size, size);		
                     input_image._frameType = frame.m_frameType;
-                    input_image._completeFrame = true;			
+                    input_image._completeFrame = true;	
                     input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
                     int res = m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
                     if (res != WEBRTC_VIDEO_CODEC_OK) {
@@ -93,34 +93,36 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
         std::vector< std::vector<uint8_t> > getInitFrames(const std::string & codec, const char* sdp) {
             std::vector< std::vector<uint8_t> > frames;
 
-			const char* pattern="sprop-parameter-sets=";
-			const char* sprop=strstr(sdp, pattern);
-			if (sprop)
-			{
-				std::string sdpstr(sprop+strlen(pattern));
-				size_t pos = sdpstr.find_first_of(" ;\r\n");
-				if (pos != std::string::npos)
-				{
-					sdpstr.erase(pos);
-				}
-				webrtc::H264SpropParameterSets sprops;
-				if (sprops.DecodeSprop(sdpstr))
-				{
-					std::vector<uint8_t> sps;
-					sps.insert(sps.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
-					sps.insert(sps.end(), sprops.sps_nalu().begin(), sprops.sps_nalu().end());
-                    frames.push_back(sps);
+            if (codec == "H264") {
+                const char* pattern="sprop-parameter-sets=";
+                const char* sprop=strstr(sdp, pattern);
+                if (sprop)
+                {
+                    std::string sdpstr(sprop+strlen(pattern));
+                    size_t pos = sdpstr.find_first_of(" ;\r\n");
+                    if (pos != std::string::npos)
+                    {
+                        sdpstr.erase(pos);
+                    }
+                    webrtc::H264SpropParameterSets sprops;
+                    if (sprops.DecodeSprop(sdpstr))
+                    {
+                        std::vector<uint8_t> sps;
+                        sps.insert(sps.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
+                        sps.insert(sps.end(), sprops.sps_nalu().begin(), sprops.sps_nalu().end());
+                        frames.push_back(sps);
 
-					std::vector<uint8_t> pps;
-					pps.insert(pps.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
-					pps.insert(pps.end(), sprops.pps_nalu().begin(), sprops.pps_nalu().end());
-                    frames.push_back(pps);
-				}
-				else
-				{
-					RTC_LOG(WARNING) << "Cannot decode SPS:" << sprop;
-				}
-			}
+                        std::vector<uint8_t> pps;
+                        pps.insert(pps.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
+                        pps.insert(pps.end(), sprops.pps_nalu().begin(), sprops.pps_nalu().end());
+                        frames.push_back(pps);
+                    }
+                    else
+                    {
+                        RTC_LOG(WARNING) << "Cannot decode SPS:" << sprop;
+                    }
+                }
+            }
 
             return frames;
         }

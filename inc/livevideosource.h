@@ -76,11 +76,16 @@ public:
         {
             RTC_LOG(INFO) << "LiveVideoSource::onNewSession " << media << "/" << codec << " " << sdp;
 
-            if (strcmp(codec, "H264") == 0)
+            if ( (strcmp(codec, "H264") == 0)
+               || (strcmp(codec, "JPEG") == 0)
+               || (strcmp(codec, "VP9") == 0) )
             {
                 m_codec[id] = codec;
                 success = true;
+            }
 
+            if (success) 
+            {
                 struct timeval presentationTime;
                 timerclear(&presentationTime);
 
@@ -89,16 +94,6 @@ public:
                 {
                     onData(id, frame.data(), frame.size(), presentationTime);
                 }
-            }
-            else if (strcmp(codec, "JPEG") == 0)
-            {
-                m_codec[id] = codec;
-                success = true;
-            }
-            else if (strcmp(codec, "VP9") == 0)
-            {
-                m_codec[id] = codec;
-                success = true;
             }
         }
         return success;
