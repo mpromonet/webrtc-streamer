@@ -827,11 +827,12 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 			{
 				for (unsigned int i = 0; i < localstreams->count(); i++)
 				{
-					if (localstreams->at(i))
+					auto localStream = localstreams->at(i);
+					if (localStream != NULL)
 					{
 						Json::Value tracks;
 
-						const webrtc::VideoTrackVector &videoTracks = localstreams->at(i)->GetVideoTracks();
+						const webrtc::VideoTrackVector &videoTracks = localStream->GetVideoTracks();
 						for (unsigned int j = 0; j < videoTracks.size(); j++)
 						{
 							auto videoTrack = videoTracks.at(j);
@@ -847,9 +848,10 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 									track["height"] = stats.input_height;
 								}
 							}
+
 							tracks[videoTrack->id()] = track;
 						}
-						const webrtc::AudioTrackVector &audioTracks = localstreams->at(i)->GetAudioTracks();
+						const webrtc::AudioTrackVector &audioTracks = localStream->GetAudioTracks();
 						for (unsigned int j = 0; j < audioTracks.size(); j++)
 						{
 							auto audioTrack = audioTracks.at(j);
@@ -859,10 +861,15 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 							{
 								track["state"] = audioTrack->GetSource()->state();
 							}
+							int level = 0;
+							if (audioTrack->GetSignalLevel(&level)) {
+								track["level"] = level;
+							}
+
 							tracks[audioTrack->id()] = track;
 						}
 
-						streams[localstreams->at(i)->id()] = tracks;
+						streams[localStream->id()] = tracks;
 					}
 				}
 			}
