@@ -69,7 +69,15 @@ class CapturerFactory {
 					if (info->GetDeviceName(i, name, kSize, id, kSize) != -1)
 					{
 						RTC_LOG(INFO) << "video device name:" << name << " id:" << id;
-						videoDeviceList.push_back(name);
+						std::string devname;
+						auto it = std::find(videoDeviceList.begin(), videoDeviceList.end(), name);
+						if (it == videoDeviceList.end()) {
+							devname = name;
+						} else {
+							devname = "videocap://";
+							devname += std::to_string(i);
+						}
+						videoDeviceList.push_back(devname);
 					}
 				}
 			}
