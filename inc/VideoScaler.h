@@ -75,13 +75,10 @@ public:
                 m_roi_height = 0;
             }
         }
-        const rtc::VideoSinkWants wants;
-        m_videoSource->AddOrUpdateSink(this,wants);
     }
 
     virtual ~VideoScaler()
     {
-        m_videoSource->RemoveSink(this);
     }
 
     void OnFrame(const webrtc::VideoFrame &frame) override
@@ -162,11 +159,15 @@ public:
 
     void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink, const rtc::VideoSinkWants &wants) override
     {
+        m_videoSource->AddOrUpdateSink(this,wants);
+
         m_broadcaster.AddOrUpdateSink(sink, wants);
     }
 
     void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink) override
     {
+        m_videoSource->RemoveSink(this);
+
         m_broadcaster.RemoveSink(sink);
     }
 
