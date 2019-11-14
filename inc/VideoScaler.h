@@ -19,6 +19,7 @@ public:
     VideoScaler(rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource, const std::map<std::string, std::string> &opts) :
                 m_videoSource(videoSource),
                 m_width(0), m_height(0), 
+                m_rotation(webrtc::kVideoRotation_0),
                 m_roi_x(0), m_roi_y(0), m_roi_width(0), m_roi_height(0) 
     {
         if (opts.find("width") != opts.end())
@@ -29,6 +30,15 @@ public:
         {
             m_height = std::stoi(opts.at("height"));
         }
+        if (opts.find("rotation") != opts.end())
+        {
+            int rotation = std::stoi(opts.at("rotation"));
+            switch (rotation) {
+                case 90: m_rotation = webrtc::kVideoRotation_90; break;
+                case 180: m_rotation = webrtc::kVideoRotation_180; break;
+                case 270: m_rotation = webrtc::kVideoRotation_270; break;
+            }
+        }        
         if (opts.find("roi_x") != opts.end())
         {
             m_roi_x = std::stoi(opts.at("roi_x"));
@@ -113,7 +123,7 @@ public:
             m_width = m_roi_width;
         }
 
-        if ((m_height == 0) && (m_width == 0))
+        if ((m_height == 0) && (m_width == 0) && (m_rotation == webrtc::kVideoRotation_0))
         {
             m_broadcaster.OnFrame(frame);
         }
@@ -121,7 +131,12 @@ public:
         {
             int height = m_height;
             int width = m_width;
-            if (height == 0)
+            if ( (height == 0) && (width == 0) )
+            {
+                height = frame.height();
+                width = frame.width();
+            }
+            else if (height == 0)
             {
                 height = (m_roi_height * width) / m_roi_width;
             }
@@ -129,9 +144,7 @@ public:
             {
                 width = (m_roi_width * height) / m_roi_height;
             }
-            int stride_y = width;
-            int stride_uv = (width + 1) / 2;
-            rtc::scoped_refptr<webrtc::I420Buffer> scaled_buffer = webrtc::I420Buffer::Create(width, height, stride_y, stride_uv, stride_uv);
+            rtc::scoped_refptr<webrtc::I420Buffer> scaled_buffer = webrtc::I420Buffer::Create(width, height);
             if (m_roi_width != frame.width() || m_roi_height != frame.height())
             {
                 scaled_buffer->CropAndScaleFrom(*frame.video_frame_buffer()->ToI420(), m_roi_x, m_roi_y, m_roi_width, m_roi_height);
@@ -141,7 +154,7 @@ public:
                 scaled_buffer->ScaleFrom(*frame.video_frame_buffer()->ToI420());
             }
             webrtc::VideoFrame scaledFrame = webrtc::VideoFrame(scaled_buffer, frame.timestamp(),
-                                                          frame.render_time_ms(), webrtc::kVideoRotation_0);
+                                                          frame.render_time_ms(), m_rotation);
 
             m_broadcaster.OnFrame(scaledFrame);
         }
@@ -166,6 +179,7 @@ private:
 
     int                    m_width;
     int                    m_height;
+    webrtc::VideoRotation  m_rotation;
     int                    m_roi_x;
     int                    m_roi_y;
     int                    m_roi_width;

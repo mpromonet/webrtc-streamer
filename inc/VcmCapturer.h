@@ -25,6 +25,9 @@ class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public 
 	if (opts.find("height") != opts.end()) {
 		height = std::stoi(opts.at("height"));
 	}
+	if (opts.find("fps") != opts.end()) {
+		fps = std::stoi(opts.at("fps"));
+	}	
 	if (!vcm_capturer->Init(width, height, fps, videourl)) {
 		RTC_LOG(LS_WARNING) << "Failed to create VcmCapturer(w = " << width
 							<< ", h = " << height << ", fps = " << fps
