@@ -35,9 +35,6 @@ int main(int argc, char* argv[])
 	std::string sslCertificate;
 	webrtc::AudioDeviceModule::AudioLayer audioLayer = webrtc::AudioDeviceModule::kPlatformDefaultAudio;
 	std::string streamName;
-	std::map<std::string,std::string> urlVideoList;
-	std::map<std::string,std::string> urlAudioList;
-	std::map<std::string,std::string> positionList;	
 	std::string nbthreads;
 	std::string passwdFile;
 	std::string authDomain = "mydomain.com";
