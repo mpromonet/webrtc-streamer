@@ -91,7 +91,7 @@ Usage
         	-H [hostname:]port : HTTP server binding (default 0.0.0.0:8000)
 		-w webroot         : path to get files
 		-c sslkeycert      : path to private key and certificate for HTTPS
-		-T nbthreads       : number of threads for HTTP server
+		-N nbthreads       : number of threads for HTTP server
 		-A passwd          : password file for HTTP server access
 		-D authDomain      : authentication domain for HTTP server access (default:mydomain.com)
 
