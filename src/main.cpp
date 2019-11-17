@@ -13,6 +13,8 @@
 #include "rtc_base/ssl_adapter.h"
 #include "rtc_base/thread.h"
 #include "p2p/base/stun_server.h"
+#include "p2p/base/basic_packet_socket_factory.h"
+#include "p2p/base/turn_server.h"
 
 #include "PeerConnectionManager.h"
 #include "HttpServerRequestHandler.h"
@@ -29,6 +31,8 @@ int main(int argc, char* argv[])
 	const char* turnurl       = "";
 	const char* defaultlocalstunurl  = "0.0.0.0:3478";
 	const char* localstunurl  = NULL;
+	const char* defaultlocalturnurl  = "turn:turn@0.0.0.0:3478";
+	const char* localturnurl  = NULL;
 	const char* stunurl       = "stun.l.google.com:19302";
 	int logLevel              = rtc::LERROR;
 	const char* webroot       = "./html";
@@ -51,17 +55,18 @@ int main(int argc, char* argv[])
 	httpAddress.append(httpPort);
 
 	int c = 0;
-	while ((c = getopt (argc, argv, "hVv::" "c:H:w:T:A:D:C:" "t:S::s::" "a::q:" "n:u:U:")) != -1)
+	while ((c = getopt (argc, argv, "hVv::" "c:H:w:N:A:D:C:" "T::t:S::s::" "a::q:" "n:u:U:")) != -1)
 	{
 		switch (c)
 		{
 			case 'H': httpAddress = optarg; break;
 			case 'c': sslCertificate = optarg; break;
 			case 'w': webroot = optarg; break;
-			case 'T': nbthreads = optarg; break;
+			case 'N': nbthreads = optarg; break;
 			case 'A': passwdFile = optarg; break;
 			case 'D': authDomain = optarg; break;
 
+			case 'T': localturnurl = optarg ? optarg : defaultlocalturnurl; turnurl = localturnurl; break;
 			case 't': turnurl = optarg; break;
 			case 'S': localstunurl = optarg ? optarg : defaultlocalstunurl; stunurl = localstunurl; break;
 			case 's': localstunurl = NULL; stunurl = optarg ? optarg : defaultlocalstunurl; break;
@@ -111,13 +116,14 @@ int main(int argc, char* argv[])
 				std::cout << "\t -H hostname:port   : HTTP server binding (default "   << httpAddress    << ")"                   << std::endl;
 				std::cout << "\t -w webroot         : path to get files"                                                          << std::endl;
 				std::cout << "\t -c sslkeycert      : path to private key and certificate for HTTPS"                              << std::endl;
-				std::cout << "\t -T nbthreads       : number of threads for HTTP server"                                          << std::endl;
+				std::cout << "\t -N nbthreads       : number of threads for HTTP server"                                          << std::endl;
 				std::cout << "\t -A passwd          : password file for HTTP server access"                                          << std::endl;
 				std::cout << "\t -D authDomain      : authentication domain for HTTP server access (default:mydomain.com)"                                       << std::endl;
 			
 				std::cout << "\t -S[stun_address]                   : start embeded STUN server bind to address (default " << defaultlocalstunurl << ")" << std::endl;
 				std::cout << "\t -s[stun_address]                   : use an external STUN server (default " << stunurl << ")"                    << std::endl;
 				std::cout << "\t -t[username:password@]turn_address : use an external TURN relay server (default disabled)"       << std::endl;
+				std::cout << "\t -T[username:password@]turn_address : start embeded TURN server (default disabled)"       << std::endl;
 
 				std::cout << "\t -a[audio layer]                    : spefify audio capture layer to use (default:" << audioLayer << ")"          << std::endl;
 
@@ -199,6 +205,26 @@ int main(int argc, char* argv[])
 				{
 					stunserver.reset(new cricket::StunServer(server_socket));
 					std::cout << "STUN Listening at " << server_addr.ToString() << std::endl;
+				}
+			}
+
+			// start TRUN server if needed
+			std::unique_ptr<cricket::TurnServer> turnserver;
+			if (localturnurl != NULL)
+			{
+				std::istringstream is(localturnurl);
+				std::string addr;
+				std::getline(is, addr, '@');
+				std::getline(is, addr, '@');
+				rtc::SocketAddress server_addr;
+				server_addr.FromString(addr);
+				rtc::AsyncUDPSocket* server_socket = rtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
+				if (server_socket)
+				{
+					turnserver.reset(new cricket::TurnServer(rtc::Thread::Current()));
+					std::cout << "TURN Listening at " << server_addr.ToString() << std::endl;
+					turnserver->AddInternalSocket(server_socket, cricket::PROTO_UDP);
+					turnserver->SetExternalSocketFactory(new rtc::BasicPacketSocketFactory(), rtc::SocketAddress(server_addr.ipaddr(), 0));
 				}
 			}
 			
