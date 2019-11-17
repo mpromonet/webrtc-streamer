@@ -17,7 +17,7 @@
 WebRTC-streamer
 ===============
 
-[![NanoPi](images/nanopi.jpeg)](http://wiki.friendlyarm.com/wiki/index.php/NanoPi_NEO_Air)
+[![NanoPi](images/nanopi.jpg)](http://wiki.friendlyarm.com/wiki/index.php/NanoPi_NEO_Air)
 
 WebRTC-streamer is an experiment to stream video capture devices and RTSP sources through WebRTC using simple mechanism.  
 
