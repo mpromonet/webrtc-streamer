@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: webrtc-streamer
+  name: webrtc-streamer
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webrtc-streamer
+  template:
+    metadata:
+      labels:
+        app: webrtc-streamer
+    spec:
+      containers:
+      - image: mpromonet/webrtc-streamer
+        args: ["-S","-C","config.json"]
+        name: webrtc-streamer
+        ports:
+        - name: web
+          containerPort: 8000
+        - name: stun
+          protocol: UDP
+          containerPort: 3478
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webrtc-streamer
+  annotations:
+    traefik.ingress.kubernetes.io/affinity: "true"
+spec:
+  selector:
+    app: webrtc-streamer
+  ports:
+    - name: web
+      port: 8000
+    - name: stun
+      protocol: UDP
+      port: 3478
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  labels:
+    app: webrtc-streamer
+  name: webrtc-streamer
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            backend:
+              serviceName: webrtc-streamer
+              servicePort: 8000
