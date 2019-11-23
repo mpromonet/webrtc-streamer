@@ -103,7 +103,7 @@ IceServer getIceServerFromUrl(const std::string &url, const std::string &clientI
 		std::string uri = url.substr(pos + 1);
 		std::string credentials;
 
-		std::size_t pos = uri.find('@');
+		std::size_t pos = uri.rfind('@');
 		if (pos != std::string::npos)
 		{
 			credentials = uri.substr(0, pos);
