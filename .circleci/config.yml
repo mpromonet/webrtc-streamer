@@ -220,8 +220,7 @@ jobs:
     steps:
       - attach_workspace:
           at: /
-      - run: curl https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz | tar -C /usr/local -xzf -
-      - run: echo 'export PATH=/usr/local/go/bin:/root/go/bin:$PATH' >> $BASH_ENV      
+      - run: apt-get update; apt-get install -y --no-install-recommends golang
       - run: go get github.com/tcnksm/ghr
       - deploy:
           name: "Deploy to Github"
