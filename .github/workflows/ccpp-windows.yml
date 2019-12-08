@@ -13,7 +13,7 @@ jobs:
       run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
     - name: fetch webrtc
       run: |
-          set PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%
+          $env:Path += ";$env:GITHUB_WORKSPACE\depot_tools"
           git config --global core.autocrlf false 
           git config --global core.filemode false 
           mkdir ..\webrtc
@@ -26,7 +26,7 @@ jobs:
         PYTHONIOENCODING: UTF-8
     - name: cmake
       run: |
-          set PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%
+          $env:Path += ";$env:GITHUB_WORKSPACE\depot_tools"
           cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe  .
           ninja 
     - name: cpack 
