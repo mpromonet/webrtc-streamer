@@ -175,7 +175,7 @@ endif()
 # live555helper 
 add_subdirectory(live555helper EXCLUDE_FROM_ALL)
 target_link_libraries (${PROJECT_NAME} liblive555helper) 
-add_definitions(-DHAVE_LIVE555)
+add_definitions(-DHAVE_LIVE555 -DNO_OPENSSL=1)
 
 #cpack
 install (TARGETS ${PROJECT_NAME} RUNTIME DESTINATION .)
