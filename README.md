@@ -108,10 +108,7 @@ Arguments of '-H' are forwarded to option [listening_ports](https://github.com/c
 
 Example
 -----
-	webrtc-streamer rtsp://217.17.220.110/axis-media/media.amp \
-				rtsp://85.255.175.241/h264 \
-				rtsp://85.255.175.244/h264 \
-				rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov
+	webrtc-streamer rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
 
 
 [![Screenshot](images/snapshot.png)](https://webrtc-streamer.herokuapp.com/)
@@ -120,7 +117,7 @@ Example
 
 We can access to the WebRTC stream using [webrtcstreamer.html](https://github.com/mpromonet/webrtc-streamer-html/blob/master/webrtcstreamer.html) for instance :
 
- * https://webrtc-streamer.herokuapp.com/webrtcstreamer.html?rtsp://217.17.220.110/axis-media/media.amp
+ * https://webrtc-streamer.herokuapp.com/webrtcstreamer.html?rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
  * https://webrtc-streamer.herokuapp.com/webrtcstreamer.html?Bunny
 
 An example displaying grid of WebRTC Streams is available using option "layout=<lines>x<columns>"
@@ -146,7 +143,7 @@ A short sample HTML page using webrtc-streamer running locally on port 8000 :
 	    var webRtcServer      = null;
 	    window.onload         = function() { 
 	        webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000");
-		webRtcServer.connect("rtsp://pi2.local:8554/unicast");
+		webRtcServer.connect("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov");
 	    }
 	    window.onbeforeunload = function() { webRtcServer.disconnect(); }
 	</script>
@@ -165,7 +162,7 @@ Using web-component could be a simple way to display some webrtc stream, a minim
         <script type="module" src="webrtc-streamer-element.js"></script>
 	</head>
 	<body>
-	   <webrtc-streamer url="Bunny"></webrtc-streamer>
+	   <webrtc-streamer url="rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov"></webrtc-streamer>
 	</body>
 	</html>
 
@@ -183,6 +180,14 @@ Using the webcomponent over google map :
 
 [Live Demo](https://webrtc-streamer.herokuapp.com/map.html)
 
+Object detection using tensorflow.js
+===============
+
+[![Screenshot](images/tensorflow.jpg)](https://webrtc-streamer.herokuapp.com/tensorflow.html)
+
+[Live Demo](https://webrtc-streamer.herokuapp.com/tensorflow.html)
+
+
 Connect to Janus Gateway Video Room
 ===============
 A simple way to publish WebRTC stream to a [Janus Gateway](https://janus.conf.meetecho.com) Video Room is to use the [JanusVideoRoom](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer-html/blob/master/jsdoc/JanusVideoRoom.html) interface
@@ -198,7 +203,7 @@ A short sample to publish WebRTC streams to Janus Video Room could be :
 	<script>        
 		var janus = new JanusVideoRoom("https://janus.conf.meetecho.com/janus", null);
 		janus.join(1234, "rtsp://pi2.local:8554/unicast","pi2");
-		janus.join(1234, "rtsp://217.17.220.110/axis-media/media.amp","media");	    
+		janus.join(1234, "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov","media");	    
 	</script>
 	</head>
 	</html>
@@ -235,7 +240,7 @@ A short sample to publish WebRTC streams to a Jitsi Video Room could be :
 	<script src="xmppvideoroom.js" ></script>
 	<script>        
 		var xmpp = new XMPPVideoRoom("meet.jit.si", null);
-		xmpp.join("testroom", "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov","Bunny");	    
+		xmpp.join("testroom", "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov","Bunny");	    
 	</script>
 	</head>
 	</html>
