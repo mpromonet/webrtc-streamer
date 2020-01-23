@@ -4,3 +4,15 @@ services:
     build: .
     ports:
      - "8000:8000"
+  app:
+    container_name: webrtc-streamer
+    image: mpromonet/webrtc-streamer:latest
+    ports:
+      - "8000:8000/tcp"
+  app-v4l2:
+    container_name: webrtc-streamer-v4l2
+    image: mpromonet/webrtc-streamer:latest
+    ports:
+      - "8000:8000/tcp"
+    devices:
+      - "/dev/video0:/dev/video0"

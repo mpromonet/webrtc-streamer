@@ -257,6 +257,11 @@ You can expose V4L2 devices from your host using :
 
         docker run --device=/dev/video0 -p 8000:8000 -it mpromonet/webrtc-streamer
 
+Alternatively you can start the application via docker-compose:
+
+        docker-compose up app
+        docker-compose up app-v4l2
+
 The container entry point is the webrtc-streamer application, then you can :
 
 * get the help using :
