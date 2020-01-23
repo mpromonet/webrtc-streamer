@@ -7,6 +7,8 @@
 **
 ** -------------------------------------------------------------------------*/
 
+#include <signal.h>
+
 #include <iostream>
 #include <fstream>
 
@@ -22,6 +24,13 @@
 #if WIN32
 #include "getopt.h"
 #endif
+
+void sighandler(int n)
+{
+        printf("SIGINT\n");
+        rtc::Thread* thread = rtc::Thread::Current();
+	thread->Stop(); 
+}
 
 /* ---------------------------------------------------------------------------
 **  main
@@ -229,6 +238,7 @@ int main(int argc, char* argv[])
 			}
 			
 			// mainloop
+			signal(SIGINT,sighandler);
 			thread->Run();
 
 		} catch (const CivetException & ex) {
@@ -237,6 +247,7 @@ int main(int argc, char* argv[])
 	}
 
 	rtc::CleanupSSL();
+	std::cout << "Exit" << std::endl;
 	return 0;
 }
 
