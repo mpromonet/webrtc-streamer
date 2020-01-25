@@ -16,8 +16,8 @@ jobs:
           $env:Path += ";$env:GITHUB_WORKSPACE\depot_tools"
           git config --global core.autocrlf false 
           git config --global core.filemode false 
-          mkdir ..\webrtc
-          pushd ..\webrtc
+          mkdir webrtc
+          pushd webrtc
           fetch --no-history webrtc
           popd
       env:
@@ -27,7 +27,7 @@ jobs:
     - name: cmake
       run: |
           $env:Path += ";$env:GITHUB_WORKSPACE\depot_tools"
-          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe  .
+          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=./webrtc .
           ninja 
     - name: cpack 
       run: cpack       
