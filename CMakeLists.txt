@@ -61,16 +61,11 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
   endif()
 
   # H264 support
-  if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    message(WARNING "Visual Studio Compiler is not supported by the Chromium project! Disabling h.264.")
+  if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
     set (WEBRTCARGS rtc_use_h264=false\n${WEBRTCARGS})
+    message(WARNING "Disabling h.264.")
   else ()
-    if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
-      set (WEBRTCARGS rtc_use_h264=false\n${WEBRTCARGS})
-      message(WARNING "Disabling h.264.")
-    else ()
-      set (WEBRTCARGS rtc_use_h264=true\nffmpeg_branding="Chrome"\n${WEBRTCARGS})
-    endif()
+    set (WEBRTCARGS rtc_use_h264=true\nffmpeg_branding="Chrome"\n${WEBRTCARGS})
   endif()
 
   # sound support
