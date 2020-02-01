@@ -1,9 +1,16 @@
 linux_docker_builder:    
-  timeout_in: 120m
   env:
     DOCKERHUB_USER: ENCRYPTED[ccd1af2835558f6b3e08fa3dd8ad95e7b3eaf3b83220433093d6335a3f4727f4c53c4053587d1594799e72e331d1017d]
     DOCKERHUB_PASS: ENCRYPTED[7b81d2ca7878761ea497619cae892e267c0e0fdee71d8ce48dcd4ba11b9351a9d3f2f781dce84a7f8aab92a278007509]
-    CIRRUS_CLONE_DEPTH: 100
+  clone_script: |
+    if [ -z "$CIRRUS_PR" ]; then
+      git clone --recursive --branch=$CIRRUS_BRANCH https://x-access-token:${CIRRUS_REPO_CLONE_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git $CIRRUS_WORKING_DIR
+      git reset --hard $CIRRUS_CHANGE_IN_REPO
+    else
+      git clone --recursive https://x-access-token:${CIRRUS_REPO_CLONE_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git $CIRRUS_WORKING_DIR
+      git fetch origin pull/$CIRRUS_PR/head:pull/$CIRRUS_PR
+      git reset --hard $CIRRUS_CHANGE_IN_REPO
+    fi  
   script: |
     docker info
     export TAG=${CIRRUS_TAG:-latest}
@@ -12,11 +19,18 @@ linux_docker_builder:
     docker push $CIRRUS_REPO_FULL_NAME:${TAG}-amd64
 
 linuxarmv7_docker_builder:    
-  timeout_in: 120m
   env:
     DOCKERHUB_USER: ENCRYPTED[ccd1af2835558f6b3e08fa3dd8ad95e7b3eaf3b83220433093d6335a3f4727f4c53c4053587d1594799e72e331d1017d]
     DOCKERHUB_PASS: ENCRYPTED[7b81d2ca7878761ea497619cae892e267c0e0fdee71d8ce48dcd4ba11b9351a9d3f2f781dce84a7f8aab92a278007509]
-    CIRRUS_CLONE_DEPTH: 100
+  clone_script: |
+    if [ -z "$CIRRUS_PR" ]; then
+      git clone --recursive --branch=$CIRRUS_BRANCH https://x-access-token:${CIRRUS_REPO_CLONE_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git $CIRRUS_WORKING_DIR
+      git reset --hard $CIRRUS_CHANGE_IN_REPO
+    else
+      git clone --recursive https://x-access-token:${CIRRUS_REPO_CLONE_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git $CIRRUS_WORKING_DIR
+      git fetch origin pull/$CIRRUS_PR/head:pull/$CIRRUS_PR
+      git reset --hard $CIRRUS_CHANGE_IN_REPO
+    fi  
   script: |
     docker info
     export TAG=${CIRRUS_TAG:-latest}
@@ -25,11 +39,18 @@ linuxarmv7_docker_builder:
     docker push $CIRRUS_REPO_FULL_NAME:${TAG}-armv7
 
 linuxarmv6_docker_builder:    
-  timeout_in: 120m
   env:
     DOCKERHUB_USER: ENCRYPTED[ccd1af2835558f6b3e08fa3dd8ad95e7b3eaf3b83220433093d6335a3f4727f4c53c4053587d1594799e72e331d1017d]
     DOCKERHUB_PASS: ENCRYPTED[7b81d2ca7878761ea497619cae892e267c0e0fdee71d8ce48dcd4ba11b9351a9d3f2f781dce84a7f8aab92a278007509]
-    CIRRUS_CLONE_DEPTH: 100
+  clone_script: |
+    if [ -z "$CIRRUS_PR" ]; then
+      git clone --recursive --branch=$CIRRUS_BRANCH https://x-access-token:${CIRRUS_REPO_CLONE_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git $CIRRUS_WORKING_DIR
+      git reset --hard $CIRRUS_CHANGE_IN_REPO
+    else
+      git clone --recursive https://x-access-token:${CIRRUS_REPO_CLONE_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git $CIRRUS_WORKING_DIR
+      git fetch origin pull/$CIRRUS_PR/head:pull/$CIRRUS_PR
+      git reset --hard $CIRRUS_CHANGE_IN_REPO
+    fi      
   script: |
     docker info
     export TAG=${CIRRUS_TAG:-latest}
@@ -38,11 +59,18 @@ linuxarmv6_docker_builder:
     docker push $CIRRUS_REPO_FULL_NAME:${TAG}-armv6
 
 linuxarm64_docker_builder:
-  timeout_in: 120m
   env:
     DOCKERHUB_USER: ENCRYPTED[ccd1af2835558f6b3e08fa3dd8ad95e7b3eaf3b83220433093d6335a3f4727f4c53c4053587d1594799e72e331d1017d]
     DOCKERHUB_PASS: ENCRYPTED[7b81d2ca7878761ea497619cae892e267c0e0fdee71d8ce48dcd4ba11b9351a9d3f2f781dce84a7f8aab92a278007509]
-    CIRRUS_CLONE_DEPTH: 100
+  clone_script: |
+    if [ -z "$CIRRUS_PR" ]; then
+      git clone --recursive --branch=$CIRRUS_BRANCH https://x-access-token:${CIRRUS_REPO_CLONE_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git $CIRRUS_WORKING_DIR
+      git reset --hard $CIRRUS_CHANGE_IN_REPO
+    else
+      git clone --recursive https://x-access-token:${CIRRUS_REPO_CLONE_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git $CIRRUS_WORKING_DIR
+      git fetch origin pull/$CIRRUS_PR/head:pull/$CIRRUS_PR
+      git reset --hard $CIRRUS_CHANGE_IN_REPO
+    fi      
   script: |
     docker info
     export TAG=${CIRRUS_TAG:-latest}
