@@ -151,6 +151,8 @@ int main(int argc, char* argv[])
 		optind++;
 	}
 
+	std::cout  << "Version:" << VERSION << std::endl;
+
 	std::cout  << config;
 
 	rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)logLevel);
