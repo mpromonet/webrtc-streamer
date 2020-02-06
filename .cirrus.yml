@@ -34,7 +34,7 @@ linuxarmv7_docker_builder:
   script: |
     docker info
     export TAG=${CIRRUS_TAG:-latest}
-    docker build -t $CIRRUS_REPO_FULL_NAME:${TAG}-armv7 . -f Dockerfile.rpi --build-arg ARCH=armv7l --build-arg CROSSCOMPILER=https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/GCC%209.1.0/Raspberry%20Pi%202%2C%203/cross-gcc-9.1.0-pi_2-3.tar.gz --build-arg IMAGE=balenalib/raspberry-pi2
+    docker build -t $CIRRUS_REPO_FULL_NAME:${TAG}-armv7 . -f Dockerfile.rpi --build-arg ARCH=armv7l --build-arg CROSSCOMPILER=https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%209.2.0/Raspberry%20Pi%202%2C%203/cross-gcc-9.2.0-pi_2-3.tar.gz --build-arg IMAGE=balenalib/raspberry-pi2
     docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS 
     docker push $CIRRUS_REPO_FULL_NAME:${TAG}-armv7
 
@@ -54,7 +54,7 @@ linuxarmv6_docker_builder:
   script: |
     docker info
     export TAG=${CIRRUS_TAG:-latest}
-    docker build -t $CIRRUS_REPO_FULL_NAME:${TAG}-armv6 . -f Dockerfile.rpi 
+    docker build -t $CIRRUS_REPO_FULL_NAME:${TAG}-armv6 . -f Dockerfile.rpi --build-arg CROSSCOMPILER=https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%209.2.0/Raspberry%20Pi%201%2C%20Zero/cross-gcc-9.2.0-pi_0-1.tar.gz
     docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS 
     docker push $CIRRUS_REPO_FULL_NAME:${TAG}-armv6
 
