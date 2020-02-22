@@ -22,3 +22,9 @@ build_rpi:
     - docker build -t $CI_REGISTRY_IMAGE:rpi . -f Dockerfile.rpi
     - docker push $CI_REGISTRY_IMAGE:rpi
 
+build_windows:
+  image: "Windows Server 1809"
+  stage: build
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE:rpi . -f Dockerfile.rpi
+    - docker push $CI_REGISTRY_IMAGE:rpi
