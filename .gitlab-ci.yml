@@ -9,6 +9,8 @@ build_x86_64:
   image: docker:stable
   services:
   - docker:dind
+  include:
+  - template: SAST.gitlab-ci.yml
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_DRIVER: overlay2  
