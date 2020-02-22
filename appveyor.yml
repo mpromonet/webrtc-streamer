@@ -1,10 +1,8 @@
 environment:
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu1804
+    - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       CLANG_VERSION: ToT
-      MSVC_SETUP_PATH: C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat
-      MSVC_SETUP_ARG: x64
       DEPOT_TOOLS_WIN_TOOLCHAIN: 0
 
 platform: x64
@@ -19,7 +17,7 @@ install:
   - cmd: set
   - sh: env
   - sh: df -h
-  - sh: sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/ && sudo apt-get update && sudo apt-get install -y --no-install-recommends autoconf automake libtool xz-utils libgtk-3-dev libasound2-dev
+  - sh: sudo apt-get update && sudo apt-get install -y --no-install-recommends autoconf automake libtool xz-utils libgtk-3-dev libasound2-dev
   - git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git 
   - mkdir webrtc
   - cd webrtc
@@ -30,7 +28,7 @@ install:
   - gclient sync
 
 before_build:
-  - cmd: call "%MSVC_SETUP_PATH%" %MSVC_SETUP_ARG%
+  - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\%APPVEYOR_BUILD_WORKER_IMAGE:~-4%\Community\VC\Auxiliary\Build\vcvars64.bat"
   - ps: cd $env:APPVEYOR_BUILD_FOLDER
   - cmd: cmake -G Ninja -D WEBRTCBUILD=%CONFIGURATION% -DWEBRTCROOT=%APPVEYOR_BUILD_FOLDER:\=/%/webrtc -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe .
   - sh: cmake -G Ninja -D WEBRTCBUILD=${CONFIGURATION} -DWEBRTCROOT=${APPVEYOR_BUILD_FOLDER}/webrtc .
