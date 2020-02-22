@@ -8,7 +8,8 @@ COPY . /webrtc-streamer
 ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
        CLANG_VERSION=ToT \
        PYTHONIOENCODING=UTF-8 \
-       MSVC_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community"
+       MSVC_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community" \
+       chocolateyUseWindowsCompression="true"
 
 # Install Chocolatey & packages
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin" 
@@ -20,8 +21,7 @@ RUN choco install --no-progress -y git python2 sed curl windows-sdk-10 \
 RUN git config --global core.autocrlf false \
        && git config --global core.filemode false \
        && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git --depth 1 C:\depot_tools \
-       && SETX PATH "%PATH%;C:\depot_tools\;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win" \
-	&& dir /s /b C:\vcvars64.bat
+       && SETX PATH "%PATH%;C:\depot_tools\;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win"
 
 RUN  call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" \
        && mkdir c:\webrtc && cd c:\webrtc \
