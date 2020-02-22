@@ -1,9 +1,3 @@
-.shared_windows_runners:
-  tags:
-  - shared-windows
-  - windows
-  - windows-1809
-  
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
@@ -26,9 +20,11 @@ build_rpi:
     - docker push $CI_REGISTRY_IMAGE:rpi
 
 build_windows:
-  extends:
-  - .shared_windows_runners
   image: servercore:ltsc2019
+  tags:
+  - shared-windows
+  - windows
+  - windows-1809
   stage: build
   script:
     - docker build -t $CI_REGISTRY_IMAGE:windows . -f Dockerfile.windows
