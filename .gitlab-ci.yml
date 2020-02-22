@@ -5,17 +5,14 @@
   - windows-1809
   
 variables:
-  DOCKER_HOST: tcp://docker:2375
-  DOCKER_DRIVER: overlay2
   GIT_SUBMODULE_STRATEGY: recursive
 
 before_script:
+  - docker info
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
 
 build_x86_64:
   image: docker:stable
-  services:
-    - docker:dind
   stage: build
   script:
     - docker build -t $CI_REGISTRY_IMAGE:latest .
@@ -23,8 +20,6 @@ build_x86_64:
 
 build_rpi:
   image: docker:stable
-  services:
-    - docker:dind
   stage: build
   script:
     - docker build -t $CI_REGISTRY_IMAGE:rpi . -f Dockerfile.rpi
@@ -36,5 +31,5 @@ build_windows:
   image: servercore:ltsc2019
   stage: build
   script:
-    - docker build -t $CI_REGISTRY_IMAGE:rpi . -f Dockerfile.rpi
-    - docker push $CI_REGISTRY_IMAGE:rpi
+    - docker build -t $CI_REGISTRY_IMAGE:windows . -f Dockerfile.windows
+    - docker push $CI_REGISTRY_IMAGE:windows
