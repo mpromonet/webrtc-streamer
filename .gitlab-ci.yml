@@ -1,24 +1,31 @@
-image: docker:stable
-services:
-  - docker:dind
-
 variables:
-  DOCKER_HOST: tcp://docker:2375
-  DOCKER_DRIVER: overlay2
   GIT_SUBMODULE_STRATEGY: recursive
 
 before_script:
-  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+  - docker info
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
 build_x86_64:
+  image: docker:stable
+  services:
+  - docker:dind
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_DRIVER: overlay2  
   stage: build
   script:
-    - docker build -t $CI_REGISTRY_IMAGE:latest .
-    - docker push $CI_REGISTRY_IMAGE:latest
+    - docker build -t ${CI_REGISTRY}/${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG}-linux .
+    - docker push ${CI_REGISTRY}/${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG}-linux
 
-build_rpi:
+build_windows:
+  image: servercore:ltsc2019
+  tags:
+  - shared-windows
+  - windows
+  - windows-1809
   stage: build
   script:
-    - docker build -t $CI_REGISTRY_IMAGE:rpi . -f Dockerfile.rpi
-    - docker push $CI_REGISTRY_IMAGE:rpi
+    - docker build -t ${CI_REGISTRY}/${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG}-windows -f Dockerfile.windows .
+    - docker push ${CI_REGISTRY}/${CI_PROJECT_NAME}:${CI_COMMIT_REF_SLUG}-windows
+
 

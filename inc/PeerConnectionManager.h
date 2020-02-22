@@ -68,9 +68,9 @@ class PeerConnectionManager {
 					RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " Remote SDP:" << sdp;
 				}
 			}
-			virtual void OnFailure(const std::string& error)
+			virtual void OnFailure(webrtc::RTCError error)
 			{
-				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
+				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error.message();
 				m_promise.set_value(NULL);
 			}
 		protected:
@@ -94,8 +94,8 @@ class PeerConnectionManager {
 				RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " type:" << desc->type() << " sdp:" << sdp;
 				m_pc->SetLocalDescription(SetSessionDescriptionObserver::Create(m_pc, m_promise), desc);
 			}
-			virtual void OnFailure(const std::string& error) {
-				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error;
+			virtual void OnFailure(webrtc::RTCError error) {
+				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error.message();
 				m_promise.set_value(NULL);
 			}
 		protected:
