@@ -27,5 +27,5 @@ build_windows:
   - windows-1809
   stage: build
   script:
-    - docker build -t $CI_REGISTRY_IMAGE:windows . -f Dockerfile.windows
-    - docker push $CI_REGISTRY_IMAGE:windows
+    - docker build -f Dockerfile.windows .
+
