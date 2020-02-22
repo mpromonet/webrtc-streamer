@@ -1,4 +1,3 @@
-image: docker:stable
 services:
   - docker:dind
 
@@ -11,19 +10,21 @@ before_script:
   - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
 
 build_x86_64:
+  image: docker:stable
   stage: build
   script:
     - docker build -t $CI_REGISTRY_IMAGE:latest .
     - docker push $CI_REGISTRY_IMAGE:latest
 
 build_rpi:
+  image: docker:stable
   stage: build
   script:
     - docker build -t $CI_REGISTRY_IMAGE:rpi . -f Dockerfile.rpi
     - docker push $CI_REGISTRY_IMAGE:rpi
 
 build_windows:
-  image: "Windows Server 1809"
+  image: mcr.microsoft.com/windows/servercore:ltsc2019
   stage: build
   script:
     - docker build -t $CI_REGISTRY_IMAGE:rpi . -f Dockerfile.rpi
