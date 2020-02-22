@@ -1,6 +1,9 @@
-services:
-  - docker:dind
-
+.shared_windows_runners:
+  tags:
+  - shared-windows
+  - windows
+  - windows-1809
+  
 variables:
   DOCKER_HOST: tcp://docker:2375
   DOCKER_DRIVER: overlay2
@@ -11,6 +14,8 @@ before_script:
 
 build_x86_64:
   image: docker:stable
+  services:
+    - docker:dind
   stage: build
   script:
     - docker build -t $CI_REGISTRY_IMAGE:latest .
@@ -18,12 +23,16 @@ build_x86_64:
 
 build_rpi:
   image: docker:stable
+  services:
+    - docker:dind
   stage: build
   script:
     - docker build -t $CI_REGISTRY_IMAGE:rpi . -f Dockerfile.rpi
     - docker push $CI_REGISTRY_IMAGE:rpi
 
 build_windows:
+  extends:
+  - .shared_windows_runners
   image: servercore:ltsc2019
   stage: build
   script:
