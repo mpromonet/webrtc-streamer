@@ -113,6 +113,7 @@ jobs:
             git clone git@heroku.com:webrtc-streamer.git
             cd webrtc-streamer
             tar xzf /distrib/webrtc-streamer*heroku.tar.gz --strip=1
+            [ "$GCLOUD_APIKEY" != "" ] && sed -i -i -e "s|https://maps.googleapis.com/maps/api/js?|https://maps.googleapis.com/maps/api/js?key=${GCLOUD_APIKEY}\&|" html/map.html
             git add -A && git -c user.name='ci' -c user.email='ci@email.org' commit -m 'heroku deployement' && git push --force git@heroku.com:webrtc-streamer.git HEAD:refs/heads/master
 
   deploy_cf:
