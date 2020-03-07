@@ -18,11 +18,7 @@ jobs:
           git config --global core.filemode false 
           mkdir webrtc
           pushd webrtc
-          #debug
-          fetch --help 
-          gclient help
-          #
-          fetch --no-history webrtc
+          fetch --no-history webrtc || EXIT 0
           popd
       env:
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
