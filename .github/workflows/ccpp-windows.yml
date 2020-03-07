@@ -12,8 +12,9 @@ jobs:
     - name: depot_tools
       run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
     - name: fetch webrtc
+      shell: cmd
       run: |
-          $env:Path += ";$env:GITHUB_WORKSPACE\depot_tools"
+          set PATH = "%PATH%;%GITHUB_WORKSPACE%\depot_tools"
           git config --global core.autocrlf false 
           git config --global core.filemode false 
           mkdir webrtc

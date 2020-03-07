@@ -30,6 +30,6 @@ jobs:
           export PATH=$(pwd)/depot_tools:$PATH
           cmake -DWEBRTCROOT=$(pwd)/webrtc .
     - name: make 
-      run: make 
+      run: make VERBOSE=1
     - name: cpack 
       run: cpack       
