@@ -28,6 +28,7 @@ jobs:
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
         CLANG_VERSION: ToT
         PYTHONIOENCODING: UTF-8
+        GCLIENT_PY3: 1
     - name: cmake
       run: |
           $env:Path += ";$env:GITHUB_WORKSPACE\depot_tools"
