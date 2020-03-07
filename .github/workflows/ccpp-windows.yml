@@ -18,6 +18,10 @@ jobs:
           git config --global core.filemode false 
           mkdir webrtc
           pushd webrtc
+          #debug
+          fetch --help 
+          gclient help
+          #
           fetch --no-history webrtc
           popd
       env:
