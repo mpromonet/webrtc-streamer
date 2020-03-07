@@ -13,11 +13,6 @@ jobs:
       run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
     - name: fetch webrtc
       run: |
-          # debug
-          dpkg -l | grep stdc++
-          g++ -print-file-name=libstdc++.a
-          nm $(g++ -print-file-name=libstdc++.a) | c++filt | grep '::basic_ostringstream('
-          #
           export PATH=$(pwd)/depot_tools:$PATH
           mkdir webrtc
           pushd webrtc
@@ -29,6 +24,8 @@ jobs:
       run: |
           export PATH=$(pwd)/depot_tools:$PATH
           cmake -DWEBRTCROOT=$(pwd)/webrtc .
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v1          
     - name: make 
       run: make VERBOSE=1
     - name: cpack 
