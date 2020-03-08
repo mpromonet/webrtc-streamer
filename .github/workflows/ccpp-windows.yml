@@ -27,8 +27,10 @@ jobs:
         PYTHONIOENCODING: UTF-8
         GCLIENT_PY3: 1
     - name: cmake
+      shell: cmd
       run: |
-          $env:Path += ";$env:GITHUB_WORKSPACE\depot_tools"
+          set "PATH=%PATH%;%GITHUB_WORKSPACE%\depot_tools;%GITHUB_WORKSPACE%\webrtc\src\third_party\llvm-build\Release+Asserts\bin;%GITHUB_WORKSPACE%\webrtc\src\build\toolchain\win\rc\win"
+          set
           cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=./webrtc .
           ninja 
     - name: cpack 
