@@ -9,10 +9,22 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+
+    - name: pkg
+      env:
+        MSVC_PATH: "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community"
+      run: choco install  --ignore-detected-reboot --no-progress -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%"
+
     - name: depot_tools
       run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+
     - name: fetch webrtc
       shell: cmd
+      env:
+        DEPOT_TOOLS_WIN_TOOLCHAIN: 0
+        CLANG_VERSION: ToT
+        PYTHONIOENCODING: UTF-8
+        GCLIENT_PY3: 1
       run: |
           set "PATH=%PATH%;%GITHUB_WORKSPACE%\depot_tools"
           git config --global core.autocrlf false 
@@ -21,17 +33,17 @@ jobs:
           pushd webrtc
           fetch --no-history webrtc
           popd
-      env:
-        DEPOT_TOOLS_WIN_TOOLCHAIN: 0
-        CLANG_VERSION: ToT
-        PYTHONIOENCODING: UTF-8
-        GCLIENT_PY3: 1
+
     - name: cmake
       shell: cmd
+      env:
+        MSVC_PATH: "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community"
       run: |
           set "PATH=%PATH%;%GITHUB_WORKSPACE%\depot_tools;%GITHUB_WORKSPACE%\webrtc\src\third_party\llvm-build\Release+Asserts\bin;%GITHUB_WORKSPACE%\webrtc\src\build\toolchain\win\rc\win"
+          call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" 
           set
           cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=./webrtc .
           ninja 
+
     - name: cpack 
       run: cpack       
