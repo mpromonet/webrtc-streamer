@@ -25,8 +25,8 @@ jobs:
           set "PATH=%PATH%;%GITHUB_WORKSPACE%\depot_tools"
           git config --global core.autocrlf false 
           git config --global core.filemode false 
-          mkdir webrtc
-          pushd webrtc
+          mkdir C:\webrtc
+          pushd C:\webrtc
           fetch --no-history webrtc
           popd
       env:
@@ -38,10 +38,10 @@ jobs:
     - name: cmake
       shell: cmd
       run: |
-          set "PATH=%PATH%;%GITHUB_WORKSPACE%\depot_tools;%GITHUB_WORKSPACE%\webrtc\src\third_party\llvm-build\Release+Asserts\bin;%GITHUB_WORKSPACE%\webrtc\src\build\toolchain\win\rc\win"
+          set "PATH=%PATH%;%GITHUB_WORKSPACE%\depot_tools;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win"
           call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" 
           set
-          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=./webrtc .
+          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=C:/webrtc .
           ninja 
       env:
         MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community"
