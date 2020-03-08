@@ -9,6 +9,8 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+    - name: pkg
+      run: sudo apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils libasound2-dev libgtk-3-dev cmake p7zip-full
     - name: depot_tools
       run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
     - name: fetch webrtc
@@ -24,9 +26,5 @@ jobs:
       run: |
           export PATH=$(pwd)/depot_tools:$PATH
           cmake -DWEBRTCROOT=$(pwd)/webrtc .
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v1.0.2         
     - name: make 
       run: make VERBOSE=1
-    - name: cpack 
-      run: cpack       
