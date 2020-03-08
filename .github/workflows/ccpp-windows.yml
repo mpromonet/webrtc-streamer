@@ -30,6 +30,8 @@ jobs:
           fetch --no-history webrtc
           popd
       env:
+        DEPOT_TOOLS_WIN_TOOLCHAIN: 0
+        CLANG_VERSION: ToT
         PYTHONIOENCODING: UTF-8
         GCLIENT_PY3: 1
 
