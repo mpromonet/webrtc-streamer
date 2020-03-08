@@ -25,7 +25,7 @@ jobs:
           export PATH=$(pwd)/depot_tools:$PATH
           cmake -DWEBRTCROOT=$(pwd)/webrtc .
     - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v1          
+      uses: mxschmitt/action-tmate@v1.0.2         
     - name: make 
       run: make VERBOSE=1
     - name: cpack 
