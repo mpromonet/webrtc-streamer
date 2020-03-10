@@ -38,6 +38,7 @@ jobs:
     - name: cmake
       shell: cmd
       run: |
+          dir /b /s "C:\Program Files (x86)\vcvars64.bat"
           set "PATH=%PATH%;%GITHUB_WORKSPACE%\depot_tools;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win"
           call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" 
           set

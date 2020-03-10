@@ -26,5 +26,6 @@ jobs:
       run: |
           export PATH=$(pwd)/depot_tools:$PATH
           cmake -DWEBRTCROOT=$(pwd)/webrtc .
+          cat ./webrtc/src/out/*/obj/third_party/jsoncpp/jsoncpp.ninja
     - name: make 
       run: make VERBOSE=1

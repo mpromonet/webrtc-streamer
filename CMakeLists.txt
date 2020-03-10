@@ -29,22 +29,6 @@ if(GIT_FOUND)
 endif()
 add_definitions(-DVERSION=\"${VERSION}\")
 
-# target
-FILE(GLOB SOURCE src/*.cpp)
-add_executable (${PROJECT_NAME} ${SOURCE})
-target_include_directories(${PROJECT_NAME} PRIVATE inc) 
-
-# thread
-set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-find_package (Threads)
-target_link_libraries (${PROJECT_NAME} Threads::Threads) 
-
-# civetweb
-add_library (civetweb STATIC civetweb/src/civetweb.c civetweb/src/CivetServer.cpp)	
-target_link_libraries (${PROJECT_NAME} civetweb) 
-target_include_directories(civetweb PUBLIC civetweb/include) 
-
 # alsa ?
 find_package(ALSA QUIET)
 MESSAGE("ALSA_FOUND = ${ALSA_FOUND}")
@@ -111,14 +95,9 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
   EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${WEBRTCBUILD} COMMAND ${SHELLCOMMAND} gn gen .)
   
   SET(NINJA_TARGET webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection p2p_server_utils task_queue default_task_queue_factory)
-  EXECUTE_PROCESS(ERROR_QUIET WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${WEBRTCBUILD} COMMAND ninja ${NINJA_TARGET})
-  EXECUTE_PROCESS(ERROR_QUIET WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${WEBRTCBUILD} COMMAND ninja ${NINJA_TARGET})
-  EXECUTE_PROCESS(ERROR_QUIET WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${WEBRTCBUILD} COMMAND ninja ${NINJA_TARGET})
   EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${WEBRTCBUILD} COMMAND ninja ${NINJA_TARGET})
 endif() 
 
-set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
 
 set (WEBRTCOBJS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/obj)
 
@@ -128,12 +107,27 @@ FILE(GLOB_RECURSE WEBRTP2POBJ ${WEBRTCOBJS}/p2p/p2p_server_utils/*${CMAKE_C_OUTP
 FILE(GLOB_RECURSE WEBRTTASK ${WEBRTCOBJS}/api/task_queue/*${CMAKE_C_OUTPUT_EXTENSION} ${WEBRTCOBJS}/rtc_base/rtc_task_queue_*/*${CMAKE_C_OUTPUT_EXTENSION})
 SET (WEBRTCEXTRAOBJS ${WEBRTJSONCPPCOBJS} ${WEBRTBBRCOBJS} ${WEBRTP2POBJ} ${WEBRTTASK} ${WEBRTCOBJS}/rtc_base/rtc_json/json${CMAKE_C_OUTPUT_EXTENSION})	
 
+FILE(GLOB SOURCE src/*.cpp)
+
+add_executable (${PROJECT_NAME} ${SOURCE} ${WEBRTCEXTRAOBJS})
+target_include_directories(${PROJECT_NAME} PRIVATE inc) 
+
+set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
+
 find_library(WEBRTC_LIBRARY NAMES webrtc PATHS ${WEBRTCOBJS})
 target_link_libraries (${PROJECT_NAME} ${WEBRTC_LIBRARY}) 
 
-add_library (webrtcextra STATIC ${WEBRTCEXTRAOBJS})
-set_target_properties(webrtcextra PROPERTIES LINKER_LANGUAGE CXX)		
-target_link_libraries (${PROJECT_NAME} webrtcextra) 
+# thread
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package (Threads)
+target_link_libraries (${PROJECT_NAME} Threads::Threads) 
+
+# civetweb
+add_library (civetweb STATIC civetweb/src/civetweb.c civetweb/src/CivetServer.cpp)	
+target_link_libraries (${PROJECT_NAME} civetweb) 
+target_include_directories(civetweb PUBLIC civetweb/include) 
 
 add_definitions(-DHAVE_JPEG)
 
