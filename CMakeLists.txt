@@ -95,7 +95,8 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
   EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${WEBRTCBUILD} COMMAND ${SHELLCOMMAND} gn gen .)
   
   SET(NINJA_TARGET webrtc rtc_json jsoncpp builtin_video_decoder_factory builtin_video_encoder_factory peerconnection p2p_server_utils task_queue default_task_queue_factory)
-  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${WEBRTCBUILD} COMMAND ninja ${NINJA_TARGET})
+  EXECUTE_PROCESS(ERROR_QUIET WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${WEBRTCBUILD} COMMAND ninja -v ${NINJA_TARGET})
+  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${WEBRTCBUILD} COMMAND ninja -v ${NINJA_TARGET})
 endif() 
 
 
@@ -148,6 +149,10 @@ if (WIN32)
 else()
     # static link of stdc++ if available
     include(CheckCXXCompilerFlag)
+    CHECK_CXX_COMPILER_FLAG("-static-libgcc" CXX_SUPPORTS_STATIC_LIBGCC)
+    if (CXX_SUPPORTS_STATIC_LIBGCC) 
+      target_link_libraries (${PROJECT_NAME} -static-libgcc)
+    endif()
     CHECK_CXX_COMPILER_FLAG("-static-libstdc++" CXX_SUPPORTS_STATIC_LIBSTDCPP)
     if (CXX_SUPPORTS_STATIC_LIBSTDCPP) 
       target_link_libraries (${PROJECT_NAME} -static-libstdc++)
