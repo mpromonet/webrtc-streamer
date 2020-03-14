@@ -10,6 +10,7 @@ MESSAGE("WEBRTCBUILD = ${WEBRTCBUILD}\nWEBRTCROOT = ${WEBRTCROOT}\nWEBRTCDESKTOP
 set (CMAKE_BUILD_TYPE ${WEBRTCBUILD}) 
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_EXTENSIONS OFF)
 
 # build version identifier
 find_package(Git)
@@ -44,14 +45,13 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
     set (WEBRTCARGS is_debug=true\n${WEBRTCARGS})
   endif()
 
-  # H264 support
+  # enable H264 support
   if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
-    set (WEBRTCARGS rtc_use_h264=false\n${WEBRTCARGS})
     message(WARNING "Disabling h.264.")
+    set (WEBRTCARGS is_chrome_branded=false\n${WEBRTCARGS})  # H264 support
   else ()
-    set (WEBRTCARGS rtc_use_h264=true\nffmpeg_branding="Chrome"\n${WEBRTCARGS})
+    set (WEBRTCARGS is_chrome_branded=true\n${WEBRTCARGS})  # H264 support
   endif()
-
   # sound support
   if (NOT WIN32)
     if (NOT ALSA_FOUND)
@@ -61,9 +61,9 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
 
   # compilation mode depending on target
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
-    set (WEBRTCARGS target_cpu="arm"\narm_version=6\narm_float_abi="hard"\nrtc_include_opus=false\nenable_libaom_decoder=false\n${WEBRTCARGS})
-    set (WEBRTCARGS use_sysroot=false\n${WEBRTCARGS})
-    set (WEBRTCARGS is_clang=false\n${WEBRTCARGS})
+    set (WEBRTCARGS target_cpu="arm"\narm_version=6\narm_float_abi="hard"\nenable_libaom_decoder=false\n${WEBRTCARGS})
+    set (WEBRTCARGS use_sysroot=true\n${WEBRTCARGS})
+    set (WEBRTCARGS is_clang=true\n${WEBRTCARGS})
   elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
     set (WEBRTCARGS target_cpu="arm"\n${WEBRTCARGS})
     set (WEBRTCARGS use_sysroot=true\n${WEBRTCARGS})
