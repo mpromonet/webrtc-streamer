@@ -25,10 +25,11 @@ jobs:
     - name: cmake
       run: |
           export PATH=$(pwd)/depot_tools:$PATH
-          cmake -DWEBRTCROOT=$(pwd)/webrtc .
+          cmake -DWEBRTCROOT=./webrtc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ .
+    - name: make 
+      run: | 
           g++ -v
           g++ -print-file-name=libstdc++.a
           nm $(g++ -print-file-name=libstdc++.a) | c++filt  | grep ::basic_ostringstream
           nm libwebrtcextra.a | c++filt | grep ::basic_ostringstream
-    - name: make 
-      run: make VERBOSE=1
+          make VERBOSE=1
