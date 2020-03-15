@@ -1,7 +1,7 @@
 {
     "urls":{
         "Bunny": {"video": "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov"},
-        
+       
         "Texel": {"video": "rtsp://webcamserverdh.dyndns-remote.com:1935/live/mp4:ehtx.stream"}, 
 
         "Havenmond": {"video": "rtsp://85.25.218.202:1935/live/mp4:havenmond.stream"}, 
@@ -9,6 +9,7 @@
         "LilaDelman": {"video": "rtsp://narr-cam.liladelman.com/axis-media/media.amp"}, 
 
         "VirginiaTech": {"video": "rtsp://198.82.159.136:554/axis-media/media.amp", "position":"37.223357,-80.417004"},
+        "PriceCenterPlaza" : { "video": "rtsp://132.239.12.145:554/axis-media/media.amp"},
 
         "Bahia": {"video": "rtsp://187.1.147.77:2000/axis-media/media.amp", "position": "-12.618330,-38.955830" },
         "Honk-Kong": {"video": "rtsp://weathercam.gsis.edu.hk/axis-media/media.amp", "position":"22.352734,114.1277", "options":"rtptransport=tcp&timeout=60"},
@@ -28,16 +29,6 @@
 
         "Scheveningen-1": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys1.stream", "position":"52.1042263,4.2494571"}, 
         "Scheveningen-3": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys3.stream"}, 
-
-        "Arrifana": {"video": "rtsp://46.105.54.176:80/64connections/arrifana.stream", "options":"rtptransport=tcp&timeout=60"},
-        "CapBreton": {"video": "rtsp://46.105.54.176:80/64connections/capbreton.stream", "options":"rtptransport=tcp&timeout=60"}, 
-        "Chamrousse": {"video": "rtsp://46.105.54.176:80/64connections/chamrousse2.stream", "options":"rtptransport=tcp&timeout=60"}, 
-        "Hendaye": {"video": "rtsp://46.105.54.176:80/64connections/hendaye.stream", "options":"rtptransport=tcp&timeout=60"}, 
-        "Marseille": {"video": "rtsp://46.105.54.176:80/64connections/marseille.stream", "options":"rtptransport=tcp&timeout=60"}, 
-        "PaçoDeArcos": {"video": "rtsp://46.105.54.176:80/64connections/parcos.stream", "position":"38.701468,-9.3101928", "options":"rtptransport=tcp&timeout=60"},
-        "Paris-1": {"video": "rtsp://46.105.54.176:80/64connections/Pariscam1.stream", "options":"rtptransport=tcp&timeout=60"}, 
-        "Paris-3": {"video": "rtsp://46.105.54.176:80/64connections/Pariscam3.stream", "options":"rtptransport=tcp&timeout=60"},
-        "Paris-4": {"video": "rtsp://46.105.54.176:80/64connections/Pariscam4.stream", "options":"rtptransport=tcp&timeout=60"},
 
         "Curacao": {"video": "rtsp://srv13.arkasis.nl:80/498/default.stream", "position":"12.2376122,-69.1801954"}, 
         "Volendam": {"video": "rtsp://srv13.arkasis.nl:80/508/default.stream"}, 
