@@ -35,7 +35,7 @@ jobs:
         PYTHONIOENCODING: UTF-8
         GCLIENT_PY3: 1
 
-    - name: cmake
+    - name: build
       shell: cmd
       run: |
           dir /b /s "C:\Program Files (x86)\vcvars64.bat"

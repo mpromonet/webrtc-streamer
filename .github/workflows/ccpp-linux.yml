@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: C/C++ CI linux
 
 on: [push]
 
@@ -9,10 +9,13 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+
     - name: pkg
       run: sudo apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils libasound2-dev libgtk-3-dev cmake p7zip-full
+
     - name: depot_tools
       run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+
     - name: fetch webrtc
       run: |
           export PATH=$(pwd)/depot_tools:$PATH
@@ -22,10 +25,17 @@ jobs:
           sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS 
           gclient sync 
           popd
-    - name: cmake
+
+    - name: build
       run: |
           export PATH=$(pwd)/depot_tools:$PATH
-          cmake -DWEBRTCROOT=./webrtc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ .
-    - name: make 
-      run: | 
-          make VERBOSE=1
+          cmake -DWEBRTCROOT=$(pwd)/webrtc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ .
+          make
+
+    - name: cpack 
+      run: cpack -B $(pwd)/artifact
+
+    - uses: actions/upload-artifact@v1
+      with:
+        name: pkg
+        path: artifact      
