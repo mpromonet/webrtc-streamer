@@ -61,7 +61,7 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
 
   # compilation mode depending on target
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
-    set (WEBRTCARGS target_cpu="arm"\narm_version=6\narm_float_abi="hard"\nenable_libaom_decoder=false\n${WEBRTCARGS})
+    set (WEBRTCARGS target_cpu="arm"\narm_version=6\narm_float_abi="hard"\nenable_libaom=false\n${WEBRTCARGS})
     set (WEBRTCARGS use_sysroot=true\n${WEBRTCARGS})
     set (WEBRTCARGS is_clang=true\n${WEBRTCARGS})
   elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")

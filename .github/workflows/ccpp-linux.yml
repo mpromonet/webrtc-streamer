@@ -33,7 +33,7 @@ jobs:
           make
 
     - name: cpack 
-      run: cpack -B $(pwd)/artifact
+      run: cpack -B artifact
 
     - uses: actions/upload-artifact@v1
       with:

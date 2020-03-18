@@ -12,7 +12,6 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/mpromonet/webrtc-streamer.svg)](https://hub.docker.com/r/mpromonet/webrtc-streamer/)
 
 [![Heroku](https://heroku-badge.herokuapp.com/?app=webrtc-streamer)](https://webrtc-streamer.herokuapp.com/)
-[![Openshift](https://img.shields.io/badge/openshift-ok-green.svg)](http://webrtc-streamer-mpromonet.7e14.starter-us-west-2.openshiftapps.com/)
 
 WebRTC-streamer
 ===============

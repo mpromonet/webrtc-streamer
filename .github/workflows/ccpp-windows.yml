@@ -49,3 +49,12 @@ jobs:
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
         CLANG_VERSION: ToT
         PYTHONIOENCODING: UTF-8
+
+    - name: cpack
+      run: cpack -B artifact
+
+    - uses: actions/upload-artifact@v1
+      with:
+        name: pkg
+        path: artifact
+
