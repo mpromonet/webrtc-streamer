@@ -128,18 +128,17 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
         }
 
         void createDecoder(const std::string & codec) {
+            webrtc::VideoCodec codec_settings;
             if (codec == "H264") {
-                    m_decoder=m_factory.CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kH264CodecName));
-                    webrtc::VideoCodec codec_settings;
-                    codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecH264;
-                    m_decoder->InitDecode(&codec_settings,2);
-                    m_decoder->RegisterDecodeCompleteCallback(this);
+                m_decoder=m_factory.CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kH264CodecName));
+                codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecH264;
             } else if (codec == "VP9") {
                 m_decoder=m_factory.CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kVp9CodecName));
-                webrtc::VideoCodec codec_settings;
-                codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecVP9;
+                codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecVP9;	                
+            }
+            if (m_decoder.get() != NULL) {
                 m_decoder->InitDecode(&codec_settings,2);
-                m_decoder->RegisterDecodeCompleteCallback(this);	                
+                m_decoder->RegisterDecodeCompleteCallback(this);
             }
         }
 
