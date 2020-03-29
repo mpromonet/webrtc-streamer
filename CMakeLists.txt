@@ -46,12 +46,17 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
   endif()
 
   # enable H264 support
+  set (WEBRTCARGS is_chrome_branded=true\n${WEBRTCARGS})
   if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
-    message(WARNING "Disabling h.264.")
-    set (WEBRTCARGS is_chrome_branded=false\n${WEBRTCARGS})  # H264 support
-  else ()
-    set (WEBRTCARGS is_chrome_branded=true\n${WEBRTCARGS})  # H264 support
+    file(READ ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py filecontent)
+    string(REPLACE "--enable-armv6t2" "--disable-armv6t2" filecontent "${filecontent}")
+    string(REPLACE "--enable-thumb" "--disable-thumb" filecontent "${filecontent}")
+    string(REPLACE "--extra-cflags=-march=armv7-a" "--extra-cflags=-march=armv6" filecontent "${filecontent}")
+    file(WRITE ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py "${filecontent}")
+    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg COMMAND chromium/scripts/build_ffmpeg.py linux arm)
+    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg COMMAND chromium/scripts/copy_config.sh)
   endif()
+
   # sound support
   if (NOT WIN32)
     if (NOT ALSA_FOUND)
