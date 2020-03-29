@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.0.0)
 project (webrtc-streamer)
 
-set (WEBRTCROOT "../webrtc" CACHE STRING "WEBRTC root directory")
+set (WEBRTCROOT "${CMAKE_CURRENT_SOURCE_DIR}/../webrtc" CACHE STRING "WEBRTC root directory")
 set (WEBRTCBUILD "Release" CACHE STRING "WEBRTC build type")
 set (WEBRTCDESKTOPCAPTURE "ON" CACHE STRING "WEBRTC Desktop capture")
 
@@ -48,6 +48,7 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
   # enable H264 support
   set (WEBRTCARGS is_chrome_branded=true\n${WEBRTCARGS})
   if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
+    set(ENV{PATH} "${WEBRTCROOT}/src/third_party/llvm-build/Release+Asserts/bin:$ENV{PATH}")
     file(READ ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py filecontent)
     string(REPLACE "--enable-armv6t2" "--disable-armv6t2" filecontent "${filecontent}")
     string(REPLACE "--enable-thumb" "--disable-thumb" filecontent "${filecontent}")
