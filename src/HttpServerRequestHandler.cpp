@@ -60,7 +60,6 @@ class RequestHandler : public CivetHandler
 			mg_printf(conn,"Access-Control-Allow-Origin: *\r\n");
 			mg_printf(conn,"Content-Type: text/plain\r\n");
 			mg_printf(conn,"Content-Length: %zd\r\n", answer.size());
-			mg_printf(conn,"Connection: close\r\n");
 			mg_printf(conn,"\r\n");
 			mg_write(conn,answer.c_str(),answer.size());
 			

@@ -189,6 +189,10 @@ int main(int argc, char* argv[])
 		options.push_back("*");
 		options.push_back("listening_ports");
 		options.push_back(httpAddress);
+		options.push_back("enable_keep_alive");
+		options.push_back("yes");
+		options.push_back("keep_alive_timeout_ms");
+		options.push_back("1000");
 		if (!sslCertificate.empty()) {
 			options.push_back("ssl_certificate");
 			options.push_back(sslCertificate);
