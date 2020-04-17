@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
 
 	// webrtc server
 	std::list<std::string> iceServerList;
-	if (strlen(strunurl) && (strcmp(stunurl,"-") != 0)) {
+	if ((strlen(stunurl) != 0) && (strcmp(stunurl,"-") != 0)) {
 		iceServerList.push_back(std::string("stun:")+stunurl);
 	}
 	if (strlen(turnurl)) {
