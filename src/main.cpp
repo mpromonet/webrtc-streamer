@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
 			case 'T': localturnurl = optarg ? optarg : defaultlocalturnurl; turnurl = localturnurl; break;
 			case 't': turnurl = optarg; break;
 			case 'S': localstunurl = optarg ? optarg : defaultlocalstunurl; stunurl = localstunurl; break;
-			case 's': localstunurl = NULL; stunurl = optarg ? optarg : defaultlocalstunurl; break;
+			case 's': stunurl = optarg ? optarg : defaultlocalstunurl; break;
 			
 			case 'a': audioLayer = optarg ? (webrtc::AudioDeviceModule::AudioLayer)atoi(optarg) : webrtc::AudioDeviceModule::kDummyAudio; break;
 			case 'q': publishFilter = optarg ; break;
