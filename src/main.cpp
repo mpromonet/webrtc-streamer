@@ -130,9 +130,9 @@ int main(int argc, char* argv[])
 				std::cout << "\t -D authDomain      : authentication domain for HTTP server access (default:mydomain.com)"                                       << std::endl;
 			
 				std::cout << "\t -S[stun_address]                   : start embeded STUN server bind to address (default " << defaultlocalstunurl << ")" << std::endl;
-				std::cout << "\t -s[stun_address]                   : use an external STUN server (default " << stunurl << ")"                    << std::endl;
-				std::cout << "\t -t[username:password@]turn_address : use an external TURN relay server (default disabled)"       << std::endl;
-				std::cout << "\t -T[username:password@]turn_address : start embeded TURN server (default disabled)"       << std::endl;
+				std::cout << "\t -s[stun_address]                   : use an external STUN server (default:" << stunurl << " , -:means no STUN)"                    << std::endl;
+				std::cout << "\t -t[username:password@]turn_address : use an external TURN relay server (default:disabled)"       << std::endl;
+				std::cout << "\t -T[username:password@]turn_address : start embeded TURN server (default:disabled)"       << std::endl;
 
 				std::cout << "\t -a[audio layer]                    : spefify audio capture layer to use (default:" << audioLayer << ")"          << std::endl;
 
@@ -165,7 +165,9 @@ int main(int argc, char* argv[])
 
 	// webrtc server
 	std::list<std::string> iceServerList;
-	iceServerList.push_back(std::string("stun:")+stunurl);
+	if (strlen(strunurl) && (strcmp(stunurl,"-") != 0)) {
+		iceServerList.push_back(std::string("stun:")+stunurl);
+	}
 	if (strlen(turnurl)) {
 		iceServerList.push_back(std::string("turn:")+turnurl);
 	}
