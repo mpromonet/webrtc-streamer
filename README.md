@@ -137,8 +137,8 @@ The command `curl -s ifconfig.me` is getting the public IP, it could also given 
 
 In order to configure the NAT rules using the upnp feature of the router, it is possible to use [upnpc](https://manpages.debian.org/unstable/miniupnpc/upnpc.1.en.html) like this:
 
-    upnpc -r 8000 tcp 3478 udp 3478 tcp
-Adapting with the HTTP port, STUN port, TURN ports.
+    upnpc -r 8000 tcp 3478 udp
+Adapting with the HTTP port, STUN port, TURN port.
 
 Embed in a HTML page:
 ===============
