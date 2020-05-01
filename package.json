@@ -11,19 +11,22 @@
     "strophejs-plugin-caps": "^1.1.0",
     "strophejs-plugin-disco": "0.0.2",
     "strophejs-plugin-muc": "^1.1.0",
-    "then-request": "^6.0.0"
+    "then-request": "^6.0.0",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {
     "git-repo-info": "^2.1.0",
     "npm": "^6.10.3"
   },
   "scripts": {
-    "prepublish": "node prepublish.js"
+    "prepublish": "npm run snyk-protect && node prepublish.js",
+    "snyk-protect": "snyk protect"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/mpromonet/webrtc-streamer/"
   },
   "author": "Michel Promonet",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "snyk": true
 }
