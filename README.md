@@ -72,10 +72,9 @@ Download WebRTC
 
 Build WebRTC Streamer
 -------
-	cmake . -DWEBRTCBUILD=<Release or Debug> -DWEBRTCROOT=<path to WebRTC>
-	make
+	cmake . && make 
 
-where WEBRTCROOT and WEBRTCBUILD indicate how to point to WebRTC :
+It is possible to specify cmake parameters WEBRTCBUILD & WEBRTCROOT that indicate build type and path to  WebRTC SDK :
  - $WEBRTCROOT/src should contains source (default is $(pwd)/../webrtc) 
  - $WEBRTCROOT/src/out/$WEBRTCBUILD should contains libraries (default is Release)
 
@@ -94,9 +93,11 @@ Usage
 		-A passwd          : password file for HTTP server access
 		-D authDomain      : authentication domain for HTTP server access (default:mydomain.com)
 
-         	-S[stun_address]   : start embeded STUN server bind to address (default 0.0.0.0:3478)
-         	-s[stun_address]   : use an external STUN server (default stun.l.google.com:19302)
-         	-t[username:password@]turn_address : use an external TURN relay server (default disabled)		
+		-S[stun_address]                   : start embeded STUN server bind to address (default 0.0.0.0:3478)
+		-s[stun_address]                   : use an external STUN server (default:stun.l.google.com:19302 , -:means no STUN)
+		-t[username:password@]turn_address : use an external TURN relay server (default:disabled)
+		-T[username:password@]turn_address : start embeded TURN server (default:disabled)
+		
         	-a[audio layer]    : spefify audio capture layer to use (default:3)		
 
 		-n name -u videourl -U audiourl : register a name for a video url and an audio url
@@ -105,9 +106,9 @@ Usage
 
 Arguments of '-H' are forwarded to option [listening_ports](https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md#listening_ports-8080) of civetweb, then it is possible to use the civetweb syntax like `-H8000,9000` or `-H8080r,8443s`.
 
-Example
+Examples
 -----
-	webrtc-streamer rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
+	./webrtc-streamer rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
 
 
 [![Screenshot](images/snapshot.png)](https://webrtc-streamer.herokuapp.com/)
@@ -124,6 +125,20 @@ An example displaying grid of WebRTC Streams is available using option "layout=<
 
 [Live Demo](https://webrtc-streamer.herokuapp.com/?layout=2x4)
 
+Using embedded STUN/TURN server behind a NAT:
+===============
+
+It is possible start embeded ICE server and publish its url using:
+
+    ./webrtc-streamer -S0.0.0.0:3478 -s$(curl -s ifconfig.me):3478
+    ./webrtc-streamer -s- -T0.0.0.0:3478 -tturn:turn@$(curl -s ifconfig.me):3478
+    ./webrtc-streamer -S0.0.0.0:3478 -s$(curl -s ifconfig.me):3478 -T0.0.0.0:3479 -tturn:turn@$(curl -s ifconfig.me):3479
+The command `curl -s ifconfig.me` is getting the public IP, it could also given as a static parameter.
+
+In order to configure the NAT rules using the upnp feature of the router, it is possible to use [upnpc](https://manpages.debian.org/unstable/miniupnpc/upnpc.1.en.html) like this:
+
+    upnpc -r 8000 tcp 3478 udp
+Adapting with the HTTP port, STUN port, TURN port.
 
 Embed in a HTML page:
 ===============
