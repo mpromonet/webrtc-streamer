@@ -39,6 +39,9 @@
         "Pocapaglia": {"video": "rtsp://176.65.94.105/axis-media/media.amp"},
         "Norwich": {"video": "rtsp://37.157.51.30/axis-media/media.amp"},
         "Montana": {"video": "rtsp://64.187.201.16/axis-media/media.amp"},
-        "Trento": {"video": "rtsp://194.32.173.211/axis-media/media.amp"}
+        "Trento": {"video": "rtsp://194.32.173.211/axis-media/media.amp"},
+        "Great Falls": {"video": "rtsp://76.75.8.116/axis-media/media.amp", "position":"47.551039,-111.539400"},
+        "Western Cape": {"video":"rtsp://196.21.92.82/axis-media/media.amp", "position":"-33.925840,18.423220"},
+        "Nordland": {"video":"rtsp://77.110.228.219/axis-media/media.amp", "position":"67.280000,14.405010" }
     }
 }
