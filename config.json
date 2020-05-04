@@ -1,6 +1,6 @@
 {
     "urls":{
-        "Bunny": {"video": "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov"},
+	"Bunny": {"video": "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov"},
        
         "Texel": {"video": "rtsp://webcamserverdh.dyndns-remote.com:1935/live/mp4:ehtx.stream"}, 
 
@@ -42,6 +42,8 @@
         "Trento": {"video": "rtsp://194.32.173.211/axis-media/media.amp"},
         "Great Falls": {"video": "rtsp://76.75.8.116/axis-media/media.amp", "position":"47.551039,-111.539400"},
         "Western Cape": {"video":"rtsp://196.21.92.82/axis-media/media.amp", "position":"-33.925840,18.423220"},
-        "Nordland": {"video":"rtsp://77.110.228.219/axis-media/media.amp", "position":"67.280000,14.405010" }
+        "Nordland": {"video":"rtsp://77.110.228.219/axis-media/media.amp", "position":"67.280000,14.405010" },
+        "Wroclaw": {"video":"rtsp://78.10.34.92/axis-media/media.amp", "position":"51.100000,17.033330"},
+        "Kiev": {"video":"rtsp://77.52.149.60/axis-media/media.amp", "position":"50.454660,30.523800"}
     }
 }
