@@ -243,14 +243,22 @@ int main(int argc, char* argv[])
 				std::getline(is, addr, '@');
 				rtc::SocketAddress server_addr;
 				server_addr.FromString(addr);
+				turnserver.reset(new cricket::TurnServer(rtc::Thread::Current()));
+
 				rtc::AsyncUDPSocket* server_socket = rtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
 				if (server_socket)
 				{
-					turnserver.reset(new cricket::TurnServer(rtc::Thread::Current()));
-					std::cout << "TURN Listening at " << server_addr.ToString() << std::endl;
+					std::cout << "TURN Listening UDP at " << server_addr.ToString() << std::endl;
 					turnserver->AddInternalSocket(server_socket, cricket::PROTO_UDP);
 					turnserver->SetExternalSocketFactory(new rtc::BasicPacketSocketFactory(), rtc::SocketAddress(server_addr.ipaddr(), 0));
 				}
+				rtc::AsyncSocket* tcp_server_socket = thread->socketserver()->CreateAsyncSocket(AF_INET, SOCK_STREAM);
+				if (tcp_server_socket) {
+					std::cout << "TURN Listening TCP at " << server_addr.ToString() << std::endl;
+					tcp_server_socket->Bind(server_addr);
+					tcp_server_socket->Listen(5);
+					turnserver->AddInternalServerSocket(tcp_server_socket, cricket::PROTO_TCP);
+				}				
 			}
 			
 			// mainloop
