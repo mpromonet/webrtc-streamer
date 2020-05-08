@@ -25,11 +25,15 @@
 #include "getopt.h"
 #endif
 
+PeerConnectionManager* webRtcServer = NULL;
+
 void sighandler(int n)
 {
-        printf("SIGINT\n");
-        rtc::Thread* thread = rtc::Thread::Current();
-	thread->Stop(); 
+	printf("SIGINT\n");
+	// delete need thread still running
+	delete webRtcServer;
+	webRtcServer = NULL;
+	rtc::Thread::Current()->Quit(); 
 }
 
 /* ---------------------------------------------------------------------------
@@ -172,8 +176,8 @@ int main(int argc, char* argv[])
 		iceServerList.push_back(std::string("turn:")+turnurl);
 	}
 
-	PeerConnectionManager webRtcServer(iceServerList, config["urls"], audioLayer, publishFilter);
-	if (!webRtcServer.InitializePeerConnection())
+	webRtcServer = new PeerConnectionManager(iceServerList, config["urls"], audioLayer, publishFilter);
+	if (!webRtcServer->InitializePeerConnection())
 	{
 		std::cout << "Cannot Initialize WebRTC server" << std::endl;
 	}
@@ -211,7 +215,7 @@ int main(int argc, char* argv[])
 		}
 		
 		try {
-			std::map<std::string,HttpServerRequestHandler::httpFunction> func = webRtcServer.getHttpApi();
+			std::map<std::string,HttpServerRequestHandler::httpFunction> func = webRtcServer->getHttpApi();
 			std::cout << "HTTP Listen at " << httpAddress << std::endl;
 			HttpServerRequestHandler httpServer(func, options);
 
