@@ -30,10 +30,7 @@
         "Scheveningen-1": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys1.stream", "position":"52.1042263,4.2494571"}, 
         "Scheveningen-3": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys3.stream"}, 
 
-        "Curacao": {"video": "rtsp://srv13.arkasis.nl:80/498/default.stream", "position":"12.2376122,-69.1801954"}, 
-        "Volendam": {"video": "rtsp://srv13.arkasis.nl:80/508/default.stream"}, 
-        "Maasstricht": {"video": "rtsp://srv13.arkasis.nl:80/639/default.stream"}, 
-        "DeDam": {"video": "rtsp://srv13.arkasis.nl:80/731/default.stream"},
+        "Curacao": {"video": "rtsp://srv13.arkasis.nl:80/498/default.stream", "position":"12.2376122,-69.1801954"},  
 
         "Bedford Hills": {"video": "rtsp://73.114.177.111/axis-media/media.amp"},
         "Pocapaglia": {"video": "rtsp://176.65.94.105/axis-media/media.amp"},
