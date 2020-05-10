@@ -250,7 +250,6 @@ int main(int argc, char* argv[])
 				{
 					std::cout << "TURN Listening UDP at " << server_addr.ToString() << std::endl;
 					turnserver->AddInternalSocket(server_socket, cricket::PROTO_UDP);
-					turnserver->SetExternalSocketFactory(new rtc::BasicPacketSocketFactory(), rtc::SocketAddress(server_addr.ipaddr(), 0));
 				}
 				rtc::AsyncSocket* tcp_server_socket = thread->socketserver()->CreateAsyncSocket(AF_INET, SOCK_STREAM);
 				if (tcp_server_socket) {
@@ -258,7 +257,16 @@ int main(int argc, char* argv[])
 					tcp_server_socket->Bind(server_addr);
 					tcp_server_socket->Listen(5);
 					turnserver->AddInternalServerSocket(tcp_server_socket, cricket::PROTO_TCP);
-				}				
+				}			
+
+				is.str(turnurl);
+				is.clear();
+				std::getline(is, addr, '@');
+				std::getline(is, addr, '@');
+				rtc::SocketAddress external_server_addr;
+				external_server_addr.FromString(addr);		
+				std::cout << "TURN external addr:" << external_server_addr.ToString() << std::endl;			
+				turnserver->SetExternalSocketFactory(new rtc::BasicPacketSocketFactory(), rtc::SocketAddress(external_server_addr.ipaddr(), 0));
 			}
 			
 			// mainloop
