@@ -114,7 +114,7 @@ jobs:
             cd webrtc-streamer
             tar xzf /distrib/webrtc-streamer*heroku.tar.gz --strip=1
             [ "$GCLOUD_APIKEY" != "" ] && sed -i -e "s|https://maps.googleapis.com/maps/api/js?|https://maps.googleapis.com/maps/api/js?key=${GCLOUD_APIKEY}\&|" html/map.html
-            sed -i -e 's!<head>!<head><script async src="https://www.googletagmanager.com/gtag/js?id=UA-167114443-1"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag("js", new Date());gtag("config", "UA-167114443-1");</script>!' html/index.html
+            sed -i -e 's!<head>!<head><script async src="https://www.googletagmanager.com/gtag/js?id=UA-167114443-1"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag("js", new Date());gtag("config", "UA-167114443-1");</script>!' html/index.html html/map.html html/webrtc-streamer-element.html html/webrtcstreamer.html
             git add -A && git -c user.name='ci' -c user.email='ci@email.org' commit -m 'heroku deployement' && git push --force git@heroku.com:webrtc-streamer.git HEAD:refs/heads/master
 
   deploy_cf:
