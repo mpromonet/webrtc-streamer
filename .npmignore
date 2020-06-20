@@ -17,3 +17,5 @@ webrtc-streamer
 Dockerfile*
 *.yml
 *.tgz
+.github
+cad/
