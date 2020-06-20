@@ -11,8 +11,9 @@ jobs:
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
-#      - run: npm version from-git
-      - run: npm ci
+      - run: git fetch --prune --unshallow --tags
+      - run: npm version from-git
+      - run: npm install
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.npm_token}}
