@@ -11,8 +11,10 @@ jobs:
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
-      - run: git fetch --prune --unshallow --tags
-      - run: npm config set git-tag-version false
+      - run: |
+              git fetch --prune --unshallow --tags
+              git config --global user.email "pipeline@github.com"
+              git config --global user.name "pipeline"
       - run: npm version from-git
       - run: npm install
       - run: npm publish
