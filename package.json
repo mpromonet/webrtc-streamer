@@ -1,6 +1,6 @@
 {
   "name": "webrtc-streamer",
-  "version": "1.0.0-master.4a7dc7c5a1",
+  "version": "0.0.0",
   "description": "",
   "main": "joinjanusvideoroom.js",
   "dependencies": {
@@ -16,9 +16,6 @@
   "devDependencies": {
     "git-repo-info": "^2.1.0",
     "npm": "^6.10.3"
-  },
-  "scripts": {
-    "prepublish": "node prepublish.js"
   },
   "repository": {
     "type": "git",
