@@ -153,7 +153,9 @@ jobs:
           at: /
       - checkout
       - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make cmake g++ xz-utils 
-      - run: wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
+      - run: 
+          command: wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
+          no_output_timeout: 30m
       - run: echo "export PATH=$(ls -d /opt/cross-pi-gcc-*/bin):\$PATH" >> $BASH_ENV
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
@@ -184,7 +186,9 @@ jobs:
           at: /
       - checkout
       - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git cmake make g++ xz-utils
-      - run: wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
+      - run: 
+          command: wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
+          no_output_timeout: 30m
       - run: echo "export PATH=$(ls -d /opt/cross-pi-gcc-*/bin):\$PATH" >> $BASH_ENV
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
@@ -242,6 +246,7 @@ jobs:
             docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
             docker build --pull -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-amd64 -f Dockerfile .
             docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-amd64
+          no_output_timeout: 30m
 
   # -------------------------------------
   # publish docker arm
@@ -260,6 +265,7 @@ jobs:
             docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
             docker build --build-arg ARCH=armv7l --build-arg CROSSCOMPILER=${CROSSCOMPILER} --build-arg IMAGE=balenalib/raspberry-pi2 --pull -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v7 -f Dockerfile.rpi .
             docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v7
+          no_output_timeout: 30m
 
   # -------------------------------------
   # publish docker arm
@@ -278,6 +284,7 @@ jobs:
             docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
             docker build --build-arg CROSSCOMPILER=${CROSSCOMPILER} --pull -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v6 -f Dockerfile.rpi . 
             docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v6
+          no_output_timeout: 30m
 
   # -------------------------------------
   # publish docker manifest

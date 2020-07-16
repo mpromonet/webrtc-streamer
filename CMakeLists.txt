@@ -36,7 +36,7 @@ MESSAGE("ALSA_FOUND = ${ALSA_FOUND}")
 
 # webrtc
 if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
-  set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nuse_custom_libcxx=false\nrtc_include_pulse_audio=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nrtc_enable_libevent=false\nrtc_build_libevent=false\n)
+  set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_include_pulse_audio=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nrtc_enable_libevent=false\nrtc_build_libevent=false\n)
 
   # debug/release
   if(WEBRTCBUILD STREQUAL "Release")
@@ -69,19 +69,16 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
     set (WEBRTCARGS target_cpu="arm"\narm_version=6\narm_float_abi="hard"\nenable_libaom=false\n${WEBRTCARGS})
     set (WEBRTCARGS use_sysroot=true\n${WEBRTCARGS})
-    set (WEBRTCARGS is_clang=true\n${WEBRTCARGS})
   elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
     set (WEBRTCARGS target_cpu="arm"\n${WEBRTCARGS})
     set (WEBRTCARGS use_sysroot=true\n${WEBRTCARGS})
-    set (WEBRTCARGS is_clang=true\n${WEBRTCARGS})
   elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
     set (WEBRTCARGS target_cpu="arm64"\n${WEBRTCARGS})
     set (WEBRTCARGS use_sysroot=true\n${WEBRTCARGS})
-    set (WEBRTCARGS is_clang=true\n${WEBRTCARGS})
   else()
     set (WEBRTCARGS use_sysroot=false\n${WEBRTCARGS})
-    set (WEBRTCARGS is_clang=true\n${WEBRTCARGS})
   endif()
+  set (WEBRTCARGS is_clang=true\n${WEBRTCARGS})
 
   # screen capture support
   find_package(PkgConfig QUIET)
@@ -177,7 +174,7 @@ else()
     endif()
     CHECK_CXX_COMPILER_FLAG("-static-libstdc++" CXX_SUPPORTS_STATIC_LIBSTDCPP)
     if (CXX_SUPPORTS_STATIC_LIBSTDCPP) 
-      target_link_libraries (${PROJECT_NAME} -static-libstdc++ -lstdc++)
+      target_link_libraries (${PROJECT_NAME} -static-libstdc++)
     endif()
 endif()
 
