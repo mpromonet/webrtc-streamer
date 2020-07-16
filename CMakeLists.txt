@@ -177,7 +177,7 @@ else()
     endif()
     CHECK_CXX_COMPILER_FLAG("-static-libstdc++" CXX_SUPPORTS_STATIC_LIBSTDCPP)
     if (CXX_SUPPORTS_STATIC_LIBSTDCPP) 
-      target_link_libraries (${PROJECT_NAME} -static-libstdc++)
+      target_link_libraries (${PROJECT_NAME} -static-libstdc++ -lstdc++)
     endif()
 endif()
 
