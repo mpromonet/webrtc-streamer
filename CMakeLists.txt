@@ -37,7 +37,7 @@ MESSAGE("ALSA_FOUND = ${ALSA_FOUND}")
 # webrtc
 if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
   set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_include_pulse_audio=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nrtc_enable_libevent=false\nrtc_build_libevent=false\n)
-
+  set (WEBRTCARGS use_custom_libcxx=false\n${WEBRTCARGS})
   # debug/release
   if(WEBRTCBUILD STREQUAL "Release")
     set (WEBRTCARGS is_debug=false\n${WEBRTCARGS})
@@ -165,16 +165,6 @@ else()
     #alsa
     if (ALSA_FOUND)
         add_definitions(-DHAVE_SOUND)
-    endif()
-    # static link of stdc++ if available
-    include(CheckCXXCompilerFlag)
-    CHECK_CXX_COMPILER_FLAG("-static-libgcc" CXX_SUPPORTS_STATIC_LIBGCC)
-    if (CXX_SUPPORTS_STATIC_LIBGCC) 
-      target_link_libraries (${PROJECT_NAME} -static-libgcc)
-    endif()
-    CHECK_CXX_COMPILER_FLAG("-static-libstdc++" CXX_SUPPORTS_STATIC_LIBSTDCPP)
-    if (CXX_SUPPORTS_STATIC_LIBSTDCPP) 
-      target_link_libraries (${PROJECT_NAME} -static-libstdc++)
     endif()
 endif()
 
