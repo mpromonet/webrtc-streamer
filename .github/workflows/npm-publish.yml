@@ -10,7 +10,6 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-          registry-url: 'https://registry.npmjs.org'
       - run: npm install
       - run: |
               git submodule update --init
@@ -19,6 +18,6 @@ jobs:
               npm version $(git describe --tags --always)
       - run: npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
