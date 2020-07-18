@@ -15,7 +15,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           scope: "@mpromonet"
           always-auth: true
-      - run: npm ci
+      - run: npm install
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
       - run: npm config ls -l        
