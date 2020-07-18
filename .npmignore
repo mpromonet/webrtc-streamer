@@ -19,3 +19,4 @@ Dockerfile*
 *.tgz
 .github
 cad/
+html/jsdoc/
