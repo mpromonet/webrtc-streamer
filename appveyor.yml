@@ -1,7 +1,7 @@
 environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu
-    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       CLANG_VERSION: ToT
       DEPOT_TOOLS_WIN_TOOLCHAIN: 0
 
