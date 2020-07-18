@@ -13,10 +13,6 @@
     "strophejs-plugin-muc": "^1.1.0",
     "then-request": "^6.0.0"
   },
-  "devDependencies": {
-    "git-repo-info": "^2.1.0",
-    "npm": "^6.10.3"
-  },
   "repository": {
     "type": "git",
     "url": "https://github.com/mpromonet/webrtc-streamer/"

@@ -9,7 +9,6 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: '12'
           registry-url: 'https://npm.pkg.github.com'
       - run: npm install
       - run: |
@@ -17,7 +16,8 @@ jobs:
               git fetch --prune --unshallow --tags
               npm config set git-tag-version=false
               npm version $(git describe --tags --always)
-      - run: npm publish --access public
+              npm config list
+      - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
