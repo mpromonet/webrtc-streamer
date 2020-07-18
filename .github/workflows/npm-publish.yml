@@ -13,7 +13,6 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           registry-url: 'https://registry.npmjs.org'
-          scope: "@mpromonet"
           always-auth: true
       - run: npm install
       - run: |
