@@ -1,5 +1,5 @@
 {
-  "name": "webrtc-streamer",
+  "name": "@mpromonet/webrtc-streamer",
   "version": "0.0.0",
   "description": "",
   "main": "joinjanusvideoroom.js",

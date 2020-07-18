@@ -10,6 +10,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           registry-url: 'https://npm.pkg.github.com'
+          scope: "@mpromonet"
       - run: npm install
       - run: |
               git submodule update --init
