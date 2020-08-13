@@ -158,7 +158,7 @@ else()
     endif()
     if (EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/obj/modules/desktop_capture/desktop_capture.ninja)
         add_definitions(-DUSE_X11)
-        target_link_libraries (${PROJECT_NAME} X11 Xext Xdamage Xfixes Xcomposite Xrandr)
+        target_link_libraries (${PROJECT_NAME} X11 Xext Xdamage Xfixes Xcomposite Xrandr Xtst)
     endif()
     # civetweb
     target_link_libraries (${PROJECT_NAME} dl)
