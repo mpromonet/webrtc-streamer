@@ -13,7 +13,7 @@ ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
 
 # Install Chocolatey & packages 
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin" 
-RUN choco install --no-progress -y 7zip git python2 sed curl windows-sdk-10 windows-sdk-10-version-2004-all \
+RUN choco install --no-progress -y 7zip git python2 sed curl windows-sdk-10-version-2004-all \
        && choco install --no-progress -y cmake --installargs 'ADD_CMAKE_TO_PATH=System' \
        && choco install --no-progress -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%" || IF "%ERRORLEVEL%"=="3010" EXIT 0 
        
@@ -35,7 +35,7 @@ RUN git config --global core.autocrlf false \
        && time /t \
        && ninja \
        && mkdir c:\app && copy webrtc-streamer.exe c:\app && copy config.json c:\app && xcopy /E html c:\app\html\ \
-       && del /f /s /q c:\webrtc && rmdir /s /q c:\webrtc \
+       && del /f /s /q c:\webrtc > nul && rmdir /s /q c:\webrtc \
        && time /t 
 
 # run
