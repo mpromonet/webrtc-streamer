@@ -11,17 +11,18 @@ ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
        MSVC_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community" \
        chocolateyUseWindowsCompression="true"
 
-# Install Chocolatey & packages & depot_tools
+# Install Chocolatey & packages 
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin" 
 RUN choco install --no-progress -y 7zip git python2 sed curl windows-sdk-10 windows-sdk-10-version-2004-all \
        && choco install --no-progress -y cmake --installargs 'ADD_CMAKE_TO_PATH=System' \
-       && choco install --no-progress -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%" || IF "%ERRORLEVEL%"=="3010" EXIT 0 \  
-       && git config --global core.autocrlf false \
+       && choco install --no-progress -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%" || IF "%ERRORLEVEL%"=="3010" EXIT 0 
+       
+RUN git config --global core.autocrlf false \
        && git config --global core.filemode false \
        && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git --depth 1 C:\depot_tools \
-       && SETX PATH "%PATH%;C:\depot_tools\;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win"
-
-RUN  call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" \
+       && SETX PATH "%PATH%;C:\depot_tools\;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win" \
+       && refreshenv \
+       && call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" \
        && time /t \
        && mkdir c:\webrtc && cd c:\webrtc \
        && fetch --no-history --nohooks webrtc \
