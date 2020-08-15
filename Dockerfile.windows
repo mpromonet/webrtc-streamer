@@ -11,22 +11,19 @@ ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
        MSVC_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community" \
        chocolateyUseWindowsCompression="true"
 
-# Install Chocolatey & packages
+# Install Chocolatey & packages & depot_tools
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin" 
-RUN choco install --no-progress -y 7zip \
-       && choco install --no-progress -y git python2 sed curl windows-sdk-10 windows-sdk-10-version-2004-all \
+RUN choco install --no-progress -y 7zip git python2 sed curl windows-sdk-10 windows-sdk-10-version-2004-all \
        && choco install --no-progress -y cmake --installargs 'ADD_CMAKE_TO_PATH=System' \
-       && choco install --no-progress -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%" || IF "%ERRORLEVEL%"=="3010" EXIT 0   
-
-# install depot_tools
-RUN git config --global core.autocrlf false \
+       && choco install --no-progress -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%" || IF "%ERRORLEVEL%"=="3010" EXIT 0 \  
+       && git config --global core.autocrlf false \
        && git config --global core.filemode false \
        && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git --depth 1 C:\depot_tools \
        && SETX PATH "%PATH%;C:\depot_tools\;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win"
 
 RUN  call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" \
-       && mkdir c:\webrtc && cd c:\webrtc \
        && time /t \
+       && mkdir c:\webrtc && cd c:\webrtc \
        && fetch --no-history --nohooks webrtc \
        && time /t \
        && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
@@ -36,9 +33,9 @@ RUN  call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" \
        && cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe . \
        && time /t \
        && ninja \
-       && time /t \
        && mkdir c:\app && copy webrtc-streamer.exe c:\app && copy config.json c:\app && xcopy /E html c:\app\html\ \
-       && rmdir /s /q c:\webrtc 
+       && del /f /s /q c:\webrtc && rmdir /s /q c:\webrtc \
+       && time /t 
 
 # run
 FROM mcr.microsoft.com/windows:1809
@@ -48,6 +45,5 @@ COPY --from=builder /app/ /app/
 
 RUN  webrtc-streamer.exe -V
 
-EXPOSE 8000
 ENTRYPOINT [ "webrtc-streamer.exe" ]
 CMD [ "-a", "-C", "config.json" ]
