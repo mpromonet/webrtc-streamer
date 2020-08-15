@@ -1,36 +1,20 @@
 {
     "urls":{
-	"Bunny": {"video": "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov"},
+	    "Bunny": {"video": "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov"},
        
-        "Texel": {"video": "rtsp://webcamserverdh.dyndns-remote.com:1935/live/mp4:ehtx.stream"}, 
-
-        "Havenmond": {"video": "rtsp://85.25.218.202:1935/live/mp4:havenmond.stream"}, 
-
-        "LilaDelman": {"video": "rtsp://narr-cam.liladelman.com/axis-media/media.amp"}, 
-
-        "VirginiaTech": {"video": "rtsp://198.82.159.136:554/axis-media/media.amp", "position":"37.223357,-80.417004"},
         "PriceCenterPlaza" : { "video": "rtsp://132.239.12.145:554/axis-media/media.amp"},
 
         "Bahia": {"video": "rtsp://187.1.147.77:2000/axis-media/media.amp", "position": "-12.618330,-38.955830" },
         "Honk-Kong": {"video": "rtsp://weathercam.gsis.edu.hk/axis-media/media.amp", "position":"22.352734,114.1277", "options":"rtptransport=tcp&timeout=60"},
-
-        "Velkafatra": {"video": "rtsp://stream5.kukaj.sk:1935/live/VF1212.stream"}, 
-        "Prib": {"video": "rtsp://stream5.kukaj.sk:1935/live/BOCIANY_PRIB.stream"}, 
-        "Vavrisovo": {"video": "rtsp://stream5.kukaj.sk:1935/live/VAVRISOVO.stream","audio": "rtsp://stream5.kukaj.sk:1935/live/VAVRISOVO.stream", "position":"49.0758931,19.7501234"}, 
-        "Marina": {"video": "rtsp://stream5.kukaj.sk:1935/live/MARINA.stream"},     
-        "Sokolylm": {"video": "rtsp://stream5.kukaj.sk:1935/live/SOKOLYLM.stream"},   
-        "Demanova": {"video": "rtsp://stream5.kukaj.sk:1935/live/DEMANOVA.stream"}, 
-        "Vysokaprimorave": {"video": "rtsp://stream5.kukaj.sk:1935/live/VYSOKAPRIMORAVE.stream"}, 
         
         "KonskyGrun": {"video": "rtsp://stream.tmr.sk:1935/tmr/STREAM17.stream"}, 
         "VyhladJazero": {"video": "rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.stream"}, 
 
-        "Lomnicak": {"video": "rtsp://stream.zivekamery.sk:1935/live/LOMNICAK.stream"}, 
-
-        "Scheveningen-1": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys1.stream", "position":"52.1042263,4.2494571"}, 
-        "Scheveningen-3": {"video": "rtsp://b1.dnsdojo.com:1935/live/sys3.stream"}, 
-
         "Curacao": {"video": "rtsp://srv13.arkasis.nl:80/498/default.stream", "position":"12.2376122,-69.1801954"},  
+
+        "Foucault": {"video": "rtsp://131.173.8.23/axis-media/media.amp"},
+        "Zeeland": { "video": "rtsp://213.34.225.97/axis-media/media.amp", "position":"51.5,3.613890"},
+        "Vancouver": { "video": "rtsp://174.6.126.86/axis-media/media.amp", "position":"49.249660,-123.119340"},
 
         "Bedford Hills": {"video": "rtsp://73.114.177.111/axis-media/media.amp"},
         "Pocapaglia": {"video": "rtsp://176.65.94.105/axis-media/media.amp"},
