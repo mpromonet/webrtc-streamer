@@ -47,6 +47,8 @@ int main(int argc, char* argv[])
 	const char* defaultlocalturnurl  = "turn:turn@0.0.0.0:3478";
 	const char* localturnurl  = NULL;
 	const char* stunurl       = "stun.l.google.com:19302";
+	std::string defaultWebrtcUdpPortRange = "0:65535";
+	std::string localWebrtcUdpPortRange = "";
 	int logLevel              = rtc::LERROR;
 	const char* webroot       = "./html";
 	std::string sslCertificate;
@@ -68,7 +70,7 @@ int main(int argc, char* argv[])
 	httpAddress.append(httpPort);
 
 	int c = 0;
-	while ((c = getopt (argc, argv, "hVv::" "c:H:w:N:A:D:C:" "T::t:S::s::" "a::q:" "n:u:U:")) != -1)
+	while ((c = getopt (argc, argv, "hVv::" "c:H:w:N:A:D:C:" "T::t:S::s::" "a::q:" "n:u:U:" "R:")) != -1)
 	{
 		switch (c)
 		{
@@ -117,6 +119,11 @@ int main(int argc, char* argv[])
 				std::cout << VERSION << std::endl;
 				exit(0);
 			break;
+			case 'R':
+				std::cout << " First log " << std::endl;
+				localWebrtcUdpPortRange = optarg ? optarg : defaultWebrtcUdpPortRange;
+				std::cout << localWebrtcUdpPortRange << " [-R defaultWebrtcUdpPortRange]" << std::endl;
+				break;
 			case 'h':
 			default:
 				std::cout << argv[0] << " [-H http port] [-S[embeded stun address]] [-t [username:password@]turn_address] -[v[v]]  [url1]...[urln]" << std::endl;
@@ -143,6 +150,7 @@ int main(int argc, char* argv[])
 				std::cout << "\t -n name -u videourl -U audiourl    : register a stream with name using url"                         << std::endl;			
 				std::cout << "\t [url]                              : url to register in the source list"                                         << std::endl;
 				std::cout << "\t -C config.json                     : load urls from JSON config file"                                                 << std::endl;
+				std::cout << "\t -R [Udp port range min:max]        : Set the webrtc udp port range (default 0:65534)
 			
 				exit(0);
 		}
@@ -176,7 +184,7 @@ int main(int argc, char* argv[])
 		iceServerList.push_back(std::string("turn:")+turnurl);
 	}
 
-	webRtcServer = new PeerConnectionManager(iceServerList, config["urls"], audioLayer, publishFilter);
+	webRtcServer = new PeerConnectionManager(iceServerList, config["urls"], audioLayer, publishFilter, localWebrtcUdpPortRange);
 	if (!webRtcServer->InitializePeerConnection())
 	{
 		std::cout << "Cannot Initialize WebRTC server" << std::endl;
@@ -257,7 +265,7 @@ int main(int argc, char* argv[])
 					tcp_server_socket->Bind(server_addr);
 					tcp_server_socket->Listen(5);
 					turnserver->AddInternalServerSocket(tcp_server_socket, cricket::PROTO_TCP);
-				}			
+				}
 
 				is.str(turnurl);
 				is.clear();

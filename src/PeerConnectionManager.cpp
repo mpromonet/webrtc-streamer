@@ -28,6 +28,10 @@
 #include "VideoScaler.h"
 #include "VideoFilter.h"
 
+
+#include "p2p/client/basic_port_allocator.h"
+
+
 // Names used for a IceCandidate JSON object.
 const char kCandidateSdpMidName[] = "sdpMid";
 const char kCandidateSdpMlineIndexName[] = "sdpMLineIndex";
@@ -137,6 +141,35 @@ IceServer getIceServerFromUrl(const std::string &url, const std::string &clientI
 	return srv;
 }
 
+
+struct webrtcUdpPortRange
+{
+	int _minPort;
+	int _maxPort;
+};
+webrtcUdpPortRange setWebrtcUdpPortRange(const std::string &localWebrtcUdpPortRange)
+{
+	webrtcUdpPortRange portRange;
+	int pos = localWebrtcUdpPortRange.find(':');
+	if (pos == std::string::npos) {
+		RTC_LOG(INFO) << "Webrtc Udp port range is not defined";
+		portRange._minPort = 0;
+		portRange._maxPort = 65534;
+	}
+	else
+	{
+		std::string udpMin = localWebrtcUdpPortRange.substr(0, pos);
+		portRange._minPort = std::stoi(udpMin);
+		std::string udpMax = localWebrtcUdpPortRange.substr(pos + 1);
+		portRange._maxPort = std::stoi(udpMax);
+	}
+
+	return portRange;
+}
+webrtcUdpPortRange m_webrtcPortRange;
+
+
+
 webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencies(rtc::scoped_refptr<webrtc::AudioDeviceModule> audioDeviceModule, rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderfactory)
 {
 	webrtc::PeerConnectionFactoryDependencies dependencies;
@@ -165,7 +198,7 @@ webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencie
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter)
+PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string &locatWebrtcUdpPortRange)
 	: m_audioDecoderfactory(webrtc::CreateBuiltinAudioDecoderFactory()), m_task_queue_factory(webrtc::CreateDefaultTaskQueueFactory()),
 #ifdef HAVE_SOUND
 	  m_audioDeviceModule(webrtc::AudioDeviceModule::Create(audioLayer, m_task_queue_factory.get())),
@@ -177,6 +210,9 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 {
 	// build video audio map
 	m_videoaudiomap = getV4l2AlsaMap();
+
+	// Set the webrtc port range
+	m_webrtcPortRange = setWebrtcUdpPortRange(locatWebrtcUdpPortRange);
 
 	// register api in http server
 	m_func["/api/getMediaList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
@@ -928,8 +964,13 @@ PeerConnectionManager::PeerConnectionObserver *PeerConnectionManager::CreatePeer
 		config.servers.push_back(server);
 	}
 
+	// Use example From https://soru.site/questions/51578447/api-c-webrtcyi-kullanarak-peerconnection-ve-ucretsiz-baglant-noktasn-serbest-nasl
+	std::unique_ptr<cricket::PortAllocator> port_allocator(new cricket::BasicPortAllocator(new rtc::BasicNetworkManager()));
+	port_allocator->SetPortRange(m_webrtcPortRange._minPort, m_webrtcPortRange._maxPort);
+	RTC_LOG(INFO) << __FUNCTION__ << "CreatePeerConnection webrtcPortRange:" << m_webrtcPortRange._minPort << ":" << m_webrtcPortRange._maxPort;
+
 	RTC_LOG(INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
-	PeerConnectionObserver *obs = new PeerConnectionObserver(this, peerid, config);
+	PeerConnectionObserver *obs = new PeerConnectionObserver(this, peerid, config, std::move(port_allocator));
 	if (!obs)
 	{
 		RTC_LOG(LERROR) << __FUNCTION__ << "CreatePeerConnection failed";
