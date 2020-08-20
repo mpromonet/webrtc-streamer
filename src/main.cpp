@@ -137,20 +137,21 @@ int main(int argc, char* argv[])
 				std::cout << "\t -w webroot         : path to get files"                                                          << std::endl;
 				std::cout << "\t -c sslkeycert      : path to private key and certificate for HTTPS"                              << std::endl;
 				std::cout << "\t -N nbthreads       : number of threads for HTTP server"                                          << std::endl;
-				std::cout << "\t -A passwd          : password file for HTTP server access"                                          << std::endl;
-				std::cout << "\t -D authDomain      : authentication domain for HTTP server access (default:mydomain.com)"                                       << std::endl;
+				std::cout << "\t -A passwd          : password file for HTTP server access"                                       << std::endl;
+				std::cout << "\t -D authDomain      : authentication domain for HTTP server access (default:mydomain.com)"        << std::endl;
 			
 				std::cout << "\t -S[stun_address]                   : start embeded STUN server bind to address (default " << defaultlocalstunurl << ")" << std::endl;
-				std::cout << "\t -s[stun_address]                   : use an external STUN server (default:" << stunurl << " , -:means no STUN)"                    << std::endl;
+				std::cout << "\t -s[stun_address]                   : use an external STUN server (default:" << stunurl << " , -:means no STUN)"         << std::endl;
 				std::cout << "\t -t[username:password@]turn_address : use an external TURN relay server (default:disabled)"       << std::endl;
-				std::cout << "\t -T[username:password@]turn_address : start embeded TURN server (default:disabled)"       << std::endl;
+				std::cout << "\t -T[username:password@]turn_address : start embeded TURN server (default:disabled)"				  << std::endl;
 
 				std::cout << "\t -a[audio layer]                    : spefify audio capture layer to use (default:" << audioLayer << ")"          << std::endl;
 
-				std::cout << "\t -n name -u videourl -U audiourl    : register a stream with name using url"                         << std::endl;			
-				std::cout << "\t [url]                              : url to register in the source list"                                         << std::endl;
-				std::cout << "\t -C config.json                     : load urls from JSON config file"                                                 << std::endl;
-				std::cout << "\t -R [Udp port range min:max]        : Set the webrtc udp port range (default 0:65534)
+				std::cout << "\t -n name -u videourl -U audiourl    : register a stream with name using url"               << std::endl;			
+				std::cout << "\t [url]                              : url to register in the source list"                  << std::endl;
+				std::cout << "\t -C config.json                     : load urls from JSON config file"                     << std::endl;
+
+				std::cout << "\t -R [Udp port range min:max]        : Set the webrtc udp port range (default 0:65534)"     << std::endl;
 			
 				exit(0);
 		}
