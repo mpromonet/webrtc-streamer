@@ -154,7 +154,7 @@ class PeerConnectionManager {
 
 	class PeerConnectionObserver : public webrtc::PeerConnectionObserver {
 		public:
-			PeerConnectionObserver(PeerConnectionManager* peerConnectionManager, const std::string& peerid, const webrtc::PeerConnectionInterface::RTCConfiguration & config)
+			PeerConnectionObserver(PeerConnectionManager* peerConnectionManager, const std::string& peerid, const webrtc::PeerConnectionInterface::RTCConfiguration & config, std::unique_ptr<cricket::PortAllocator> portAllocator)
 			: m_peerConnectionManager(peerConnectionManager)
 			, m_peerid(peerid)
 			, m_localChannel(NULL)
@@ -163,7 +163,7 @@ class PeerConnectionManager {
 			, m_deleting(false) {
 				RTC_LOG(INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
 				m_pc = m_peerConnectionManager->m_peer_connection_factory->CreatePeerConnection(config,
-							    NULL,
+					std::move(portAllocator),
 							    NULL,
 							    this);
 				
@@ -259,7 +259,7 @@ class PeerConnectionManager {
 	};
 
 	public:
-		PeerConnectionManager(const std::list<std::string> & iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter);
+		PeerConnectionManager(const std::list<std::string> & iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter, const std::string& webrtcUdpPortRange);
 		virtual ~PeerConnectionManager();
 
 		bool InitializePeerConnection();
@@ -304,5 +304,6 @@ class PeerConnectionManager {
 		std::map<std::string,std::string>                                         m_videoaudiomap;
 		const std::regex                                                          m_publishFilter;
 		std::map<std::string,HttpServerRequestHandler::httpFunction>              m_func;
+		std::string																  m_webrtcPortRange;
 };
 
