@@ -31,23 +31,6 @@ script:
 before_deploy:
 - export RELEASE_PKG_FILE=$(ls *.tar.gz)
 - echo "RELEASE_PKG_FILE=${RELEASE_PKG_FILE}"   
-#deploy:
-#- provider: heroku
-#  skip_cleanup: true
-#  api_key:
-#    secure: NmTNf38MkoWWQZrRkXyWqCdRRO4Xjv+Kl0TOZPw+qCXva4kc2T0uwSi2o4YNZBUA533NyZvO6IJMQOpx24UkjPhxVv591FBB+HdUevOxD4SEAE8fBibpHVX3sTU0XLp/mx+BpNFdxKrEHHzoyBZBFjesQVVMVczB4AOv/KZerGw=
-#  on:
-#    repo: mpromonet/webrtc-streamer
-#    condition: $GYP_GENERATOR_OUTPUT = x86_64
-#- provider: releases
-#  skip_cleanup: true
-#  api_key:
-#    secure: FMXzmhBmuy7Jou3h5lG10b8xl5oqI96aYoUrUHO2rfKqQ4UMKxT3hXcdxOnSsnbI6d8NfXbOPKqmqmD4vTk+EqQjCK9fmsNxAg1UktLIsuOxoWmEWYLK5d3xpIuRmfRQDtPVjcryrE420FCfZS67lyr22+v1pLcvcD61ebGZLCg=
-#  file: 
-#  - "${RELEASE_PKG_FILE}"
-#  on:
-#    repo: mpromonet/webrtc-streamer
-#    tags: true
 
 jobs:
   include:
@@ -55,7 +38,7 @@ jobs:
       os: windows 
       script:
         - docker info
-        - docker build -f Dockerfile.windows .
+        - travis_wait 30 docker build -f Dockerfile.windows .
 stages:
   - docker
   - test
