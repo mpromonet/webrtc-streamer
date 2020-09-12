@@ -11,7 +11,7 @@
 
 #include "rtc_base/logging.h"
 
-#include "screencapturer.h"
+#include "desktopcapturer.h"
 
 void DesktopCapturer::OnCaptureResult(webrtc::DesktopCapturer::Result result, std::unique_ptr<webrtc::DesktopFrame> frame) {
 	

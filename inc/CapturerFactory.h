@@ -22,6 +22,7 @@
 
 #ifdef USE_X11
 #include "screencapturer.h"
+#include "windowcapturer.h"
 #endif
 
 #include "pc/video_track_source.h"
