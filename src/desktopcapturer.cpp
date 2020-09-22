@@ -18,17 +18,18 @@ void DesktopCapturer::OnCaptureResult(webrtc::DesktopCapturer::Result result, st
 	RTC_LOG(INFO) << "DesktopCapturer:OnCaptureResult";
 	
 	if (result == webrtc::DesktopCapturer::Result::SUCCESS) {
-		int width = frame->rect().width();
+		int width = frame->stride() / webrtc::DesktopFrame::kBytesPerPixel;
 		int height = frame->rect().height();
+
 		rtc::scoped_refptr<webrtc::I420Buffer> I420buffer = webrtc::I420Buffer::Create(width, height);
 
-		const int conversionResult = libyuv::ConvertToI420(frame->data(), frame->stride()*webrtc::DesktopFrame::kBytesPerPixel,
+		const int conversionResult = libyuv::ConvertToI420(frame->data(), 0,
 			I420buffer->MutableDataY(), I420buffer->StrideY(),
 			I420buffer->MutableDataU(), I420buffer->StrideU(),
 			I420buffer->MutableDataV(), I420buffer->StrideV(),
 			0, 0,
 			width, height,
-			width, height,
+			I420buffer->width(), I420buffer->height(),
 			libyuv::kRotate0, ::libyuv::FOURCC_ARGB);									
 				
 		if (conversionResult >= 0) {
