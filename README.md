@@ -2,8 +2,9 @@
 [![CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer.svg?style=shield)](https://circleci.com/gh/mpromonet/webrtc-streamer)
 [![Appveyor](https://ci.appveyor.com/api/projects/status/github/mpromonet/webrtc-streamer?branch=master&svg=true)](https://ci.appveyor.com/project/mpromonet/webrtc-streamer/build/artifacts)
 [![CirusCI](https://api.cirrus-ci.com/github/mpromonet/webrtc-streamer.svg)](https://cirrus-ci.com/github/mpromonet/webrtc-streamer)
-[![Snap Status](https://build.snapcraft.io/badge/mpromonet/webrtc-streamer.svg)](https://build.snapcraft.io/user/mpromonet/webrtc-streamer)
-[![GithubCI](https://github.com/mpromonet/webrtc-streamer/workflows/C/C++%20CI/badge.svg)](https://github.com/mpromonet/webrtc-streamer/actions)
+[![Snap Status](https://snapcraft.io//webrtc-streamer/badge.svg)](https://snapcraft.io/webrtc-streamer)
+[![GithubCI](https://github.com/mpromonet/webrtc-streamer/workflows/C/C++%20CI%20linux/badge.svg)](https://github.com/mpromonet/webrtc-streamer/actions)
+[![GithubCI](https://github.com/mpromonet/webrtc-streamer/workflows/C/C++%20CI%20windows/badge.svg)](https://github.com/mpromonet/webrtc-streamer/actions)
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c209c81a15854964a08df5c300f56804)](https://www.codacy.com/app/michelpromonet_2643/webrtc-streamer?utm_source=github.com&utm_medium=referral&utm_content=mpromonet/webrtc-streamer&utm_campaign=badger)
 
