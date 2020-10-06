@@ -88,7 +88,7 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
   pkg_check_modules(GTK3 QUIET gtk+-3.0)
   MESSAGE("GTK_FOUND = ${GTK3_FOUND}")
   if(NOT GTK3_FOUND OR (WEBRTCDESKTOPCAPTURE STREQUAL "OFF"))
-    set (WEBRTCARGS rtc_use_x11=false\nis_desktop_linux=false\nuse_glib=false\nuse_gio=false\n${WEBRTCARGS})
+    set (WEBRTCARGS rtc_use_x11=false\nrtc_use_pipewire=false\n${WEBRTCARGS})
   endif()
 
   # write conf file
