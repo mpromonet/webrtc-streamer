@@ -152,7 +152,7 @@ jobs:
       - attach_workspace:
           at: /
       - checkout
-      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make cmake g++ xz-utils 
+      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make cmake g++ xz-utils pkg-config
       - run: 
           command: wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
           no_output_timeout: 30m
@@ -185,7 +185,7 @@ jobs:
       - attach_workspace:
           at: /
       - checkout
-      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git cmake make g++ xz-utils
+      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git cmake make g++ xz-utils pkg-config
       - run: 
           command: wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
           no_output_timeout: 30m
