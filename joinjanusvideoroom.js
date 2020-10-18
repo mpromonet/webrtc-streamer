@@ -4,30 +4,26 @@
 */
 
 // decode arguments
-if (process.argv.length <= 2) {
-    console.log("Usage: " + __filename + " <webrtc-streamer url> <videourl>");
+if (process.argv.length < 4) {
+    console.log("Usage: " + __filename + " <webrtc-streamer url> <videourl> <janus url> <janus room>");
     process.exit(-1);
 }
 var webrtcstreamerurl = process.argv[2];
 console.log("webrtcstreamerurl: " + webrtcstreamerurl);
 var videourl = process.argv[3];
 console.log("videourl: " + videourl);
+var janusRoomUrl = process.argv[4];
+console.log("janusRoomUrl: " + janusRoomUrl);
+var roomId = 1234
+if (process.argv.length >= 5) {
+	roomId = process.argv[5];
+}
+console.log("roomId: " + roomId);
 
-// get configuration from webrtc-streamer using janusvideoroom.json
-global.request = require("then-request");
+global.fetch = require("node-fetch");
 var JanusVideoRoom = require("./html/janusvideoroom.js"); 
+var janus = new JanusVideoRoom(janusRoomUrl, webrtcstreamerurl);
 
-request( "GET",  webrtcstreamerurl + "/janusvideoroom.json" ).done(
-	function (response) { 
-		if (response.statusCode === 200) {
-			console.log("HTTP answer:"+ response.body);
-			eval("{" + response.body + "}");
-			
-			var janus = new JanusVideoRoom(janusRoomConfig.url, webrtcstreamerurl);
-			janus.join(janusRoomConfig.roomId,videourl,"video");
-		} else {
-			console.log("HTTP code:"+ response.statusCode);
-		}
-	}
-);
+janus.join(roomId,videourl,"video");
+
 

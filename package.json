@@ -6,12 +6,12 @@
   "dependencies": {
     "jquery": "^3.3.1",
     "jsdom": "^16.2.2",
+    "node-fetch": "^2.6.1",
     "strophe.jingle": "0.0.9",
     "strophe.js": "^1.2.15",
     "strophejs-plugin-caps": "^1.1.0",
     "strophejs-plugin-disco": "0.0.2",
-    "strophejs-plugin-muc": "^1.1.0",
-    "then-request": "^6.0.0"
+    "strophejs-plugin-muc": "^1.1.0"
   },
   "repository": {
     "type": "git",

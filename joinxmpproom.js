@@ -4,14 +4,21 @@
 */
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 // decode arguments
-if (process.argv.length <= 2) {
-    console.log("Usage: " + __filename + " <webrtc-streamer url> <videourl>");
+if (process.argv.length <= 4) {
+    console.log("Usage: " + __filename + " <webrtc-streamer url> <videourl> <xmpp url> <xmpp room>");
     process.exit(-1);
 }
 var webrtcstreamerurl = process.argv[2];
 console.log("webrtcstreamerurl: " + webrtcstreamerurl);
 var videourl = process.argv[3];
 console.log("videourl: " + videourl);
+var xmppRoomUrl = process.argv[4];
+console.log("xmppRoomUrl: " + xmppRoomUrl);
+var xmppRoomId = "testroom"
+if (process.argv.length >= 5) {
+	xmppRoomId = process.argv[5];
+}
+console.log("xmppRoomId: " + xmppRoomId);
 
 var jsdom = require("jsdom");
 const { JSDOM } = jsdom;
@@ -35,24 +42,13 @@ require("strophejs-plugin-muc");
 
 global.SDP = require("strophe.jingle/strophe.jingle.sdp.js");
 
-request = require("then-request");
+global.fetch = require("node-fetch");
 var XMPPVideoRoom = require("./html/xmppvideoroom.js"); 
 
-// get configuration from webrtc-streamer using janusvideoroom.json
-request( "GET",  webrtcstreamerurl + "/xmppvideoroom.json" ).done(
-	function (response) { 
-		if (response.statusCode === 200) {
-			console.log("HTTP answer:"+ response.body);
-			eval("{" + response.body + "}");
 			
-			var xmpp = new XMPPVideoRoom(xmppRoomConfig.url, webrtcstreamerurl);
-			var username = "user"+Math.random().toString(36).slice(2);
-			console.log("join " + xmppRoomConfig.roomId + "/" + username);
+var xmpp = new XMPPVideoRoom(xmppRoomUrl, webrtcstreamerurl);
+var username = "user"+Math.random().toString(36).slice(2);
+console.log("join " + xmppRoomId + "/" + username);
 
-			xmpp.join(xmppRoomConfig.roomId,videourl,username);
-		} else {
-			console.log("HTTP code:"+ response.statusCode);
-		}
-	}
-);
+xmpp.join(xmppRoomId,videourl,username);
 
