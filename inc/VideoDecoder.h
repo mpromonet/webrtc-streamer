@@ -22,9 +22,9 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
         {
             public:
                 Frame(): m_timestamp_ms(0) {}
-                Frame(std::vector<uint8_t> && content, uint64_t timestamp_ms, webrtc::VideoFrameType frameType) : m_content(content), m_timestamp_ms(timestamp_ms), m_frameType(frameType) {}
+                Frame(const rtc::scoped_refptr<webrtc::EncodedImageBuffer> & content, uint64_t timestamp_ms, webrtc::VideoFrameType frameType) : m_content(content), m_timestamp_ms(timestamp_ms), m_frameType(frameType) {}
             
-                std::vector<uint8_t>   m_content;
+                rtc::scoped_refptr<webrtc::EncodedImageBuffer>   m_content;
                 uint64_t               m_timestamp_ms;
                 webrtc::VideoFrameType m_frameType;
         };
@@ -53,14 +53,13 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
                 m_queue.pop();		
                 mlock.unlock();
                 
-                RTC_LOG(LS_VERBOSE) << "VideoDecoder::DecoderThread size:" << frame.m_content.size() << " ts:" << frame.m_timestamp_ms;
-                uint8_t* data = frame.m_content.data();
-                ssize_t size = frame.m_content.size();
+                RTC_LOG(LS_VERBOSE) << "VideoDecoder::DecoderThread size:" << frame.m_content->size() << " ts:" << frame.m_timestamp_ms;
+                ssize_t size = frame.m_content->size();
                 
                 if (size) {
-                    webrtc::EncodedImage input_image(data, size, size);		
+                    webrtc::EncodedImage input_image;
+                    input_image.SetEncodedData(frame.m_content);		
                     input_image._frameType = frame.m_frameType;
-                    input_image._completeFrame = true;	
                     input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
                     int res = m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
                     if (res != WEBRTC_VIDEO_CODEC_OK) {
@@ -150,8 +149,8 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
             return (m_decoder.get() != NULL);
         }
 
-        void PostFrame(std::vector<uint8_t>&& content, uint64_t ts, webrtc::VideoFrameType frameType) {
-			Frame frame(std::move(content), ts, frameType);			
+        void PostFrame(const rtc::scoped_refptr<webrtc::EncodedImageBuffer>& content, uint64_t ts, webrtc::VideoFrameType frameType) {
+			Frame frame(content, ts, frameType);			
 			{
 				std::unique_lock<std::mutex> lock(m_queuemutex);
 				m_queue.push(frame);

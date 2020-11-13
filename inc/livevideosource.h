@@ -166,7 +166,8 @@ public:
                     RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SLICE NALU:" << nalu_type;
                 }
                 content.insert(content.end(), buffer, buffer + size);
-                m_decoder.PostFrame(std::move(content), ts, frameType);
+                rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
+                m_decoder.PostFrame(frame, ts, frameType);
             }
             else
             {
@@ -195,7 +196,12 @@ public:
 
                 if (conversionResult >= 0)
                 {
-                    webrtc::VideoFrame frame(I420buffer, 0, ts, webrtc::kVideoRotation_0);
+                    webrtc::VideoFrame frame = webrtc::VideoFrame::Builder()
+                        .set_video_frame_buffer(I420buffer)
+                        .set_rotation(webrtc::kVideoRotation_0)
+                        .set_timestamp_ms(ts)
+                        .set_id(ts)
+                        .build();
                     m_decoder.Decoded(frame);
                 }
                 else
@@ -218,10 +224,10 @@ public:
             }
             if (m_decoder.hasDecoder())
             {
+
                 webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameKey;
-                std::vector<uint8_t> content;
-                content.insert(content.end(), buffer, buffer + size);
-                m_decoder.PostFrame(std::move(content), ts, frameType);
+                rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(buffer, size);
+                m_decoder.PostFrame(frame, ts, frameType);
             }
         }
 
