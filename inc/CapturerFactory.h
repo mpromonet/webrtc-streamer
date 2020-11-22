@@ -15,6 +15,7 @@
 
 #ifdef HAVE_LIVE555
 #include "rtspvideocapturer.h"
+#include "rtpvideocapturer.h"
 #include "filevideocapturer.h"
 #include "rtspaudiocapturer.h"
 #include "fileaudiocapturer.h"
@@ -135,6 +136,12 @@ class CapturerFactory {
 			videoSource = TrackSource<FileVideoCapturer>::Create(videourl, opts);
 #endif
 		}
+		else if ((videourl.find("rtp://") == 0) && (std::regex_match("rtp://", publishFilter)))
+		{
+#ifdef HAVE_LIVE555
+			videoSource = TrackSource<RTPVideoCapturer>::Create(SDPClient::getSdpFromRtpUrl(videourl), opts);
+#endif
+		}		
 		else if ((videourl.find("screen://") == 0) && (std::regex_match("screen://", publishFilter)))
 		{
 #ifdef USE_X11

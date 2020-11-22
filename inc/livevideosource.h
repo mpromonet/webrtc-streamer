@@ -74,16 +74,17 @@ public:
         bool success = false;
         if (strcmp(media, "video") == 0)
         {
-            RTC_LOG(INFO) << "LiveVideoSource::onNewSession " << media << "/" << codec << " " << sdp;
+            RTC_LOG(INFO) << "LiveVideoSource::onNewSession id:"<< id << " media:" << media << "/" << codec << " sdp:" << sdp;
 
             if ( (strcmp(codec, "H264") == 0)
                || (strcmp(codec, "JPEG") == 0)
                || (strcmp(codec, "VP9") == 0) )
             {
+                RTC_LOG(INFO) << "LiveVideoSource::onNewSession id:'" << id << "' '" << codec << "'\n";
                 m_codec[id] = codec;
                 success = true;
             }
-
+            RTC_LOG(INFO) << "LiveVideoSource::onNewSession success:" << success << "\n";
             if (success) 
             {
                 struct timeval presentationTime;
