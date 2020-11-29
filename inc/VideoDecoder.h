@@ -53,17 +53,19 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
                 m_queue.pop();		
                 mlock.unlock();
                 
-                RTC_LOG(LS_VERBOSE) << "VideoDecoder::DecoderThread size:" << frame.m_content->size() << " ts:" << frame.m_timestamp_ms;
-                ssize_t size = frame.m_content->size();
-                
-                if (size) {
-                    webrtc::EncodedImage input_image;
-                    input_image.SetEncodedData(frame.m_content);		
-                    input_image._frameType = frame.m_frameType;
-                    input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
-                    int res = m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
-                    if (res != WEBRTC_VIDEO_CODEC_OK) {
-                        RTC_LOG(LS_ERROR) << "VideoDecoder::DecoderThread failure:" << res;
+                if (frame.m_content.get() != NULL) {
+                    RTC_LOG(LS_VERBOSE) << "VideoDecoder::DecoderThread size:" << frame.m_content->size() << " ts:" << frame.m_timestamp_ms;
+                    ssize_t size = frame.m_content->size();
+                    
+                    if (size) {
+                        webrtc::EncodedImage input_image;
+                        input_image.SetEncodedData(frame.m_content);		
+                        input_image._frameType = frame.m_frameType;
+                        input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
+                        int res = m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
+                        if (res != WEBRTC_VIDEO_CODEC_OK) {
+                            RTC_LOG(LS_ERROR) << "VideoDecoder::DecoderThread failure:" << res;
+                        }
                     }
                 }
             }
