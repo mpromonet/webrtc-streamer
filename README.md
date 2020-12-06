@@ -151,7 +151,6 @@ A short sample HTML page using webrtc-streamer running locally on port 8000 :
 
 	<html>
 	<head>
-	<script src="libs/request.min.js" ></script>
 	<script src="libs/adapter.min.js" ></script>
 	<script src="webrtcstreamer.js" ></script>
 	<script>        
@@ -213,7 +212,6 @@ A short sample to publish WebRTC streams to Janus Video Room could be :
 
 	<html>
 	<head>
-	<script src="libs/request.min.js" ></script>
 	<script src="janusvideoroom.js" ></script>
 	<script>        
 		var janus = new JanusVideoRoom("https://janus.conf.meetecho.com/janus", null);
@@ -251,7 +249,6 @@ A short sample to publish WebRTC streams to a Jitsi Video Room could be :
 	<script src="libs/strophe.disco.min.js" ></script>
 	<script src="libs/strophe.jingle.sdp.js"></script>
 	<script src="libs/jquery-1.12.4.min.js"></script>
-	<script src="libs/request.min.js" ></script>
 	<script src="xmppvideoroom.js" ></script>
 	<script>        
 		var xmpp = new XMPPVideoRoom("meet.jit.si", null);
