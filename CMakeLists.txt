@@ -93,7 +93,9 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
 
   # write conf file
   FILE(WRITE ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn ${WEBRTCARGS})
+endif() 
 
+if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/obj/libwebrtc.a)
   if (WIN32)
     SET (SHELLCOMMAND cmd /c )
   endif(WIN32)
@@ -167,7 +169,8 @@ else()
     target_link_libraries (${PROJECT_NAME} dl)
     #alsa
     if (ALSA_FOUND)
-        add_definitions(-DHAVE_SOUND)
+        add_definitions(-DHAVE_SOUND -DHAVE_ALSA)
+        target_link_libraries (${PROJECT_NAME} ${ALSA_LIBRARY})
     endif()
     # static link of stdc++ if available on arm (raise unresolved symbol on x86-64)
     if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*")
