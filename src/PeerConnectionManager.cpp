@@ -402,7 +402,7 @@ const Json::Value PeerConnectionManager::getAudioDeviceList()
 ** -------------------------------------------------------------------------*/
 const Json::Value PeerConnectionManager::getIceServers(const std::string &clientIp)
 {
-	Json::Value urls;
+	Json::Value urls(Json::arrayValue);
 
 	for (auto iceServer : m_iceServerList)
 	{
