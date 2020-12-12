@@ -193,6 +193,7 @@ class CapturerFactory {
 				char id[webrtc::kAdmMaxGuidSize] = {0};
 				if (audioDeviceModule->RecordingDeviceName(i, name, id) != -1)
 				{
+					RTC_LOG(INFO) << "audiourl:" << audiourl << " idx_audioDevice:" << i << " " << name;
 					if (audiourl == name)
 					{
 						idx_audioDevice = i;
@@ -200,7 +201,7 @@ class CapturerFactory {
 					}
 				}
 			}
-			RTC_LOG(LS_ERROR) << "audiourl:" << audiourl << " idx_audioDevice:" << idx_audioDevice;
+			RTC_LOG(LS_ERROR) << "audiourl:" << audiourl << " idx_audioDevice:" << idx_audioDevice << "/" << num_audioDevices;
 			if ( (idx_audioDevice >= 0) && (idx_audioDevice < num_audioDevices) )
 			{
 				audioDeviceModule->SetRecordingDevice(idx_audioDevice);

@@ -34,9 +34,13 @@ add_definitions(-DVERSION=\"${VERSION}\")
 find_package(ALSA QUIET)
 MESSAGE("ALSA_FOUND = ${ALSA_FOUND}")
 
+# pulse ?
+find_package(PulseAudio QUIET)
+MESSAGE("PulseAudio_FOUND = ${PulseAudio_FOUND}")
+
 # webrtc
 if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
-  set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_include_pulse_audio=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nrtc_enable_libevent=false\nrtc_build_libevent=false\n)
+  set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nrtc_enable_libevent=false\nrtc_build_libevent=false\n)
   set (WEBRTCARGS use_custom_libcxx=false\n${WEBRTCARGS})
   # debug/release
   if(WEBRTCBUILD STREQUAL "Release")
@@ -60,6 +64,9 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
 
   # sound support
   if (NOT WIN32)
+    if (NOT PulseAudio_FOUND)
+      set (WEBRTCARGS rtc_include_pulse_audio=false\n${WEBRTCARGS})
+    endif()
     if (NOT ALSA_FOUND)
       set (WEBRTCARGS rtc_include_internal_audio_device=false\n${WEBRTCARGS})
     endif()
