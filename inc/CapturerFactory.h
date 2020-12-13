@@ -187,17 +187,27 @@ class CapturerFactory {
 			audioDeviceModule->Init();
 			int16_t num_audioDevices = audioDeviceModule->RecordingDevices();
 			int16_t idx_audioDevice = -1;
-			for (int i = 0; i < num_audioDevices; ++i)
-			{
-				char name[webrtc::kAdmMaxDeviceNameSize] = {0};
-				char id[webrtc::kAdmMaxGuidSize] = {0};
-				if (audioDeviceModule->RecordingDeviceName(i, name, id) != -1)
+			char name[webrtc::kAdmMaxDeviceNameSize] = {0};
+			char id[webrtc::kAdmMaxGuidSize] = {0};			
+			if (audiourl.find("audiocap://") == 0) {
+				int deviceNumber = atoi(audiourl.substr(strlen("audiocap://")).c_str());
+				RTC_LOG(INFO) << "audiourl:" << audiourl << " device number:" << deviceNumber;
+				if (audioDeviceModule->RecordingDeviceName(deviceNumber, name, id) != -1)
 				{
-					RTC_LOG(INFO) << "audiourl:" << audiourl << " idx_audioDevice:" << i << " " << name;
-					if (audiourl == name)
+					idx_audioDevice = deviceNumber;
+				}
+
+			} else {
+				for (int i = 0; i < num_audioDevices; ++i)
+				{
+					if (audioDeviceModule->RecordingDeviceName(i, name, id) != -1)
 					{
-						idx_audioDevice = i;
-						break;
+						RTC_LOG(INFO) << "audiourl:" << audiourl << " idx_audioDevice:" << i << " " << name;
+						if (audiourl == name)
+						{
+							idx_audioDevice = i;
+							break;
+						}
 					}
 				}
 			}

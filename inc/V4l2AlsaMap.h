@@ -9,9 +9,8 @@
 
 #pragma once
 
-#ifdef HAVE_ALSA
+#ifndef WIN32
 #include <dirent.h>
-#include <alsa/asoundlib.h>
 
 /* ---------------------------------------------------------------------------
 **  get a "deviceid" from uevent sys file
@@ -31,10 +30,7 @@ std::string getDeviceId(const std::string& evt) {
     }
     return deviceid;
 }
-
-std::map<std::string,std::string>  getV4l2AlsaMap() {
-	std::map<std::string,std::string> videoaudiomap;
-
+std::map<std::string,std::string> getVideoDevices() {
 	std::map<std::string,std::string> videodevices;
 	std::string video4linuxPath("/sys/class/video4linux");
 	DIR *dp = opendir(video4linuxPath.c_str());
@@ -63,36 +59,50 @@ std::map<std::string,std::string>  getV4l2AlsaMap() {
 		}
 		closedir(dp);
 	}
+	return videodevices;
+}
 
+std::map<std::string,std::string> getAudioDevices() {
 	std::map<std::string,std::string> audiodevices;
-	int rcard = -1;
-	while ( (snd_card_next(&rcard) == 0) && (rcard>=0) ) {
-		void **hints = NULL;
-		if (snd_device_name_hint(rcard, "pcm", &hints) >= 0) {
-			void **str = hints;
-			while (*str) {
-				std::ostringstream os;
-				os << "/sys/class/sound/card" << rcard << "/device/uevent";
+	std::string audioLinuxPath("/sys/class/sound");
+	DIR *dp = opendir(audioLinuxPath.c_str());
+	if (dp != NULL) {
+		struct dirent *entry = NULL;
+		while((entry = readdir(dp))) {
+			std::string devicename;
+			std::string deviceid;
+			if (strstr(entry->d_name,"card") == entry->d_name) {
+				std::string devicePath(audioLinuxPath);
+				devicePath.append("/").append(entry->d_name).append("/device/uevent");	
 
-				std::ifstream ifs(os.str().c_str());
+				std::ifstream ifs(devicePath.c_str());
 				std::string deviceid = std::string(std::istreambuf_iterator<char>{ifs}, {});
 				deviceid.erase(deviceid.find_last_not_of("\n")+1);
 				deviceid = getDeviceId(deviceid);
 
 				if (!deviceid.empty()) {
 					if (audiodevices.find(deviceid) == audiodevices.end()) {
-						std::string audioname = snd_device_name_get_hint(*str, "DESC");
-						std::replace( audioname.begin(), audioname.end(), '\n', '-');
-						audiodevices[deviceid] = audioname;
+						std::string audioname(entry->d_name);
+						int deviceNumber = atoi(audioname.substr(strlen("card")).c_str());
+
+						std::string devname = "audiocap://";
+						devname += std::to_string(deviceNumber);
+						std::cout << devname << std::endl;
+						audiodevices[deviceid] = devname;
 					}
-				}
-
-				str++;
+				}							
 			}
-
-			snd_device_name_free_hint(hints);
-		}
+		}	
+		closedir(dp);	
 	}
+	return audiodevices;
+}
+
+std::map<std::string,std::string>  getV4l2AlsaMap() {
+	std::map<std::string,std::string> videoaudiomap;
+
+	std::map<std::string,std::string> videodevices = getVideoDevices();
+	std::map<std::string,std::string> audiodevices = getAudioDevices();
 
 	for (auto & id : videodevices) {
 		auto audioDevice = audiodevices.find(id.second);
