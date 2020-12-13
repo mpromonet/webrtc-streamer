@@ -107,7 +107,7 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
   FILE(WRITE ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn ${WEBRTCARGS})
 endif() 
 
-if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/obj/libwebrtc.a)
+if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/obj/libwebrtc${CMAKE_STATIC_LIBRARY_SUFFIX})
   if (WIN32)
     SET (SHELLCOMMAND cmd /c )
   endif(WIN32)
@@ -135,9 +135,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE inc)
 
 set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
-
-find_library(WEBRTC_LIBRARY NAMES webrtc PATHS ${WEBRTCOBJS})
-target_link_libraries (${PROJECT_NAME} ${WEBRTC_LIBRARY}) 
+target_link_libraries (${PROJECT_NAME} ${WEBRTCOBJS}/libwebrtc${CMAKE_STATIC_LIBRARY_SUFFIX}) 
 
 # thread
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
@@ -182,8 +180,7 @@ else()
     target_link_libraries (${PROJECT_NAME} dl)
     #alsa
     if (ALSA_FOUND)
-        add_definitions(-DHAVE_SOUND -DHAVE_ALSA)
-        target_link_libraries (${PROJECT_NAME} ${ALSA_LIBRARY})
+        add_definitions(-DHAVE_SOUND)
     endif()
     # static link of stdc++ if available on arm (raise unresolved symbol on x86-64)
     if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*")
