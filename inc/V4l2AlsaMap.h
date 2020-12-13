@@ -87,7 +87,6 @@ std::map<std::string,std::string> getAudioDevices() {
 
 						std::string devname = "audiocap://";
 						devname += std::to_string(deviceNumber);
-						std::cout << devname << std::endl;
 						audiodevices[deviceid] = devname;
 					}
 				}							
