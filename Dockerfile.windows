@@ -1,5 +1,5 @@
 # build
-FROM cirrusci/windowsservercore:2019 as builder
+FROM mcr.microsoft.com/windows/servercore:20H2 as builder
 LABEL maintainer=michel.promonet@free.fr
 
 WORKDIR /webrtc-streamer
