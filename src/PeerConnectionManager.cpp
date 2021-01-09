@@ -154,6 +154,17 @@ webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencie
 
 	cricket::MediaEngineDependencies mediaDependencies;
 	mediaDependencies.task_queue_factory = dependencies.task_queue_factory.get();
+
+	// try to init audio
+	if (audioDeviceModule.get()) {
+		if (audioDeviceModule->Init() != 0) {
+			RTC_LOG(WARNING) << "audio init fails -> disable audio capture";
+			audioDeviceModule = new webrtc::FakeAudioDeviceModule();
+		}
+	} else {
+		RTC_LOG(WARNING) << "no audio device -> disable audio capture";
+		audioDeviceModule = new webrtc::FakeAudioDeviceModule();
+	}
 	mediaDependencies.adm = std::move(audioDeviceModule);
 	mediaDependencies.audio_encoder_factory = webrtc::CreateBuiltinAudioEncoderFactory();
 	mediaDependencies.audio_decoder_factory = std::move(audioDecoderfactory);
