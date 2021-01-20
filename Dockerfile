@@ -5,7 +5,7 @@ LABEL maintainer=michel.promonet@free.fr
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
-RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils libpulse-dev libasound2-dev libgtk-3-dev libxtst-dev libssl-dev cmake p7zip-full \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils libpulse-dev libasound2-dev libgtk-3-dev libxtst-dev libssl-dev cmake p7zip-full \
         && git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /webrtc/depot_tools \
         && export PATH=/webrtc/depot_tools:$PATH \
 	&& cd /webrtc \
@@ -25,7 +25,7 @@ FROM ubuntu:20.04
 WORKDIR /app
 COPY --from=builder /app/ /app/
 
-RUN apt-get update && apt-get install -y --no-install-recommends libasound2 libgtk-3-0 libxtst6 libssl1.1 libpulse0 \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libasound2 libgtk-3-0 libxtst6 libssl1.1 libpulse0 \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/ \
 	&& ./webrtc-streamer -V
 
