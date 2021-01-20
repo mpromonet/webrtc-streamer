@@ -1,5 +1,5 @@
 # build
-FROM heroku/heroku:18 as builder
+FROM ubuntu:20.04 as builder
 LABEL maintainer=michel.promonet@free.fr
 
 WORKDIR /webrtc-streamer
@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends g++ autoconf au
 	&& apt-get clean && rm -rf /var/lib/apt/lists/
 
 # run
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 WORKDIR /app
 COPY --from=builder /app/ /app/
@@ -28,8 +28,6 @@ COPY --from=builder /app/ /app/
 RUN apt-get update && apt-get install -y --no-install-recommends libasound2 libgtk-3-0 libxtst6 libssl1.1 libpulse0 \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/ \
 	&& ./webrtc-streamer -V
-
-EXPOSE 8000
 
 ENTRYPOINT [ "./webrtc-streamer" ]
 CMD [ "-a", "-C", "config.json" ]
