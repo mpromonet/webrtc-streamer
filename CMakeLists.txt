@@ -146,7 +146,7 @@ target_link_libraries (${PROJECT_NAME} Threads::Threads)
 add_library (civetweb STATIC civetweb/src/civetweb.c civetweb/src/CivetServer.cpp)	
 target_link_libraries (${PROJECT_NAME} civetweb) 
 target_include_directories(civetweb PUBLIC civetweb/include) 
-add_definitions(-DOPENSSL_API_1_1)
+add_definitions(-DOPENSSL_API_1_1 -DCRYPTO_LIB="libcrypto.so.1.1" -DSSL_LIB="libssl.so.1.1")
 
 add_definitions(-DHAVE_JPEG)
 
