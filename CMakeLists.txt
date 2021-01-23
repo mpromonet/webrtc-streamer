@@ -135,6 +135,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc)
 set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
 target_link_libraries (${CMAKE_PROJECT_NAME} ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX}) 
+add_definitions(-DHAVE_JPEG)
 
 # thread
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
@@ -148,6 +149,14 @@ target_link_libraries (${CMAKE_PROJECT_NAME} civetweb)
 target_include_directories(civetweb PUBLIC civetweb/include) 
 add_definitions(-DOPENSSL_API_1_1 -DCRYPTO_LIB="libcrypto.so.1.1" -DSSL_LIB="libssl.so.1.1")
 
+# overide compilation flags
+if (WIN32)
+    set(CompilerFlags CMAKE_CXX_FLAGS_DEBUG CMAKE_C_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_C_FLAGS_RELEASE)
+    foreach(CompilerFlag ${CompilerFlags})
+      string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+    endforeach()
+endif()
+
 # prometheus 
 include(GenerateExportHeader)
 set(CMAKE_INSTALL_INCLUDEDIR build/include)
@@ -158,8 +167,10 @@ add_subdirectory(prometheus-cpp/core EXCLUDE_FROM_ALL)
 target_link_libraries (${CMAKE_PROJECT_NAME} core)  
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC prometheus-cpp/core/include)
 
-# ???
-add_definitions(-DHAVE_JPEG)
+# live555helper 
+add_subdirectory(live555helper EXCLUDE_FROM_ALL)
+target_link_libraries (${CMAKE_PROJECT_NAME} liblive555helper) 
+add_definitions(-DHAVE_LIVE555 -DNO_OPENSSL=1)
 
 # compiler specific
 if (WIN32)
@@ -169,10 +180,6 @@ if (WIN32)
     target_link_libraries (${CMAKE_PROJECT_NAME} getopt)
     # webrtc
     add_definitions(-DWEBRTC_WIN -EHsc -DNOMINMAX -D__PRETTY_FUNCTION__=__FUNCTION__ -D_HAS_ITERATOR_DEBUGGING=0)
-    set(CompilerFlags CMAKE_CXX_FLAGS_DEBUG CMAKE_C_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_C_FLAGS_RELEASE)
-    foreach(CompilerFlag ${CompilerFlags})
-      string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
-    endforeach()
     add_definitions(-DUSE_X11 -DHAVE_SOUND -D_WINSOCKAPI_)
     target_link_libraries (${CMAKE_PROJECT_NAME} secur32 dmoguids wmcodecdspuuid strmiids msdmo winmm dxgi d3d11)
 else()
@@ -205,11 +212,6 @@ else()
       endif()    
     endif()    
 endif()
-
-# live555helper 
-add_subdirectory(live555helper EXCLUDE_FROM_ALL)
-target_link_libraries (${CMAKE_PROJECT_NAME} liblive555helper) 
-add_definitions(-DHAVE_LIVE555 -DNO_OPENSSL=1)
 
 #cpack
 install (TARGETS ${CMAKE_PROJECT_NAME} RUNTIME DESTINATION .)
