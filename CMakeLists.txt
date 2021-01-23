@@ -128,23 +128,23 @@ SET (WEBRTCEXTRAOBJS ${WEBRTJSONCPPCOBJS} ${WEBRTBBRCOBJS} ${WEBRTP2POBJ} ${WEBR
 
 # project target
 FILE(GLOB SOURCE src/*.cpp)
-add_executable (${PROJECT_NAME} ${SOURCE} ${WEBRTCEXTRAOBJS})
-target_include_directories(${PROJECT_NAME} PRIVATE inc) 
+add_executable (${CMAKE_PROJECT_NAME} ${SOURCE} ${WEBRTCEXTRAOBJS})
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc) 
 
 # webrtc 
 set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
-target_include_directories(${PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
-target_link_libraries (${PROJECT_NAME} ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX}) 
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
+target_link_libraries (${CMAKE_PROJECT_NAME} ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX}) 
 
 # thread
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package (Threads)
-target_link_libraries (${PROJECT_NAME} Threads::Threads) 
+target_link_libraries (${CMAKE_PROJECT_NAME} Threads::Threads) 
 
 # civetweb
 add_library (civetweb STATIC civetweb/src/civetweb.c civetweb/src/CivetServer.cpp)	
-target_link_libraries (${PROJECT_NAME} civetweb) 
+target_link_libraries (${CMAKE_PROJECT_NAME} civetweb) 
 target_include_directories(civetweb PUBLIC civetweb/include) 
 add_definitions(-DOPENSSL_API_1_1 -DCRYPTO_LIB="libcrypto.so.1.1" -DSSL_LIB="libssl.so.1.1")
 
@@ -155,7 +155,7 @@ if (WIN32)
     # getopt
     add_library (getopt getopt/getopt.c)
     target_include_directories(getopt PUBLIC getopt) 
-    target_link_libraries (${PROJECT_NAME} getopt)
+    target_link_libraries (${CMAKE_PROJECT_NAME} getopt)
     # webrtc
     add_definitions(-DWEBRTC_WIN -EHsc -DNOMINMAX -D__PRETTY_FUNCTION__=__FUNCTION__ -D_HAS_ITERATOR_DEBUGGING=0)
     set(CompilerFlags CMAKE_CXX_FLAGS_DEBUG CMAKE_C_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_C_FLAGS_RELEASE)
@@ -163,20 +163,20 @@ if (WIN32)
       string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
     endforeach()
     add_definitions(-DUSE_X11 -DHAVE_SOUND -D_WINSOCKAPI_)
-    target_link_libraries (${PROJECT_NAME} secur32 dmoguids wmcodecdspuuid strmiids msdmo winmm dxgi d3d11)
+    target_link_libraries (${CMAKE_PROJECT_NAME} secur32 dmoguids wmcodecdspuuid strmiids msdmo winmm dxgi d3d11)
 else()
     # webrtc
     add_definitions(-DWEBRTC_POSIX -fno-rtti)
     if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
-        target_link_libraries (${PROJECT_NAME} -Wl,-Bstatic -latomic -Wl,-Bdynamic)
+        target_link_libraries (${CMAKE_PROJECT_NAME} -Wl,-Bstatic -latomic -Wl,-Bdynamic)
         add_definitions(-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard)
     endif()
     if (EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/obj/modules/desktop_capture/desktop_capture.ninja)
         add_definitions(-DUSE_X11)
-        target_link_libraries (${PROJECT_NAME} X11 Xext Xdamage Xfixes Xcomposite Xrandr Xtst)
+        target_link_libraries (${CMAKE_PROJECT_NAME} X11 Xext Xdamage Xfixes Xcomposite Xrandr Xtst)
     endif()
     # civetweb
-    target_link_libraries (${PROJECT_NAME} dl)
+    target_link_libraries (${CMAKE_PROJECT_NAME} dl)
     #alsa
     if (ALSA_FOUND)
         add_definitions(-DHAVE_SOUND)
@@ -186,22 +186,30 @@ else()
       include(CheckCXXCompilerFlag)
       CHECK_CXX_COMPILER_FLAG("-static-libgcc" CXX_SUPPORTS_STATIC_LIBGCC)
       if (CXX_SUPPORTS_STATIC_LIBGCC) 
-        target_link_libraries (${PROJECT_NAME} -static-libgcc)
+        target_link_libraries (${CMAKE_PROJECT_NAME} -static-libgcc)
       endif()    
       CHECK_CXX_COMPILER_FLAG("-static-libstdc++" CXX_SUPPORTS_STATIC_LIBSTDCPP)
       if (CXX_SUPPORTS_STATIC_LIBSTDCPP) 
-        target_link_libraries (${PROJECT_NAME} -static-libstdc++)
+        target_link_libraries (${CMAKE_PROJECT_NAME} -static-libstdc++)
       endif()    
     endif()    
 endif()
 
 # live555helper 
 add_subdirectory(live555helper EXCLUDE_FROM_ALL)
-target_link_libraries (${PROJECT_NAME} liblive555helper) 
+target_link_libraries (${CMAKE_PROJECT_NAME} liblive555helper) 
 add_definitions(-DHAVE_LIVE555 -DNO_OPENSSL=1)
 
+# prometheus 
+include(GenerateExportHeader)
+set(CMAKE_INSTALL_INCLUDEDIR build/inc)
+set(PROJECT_NAME prometheus-cpp)
+add_subdirectory(prometheus-cpp/core EXCLUDE_FROM_ALL)
+target_link_libraries (${CMAKE_PROJECT_NAME} core)  
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC prometheus-cpp/core/include)
+
 #cpack
-install (TARGETS ${PROJECT_NAME} RUNTIME DESTINATION .)
+install (TARGETS ${CMAKE_PROJECT_NAME} RUNTIME DESTINATION .)
 install (DIRECTORY html DESTINATION .)
 install (FILES config.json DESTINATION .)
 install (FILES Procfile DESTINATION .)

@@ -10,6 +10,9 @@
 #include <string.h>
 #include <iostream>
     
+#include "prometheus/counter.h"
+#include "prometheus/text_serializer.h"
+
 #include "HttpServerRequestHandler.h"
 
 
@@ -34,11 +37,14 @@ const struct CivetCallbacks * getCivetCallbacks()
 class RequestHandler : public CivetHandler
 {
   public:
-	RequestHandler(HttpServerRequestHandler::httpFunction & func): m_func(func) {
+	RequestHandler(HttpServerRequestHandler::httpFunction & func, prometheus::Counter & counter): m_func(func), m_counter(counter) {
 	}	  
 	
     bool handle(CivetServer *server, struct mg_connection *conn)
     {
+        // increment metrics
+        m_counter.Increment();
+
         bool ret = false;
         const struct mg_request_info *req_info = mg_get_request_info(conn);
         
@@ -81,6 +87,7 @@ class RequestHandler : public CivetHandler
     HttpServerRequestHandler::httpFunction      m_func;	
     Json::StreamWriterBuilder                   m_writerBuilder;
     Json::CharReaderBuilder                     m_readerBuilder;
+    prometheus::Counter&                        m_counter;
 
   
     Json::Value getInputMessage(const struct mg_request_info *req_info, struct mg_connection *conn) {
@@ -121,15 +128,51 @@ class RequestHandler : public CivetHandler
 };
 
 /* ---------------------------------------------------------------------------
+**  Civet HTTP callback 
+** -------------------------------------------------------------------------*/
+class PrometheusHandler : public CivetHandler
+{
+  public:
+    PrometheusHandler(prometheus::Registry& registry) : m_registry(registry) {}
+
+    bool handleGet(CivetServer *server, struct mg_connection *conn)
+    {
+        auto collected = m_registry.Collect();
+	    prometheus::TextSerializer textSerializer;
+        std::ostringstream os;
+	    textSerializer.Serialize(os,collected);  
+        std::string answer(os.str());      
+
+        mg_printf(conn,"HTTP/1.1 200 OK\r\n");
+        mg_printf(conn,"Access-Control-Allow-Origin: *\r\n");
+        mg_printf(conn,"Content-Type: text/plain\r\n");
+        mg_printf(conn,"Content-Length: %zd\r\n", answer.size());
+        mg_printf(conn,"\r\n");
+        mg_write(conn,answer.c_str(),answer.size());
+			
+	    return true;
+    }
+  private:
+    prometheus::Registry& m_registry;     
+};
+
+/* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
 HttpServerRequestHandler::HttpServerRequestHandler(std::map<std::string,httpFunction>& func, const std::vector<std::string>& options) 
     : CivetServer(options, getCivetCallbacks())
 {
+    auto& family = prometheus::BuildCounter()
+            .Name("http_requests")
+            .Register(m_registry);
+
     // register handlers
     for (auto it : func) {
-        this->addHandler(it.first, new RequestHandler(it.second));
+        auto & counter = family.Add({{"uri", it.first}});
+        this->addHandler(it.first, new RequestHandler(it.second, counter));
     } 	
+
+    this->addHandler("/metrics", new PrometheusHandler(m_registry));
 }	
     
 

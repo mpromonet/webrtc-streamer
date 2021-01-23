@@ -13,6 +13,7 @@
 #include <map>
 #include <functional>
 
+#include "prometheus/registry.h"
 #include "json/json.h"
 #include "CivetServer.h"
 
@@ -26,6 +27,8 @@ class HttpServerRequestHandler : public CivetServer
 		typedef std::function<Json::Value(const struct mg_request_info *req_info, const Json::Value &)> httpFunction;
 	
 		HttpServerRequestHandler(std::map<std::string,httpFunction>& func, const std::vector<std::string>& options); 
+
+		prometheus::Registry m_registry;
 };
 
 
