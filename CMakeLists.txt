@@ -202,7 +202,9 @@ add_definitions(-DHAVE_LIVE555 -DNO_OPENSSL=1)
 
 # prometheus 
 include(GenerateExportHeader)
-set(CMAKE_INSTALL_INCLUDEDIR build/inc)
+set(CMAKE_INSTALL_INCLUDEDIR build/include)
+set(CMAKE_INSTALL_BINDIR build/bin)
+set(CMAKE_INSTALL_LIBDIR build/lib)
 set(PROJECT_NAME prometheus-cpp)
 add_subdirectory(prometheus-cpp/core EXCLUDE_FROM_ALL)
 target_link_libraries (${CMAKE_PROJECT_NAME} core)  
