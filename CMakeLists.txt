@@ -148,6 +148,17 @@ target_link_libraries (${CMAKE_PROJECT_NAME} civetweb)
 target_include_directories(civetweb PUBLIC civetweb/include) 
 add_definitions(-DOPENSSL_API_1_1 -DCRYPTO_LIB="libcrypto.so.1.1" -DSSL_LIB="libssl.so.1.1")
 
+# prometheus 
+include(GenerateExportHeader)
+set(CMAKE_INSTALL_INCLUDEDIR build/include)
+set(CMAKE_INSTALL_BINDIR build/bin)
+set(CMAKE_INSTALL_LIBDIR build/lib)
+set(PROJECT_NAME prometheus-cpp)
+add_subdirectory(prometheus-cpp/core EXCLUDE_FROM_ALL)
+target_link_libraries (${CMAKE_PROJECT_NAME} core)  
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC prometheus-cpp/core/include)
+
+# ???
 add_definitions(-DHAVE_JPEG)
 
 # compiler specific
@@ -199,16 +210,6 @@ endif()
 add_subdirectory(live555helper EXCLUDE_FROM_ALL)
 target_link_libraries (${CMAKE_PROJECT_NAME} liblive555helper) 
 add_definitions(-DHAVE_LIVE555 -DNO_OPENSSL=1)
-
-# prometheus 
-include(GenerateExportHeader)
-set(CMAKE_INSTALL_INCLUDEDIR build/include)
-set(CMAKE_INSTALL_BINDIR build/bin)
-set(CMAKE_INSTALL_LIBDIR build/lib)
-set(PROJECT_NAME prometheus-cpp)
-add_subdirectory(prometheus-cpp/core EXCLUDE_FROM_ALL)
-target_link_libraries (${CMAKE_PROJECT_NAME} core)  
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC prometheus-cpp/core/include)
 
 #cpack
 install (TARGETS ${CMAKE_PROJECT_NAME} RUNTIME DESTINATION .)
