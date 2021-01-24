@@ -149,31 +149,15 @@ target_link_libraries (${CMAKE_PROJECT_NAME} civetweb)
 target_include_directories(civetweb PUBLIC civetweb/include) 
 add_definitions(-DOPENSSL_API_1_1 -DCRYPTO_LIB="libcrypto.so.1.1" -DSSL_LIB="libssl.so.1.1")
 
-# overide compilation flags
+
+# compiler specific
 if (WIN32)
+    # overide compilation flags
     set(CompilerFlags CMAKE_CXX_FLAGS_DEBUG CMAKE_C_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE CMAKE_C_FLAGS_RELEASE)
     foreach(CompilerFlag ${CompilerFlags})
       string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
     endforeach()
-endif()
 
-# prometheus 
-include(GenerateExportHeader)
-set(CMAKE_INSTALL_INCLUDEDIR build/include)
-set(CMAKE_INSTALL_BINDIR build/bin)
-set(CMAKE_INSTALL_LIBDIR build/lib)
-set(PROJECT_NAME prometheus-cpp)
-add_subdirectory(prometheus-cpp/core EXCLUDE_FROM_ALL)
-target_link_libraries (${CMAKE_PROJECT_NAME} core)  
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC prometheus-cpp/core/include)
-
-# live555helper 
-add_subdirectory(live555helper EXCLUDE_FROM_ALL)
-target_link_libraries (${CMAKE_PROJECT_NAME} liblive555helper) 
-add_definitions(-DHAVE_LIVE555 -DNO_OPENSSL=1)
-
-# compiler specific
-if (WIN32)
     # getopt
     add_library (getopt getopt/getopt.c)
     target_include_directories(getopt PUBLIC getopt) 
@@ -186,7 +170,6 @@ else()
     # webrtc
     add_definitions(-DWEBRTC_POSIX -fno-rtti)
     if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
-        target_link_libraries (${CMAKE_PROJECT_NAME} -Wl,-Bstatic -latomic -Wl,-Bdynamic)
         add_definitions(-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard)
     endif()
     if (EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/obj/modules/desktop_capture/desktop_capture.ninja)
@@ -199,19 +182,37 @@ else()
     if (ALSA_FOUND)
         add_definitions(-DHAVE_SOUND)
     endif()
-    # static link of stdc++ if available on arm (raise unresolved symbol on x86-64)
-    if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*")
-      include(CheckCXXCompilerFlag)
-      CHECK_CXX_COMPILER_FLAG("-static-libgcc" CXX_SUPPORTS_STATIC_LIBGCC)
-      if (CXX_SUPPORTS_STATIC_LIBGCC) 
-        target_link_libraries (${CMAKE_PROJECT_NAME} -static-libgcc)
-      endif()    
-      CHECK_CXX_COMPILER_FLAG("-static-libstdc++" CXX_SUPPORTS_STATIC_LIBSTDCPP)
-      if (CXX_SUPPORTS_STATIC_LIBSTDCPP) 
-        target_link_libraries (${CMAKE_PROJECT_NAME} -static-libstdc++)
-      endif()    
-    endif()    
 endif()
+
+# prometheus 
+include(GenerateExportHeader)
+include(GNUInstallDirs)
+set(PROJECT_NAME prometheus-cpp)
+add_subdirectory(prometheus-cpp/core EXCLUDE_FROM_ALL)
+target_link_libraries (${CMAKE_PROJECT_NAME} core)  
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC prometheus-cpp/core/include)
+
+# live555helper 
+add_subdirectory(live555helper EXCLUDE_FROM_ALL)
+target_link_libraries (${CMAKE_PROJECT_NAME} liblive555helper) 
+add_definitions(-DHAVE_LIVE555 -DNO_OPENSSL=1)
+
+# static link of libatomic on armv6l
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
+    target_link_libraries (${CMAKE_PROJECT_NAME} -Wl,-Bstatic -latomic -Wl,-Bdynamic)
+endif()
+# static link of stdc++ if available on arm (raise unresolved symbol on x86-64)
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm.*")
+  include(CheckCXXCompilerFlag)
+  CHECK_CXX_COMPILER_FLAG("-static-libgcc" CXX_SUPPORTS_STATIC_LIBGCC)
+  if (CXX_SUPPORTS_STATIC_LIBGCC) 
+    target_link_libraries (${CMAKE_PROJECT_NAME} -static-libgcc)
+  endif()    
+  CHECK_CXX_COMPILER_FLAG("-static-libstdc++" CXX_SUPPORTS_STATIC_LIBSTDCPP)
+  if (CXX_SUPPORTS_STATIC_LIBSTDCPP) 
+    target_link_libraries (${CMAKE_PROJECT_NAME} -static-libstdc++)
+  endif()    
+endif()    
 
 #cpack
 install (TARGETS ${CMAKE_PROJECT_NAME} RUNTIME DESTINATION .)
