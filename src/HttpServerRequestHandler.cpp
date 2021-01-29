@@ -169,11 +169,25 @@ HttpServerRequestHandler::HttpServerRequestHandler(std::map<std::string,httpFunc
     // register handlers
     for (auto it : func) {
         auto & counter = family.Add({{"uri", it.first}});
-        this->addHandler(it.first, new RequestHandler(it.second, counter));
+        CivetHandler* handler = new RequestHandler(it.second, counter);
+        this->addHandler(it.first, handler);
+        m_handlers.push_back(handler);
     } 	
-
-    this->addHandler("/metrics", new PrometheusHandler(m_registry));
+    CivetHandler* handler = new PrometheusHandler(m_registry);
+    this->addHandler("/metrics", handler);
+    m_handlers.push_back(handler);
 }	
-    
+
+/* ---------------------------------------------------------------------------
+**  Constructor
+** -------------------------------------------------------------------------*/
+HttpServerRequestHandler::~HttpServerRequestHandler()
+{
+    while (m_handlers.size() > 0) {
+        CivetHandler* handler = m_handlers.back();
+        m_handlers.pop_back();
+        delete handler;
+    }
+}   
 
 

@@ -29,8 +29,6 @@
 #include "VideoFilter.h"
 
 
-#include "p2p/client/basic_port_allocator.h"
-
 
 // Names used for a IceCandidate JSON object.
 const char kCandidateSdpMidName[] = "sdpMid";
@@ -958,12 +956,10 @@ PeerConnectionManager::PeerConnectionObserver *PeerConnectionManager::CreatePeer
 			maxPort = std::stoi(port);
 		}
 	}
-	std::unique_ptr<cricket::PortAllocator> port_allocator(new cricket::BasicPortAllocator(new rtc::BasicNetworkManager()));
-	port_allocator->SetPortRange(minPort, maxPort);
 	RTC_LOG(INFO) << __FUNCTION__ << "CreatePeerConnection webrtcPortRange:" << minPort << ":" << maxPort;
 
 	RTC_LOG(INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
-	PeerConnectionObserver *obs = new PeerConnectionObserver(this, peerid, config, std::move(port_allocator));
+	PeerConnectionObserver *obs = new PeerConnectionObserver(this, peerid, config, minPort, maxPort);
 	if (!obs)
 	{
 		RTC_LOG(LERROR) << __FUNCTION__ << "CreatePeerConnection failed";

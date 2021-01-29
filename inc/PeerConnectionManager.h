@@ -17,6 +17,8 @@
 
 #include "api/peer_connection_interface.h"
 
+#include "p2p/client/basic_port_allocator.h"
+
 #include "modules/audio_device/include/audio_device.h"
 
 #include "rtc_base/logging.h"
@@ -154,16 +156,19 @@ class PeerConnectionManager {
 
 	class PeerConnectionObserver : public webrtc::PeerConnectionObserver {
 		public:
-			PeerConnectionObserver(PeerConnectionManager* peerConnectionManager, const std::string& peerid, const webrtc::PeerConnectionInterface::RTCConfiguration & config, std::unique_ptr<cricket::PortAllocator> portAllocator)
+			PeerConnectionObserver(PeerConnectionManager* peerConnectionManager, const std::string& peerid, const webrtc::PeerConnectionInterface::RTCConfiguration & config, int minPort, int maxPort)
 			: m_peerConnectionManager(peerConnectionManager)
 			, m_peerid(peerid)
 			, m_localChannel(NULL)
 			, m_remoteChannel(NULL)
 			, m_iceCandidateList(Json::arrayValue)
 			, m_deleting(false) {
+				std::unique_ptr<cricket::PortAllocator> portAllocator(new cricket::BasicPortAllocator(&m_networkManager));
+				portAllocator->SetPortRange(minPort, maxPort);
+
 				RTC_LOG(INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
 				m_pc = m_peerConnectionManager->m_peer_connection_factory->CreatePeerConnection(config,
-					std::move(portAllocator),
+								std::move(portAllocator),
 							    NULL,
 							    this);
 				
@@ -256,6 +261,7 @@ class PeerConnectionManager {
 			rtc::scoped_refptr<PeerConnectionStatsCollectorCallback> m_statsCallback;
 			std::unique_ptr<VideoSink>                               m_videosink;
 			bool                                                     m_deleting;
+			rtc::BasicNetworkManager                                 m_networkManager;
 	};
 
 	public:

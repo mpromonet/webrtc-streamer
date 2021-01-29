@@ -27,8 +27,11 @@ class HttpServerRequestHandler : public CivetServer
 		typedef std::function<Json::Value(const struct mg_request_info *req_info, const Json::Value &)> httpFunction;
 	
 		HttpServerRequestHandler(std::map<std::string,httpFunction>& func, const std::vector<std::string>& options); 
+		virtual ~HttpServerRequestHandler();
 
-		prometheus::Registry m_registry;
+	private:
+		prometheus::Registry       m_registry;
+		std::vector<CivetHandler*> m_handlers;
 };
 
 
