@@ -1,7 +1,7 @@
 ARG IMAGE=balenalib/raspberry-pi
 
 # build
-FROM ubuntu:18.04 as builder
+FROM ubuntu:20.04 as builder
 LABEL maintainer=michel.promonet@free.fr
 
 ARG ARCH=armv6l
@@ -10,7 +10,7 @@ ARG CROSSCOMPILER=https://sourceforge.net/projects/raspberry-pi-cross-compilers/
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates wget git python xz-utils cmake make pkg-config \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python xz-utils cmake make pkg-config \
 	&& mkdir /webrtc \
         && wget -qO- ${CROSSCOMPILER} | tar xz -C /webrtc \
 	&& export PATH=$(ls -d /webrtc/cross-pi-gcc-*/bin):$PATH \

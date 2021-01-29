@@ -1,6 +1,21 @@
-version: '2'
+version: '3'
+
+volumes:
+    prometheus_data: {}
+
 services:
-  web:
-    build: .
+  webrtc-streamer:
+    image: mpromonet/webrtc-streamer:latest
     ports:
      - "8000:8000"
+
+  prometheus:
+    image: prom/prometheus:v2.1.0
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - 9090:9090
