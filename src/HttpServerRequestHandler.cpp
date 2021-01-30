@@ -8,10 +8,19 @@
 ** -------------------------------------------------------------------------*/
 
 #include <string.h>
+#include <unistd.h>
+#include <dirent.h>
+
 #include <iostream>
-    
+#include <fstream>
+#include <iterator>
+#include <vector>
+
 #include "prometheus/counter.h"
+#include "prometheus/gauge.h"
 #include "prometheus/text_serializer.h"
+
+#include "rtc_base/logging.h"
 
 #include "HttpServerRequestHandler.h"
 
@@ -48,7 +57,7 @@ class RequestHandler : public CivetHandler
         bool ret = false;
         const struct mg_request_info *req_info = mg_get_request_info(conn);
         
-        std::cout << "uri:" << req_info->request_uri << std::endl;
+        RTC_LOG(INFO) << "uri:" << req_info->request_uri;
         
 		// read input
 		Json::Value  in = this->getInputMessage(req_info, conn);
@@ -60,7 +69,7 @@ class RequestHandler : public CivetHandler
 		if (out.isNull() == false)
 		{
             std::string answer(Json::writeString(m_writerBuilder,out));
-			std::cout << "answer:" << answer << std::endl;	
+            RTC_LOG(LS_VERBOSE) << "answer:" << answer;	
 
 			mg_printf(conn,"HTTP/1.1 200 OK\r\n");
 			mg_printf(conn,"Access-Control-Allow-Origin: *\r\n");
@@ -120,7 +129,7 @@ class RequestHandler : public CivetHandler
             std::string errors;
             if (!reader->parse(body.c_str(), body.c_str() + body.size(), &jmessage, &errors))
             {
-                std::cout << "Received unknown message:" << body << " errors:" << errors << std::endl;
+                RTC_LOG(WARNING) << "Received unknown message:" << body << " errors:" << errors;
             }
         }
         return jmessage;
@@ -133,16 +142,28 @@ class RequestHandler : public CivetHandler
 class PrometheusHandler : public CivetHandler
 {
   public:
-    PrometheusHandler(prometheus::Registry& registry) : m_registry(registry) {}
+    PrometheusHandler(prometheus::Registry& registry) : 
+        m_registry(registry),
+        m_fds(prometheus::BuildGauge().Name("process_open_fds").Register(m_registry).Add({})),
+        m_threads(prometheus::BuildGauge().Name("process_threads_total").Register(m_registry).Add({})),
+        m_virtual_memory(prometheus::BuildGauge().Name("process_virtual_memory_bytes").Register(m_registry).Add({})),
+        m_resident_memory(prometheus::BuildGauge().Name("process_resident_memory_bytes").Register(m_registry).Add({})),
+        m_cpu(prometheus::BuildGauge().Name("process_cpu_seconds_total").Register(m_registry).Add({}))  {        
+    }
 
     bool handleGet(CivetServer *server, struct mg_connection *conn)
     {
+        updateMetrics();
+
         auto collected = m_registry.Collect();
+
+        // format body
 	    prometheus::TextSerializer textSerializer;
         std::ostringstream os;
 	    textSerializer.Serialize(os,collected);  
         std::string answer(os.str());      
 
+        // format http answer
         mg_printf(conn,"HTTP/1.1 200 OK\r\n");
         mg_printf(conn,"Access-Control-Allow-Origin: *\r\n");
         mg_printf(conn,"Content-Type: text/plain\r\n");
@@ -152,8 +173,65 @@ class PrometheusHandler : public CivetHandler
 			
 	    return true;
     }
+
   private:
-    prometheus::Registry& m_registry;     
+  #ifdef WIN32
+    void updateMetrics() {}
+  #else
+    void updateMetrics() {
+        long fds = get_fds_total();
+        m_fds.Set(fds);
+        std::vector<std::string> stat = read_proc_stat();
+        long threads_total =  std::stoul(stat[19]);
+        m_threads.Set(threads_total);
+        long vm_bytes =  std::stoul(stat[22]);
+        m_virtual_memory.Set(vm_bytes);
+        long rm_bytes = std::stoul(stat[23]) * sysconf(_SC_PAGESIZE);
+        m_resident_memory.Set(rm_bytes);
+        long cpu = (std::stoul(stat[13]) + std::stoul(stat[14]))/sysconf(_SC_CLK_TCK);
+        m_cpu.Set(cpu);
+    }
+
+    static std::vector<std::string> read_proc_stat() {
+        char stat_path[32];
+        std::sprintf(stat_path, "/proc/%d/stat", getpid());
+        std::ifstream file(stat_path);
+        std::string line;
+        std::getline(file, line);
+        std::istringstream is(line);
+        return std::vector<std::string>{std::istream_iterator<std::string>{is},
+                                        std::istream_iterator<std::string>{}};
+    }
+
+    static long get_fds_total() {
+        char fd_path[32];
+        std::sprintf(fd_path, "/proc/%d/fd", getpid());
+
+        long file_total = 0;
+        DIR *dirp = opendir(fd_path);
+        if (dirp != NULL)
+        {
+            struct dirent *entry;
+            while ((entry = readdir(dirp)) != NULL)
+            {
+                if (entry->d_type == DT_LNK)
+                {
+                    file_total++;
+                }
+            }
+            closedir(dirp);
+        }
+        return file_total;
+    }
+  #endif    
+
+  private:
+    prometheus::Registry& m_registry; 
+    prometheus::Gauge&     m_fds; 
+    prometheus::Gauge&     m_threads; 
+    prometheus::Gauge&     m_virtual_memory;
+    prometheus::Gauge&     m_resident_memory; 
+    prometheus::Gauge&     m_cpu; 
 };
 
 /* ---------------------------------------------------------------------------
