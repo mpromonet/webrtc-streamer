@@ -8,8 +8,10 @@
 ** -------------------------------------------------------------------------*/
 
 #include <string.h>
+#ifndef WIN32
 #include <unistd.h>
 #include <dirent.h>
+#endif
 
 #include <iostream>
 #include <fstream>
