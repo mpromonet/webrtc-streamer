@@ -56,7 +56,6 @@ class RequestHandler : public CivetHandler
         // increment metrics
         m_counter.Increment();
 
-        bool ret = false;
         const struct mg_request_info *req_info = mg_get_request_info(conn);
         
         RTC_LOG(INFO) << "uri:" << req_info->request_uri;
@@ -67,23 +66,28 @@ class RequestHandler : public CivetHandler
 		// invoke API implementation
 		Json::Value out(m_func(req_info, in));
 		
+        int code;
+        std::string answer;
+
 		// fill out
 		if (out.isNull() == false)
 		{
-            std::string answer(Json::writeString(m_writerBuilder,out));
-            RTC_LOG(LS_VERBOSE) << "answer:" << answer;	
+            answer = Json::writeString(m_writerBuilder,out);
+            code = 200;
+		} else {
+            code = 500;
+            answer = mg_get_response_code_text(conn, code);
+        }
 
-			mg_printf(conn,"HTTP/1.1 200 OK\r\n");
-			mg_printf(conn,"Access-Control-Allow-Origin: *\r\n");
-			mg_printf(conn,"Content-Type: text/plain\r\n");
-			mg_printf(conn,"Content-Length: %zd\r\n", answer.size());
-			mg_printf(conn,"\r\n");
-			mg_write(conn,answer.c_str(),answer.size());
-			
-			ret = true;
-		}			
+        RTC_LOG(LS_VERBOSE) << "code:" << code << " answer:" << answer;	
+        mg_printf(conn,"HTTP/1.1 %d OK\r\n", code);
+        mg_printf(conn,"Access-Control-Allow-Origin: *\r\n");
+        mg_printf(conn,"Content-Type: text/plain\r\n");
+        mg_printf(conn,"Content-Length: %zd\r\n", answer.size());
+        mg_printf(conn,"\r\n");
+        mg_write(conn,answer.c_str(),answer.size());
         
-        return ret;
+        return true;
     }
     bool handleGet(CivetServer *server, struct mg_connection *conn)
     {
