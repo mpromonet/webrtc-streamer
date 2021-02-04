@@ -208,6 +208,8 @@ int main(int argc, char* argv[])
 		options.push_back("yes");
 		options.push_back("keep_alive_timeout_ms");
 		options.push_back("1000");
+		options.push_back("decode_url");
+		options.push_back("no");
 		if (!sslCertificate.empty()) {
 			options.push_back("ssl_certificate");
 			options.push_back(sslCertificate);
