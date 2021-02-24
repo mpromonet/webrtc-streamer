@@ -28,6 +28,8 @@
 #include "VideoScaler.h"
 #include "VideoFilter.h"
 
+#include "NullCodec.h"
+
 
 
 // Names used for a IceCandidate JSON object.
@@ -139,7 +141,6 @@ IceServer getIceServerFromUrl(const std::string &url, const std::string &clientI
 	return srv;
 }
 
-
 webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencies(rtc::scoped_refptr<webrtc::AudioDeviceModule> audioDeviceModule, rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderfactory)
 {
 	webrtc::PeerConnectionFactoryDependencies dependencies;
@@ -168,8 +169,12 @@ webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencie
 	mediaDependencies.audio_decoder_factory = std::move(audioDecoderfactory);
 	mediaDependencies.audio_processing = webrtc::AudioProcessingBuilder().Create();
 
-	mediaDependencies.video_encoder_factory = webrtc::CreateBuiltinVideoEncoderFactory();
-	mediaDependencies.video_decoder_factory = webrtc::CreateBuiltinVideoDecoderFactory();
+
+	mediaDependencies.video_encoder_factory = std::make_unique<VideoEncoderFactory>();
+	mediaDependencies.video_decoder_factory =  std::make_unique<VideoDecoderFactory>();
+
+//	mediaDependencies.video_encoder_factory = webrtc::CreateBuiltinVideoEncoderFactory();
+//	mediaDependencies.video_decoder_factory = webrtc::CreateBuiltinVideoDecoderFactory();
 
 	dependencies.media_engine = cricket::CreateMediaEngine(std::move(mediaDependencies));
 

@@ -16,6 +16,8 @@
 #include "modules/video_coding/include/video_error_codes.h"
 #include "modules/video_coding/h264_sprop_parameter_sets.h"
 
+#include "NullCodec.h"
+
 class VideoDecoder : public webrtc::DecodedImageCallback {
     private:
         class Frame
@@ -189,7 +191,7 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
         }
 
         rtc::VideoBroadcaster&                m_broadcaster;
-        webrtc::InternalDecoderFactory        m_factory;
+        VideoDecoderFactory        m_factory;
         std::unique_ptr<webrtc::VideoDecoder> m_decoder;
 
 		std::queue<Frame>                     m_queue;

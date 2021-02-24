@@ -13,3 +13,6 @@
 [submodule "prometheus-cpp"]
 	path = prometheus-cpp
 	url = https://github.com/jupp0r/prometheus-cpp
+[submodule "rpi-webrtc-streamer"]
+	path = rpi-webrtc-streamer
+	url = https://github.com/kclyu/rpi-webrtc-streamer
