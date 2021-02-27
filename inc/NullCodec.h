@@ -173,7 +173,7 @@ class NullDecoder : public webrtc::VideoDecoder {
 		frame.set_timestamp(input_image.Timestamp());
 		frame.set_ntp_time_ms(input_image.ntp_time_ms_);
 		frame.set_max_composition_delay_in_frames(absl::optional<int32_t>((int32_t)(input_image._frameType)));
-		frame.set_id(123);
+		frame.set_id(input_image.Timestamp());
 		RTC_LOG(LS_ERROR) << "Decode " << frame.id() << " " << frame.width() << "x" << frame.height();
 
 		decoded_image_callback_->Decoded(frame);
