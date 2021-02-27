@@ -198,6 +198,7 @@ jobs:
           at: /
       - checkout
       - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git cmake make g++ xz-utils pkg-config gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+      - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
       - run: cd ${WEBRTCROOT} && gclient sync 
 
