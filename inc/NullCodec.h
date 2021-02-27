@@ -61,13 +61,10 @@ class NullEncoder : public webrtc::VideoEncoder {
     static std::unique_ptr<NullEncoder> Create(const cricket::VideoCodec& codec) {
 		return absl::make_unique<NullEncoder>(codec);
 	}
-    static bool IsSupported() { return true; }
-	explicit NullEncoder(const cricket::VideoCodec& codec) {
-	}
-    ~NullEncoder() override {}
+	explicit NullEncoder(const cricket::VideoCodec& codec) {}
+    virtual ~NullEncoder() override {}
 
     int32_t InitEncode(const webrtc::VideoCodec* codec_settings, const webrtc::VideoEncoder::Settings& settings) override {
-		RTC_LOG(LS_WARNING) << "InitEncode()";
 		return WEBRTC_VIDEO_CODEC_OK;
 	}
     int32_t Release() override {
@@ -82,26 +79,30 @@ class NullEncoder : public webrtc::VideoEncoder {
 
     int32_t Encode(const webrtc::VideoFrame& frame, const std::vector<webrtc::VideoFrameType>* frame_types) override {
 	    if (!encoded_image_callback_) {
-			RTC_LOG(LS_WARNING)
-				<< "InitEncode() has been called, but a callback function "
-				<< "has not been set with RegisterEncodeCompleteCallback()";
+			RTC_LOG(LS_WARNING) << "RegisterEncodeCompleteCallback() not called";
 			return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
 		}
-		webrtc::CodecSpecificInfo codec_specific;
-		codec_specific.codecType = webrtc::VideoCodecType::kVideoCodecH264;
 		RTC_LOG(LS_ERROR) << "EncodedImage " << frame.id() << " " << frame.width() << "x" << frame.height();
 
 		rtc::scoped_refptr<webrtc::VideoFrameBuffer> buffer = frame.video_frame_buffer();
-		RTC_LOG(LS_ERROR) << "EncodedImage " <<  buffer->type() << " " <<  webrtc::VideoFrameBufferTypeToString(buffer->type());
-		RTC_LOG(LS_ERROR) << "EncodedImage " <<  buffer->width() << "x" <<  buffer->height() << " " <<  buffer->GetI420()->StrideY() << "x" <<  buffer->GetI420()->StrideU() << "x" <<  buffer->GetI420()->StrideV();
-		RTC_LOG(LS_ERROR) << "EncodedImage " << *(uint8_t*)buffer->GetI420()->DataY() << " " << *(uint8_t*)(buffer->GetI420()->DataY()+1) << " " << *(uint8_t*)(buffer->GetI420()->DataY()+2) << " " << *(uint8_t*)(buffer->GetI420()->DataY()+3);;
-		rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encoded_data = webrtc::EncodedImageBuffer::Create((uint8_t*)buffer->GetI420()->DataY(), buffer->GetI420()->StrideY());
+		if (buffer->type() != webrtc::VideoFrameBuffer::Type::kNative) {
+			RTC_LOG(LS_WARNING) << "buffer type must be kNative";
+			return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;		
+		}
+
 		webrtc::EncodedImage encoded_image;
+		rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encoded_data = webrtc::EncodedImageBuffer::Create((uint8_t*)buffer->GetI420()->DataY(), buffer->GetI420()->StrideY());
 		encoded_image.SetEncodedData(encoded_data);
-//		encoded_image._frameType = webrtc::VideoFrameType::kVideoFrameKey;
+		encoded_image._frameType = (webrtc::VideoFrameType)frame.max_composition_delay_in_frames().value();
+
+		webrtc::CodecSpecificInfo codec_specific;
+		codec_specific.codecType = webrtc::VideoCodecType::kVideoCodecH264;
+
+		RTC_LOG(LS_ERROR) << "EncodedImage " << encoded_image._frameType << " " <<  buffer->width() << "x" <<  buffer->height() << " " <<  buffer->GetI420()->StrideY() << "x" <<  buffer->GetI420()->StrideU() << "x" <<  buffer->GetI420()->StrideV();
+
         webrtc::EncodedImageCallback::Result result = encoded_image_callback_->OnEncodedImage(encoded_image, &codec_specific);
         if (result.error == webrtc::EncodedImageCallback::Result::ERROR_SEND_FAILED) {
-            RTC_LOG(LS_ERROR) << "Error in parsing EncodedImage";
+            RTC_LOG(LS_ERROR) << "Error in parsing EncodedImage" << encoded_image._frameType;
         }
 		return WEBRTC_VIDEO_CODEC_OK;
 	}
@@ -122,9 +123,7 @@ class NullEncoder : public webrtc::VideoEncoder {
 // Implementation of video encoder factory
 class VideoEncoderFactory : public webrtc::VideoEncoderFactory {
    public:
-    VideoEncoderFactory() {
-		supported_formats_ = webrtc::SupportedH264Codecs();
-	}
+    VideoEncoderFactory(): supported_formats_(webrtc::SupportedH264Codecs()) {}
     virtual ~VideoEncoderFactory() override {}
 
     std::unique_ptr<webrtc::VideoEncoder> CreateVideoEncoder(const webrtc::SdpVideoFormat& format) override {
@@ -134,14 +133,7 @@ class VideoEncoderFactory : public webrtc::VideoEncoderFactory {
 		return NullEncoder::Create(codec);
 	}
 
-    std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override {
-        return supported_formats_;
-    }
-
-    CodecInfo QueryVideoEncoder(const webrtc::SdpVideoFormat& format) const override {
-		VideoEncoderFactory::CodecInfo info;
-		return info;
-	}
+    std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override { return supported_formats_; }
 
    private:
     std::vector<webrtc::SdpVideoFormat> supported_formats_;
@@ -153,8 +145,7 @@ class NullDecoder : public webrtc::VideoDecoder {
     static std::unique_ptr<NullDecoder> Create() {
 		return std::make_unique<NullDecoder>();
 	}
-    static bool IsSupported() { return true; }
-    ~NullDecoder() override {}
+    virtual ~NullDecoder() override {}
 
 	int32_t InitDecode(const webrtc::VideoCodec* codec_settings, int32_t number_of_cores) override {
     	return WEBRTC_VIDEO_CODEC_OK;
@@ -170,21 +161,20 @@ class NullDecoder : public webrtc::VideoDecoder {
 
     int32_t Decode(const webrtc::EncodedImage& input_image, bool /*missing_frames*/, int64_t render_time_ms = -1) override {
 	    if (!decoded_image_callback_) {
-			RTC_LOG(LS_WARNING)
-				<< "InitDecode() has been called, but a callback function "
-				<< "has not been set with RegisterDecodeCompleteCallback()";
+			RTC_LOG(LS_WARNING) << "RegisterDecodeCompleteCallback() not called";
 			return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
 		}
 		rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encodedData = input_image.GetEncodedData();
 		rtc::scoped_refptr<webrtc::VideoFrameBuffer> buffer = new rtc::RefCountedObject<EncodedVideoFrameBuffer>(encodedData->size(), 1, encodedData->data(), encodedData->size());
-		RTC_LOG(LS_ERROR) << "Decode " <<  buffer->type() << " " <<  webrtc::VideoFrameBufferTypeToString(buffer->type());
-		RTC_LOG(LS_ERROR) << "Decode " <<  buffer->width() << "x" <<  buffer->height() << " " <<  buffer->GetI420()->StrideY() << "x" <<  buffer->GetI420()->StrideU() << "x" <<  buffer->GetI420()->StrideV();
-		RTC_LOG(LS_ERROR) << "Decode " << *(uint8_t*)buffer->GetI420()->DataY() << " " << *(uint8_t*)(buffer->GetI420()->DataY()+1) << " " << *(uint8_t*)(buffer->GetI420()->DataY()+2) << " " << *(uint8_t*)(buffer->GetI420()->DataY()+3);
+
+		RTC_LOG(LS_ERROR) << "Decode " << input_image._frameType << " " <<  buffer->width() << "x" <<  buffer->height() << " " <<  buffer->GetI420()->StrideY() << "x" <<  buffer->GetI420()->StrideU() << "x" <<  buffer->GetI420()->StrideV();
 		
 		webrtc::VideoFrame frame(buffer, webrtc::kVideoRotation_0, render_time_ms * rtc::kNumMicrosecsPerMillisec);
-		RTC_LOG(LS_ERROR) << "Decode " << frame.id() << " " << frame.width() << "x" << frame.height();
 		frame.set_timestamp(input_image.Timestamp());
 		frame.set_ntp_time_ms(input_image.ntp_time_ms_);
+		frame.set_max_composition_delay_in_frames(absl::optional<int32_t>((int32_t)(input_image._frameType)));
+		frame.set_id(123);
+		RTC_LOG(LS_ERROR) << "Decode " << frame.id() << " " << frame.width() << "x" << frame.height();
 
 		decoded_image_callback_->Decoded(frame);
 
@@ -202,9 +192,7 @@ class NullDecoder : public webrtc::VideoDecoder {
 // Implementation of Raspberry video decoder factory
 class VideoDecoderFactory : public webrtc::VideoDecoderFactory {
    public:
-    VideoDecoderFactory() {
-      	supported_formats_ = webrtc::SupportedH264Codecs();
-	}
+    VideoDecoderFactory(): supported_formats_(webrtc::SupportedH264Codecs()) {}
     virtual ~VideoDecoderFactory() override {}
 
     std::unique_ptr<webrtc::VideoDecoder> CreateVideoDecoder(const webrtc::SdpVideoFormat& format) override {
@@ -213,11 +201,7 @@ class VideoDecoderFactory : public webrtc::VideoDecoderFactory {
    		RTC_LOG(LS_ERROR) << format.name << " video decoder created";
     	return NullDecoder::Create();
 	}
-
-    // Returns a list of supported codecs in order of preference.
-    std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override {
-		return supported_formats_;
-	}
+    std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override { return supported_formats_; }
 
    private:
     std::vector<webrtc::SdpVideoFormat> supported_formats_;
