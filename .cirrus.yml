@@ -13,7 +13,8 @@ linux_docker_builder:
     fi  
   script: |
     docker info
-    export TAG=${CIRRUS_TAG:-latest}
+    export TAG=${CIRRUS_TAG:-${CIRRUS_BRANCH}}
+    [ "$TAG" == "master" ] && export TAG=latest
     docker build -t $CIRRUS_REPO_FULL_NAME:${TAG}-amd64 . -f Dockerfile
     docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS 
     docker push $CIRRUS_REPO_FULL_NAME:${TAG}-amd64
@@ -34,7 +35,8 @@ linuxarmv7_docker_builder:
     fi  
   script: |
     docker info
-    export TAG=${CIRRUS_TAG:-latest}
+    export TAG=${CIRRUS_TAG:-${CIRRUS_BRANCH}}
+    [ "$TAG" == "master" ] && export TAG=latest
     docker build -t $CIRRUS_REPO_FULL_NAME:${TAG}-armv7 . -f Dockerfile.rpi --build-arg ARCH=armv7l --build-arg CROSSCOMPILER=https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%202%2C%203/cross-gcc-10.2.0-pi_2-3.tar.gz --build-arg IMAGE=balenalib/raspberry-pi2
     docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS 
     docker push $CIRRUS_REPO_FULL_NAME:${TAG}-armv7
@@ -55,7 +57,8 @@ linuxarmv6_docker_builder:
     fi      
   script: |
     docker info
-    export TAG=${CIRRUS_TAG:-latest}
+    export TAG=${CIRRUS_TAG:-${CIRRUS_BRANCH}}
+    [ "$TAG" == "master" ] && export TAG=latest
     docker build -t $CIRRUS_REPO_FULL_NAME:${TAG}-armv6 . -f Dockerfile.rpi
     docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS 
     docker push $CIRRUS_REPO_FULL_NAME:${TAG}-armv6
@@ -75,7 +78,8 @@ linuxarm64_docker_builder:
     fi      
   script: |
     docker info
-    export TAG=${CIRRUS_TAG:-latest}
+    export TAG=${CIRRUS_TAG:-${CIRRUS_BRANCH}}
+    [ "$TAG" == "master" ] && export TAG=latest
     docker build -t $CIRRUS_REPO_FULL_NAME:${TAG}-arm64 . -f Dockerfile.arm64 
     docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
     docker push $CIRRUS_REPO_FULL_NAME:${TAG}-arm64
@@ -91,7 +95,8 @@ windows_docker_builder:
     CIRRUS_CLONE_DEPTH: 100
   script: |
     docker info
-    set TAG=latest
+    set TAG=%CIRRUS_BRANCH%
+    if "%TAG%" == "master" set TAG=latest
     docker build --no-cache -t %CIRRUS_REPO_FULL_NAME%:%TAG%-windows . -f Dockerfile.windows
     docker login --username=%DOCKERHUB_USER% --password=%DOCKERHUB_PASS% 
     docker push %CIRRUS_REPO_FULL_NAME%:%TAG%-windows   

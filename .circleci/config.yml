@@ -329,7 +329,7 @@ workflows:
             - setup
           filters:
             tags:
-              only: /.*/            
+              only: /.*/                       
       - build_rpi_armv7:
           requires:
             - setup
@@ -364,6 +364,8 @@ workflows:
           filters:
             tags:
               only: /.*/
+            branches:
+              only: master                 
       - github_release:
           requires:
             - store_artifact
