@@ -91,6 +91,7 @@ jobs:
           at: /
 
       - checkout
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates git openssh-client
       - run:
           name: Setup Heroku
           command: |  
