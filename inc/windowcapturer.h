@@ -33,7 +33,7 @@ class WindowCapturer : public DesktopCapturer {
 				}
 			}			
 		}
-		static WindowCapturer* Create(const std::string & url, const std::map<std::string, std::string> & opts, , std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
+		static WindowCapturer* Create(const std::string & url, const std::map<std::string, std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
 			std::unique_ptr<WindowCapturer> capturer(new WindowCapturer(url, opts));
 			if (!capturer->Init()) {
 				RTC_LOG(LS_WARNING) << "Failed to create WindowCapturer";
