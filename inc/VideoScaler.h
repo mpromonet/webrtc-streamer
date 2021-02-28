@@ -120,7 +120,7 @@ public:
             m_width = m_roi_width;
         }
 
-        if ((m_height == 0) && (m_width == 0) && (m_rotation == webrtc::kVideoRotation_0))
+        if ( ((m_height == 0) && (m_width == 0) && (m_rotation == webrtc::kVideoRotation_0)) || (frame.video_frame_buffer()->type() == webrtc::VideoFrameBuffer::Type::kNative) )
         {
             m_broadcaster.OnFrame(frame);
         }

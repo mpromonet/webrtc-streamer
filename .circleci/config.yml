@@ -1,7 +1,7 @@
 defaults: &defaults
   working_directory: /webrtc-streamer
   docker:
-    - image: heroku/heroku:18
+    - image: ubuntu:20.04
     
 version: 2
 jobs:
@@ -15,7 +15,7 @@ jobs:
       WEBRTCROOT: /webrtc 
 
     steps:     
-      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make g++ xz-utils
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python autoconf automake libtool git make g++ xz-utils
       - run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: mkdir ${WEBRTCROOT} && cd ${WEBRTCROOT} && fetch --no-history --nohooks webrtc 
@@ -41,7 +41,7 @@ jobs:
       - attach_workspace:
           at: /          
       - checkout
-      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git cmake make g++ xz-utils libgtk-3-dev libxtst-dev libasound2-dev libpulse-dev
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python autoconf automake libtool git cmake make g++ xz-utils libgtk-3-dev libxtst-dev libasound2-dev libpulse-dev
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: cd ${WEBRTCROOT} && gclient sync 
       
@@ -67,7 +67,7 @@ jobs:
       - attach_workspace:
           at: /          
       - checkout
-      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git cmake make g++ xz-utils pkg-config libglib2.0-dev
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python autoconf automake libtool git cmake make g++ xz-utils pkg-config libglib2.0-dev
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: cd ${WEBRTCROOT} && gclient sync 
 
@@ -132,7 +132,7 @@ jobs:
       - attach_workspace:
           at: /
       - checkout
-      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git make cmake g++ xz-utils pkg-config
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python autoconf automake libtool git make cmake g++ xz-utils pkg-config
       - run: 
           command: wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
           no_output_timeout: 30m
@@ -165,7 +165,7 @@ jobs:
       - attach_workspace:
           at: /
       - checkout
-      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git cmake make g++ xz-utils pkg-config
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python autoconf automake libtool git cmake make g++ xz-utils pkg-config
       - run: 
           command: wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
           no_output_timeout: 30m
@@ -197,7 +197,7 @@ jobs:
       - attach_workspace:
           at: /
       - checkout
-      - run: apt-get update; apt-get install -y --no-install-recommends autoconf automake libtool git cmake make g++ xz-utils pkg-config gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python autoconf automake libtool git cmake make g++ xz-utils pkg-config gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
       - run: cd ${WEBRTCROOT} && gclient sync 
@@ -232,7 +232,7 @@ jobs:
     steps:
       - attach_workspace:
           at: /
-      - run: apt-get update; apt-get install -y --no-install-recommends golang
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates golang
       - run: go get github.com/tcnksm/ghr
       - deploy:
           name: "Deploy to Github"
@@ -329,7 +329,7 @@ workflows:
             - setup
           filters:
             tags:
-              only: /.*/            
+              only: /.*/                       
       - build_rpi_armv7:
           requires:
             - setup
@@ -364,6 +364,8 @@ workflows:
           filters:
             tags:
               only: /.*/
+            branches:
+              only: master                 
       - github_release:
           requires:
             - store_artifact

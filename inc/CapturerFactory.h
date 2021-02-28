@@ -31,8 +31,8 @@
 template<class T>
 class TrackSource : public webrtc::VideoTrackSource {
 public:
-	static rtc::scoped_refptr<TrackSource> Create(const std::string & videourl, const std::map<std::string, std::string> & opts) {
-		std::unique_ptr<T> capturer = absl::WrapUnique(T::Create(videourl, opts));
+	static rtc::scoped_refptr<TrackSource> Create(const std::string & videourl, const std::map<std::string, std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
+		std::unique_ptr<T> capturer = absl::WrapUnique(T::Create(videourl, opts, videoDecoderFactory));
 		if (!capturer) {
 			return nullptr;
 		}
@@ -123,39 +123,39 @@ class CapturerFactory {
 		return videoList;
 	}
 
-	static rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(const std::string & videourl, const std::map<std::string,std::string> & opts, const std::regex & publishFilter, rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory) {
+	static rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(const std::string & videourl, const std::map<std::string,std::string> & opts, const std::regex & publishFilter, rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
 		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource;
 		if ((videourl.find("rtsp://") == 0) && (std::regex_match("rtsp://", publishFilter))) {
 #ifdef HAVE_LIVE555
-			videoSource = TrackSource<RTSPVideoCapturer>::Create(videourl,opts);
+			videoSource = TrackSource<RTSPVideoCapturer>::Create(videourl,opts, videoDecoderFactory);
 #endif	
 		}
 		else if ((videourl.find("file://") == 0) && (std::regex_match("file://", publishFilter)))
 		{
 #ifdef HAVE_LIVE555
-			videoSource = TrackSource<FileVideoCapturer>::Create(videourl, opts);
+			videoSource = TrackSource<FileVideoCapturer>::Create(videourl, opts, videoDecoderFactory);
 #endif
 		}
 		else if ((videourl.find("rtp://") == 0) && (std::regex_match("rtp://", publishFilter)))
 		{
 #ifdef HAVE_LIVE555
-			videoSource = TrackSource<RTPVideoCapturer>::Create(SDPClient::getSdpFromRtpUrl(videourl), opts);
+			videoSource = TrackSource<RTPVideoCapturer>::Create(SDPClient::getSdpFromRtpUrl(videourl), opts, videoDecoderFactory);
 #endif
 		}		
 		else if ((videourl.find("screen://") == 0) && (std::regex_match("screen://", publishFilter)))
 		{
 #ifdef USE_X11
-			videoSource = TrackSource<ScreenCapturer>::Create(videourl, opts);
+			videoSource = TrackSource<ScreenCapturer>::Create(videourl, opts, videoDecoderFactory);
 #endif	
 		}
 		else if ((videourl.find("window://") == 0) && (std::regex_match("window://", publishFilter)))
 		{
 #ifdef USE_X11
-			videoSource = TrackSource<WindowCapturer>::Create(videourl, opts);
+			videoSource = TrackSource<WindowCapturer>::Create(videourl, opts, videoDecoderFactory);
 #endif	
 		}
 		else if (std::regex_match("videocap://",publishFilter)) {
-			videoSource = TrackSource<VcmCapturer>::Create(videourl, opts);
+			videoSource = TrackSource<VcmCapturer>::Create(videourl, opts, videoDecoderFactory);
 		}
 		return videoSource;
 	}
