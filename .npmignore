@@ -15,8 +15,12 @@ live/
 *.a
 webrtc-streamer
 Dockerfile*
-*.yml
+*.y*ml
 *.tgz
 .github
 cad/
 html/jsdoc/
+grafana/
+prometheus-cpp/
+config.json
+.gitmodules
