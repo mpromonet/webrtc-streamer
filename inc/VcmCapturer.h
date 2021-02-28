@@ -14,7 +14,7 @@
 
 class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public rtc::VideoSourceInterface<webrtc::VideoFrame> {
  public:
-  static VcmCapturer* Create(const std::string & videourl, const std::map<std::string, std::string> & opts) {
+  static VcmCapturer* Create(const std::string & videourl, const std::map<std::string, std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
 	std::unique_ptr<VcmCapturer> vcm_capturer(new VcmCapturer());
 	size_t width = 0;
 	size_t height = 0;

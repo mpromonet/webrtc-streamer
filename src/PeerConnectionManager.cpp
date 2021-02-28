@@ -141,7 +141,27 @@ IceServer getIceServerFromUrl(const std::string &url, const std::string &clientI
 	return srv;
 }
 
-webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencies(rtc::scoped_refptr<webrtc::AudioDeviceModule> audioDeviceModule, rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderfactory)
+std::unique_ptr<webrtc::VideoEncoderFactory> CreateEncoderFactory(bool nullCodec) {
+	std::unique_ptr<webrtc::VideoEncoderFactory> factory;
+	if (nullCodec) {
+		factory = std::make_unique<VideoEncoderFactory>();
+	} else {
+		factory = webrtc::CreateBuiltinVideoEncoderFactory();
+	}
+	return factory;
+}
+
+std::unique_ptr<webrtc::VideoDecoderFactory> CreateDecoderFactory(bool nullCodec) {
+	std::unique_ptr<webrtc::VideoDecoderFactory> factory;
+	if (nullCodec) {
+		factory = std::make_unique<VideoDecoderFactory>();
+	} else {
+		factory = webrtc::CreateBuiltinVideoDecoderFactory();
+	}
+	return factory;
+}
+
+webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencies(rtc::scoped_refptr<webrtc::AudioDeviceModule> audioDeviceModule, rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderfactory, bool useNullCodec)
 {
 	webrtc::PeerConnectionFactoryDependencies dependencies;
 	dependencies.network_thread = NULL;
@@ -169,29 +189,27 @@ webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencie
 	mediaDependencies.audio_decoder_factory = std::move(audioDecoderfactory);
 	mediaDependencies.audio_processing = webrtc::AudioProcessingBuilder().Create();
 
-
-	mediaDependencies.video_encoder_factory = std::make_unique<VideoEncoderFactory>();
-	mediaDependencies.video_decoder_factory =  std::make_unique<VideoDecoderFactory>();
-
-//	mediaDependencies.video_encoder_factory = webrtc::CreateBuiltinVideoEncoderFactory();
-//	mediaDependencies.video_decoder_factory = webrtc::CreateBuiltinVideoDecoderFactory();
+	mediaDependencies.video_encoder_factory = CreateEncoderFactory(useNullCodec);
+	mediaDependencies.video_decoder_factory = CreateDecoderFactory(useNullCodec);
 
 	dependencies.media_engine = cricket::CreateMediaEngine(std::move(mediaDependencies));
 
 	return dependencies;
 }
 
+
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange)
+PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange, bool useNullCodec)
 	: m_audioDecoderfactory(webrtc::CreateBuiltinAudioDecoderFactory()), m_task_queue_factory(webrtc::CreateDefaultTaskQueueFactory()),
 #ifdef HAVE_SOUND
 	  m_audioDeviceModule(webrtc::AudioDeviceModule::Create(audioLayer, m_task_queue_factory.get())),
 #else
 	  m_audioDeviceModule(new webrtc::FakeAudioDeviceModule()),
 #endif
-	  m_peer_connection_factory(webrtc::CreateModularPeerConnectionFactory(CreatePeerConnectionFactoryDependencies(m_audioDeviceModule, m_audioDecoderfactory))), 
+  	  m_video_decoder_factory(CreateDecoderFactory(useNullCodec)),
+	  m_peer_connection_factory(webrtc::CreateModularPeerConnectionFactory(CreatePeerConnectionFactoryDependencies(m_audioDeviceModule, m_audioDecoderfactory, useNullCodec))), 
 	  m_iceServerList(iceServerList), m_config(config), m_publishFilter(publishFilter)
 {
 	// build video audio map
@@ -985,7 +1003,7 @@ rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> PeerConnectionManager::Cre
 		video = m_config[video]["video"].asString();
 	}
 
-	return CapturerFactory::CreateVideoSource(video, opts, m_publishFilter, m_peer_connection_factory);
+	return CapturerFactory::CreateVideoSource(video, opts, m_publishFilter, m_peer_connection_factory, m_video_decoder_factory);
 }
 
 rtc::scoped_refptr<webrtc::AudioSourceInterface> PeerConnectionManager::CreateAudioSource(const std::string &audiourl, const std::map<std::string, std::string> &opts)

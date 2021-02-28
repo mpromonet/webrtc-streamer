@@ -17,11 +17,11 @@
 class RTSPVideoCapturer : public LiveVideoSource<RTSPConnection>
 {
 	public:
-		RTSPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts);
+		RTSPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory);
 		virtual ~RTSPVideoCapturer();
 
-		static RTSPVideoCapturer* Create(const std::string & url, const std::map<std::string, std::string> & opts) {
-			return new RTSPVideoCapturer(url, opts);
+		static RTSPVideoCapturer* Create(const std::string & url, const std::map<std::string, std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
+			return new RTSPVideoCapturer(url, opts, videoDecoderFactory);
 		}
 		
 		// overide RTSPConnection::Callback

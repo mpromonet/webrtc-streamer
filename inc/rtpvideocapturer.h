@@ -17,11 +17,11 @@
 class RTPVideoCapturer : public LiveVideoSource<SDPClient>
 {
 	public:
-		RTPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts);
+		RTPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory);
 		virtual ~RTPVideoCapturer();
 
-		static RTPVideoCapturer* Create(const std::string & url, const std::map<std::string, std::string> & opts) {
-			return new RTPVideoCapturer(url, opts);
+		static RTPVideoCapturer* Create(const std::string & url, const std::map<std::string, std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
+			return new RTPVideoCapturer(url, opts, videoDecoderFactory);
 		}
 		
 		// overide SDPClient::Callback

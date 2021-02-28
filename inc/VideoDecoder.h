@@ -32,8 +32,9 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
         };
 
     public:
-        VideoDecoder(rtc::VideoBroadcaster& broadcaster, const std::map<std::string,std::string> & opts, bool wait) : 
+        VideoDecoder(rtc::VideoBroadcaster& broadcaster, const std::map<std::string,std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory, bool wait) : 
                 m_broadcaster(broadcaster),
+                m_factory(videoDecoderFactory),
                 m_stop(false),
                 m_wait(wait),
                 m_previmagets(0),
@@ -130,13 +131,15 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
             return frames;
         }
 
-        void createDecoder(const std::string & codec) {
+        void createDecoder(const std::string & codec, int width = 0, int height = 0) {
             webrtc::VideoCodec codec_settings;
+            codec_settings.width = width;
+            codec_settings.height = height;
             if (codec == "H264") {
-                m_decoder=m_factory.CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kH264CodecName));
+                m_decoder=m_factory->CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kH264CodecName));
                 codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecH264;
             } else if (codec == "VP9") {
-                m_decoder=m_factory.CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kVp9CodecName));
+                m_decoder=m_factory->CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kVp9CodecName));
                 codec_settings.codecType = webrtc::VideoCodecType::kVideoCodecVP9;	                
             }
             if (m_decoder.get() != NULL) {
@@ -190,9 +193,9 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
             return 1;
         }
 
-        rtc::VideoBroadcaster&                m_broadcaster;
-        VideoDecoderFactory        m_factory;
-        std::unique_ptr<webrtc::VideoDecoder> m_decoder;
+        rtc::VideoBroadcaster&                        m_broadcaster;
+        std::unique_ptr<webrtc::VideoDecoderFactory>& m_factory;
+        std::unique_ptr<webrtc::VideoDecoder>         m_decoder;
 
 		std::queue<Frame>                     m_queue;
 		std::mutex                            m_queuemutex;

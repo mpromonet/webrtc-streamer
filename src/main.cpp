@@ -59,6 +59,7 @@ int main(int argc, char* argv[])
 	std::string authDomain = "mydomain.com";
 	std::string publishFilter(".*");
 	Json::Value config;  
+	bool        useNullCodec = false;
 
 	std::string httpAddress("0.0.0.0:");
 	std::string httpPort = "8000";
@@ -70,7 +71,7 @@ int main(int argc, char* argv[])
 	httpAddress.append(httpPort);
 
 	int c = 0;
-	while ((c = getopt (argc, argv, "hVv::" "c:H:w:N:A:D:C:" "T::t:S::s::" "a::q:" "n:u:U:" "R:")) != -1)
+	while ((c = getopt (argc, argv, "hVv::" "c:H:w:N:A:D:C:" "T::t:S::s::" "a::q:o" "n:u:U:" "R:")) != -1)
 	{
 		switch (c)
 		{
@@ -88,6 +89,7 @@ int main(int argc, char* argv[])
 			
 			case 'a': audioLayer = optarg ? (webrtc::AudioDeviceModule::AudioLayer)atoi(optarg) : webrtc::AudioDeviceModule::kDummyAudio; break;
 			case 'q': publishFilter = optarg ; break;
+			case 'o': useNullCodec = true; break;
 				
 			case 'C': {
 				std::ifstream stream(optarg);
@@ -146,6 +148,8 @@ int main(int argc, char* argv[])
 				std::cout << "\t -T[username:password@]turn_address : start embeded TURN server (default:disabled)"				  << std::endl;
 
 				std::cout << "\t -a[audio layer]                    : spefify audio capture layer to use (default:" << audioLayer << ")"          << std::endl;
+				std::cout << "\t -q[filter]                         : spefify publish filter (default:" << publishFilter << ")"          << std::endl;
+				std::cout << "\t -o                                 : use null codec (keep frame encoded)"                 << std::endl;
 
 				std::cout << "\t -n name -u videourl -U audiourl    : register a stream with name using url"               << std::endl;			
 				std::cout << "\t [url]                              : url to register in the source list"                  << std::endl;
@@ -185,7 +189,7 @@ int main(int argc, char* argv[])
 		iceServerList.push_back(std::string("turn:")+turnurl);
 	}
 
-	webRtcServer = new PeerConnectionManager(iceServerList, config["urls"], audioLayer, publishFilter, localWebrtcUdpPortRange);
+	webRtcServer = new PeerConnectionManager(iceServerList, config["urls"], audioLayer, publishFilter, localWebrtcUdpPortRange, useNullCodec);
 	if (!webRtcServer->InitializePeerConnection())
 	{
 		std::cout << "Cannot Initialize WebRTC server" << std::endl;

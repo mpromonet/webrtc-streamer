@@ -38,10 +38,10 @@ template <typename T>
 class LiveVideoSource : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public T::Callback
 {
 public:
-    LiveVideoSource(const std::string &uri, const std::map<std::string, std::string> &opts, bool wait) :
+    LiveVideoSource(const std::string &uri, const std::map<std::string, std::string> &opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory, bool wait) :
         m_env(m_stop),
 	    m_liveclient(m_env, this, uri.c_str(), opts, rtc::LogMessage::GetLogToDebug()<=2),
-	    m_decoder(m_broadcaster, opts, wait) {
+	    m_decoder(m_broadcaster, opts, videoDecoderFactory, wait) {
             this->Start();
     }
     virtual ~LiveVideoSource() {
@@ -140,7 +140,7 @@ public:
                         cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
                         m_format = videoFormat;
 
-                        m_decoder.createDecoder(codec);
+                        m_decoder.createDecoder(codec, sps->width, sps->height);
                     }
                 }
             }

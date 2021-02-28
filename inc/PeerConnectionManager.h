@@ -16,6 +16,7 @@
 #include <future>
 
 #include "api/peer_connection_interface.h"
+#include "api/video_codecs/video_decoder_factory.h"
 
 #include "p2p/client/basic_port_allocator.h"
 
@@ -265,7 +266,7 @@ class PeerConnectionManager {
 	};
 
 	public:
-		PeerConnectionManager(const std::list<std::string> & iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter, const std::string& webrtcUdpPortRange);
+		PeerConnectionManager(const std::list<std::string> & iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter, const std::string& webrtcUdpPortRange, bool useNullCodec = true);
 		virtual ~PeerConnectionManager();
 
 		bool InitializePeerConnection();
@@ -300,6 +301,7 @@ class PeerConnectionManager {
 		rtc::scoped_refptr<webrtc::AudioDecoderFactory>                           m_audioDecoderfactory;
 		std::unique_ptr<webrtc::TaskQueueFactory>                                 m_task_queue_factory;
 		rtc::scoped_refptr<webrtc::AudioDeviceModule>                             m_audioDeviceModule;
+  		std::unique_ptr<webrtc::VideoDecoderFactory>                              m_video_decoder_factory;
 		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>                m_peer_connection_factory;
 		std::mutex                                                                m_peerMapMutex;
 		std::map<std::string, PeerConnectionObserver* >                           m_peer_connectionobs_map;

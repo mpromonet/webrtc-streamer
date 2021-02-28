@@ -71,7 +71,9 @@ class NullEncoder : public webrtc::VideoEncoder {
 		encoded_image_callback_ = callback;
     	return WEBRTC_VIDEO_CODEC_OK;
 	}
-    void SetRates(const RateControlParameters& parameters) override {}
+    void SetRates(const RateControlParameters& parameters) override {
+		RTC_LOG(LS_WARNING) << "SetRates() " << parameters.target_bitrate.ToString() << " " << parameters.bitrate.ToString() << " " << parameters.bandwidth_allocation.kbps() << " " << parameters.framerate_fps;
+	}
 
     int32_t Encode(const webrtc::VideoFrame& frame, const std::vector<webrtc::VideoFrameType>* frame_types) override {
 	    if (!encoded_image_callback_) {
@@ -89,10 +91,12 @@ class NullEncoder : public webrtc::VideoEncoder {
 		rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encoded_data = webrtc::EncodedImageBuffer::Create((uint8_t*)buffer->GetI420()->DataY(), buffer->GetI420()->StrideY());
 		encoded_image.SetEncodedData(encoded_data);
 		encoded_image.SetTimestamp(frame.timestamp());
-		encoded_image.ntp_time_ms_ = frame.ntp_time_ms();
+		encoded_image.ntp_time_ms_ = frame.timestamp_us();
+		encoded_image.SetSpatialIndex(0);
 
 		webrtc::CodecSpecificInfo codec_specific;
 		codec_specific.codecType = webrtc::VideoCodecType::kVideoCodecH264;
+		codec_specific.codecSpecific.H264.temporal_idx = webrtc::kNoTemporalIdx;
 
 		RTC_LOG(LS_VERBOSE) << "EncodedImage " << frame.id() << " " << encoded_image._frameType << " " <<  buffer->width() << "x" <<  buffer->height() << " " <<  buffer->GetI420()->StrideY() << "x" <<  buffer->GetI420()->StrideU() << "x" <<  buffer->GetI420()->StrideV();
 
@@ -106,7 +110,6 @@ class NullEncoder : public webrtc::VideoEncoder {
     webrtc::VideoEncoder::EncoderInfo GetEncoderInfo() const override {
 	    webrtc::VideoEncoder::EncoderInfo info;
 		info.supports_native_handle = true;
-		info.has_trusted_rate_controller = true;
 		info.implementation_name = "NullEncoder";
 		return info;
 	}
@@ -143,6 +146,7 @@ class NullDecoder : public webrtc::VideoDecoder {
     virtual ~NullDecoder() override {}
 
 	int32_t InitDecode(const webrtc::VideoCodec* codec_settings, int32_t number_of_cores) override {
+		codec_settings_ = *codec_settings;
     	return WEBRTC_VIDEO_CODEC_OK;
 	}
     int32_t Release() override {
@@ -160,9 +164,10 @@ class NullDecoder : public webrtc::VideoDecoder {
 			return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
 		}
 		rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encodedData = input_image.GetEncodedData();
-		rtc::scoped_refptr<webrtc::VideoFrameBuffer> buffer = new rtc::RefCountedObject<EncodedVideoFrameBuffer>(encodedData->size(), 1, encodedData);
+		rtc::scoped_refptr<webrtc::VideoFrameBuffer> buffer = new rtc::RefCountedObject<EncodedVideoFrameBuffer>(codec_settings_.width, codec_settings_.height, encodedData);
 		
 		webrtc::VideoFrame frame(buffer, webrtc::kVideoRotation_0, render_time_ms * rtc::kNumMicrosecsPerMillisec);
+		frame.set_id(input_image.Timestamp());
 		frame.set_timestamp(input_image.Timestamp());
 		frame.set_ntp_time_ms(input_image.NtpTimeMs());
 
@@ -178,10 +183,11 @@ class NullDecoder : public webrtc::VideoDecoder {
 	}
 
 	webrtc::DecodedImageCallback* decoded_image_callback_;
+	webrtc::VideoCodec codec_settings_;
 };
 
 //
-// Implementation of Raspberry video decoder factory
+// Implementation of video decoder factory
 class VideoDecoderFactory : public webrtc::VideoDecoderFactory {
    public:
     VideoDecoderFactory(): supported_formats_(webrtc::SupportedH264Codecs()) {}
