@@ -16,7 +16,6 @@
 #include "modules/video_coding/include/video_error_codes.h"
 #include "modules/video_coding/h264_sprop_parameter_sets.h"
 
-#include "NullCodec.h"
 
 class VideoDecoder : public webrtc::DecodedImageCallback {
     private:

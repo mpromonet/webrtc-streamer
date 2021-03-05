@@ -28,7 +28,8 @@
 #include "VideoScaler.h"
 #include "VideoFilter.h"
 
-#include "NullCodec.h"
+#include "NullEncoder.h"
+#include "NullDecoder.h"
 
 
 
