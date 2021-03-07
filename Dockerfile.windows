@@ -6,6 +6,7 @@ WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
 ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
+       DEPOT_TOOLS_UPDATE=0 \
        CLANG_VERSION=ToT \
        PYTHONIOENCODING=UTF-8 \
        MSVC_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community" \

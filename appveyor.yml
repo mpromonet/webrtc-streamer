@@ -4,6 +4,7 @@ environment:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       CLANG_VERSION: ToT
       DEPOT_TOOLS_WIN_TOOLCHAIN: 0
+      DEPOT_TOOLS_UPDATE: 0
 
 platform: x64
 
