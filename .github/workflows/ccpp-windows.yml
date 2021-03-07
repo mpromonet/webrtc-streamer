@@ -17,14 +17,15 @@ jobs:
         MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community"
 
     - name: depot_tools
-      run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+      run: |
+          git config --global core.autocrlf false 
+          git config --global core.filemode false 
+          git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
     - name: fetch webrtc
       shell: cmd
       run: |
           set "PATH=%PATH%;%GITHUB_WORKSPACE%\depot_tools"
-          git config --global core.autocrlf false 
-          git config --global core.filemode false 
           mkdir C:\webrtc
           pushd C:\webrtc
           fetch --no-history webrtc
