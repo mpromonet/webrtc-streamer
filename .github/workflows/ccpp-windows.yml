@@ -12,9 +12,9 @@ jobs:
 
     - name: pkg
       shell: cmd
-      run: choco install  --ignore-detected-reboot --no-progress -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%"
+      run: choco install  --ignore-detected-reboot --no-progress -y visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%"
       env:
-        MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community"
+        MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community"
 
     - name: depot_tools
       run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
@@ -45,7 +45,7 @@ jobs:
           cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=C:/webrtc .
           ninja 
       env:
-        MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2017\\Community"
+        MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community"
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
         CLANG_VERSION: ToT
         PYTHONIOENCODING: UTF-8

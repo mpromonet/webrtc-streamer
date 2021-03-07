@@ -99,11 +99,15 @@ Usage
 		-t[username:password@]turn_address : use an external TURN relay server (default:disabled)
 		-T[username:password@]turn_address : start embeded TURN server (default:disabled)
 		
-        	-a[audio layer]    : spefify audio capture layer to use (default:3)		
+		-a[audio layer]                    : spefify audio capture layer to use (default:0)		
+		-q[filter]                         : spefify publish filter (default:.*)
+		-o                                 : use null codec (keep frame encoded)
 
-		-n name -u videourl -U audiourl : register a name for a video url and an audio url
-         	[url]                           : url to register in the source list
-		-C config.json                  : load urls from JSON config file 
+		-C config.json                     : load urls from JSON config file 
+		-R [Udp port range min:max]        : Set the webrtc udp port range (default 0:65534)
+
+		-n name -u videourl -U audiourl    : register a name for a video url and an audio url
+		[url]                              : url to register in the source list
 
 Arguments of '-H' are forwarded to option [listening_ports](https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md#listening_ports-8080) of civetweb, then it is possible to use the civetweb syntax like `-H8000,9000` or `-H8080r,8443s`.
 
