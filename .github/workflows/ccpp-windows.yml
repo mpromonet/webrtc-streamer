@@ -34,7 +34,6 @@ jobs:
           popd
       env:
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
-        DEPOT_TOOLS_UPDATE: 0
         CLANG_VERSION: ToT
         PYTHONIOENCODING: UTF-8
         GCLIENT_PY3: 1
@@ -51,7 +50,6 @@ jobs:
       env:
         MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community"
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
-        DEPOT_TOOLS_UPDATE: 0
         CLANG_VERSION: ToT
         PYTHONIOENCODING: UTF-8
         GCLIENT_PY3: 1
