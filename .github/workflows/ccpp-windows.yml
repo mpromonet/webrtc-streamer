@@ -34,6 +34,7 @@ jobs:
         DEPOT_TOOLS_UPDATE: 0
         CLANG_VERSION: ToT
         PYTHONIOENCODING: UTF-8
+        GCLIENT_PY3: 1
 
     - name: build
       shell: cmd
@@ -50,6 +51,7 @@ jobs:
         DEPOT_TOOLS_UPDATE: 0
         CLANG_VERSION: ToT
         PYTHONIOENCODING: UTF-8
+        GCLIENT_PY3: 1
 
     - name: cpack
       shell: cmd
