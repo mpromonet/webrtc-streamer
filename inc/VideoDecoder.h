@@ -63,6 +63,7 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
                         webrtc::EncodedImage input_image;
                         input_image.SetEncodedData(frame.m_content);		
                         input_image._frameType = frame.m_frameType;
+                        input_image.ntp_time_ms_ = frame.m_timestamp_ms;
                         input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
                         int res = m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
                         if (res != WEBRTC_VIDEO_CODEC_OK) {

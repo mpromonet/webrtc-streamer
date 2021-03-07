@@ -41,13 +41,13 @@ class NullDecoder : public webrtc::VideoDecoder {
 		rtc::scoped_refptr<webrtc::VideoFrameBuffer> buffer = new rtc::RefCountedObject<EncodedVideoFrameBuffer>(codec_settings_.width, codec_settings_.height, encodedData);
 		
 		webrtc::VideoFrame frame(buffer, webrtc::kVideoRotation_0, render_time_ms * rtc::kNumMicrosecsPerMillisec);
-		frame.set_id(input_image.Timestamp());
 		frame.set_timestamp(input_image.Timestamp());
 		frame.set_ntp_time_ms(input_image.NtpTimeMs());
 
 		RTC_LOG(LS_VERBOSE) << "Decode " << frame.id() << " " << input_image._frameType << " " <<  buffer->width() << "x" <<  buffer->height() << " " <<  buffer->GetI420()->StrideY() << "x" <<  buffer->GetI420()->StrideU() << "x" <<  buffer->GetI420()->StrideV();
 
 		decoded_image_callback_->Decoded(frame);
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
 		return WEBRTC_VIDEO_CODEC_OK;		
 	}
