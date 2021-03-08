@@ -14,13 +14,10 @@ configuration:
 install:
   - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\depot_tools;%PATH%
   - sh: export PATH=${APPVEYOR_BUILD_FOLDER}/depot_tools:${PATH}
-  - cmd: set
-  - sh: env
-  - sh: df -h
   - sh: sudo apt-get update && sudo apt-get install -y --no-install-recommends autoconf automake libtool xz-utils libgtk-3-dev libasound2-dev libpulse-dev
   - cmd: git config --global core.autocrlf false 
   - cmd: git config --global core.filemode false 
-  - git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git 
+  - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git 
   - mkdir webrtc
   - cd webrtc
   - fetch --no-history --nohooks webrtc 
