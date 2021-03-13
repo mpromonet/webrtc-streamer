@@ -41,7 +41,7 @@ jobs:
       - attach_workspace:
           at: /          
       - checkout
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python autoconf automake libtool git cmake make g++ xz-utils libgtk-3-dev libxtst-dev libasound2-dev libpulse-dev
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python python-pip autoconf automake libtool git cmake make g++ xz-utils libgtk-3-dev libxtst-dev libasound2-dev libpulse-dev
       - run: pip install setuptools
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: cd ${WEBRTCROOT} && gclient sync 
@@ -68,7 +68,7 @@ jobs:
       - attach_workspace:
           at: /          
       - checkout
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python autoconf automake libtool git cmake make g++ xz-utils pkg-config libglib2.0-dev
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python python-pip autoconf automake libtool git cmake make g++ xz-utils pkg-config libglib2.0-dev
       - run: pip install setuptools
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: cd ${WEBRTCROOT} && gclient sync 
@@ -135,7 +135,7 @@ jobs:
       - attach_workspace:
           at: /
       - checkout
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python autoconf automake libtool git make cmake g++ xz-utils pkg-config
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python python-pip autoconf automake libtool git make cmake g++ xz-utils pkg-config
       - run: pip install setuptools
       - run: 
           command: wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
@@ -169,7 +169,7 @@ jobs:
       - attach_workspace:
           at: /
       - checkout
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python autoconf automake libtool git cmake make g++ xz-utils pkg-config
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python python-pip autoconf automake libtool git cmake make g++ xz-utils pkg-config
       - run: pip install setuptools
       - run: 
           command: wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
@@ -202,7 +202,7 @@ jobs:
       - attach_workspace:
           at: /
       - checkout
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python autoconf automake libtool git cmake make g++ xz-utils pkg-config gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python python-pip autoconf automake libtool git cmake make g++ xz-utils pkg-config gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
       - run: pip install setuptools
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm64

@@ -10,7 +10,7 @@ ARG CROSSCOMPILER=https://sourceforge.net/projects/raspberry-pi-cross-compilers/
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python xz-utils cmake make pkg-config \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python python-pip xz-utils cmake make pkg-config \
 	&& pip install setuptools \
 	&& mkdir /webrtc \
     && wget -qO- ${CROSSCOMPILER} | tar xz -C /webrtc \
