@@ -23,6 +23,7 @@
         "Western Cape": {"video":"rtsp://196.21.92.82/axis-media/media.amp", "position":"-33.925840,18.423220"},
         "Nordland": {"video":"rtsp://77.110.228.219/axis-media/media.amp", "position":"67.280000,14.405010" },
 
+        "Ottawa": {"video":"rtsp://67.69.107.188:554/axis-media/media.amp", "position":"45.402420,-75.653957" },
         "Vaison-La-Romaine": {"video":"rtsp://176.139.87.16/axis-media/media.amp", "position":"44.238960,5.074610" }
     }
 }
