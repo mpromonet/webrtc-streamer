@@ -7,6 +7,8 @@ LABEL maintainer=michel.promonet@free.fr
 ARG ARCH=armv6l
 ARG CROSSCOMPILER=https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%201%2C%20Zero/cross-gcc-10.2.0-pi_0-1.tar.gz
 
+ENV GCLIENT_PY3=1
+
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 

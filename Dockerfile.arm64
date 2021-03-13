@@ -5,6 +5,7 @@ FROM ubuntu:20.04 as builder
 LABEL maintainer=michel.promonet@free.fr
 
 ARG ARCH=arm64 
+ENV GCLIENT_PY3=1
 
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
