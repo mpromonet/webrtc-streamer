@@ -24,6 +24,8 @@
         "Nordland": {"video":"rtsp://77.110.228.219/axis-media/media.amp", "position":"67.280000,14.405010" },
 
         "Ottawa": {"video":"rtsp://67.69.107.188:554/axis-media/media.amp", "position":"45.402420,-75.653957" },
+        "Allendale": {"video":"rtsp://71.83.5.156/axis-media/media.amp", "position":"42.972250,-85.953650" },
+        
         "Vaison-La-Romaine": {"video":"rtsp://176.139.87.16/axis-media/media.amp", "position":"44.238960,5.074610" }
     }
 }
