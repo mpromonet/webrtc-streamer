@@ -40,7 +40,7 @@ RUN git config --global core.autocrlf false \
        && time /t 
 
 # run
-FROM mcr.microsoft.com/windows:ltsc2019
+FROM mcr.microsoft.com/windows:1809
 
 WORKDIR /app
 COPY --from=builder /app/ /app/
