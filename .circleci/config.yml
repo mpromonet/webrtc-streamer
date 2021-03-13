@@ -36,14 +36,12 @@ jobs:
     environment:
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
-      GCLIENT_PY3: 1
 
     steps:
       - attach_workspace:
           at: /          
       - checkout
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python python3 python3-pip autoconf automake libtool git cmake make g++ xz-utils libgtk-3-dev libxtst-dev libasound2-dev libpulse-dev
-      - run: pip3 install setuptools
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python autoconf automake libtool git cmake make g++ xz-utils libgtk-3-dev libxtst-dev libasound2-dev libpulse-dev
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: cd ${WEBRTCROOT} && gclient sync 
       
@@ -64,14 +62,12 @@ jobs:
     environment:
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
-      GCLIENT_PY3: 1
 
     steps:
       - attach_workspace:
           at: /          
       - checkout
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python python3 python3-pip autoconf automake libtool git cmake make g++ xz-utils pkg-config libglib2.0-dev
-      - run: pip3 install setuptools
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python autoconf automake libtool git cmake make g++ xz-utils pkg-config libglib2.0-dev
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: cd ${WEBRTCROOT} && gclient sync 
 
@@ -132,14 +128,12 @@ jobs:
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
       CROSSCOMPILER: https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%202%2C%203/cross-gcc-10.2.0-pi_2-3.tar.gz
-      GCLIENT_PY3: 1
 
     steps:
       - attach_workspace:
           at: /
       - checkout
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python python3 python3-pip autoconf automake libtool git make cmake g++ xz-utils pkg-config
-      - run: pip3 install setuptools
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python autoconf automake libtool git make cmake g++ xz-utils pkg-config
       - run: 
           command: wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
           no_output_timeout: 30m
@@ -167,14 +161,12 @@ jobs:
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
       CROSSCOMPILER: https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%201%2C%20Zero/cross-gcc-10.2.0-pi_0-1.tar.gz
-      GCLIENT_PY3: 1
 
     steps:
       - attach_workspace:
           at: /
       - checkout
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python python3 python3-pip autoconf automake libtool git cmake make g++ xz-utils pkg-config
-      - run: pip3 install setuptools
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python autoconf automake libtool git cmake make g++ xz-utils pkg-config
       - run: 
           command: wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
           no_output_timeout: 30m
@@ -201,14 +193,12 @@ jobs:
     environment:
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
-      GCLIENT_PY3: 1
 
     steps:
       - attach_workspace:
           at: /
       - checkout
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python python3 python3-pip autoconf automake libtool git cmake make g++ xz-utils pkg-config gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-      - run: pip3 install setuptools
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python autoconf automake libtool git cmake make g++ xz-utils pkg-config gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
       - run: cd ${WEBRTCROOT} && gclient sync 
