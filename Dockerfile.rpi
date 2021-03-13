@@ -12,7 +12,7 @@ ENV GCLIENT_PY3=1
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python3 python3-pip xz-utils cmake make pkg-config \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python python3 python3-pip xz-utils cmake make pkg-config \
 	&& pip3 install setuptools \
 	&& mkdir /webrtc \
     && wget -qO- ${CROSSCOMPILER} | tar xz -C /webrtc \
