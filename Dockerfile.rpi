@@ -14,7 +14,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 	&& mkdir /webrtc \
     && wget -qO- ${CROSSCOMPILER} | tar xz -C /webrtc \
 	&& export PATH=$(ls -d /webrtc/cross-pi-gcc-*/bin):$PATH \
-	&& git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /webrtc/depot_tools \
+	&& git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /webrtc/depot_tools \
 	&& export PATH=/webrtc/depot_tools:$PATH \
 	&& cd /webrtc \
 	&& fetch --no-history --nohooks webrtc \
