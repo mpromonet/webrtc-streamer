@@ -233,7 +233,7 @@ jobs:
     steps:
       - attach_workspace:
           at: /
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates golang
+      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates golang git
       - run: go get github.com/tcnksm/ghr
       - deploy:
           name: "Deploy to Github"
