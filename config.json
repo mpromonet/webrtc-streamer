@@ -7,12 +7,10 @@
         "Bahia": {"video": "rtsp://187.1.147.77:2000/axis-media/media.amp", "position": "-12.618330,-38.955830" },
         "Honk-Kong": {"video": "rtsp://weathercam.gsis.edu.hk/axis-media/media.amp", "position":"22.352734,114.1277", "options":"rtptransport=tcp&timeout=60"},
         
-        "KonskyGrun": {"video": "rtsp://stream.tmr.sk:1935/tmr/STREAM17.stream"}, 
         "VyhladJazero": {"video": "rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.stream"}, 
 
         "Curacao": {"video": "rtsp://srv13.arkasis.nl:80/498/default.stream", "position":"12.2376122,-69.1801954"},  
 
-        "Foucault": {"video": "rtsp://131.173.8.23/axis-media/media.amp"},
         "Zeeland": { "video": "rtsp://213.34.225.97/axis-media/media.amp", "position":"51.5,3.613890"},
         "Vancouver": { "video": "rtsp://174.6.126.86/axis-media/media.amp", "position":"49.249660,-123.119340"},
 
@@ -23,8 +21,6 @@
         "Trento": {"video": "rtsp://194.32.173.211/axis-media/media.amp"},
         "Great Falls": {"video": "rtsp://76.75.8.116/axis-media/media.amp", "position":"47.551039,-111.539400"},
         "Western Cape": {"video":"rtsp://196.21.92.82/axis-media/media.amp", "position":"-33.925840,18.423220"},
-        "Nordland": {"video":"rtsp://77.110.228.219/axis-media/media.amp", "position":"67.280000,14.405010" },
-        "Wroclaw": {"video":"rtsp://78.10.34.92/axis-media/media.amp", "position":"51.100000,17.033330"},
-        "Kiev": {"video":"rtsp://77.52.149.60/axis-media/media.amp", "position":"50.454660,30.523800"}
+        "Nordland": {"video":"rtsp://77.110.228.219/axis-media/media.amp", "position":"67.280000,14.405010" }
     }
 }
