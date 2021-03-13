@@ -11,8 +11,9 @@ WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python xz-utils cmake make pkg-config \
+	&& pip install setuptools \
 	&& mkdir /webrtc \
-        && wget -qO- ${CROSSCOMPILER} | tar xz -C /webrtc \
+    && wget -qO- ${CROSSCOMPILER} | tar xz -C /webrtc \
 	&& export PATH=$(ls -d /webrtc/cross-pi-gcc-*/bin):$PATH \
 	&& git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /webrtc/depot_tools \
 	&& export PATH=/webrtc/depot_tools:$PATH \

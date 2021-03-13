@@ -10,6 +10,7 @@ WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python xz-utils cmake make pkg-config gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
+	&& pip install setuptools \
 	&& mkdir /webrtc \
 	&& git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git /webrtc/depot_tools \
 	&& export PATH=/webrtc/depot_tools:$PATH \
