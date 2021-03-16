@@ -11,6 +11,7 @@
 
 #include "media/base/video_broadcaster.h"
 #include "api/media_stream_interface.h"
+#include "api/video/i420_buffer.h"
 
 class VideoScaler :  public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public rtc::VideoSourceInterface<webrtc::VideoFrame> 
 {
