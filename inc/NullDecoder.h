@@ -14,9 +14,7 @@
 
 class NullDecoder : public webrtc::VideoDecoder {
    public:
-    static std::unique_ptr<NullDecoder> Create() {
-		return std::make_unique<NullDecoder>();
-	}
+ 	NullDecoder() {}
     virtual ~NullDecoder() override {}
 
 	int32_t InitDecode(const webrtc::VideoCodec* codec_settings, int32_t number_of_cores) override {
@@ -52,9 +50,7 @@ class NullDecoder : public webrtc::VideoDecoder {
 		return WEBRTC_VIDEO_CODEC_OK;		
 	}
 
-    const char* ImplementationName() const override {
-		return "NullDecoder";
-	}
+    const char* ImplementationName() const override { return "NullDecoder"; }
 
 	webrtc::DecodedImageCallback* decoded_image_callback_;
 	webrtc::VideoCodec codec_settings_;
@@ -69,7 +65,7 @@ class VideoDecoderFactory : public webrtc::VideoDecoderFactory {
 
     std::unique_ptr<webrtc::VideoDecoder> CreateVideoDecoder(const webrtc::SdpVideoFormat& format) override {
    		RTC_LOG(INFO) << "Create Null Decoder format:" << format.name;
-    	return NullDecoder::Create();
+    	return std::make_unique<NullDecoder>();
 	}
     std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override { return supported_formats_; }
 

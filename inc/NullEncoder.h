@@ -14,10 +14,7 @@
 
 class NullEncoder : public webrtc::VideoEncoder {
    public:
-    static std::unique_ptr<NullEncoder> Create() {
-		return absl::make_unique<NullEncoder>();
-	}
-	explicit NullEncoder() {}
+	NullEncoder() {}
     virtual ~NullEncoder() override {}
 
     int32_t InitEncode(const webrtc::VideoCodec* codec_settings, const webrtc::VideoEncoder::Settings& settings) override {
@@ -87,7 +84,7 @@ class VideoEncoderFactory : public webrtc::VideoEncoderFactory {
 
     std::unique_ptr<webrtc::VideoEncoder> CreateVideoEncoder(const webrtc::SdpVideoFormat& format) override {
 		RTC_LOG(INFO) << "Create Null Encoder format:" << format.name;
-		return NullEncoder::Create();
+		return std::make_unique<NullEncoder>();
 	}
 
     std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override { return supported_formats_; }
