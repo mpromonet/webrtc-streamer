@@ -12,6 +12,7 @@
 
 #include "rtc_base/ref_counted_object.h"
 #include "absl/strings/match.h"
+#include "api/video/i420_buffer.h"
 
 class EncodedVideoI420Buffer : public webrtc::I420BufferInterface
 {

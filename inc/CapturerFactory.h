@@ -13,6 +13,10 @@
 
 #include "VcmCapturer.h"
 
+#ifdef HAVE_V4L2
+#include "V4l2Capturer.h"
+#endif
+
 #ifdef HAVE_LIVE555
 #include "rtspvideocapturer.h"
 #include "rtpvideocapturer.h"
@@ -152,8 +156,13 @@ class CapturerFactory {
 		{
 #ifdef USE_X11
 			videoSource = TrackSource<WindowCapturer>::Create(videourl, opts, videoDecoderFactory);
-#endif	
+#endif 
 		}
+		else if ((videourl.find("v4l2://") == 0) && (std::regex_match("v4l2://",publishFilter))) {
+#ifdef HAVE_V4L2			
+			videoSource = TrackSource<V4l2Capturer>::Create(videourl, opts, videoDecoderFactory);
+#endif			
+		}		
 		else if (std::regex_match("videocap://",publishFilter)) {
 			videoSource = TrackSource<VcmCapturer>::Create(videourl, opts, videoDecoderFactory);
 		}

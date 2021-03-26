@@ -66,7 +66,7 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${WEBRTCBUILD}/args.gn)
     string(REPLACE "--enable-thumb" "--disable-thumb" filecontent "${filecontent}")
     string(REPLACE "--extra-cflags=-march=armv7-a" "--extra-cflags=-march=armv6" filecontent "${filecontent}")
     file(WRITE ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py "${filecontent}")
-    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg COMMAND chromium/scripts/build_ffmpeg.py linux arm --config-only)
+    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg COMMAND python2 chromium/scripts/build_ffmpeg.py linux arm --config-only)
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg COMMAND chromium/scripts/copy_config.sh)
   endif()
 
@@ -149,7 +149,6 @@ target_link_libraries (${CMAKE_PROJECT_NAME} civetweb)
 target_include_directories(civetweb PUBLIC civetweb/include) 
 add_definitions(-DOPENSSL_API_1_1 -DCRYPTO_LIB="libcrypto.so.1.1" -DSSL_LIB="libssl.so.1.1")
 
-
 # compiler specific
 if (WIN32)
     # overide compilation flags
@@ -167,6 +166,13 @@ if (WIN32)
     add_definitions(-DUSE_X11 -DHAVE_SOUND -D_WINSOCKAPI_)
     target_link_libraries (${CMAKE_PROJECT_NAME} secur32 dmoguids wmcodecdspuuid strmiids msdmo winmm dxgi d3d11)
 else()
+    # libv4l2cpp
+    add_definitions(-DHAVE_V4L2)
+    aux_source_directory(libv4l2cpp/src LIBSRC_FILES)
+    include_directories("libv4l2cpp/inc")
+    add_library(libv4l2cpp STATIC ${LIBSRC_FILES})
+    target_link_libraries (${PROJECT_NAME} libv4l2cpp) 
+
     # webrtc
     add_definitions(-DWEBRTC_POSIX -fno-rtti)
     if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
