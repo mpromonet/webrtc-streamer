@@ -42,7 +42,7 @@ class NullDecoder : public webrtc::VideoDecoder {
 		frame.set_timestamp(input_image.Timestamp());
 		frame.set_ntp_time_ms(input_image.NtpTimeMs());
 
-		RTC_LOG(LS_VERBOSE) << "Decode " << frame.id() << " " << input_image._frameType << " " <<  buffer->width() << "x" <<  buffer->height() << " " <<  buffer->GetI420()->StrideY() << "x" <<  buffer->GetI420()->StrideU() << "x" <<  buffer->GetI420()->StrideV();
+		RTC_LOG(LS_VERBOSE) << "Decode " << frame.id() << " " << input_image._frameType << " " <<  buffer->width() << "x" <<  buffer->height() << " " <<  buffer->GetI420()->StrideY();
 
 		decoded_image_callback_->Decoded(frame);
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));

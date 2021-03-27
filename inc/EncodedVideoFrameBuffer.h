@@ -23,11 +23,11 @@ public:
   virtual int width() const { return width_; }
   virtual int height() const { return height_; }
   virtual const uint8_t *DataY() const { return encoded_data_->data(); }
-  virtual const uint8_t *DataU() const { return encoded_data_->data(); }
-  virtual const uint8_t *DataV() const { return encoded_data_->data(); }
+  virtual const uint8_t *DataU() const { return NULL; }
+  virtual const uint8_t *DataV() const { return NULL; }
   virtual int StrideY() const { return encoded_data_->size(); }
-  virtual int StrideU() const { return encoded_data_->size(); }
-  virtual int StrideV() const { return encoded_data_->size(); }
+  virtual int StrideU() const { return 0; }
+  virtual int StrideV() const { return 0; }
 
 private:
   const int width_;

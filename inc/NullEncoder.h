@@ -45,17 +45,31 @@ class NullEncoder : public webrtc::VideoEncoder {
 			return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;		
 		}
 
+		// compute frametype
+		uint8_t* data = (uint8_t*)buffer->GetI420()->DataY();
+		size_t dataSize = buffer->GetI420()->StrideY();
+		webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameDelta;
+		std::vector<webrtc::H264::NaluIndex> naluIndexes = webrtc::H264::FindNaluIndices(data, dataSize);
+		for (webrtc::H264::NaluIndex  index : naluIndexes) {
+			webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(data[index.payload_start_offset]);
+			if (nalu_type ==  webrtc::H264::NaluType::kIdr) {
+				frameType = webrtc::VideoFrameType::kVideoFrameKey;
+				break;
+			}
+		}
+
+		// build webrtc::EncodedImage
 		webrtc::EncodedImage encoded_image;
-		rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encoded_data = webrtc::EncodedImageBuffer::Create((uint8_t*)buffer->GetI420()->DataY(), buffer->GetI420()->StrideY());
-		encoded_image.SetEncodedData(encoded_data);
+		encoded_image.SetEncodedData(webrtc::EncodedImageBuffer::Create(data, dataSize));
 		encoded_image.SetTimestamp(frame.timestamp());
 		encoded_image.ntp_time_ms_ = frame.ntp_time_ms();
+		encoded_image._frameType = frameType;
 
+		RTC_LOG(LS_VERBOSE) << "EncodedImage " << frame.id() << " " << encoded_image._frameType << " " <<  buffer->width() << "x" <<  buffer->height() << " " <<  buffer->GetI420()->StrideY();
+
+		// forward to callback
 		webrtc::CodecSpecificInfo codec_specific;
 		codec_specific.codecType = webrtc::VideoCodecType::kVideoCodecH264;
-
-		RTC_LOG(LS_VERBOSE) << "EncodedImage " << frame.id() << " " << encoded_image._frameType << " " <<  buffer->width() << "x" <<  buffer->height() << " " <<  buffer->GetI420()->StrideY() << "x" <<  buffer->GetI420()->StrideU() << "x" <<  buffer->GetI420()->StrideV();
-
         webrtc::EncodedImageCallback::Result result = encoded_image_callback_->OnEncodedImage(encoded_image, &codec_specific);
         if (result.error == webrtc::EncodedImageCallback::Result::ERROR_SEND_FAILED) {
             RTC_LOG(LS_ERROR) << "Error in parsing EncodedImage" << encoded_image._frameType;
