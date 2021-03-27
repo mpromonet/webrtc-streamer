@@ -75,9 +75,9 @@ Build WebRTC Streamer
 -------
 	cmake . && make 
 
-It is possible to specify cmake parameters WEBRTCBUILD & WEBRTCROOT that indicate build type and path to  WebRTC SDK :
+It is possible to specify cmake parameters WEBRTCBUILD & WEBRTCDESKTOPCAPTURE :
  - $WEBRTCROOT/src should contains source (default is $(pwd)/../webrtc) 
- - $WEBRTCROOT/src/out/$WEBRTCBUILD should contains libraries (default is Release)
+ - WEBRTCDESKTOPCAPTURE enabling desktop capture if available (default is ON) 
 
 Usage
 ===============
