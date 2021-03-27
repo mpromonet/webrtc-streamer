@@ -143,6 +143,7 @@ target_link_libraries (${CMAKE_PROJECT_NAME} Threads::Threads)
 
 # civetweb
 add_library (civetweb STATIC civetweb/src/civetweb.c civetweb/src/CivetServer.cpp)	
+add_definitions(-DOPENSSL_API_1_1)
 target_link_libraries (${CMAKE_PROJECT_NAME} civetweb) 
 target_include_directories(civetweb PUBLIC civetweb/include) 
 
@@ -180,7 +181,7 @@ else()
         target_link_libraries (${CMAKE_PROJECT_NAME} X11 Xext Xdamage Xfixes Xcomposite Xrandr Xtst)
     endif()
     # civetweb
-    add_definitions(-DOPENSSL_API_1_1 -DCRYPTO_LIB="libcrypto.so.1.1" -DSSL_LIB="libssl.so.1.1")
+    add_definitions(-DCRYPTO_LIB="libcrypto.so.1.1" -DSSL_LIB="libssl.so.1.1")
     target_link_libraries (${CMAKE_PROJECT_NAME} dl)
     #alsa
     if (ALSA_FOUND)
