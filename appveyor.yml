@@ -29,8 +29,8 @@ install:
 before_build:
   - cmd: call "C:\Program Files (x86)\Microsoft Visual Studio\%APPVEYOR_BUILD_WORKER_IMAGE:~-4%\Community\VC\Auxiliary\Build\vcvars64.bat"
   - ps: cd $env:APPVEYOR_BUILD_FOLDER
-  - cmd: cmake -G Ninja -D WEBRTCBUILD=%CONFIGURATION% -DWEBRTCROOT=%APPVEYOR_BUILD_FOLDER:\=/%/webrtc -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe .
-  - sh: cmake -G Ninja -D WEBRTCBUILD=${CONFIGURATION} -DWEBRTCROOT=${APPVEYOR_BUILD_FOLDER}/webrtc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ .
+  - cmd: cmake -G Ninja -D CMAKE_BUILD_TYPE=%CONFIGURATION% -DWEBRTCROOT=%APPVEYOR_BUILD_FOLDER:\=/%/webrtc -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe .
+  - sh: cmake -G Ninja -D CMAKE_BUILD_TYPE=${CONFIGURATION} -DWEBRTCROOT=${APPVEYOR_BUILD_FOLDER}/webrtc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ .
 
 build_script:
   - ninja

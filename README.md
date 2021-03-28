@@ -75,7 +75,7 @@ Build WebRTC Streamer
 -------
 	cmake . && make 
 
-It is possible to specify cmake parameters WEBRTCBUILD & WEBRTCDESKTOPCAPTURE :
+It is possible to specify cmake parameters WEBRTCROOT & WEBRTCDESKTOPCAPTURE :
  - $WEBRTCROOT/src should contains source (default is $(pwd)/../webrtc) 
  - WEBRTCDESKTOPCAPTURE enabling desktop capture if available (default is ON) 
 
