@@ -26,6 +26,11 @@
         "Ottawa": {"video":"rtsp://67.69.107.188:554/axis-media/media.amp", "position":"45.402420,-75.653957" },
         "Allendale": {"video":"rtsp://71.83.5.156/axis-media/media.amp", "position":"42.972250,-85.953650" },
         
-        "Vaison-La-Romaine": {"video":"rtsp://176.139.87.16/axis-media/media.amp", "position":"44.238960,5.074610" }
+        "Vaison-La-Romaine": {"video":"rtsp://176.139.87.16/axis-media/media.amp", "position":"44.238960,5.074610" },
+
+        "Reykjavik": {"video": "rtsp://157.157.138.235/axis-media/media.amp", "position":"64.135480,-21.895410"},
+        "BigSky": {"video":"rtsp://76.75.8.120/axis-media/media.amp", "position":"45.284650,-111.368290"},
+        "Orlando": {"video":"rtsp://97.68.104.34/axis-media/media.amp", "position":"28.538340,-81.379240"}
+        
     }
 }
