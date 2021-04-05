@@ -30,7 +30,7 @@ class NullEncoder : public webrtc::VideoEncoder {
     	return WEBRTC_VIDEO_CODEC_OK;
 	}
     void SetRates(const RateControlParameters& parameters) override {
-		RTC_LOG(LS_WARNING) << "SetRates() " << parameters.target_bitrate.ToString() << " " << parameters.bitrate.ToString() << " " << parameters.bandwidth_allocation.kbps() << " " << parameters.framerate_fps;
+		RTC_LOG(LS_VERBOSE) << "SetRates() " << parameters.target_bitrate.ToString() << " " << parameters.bitrate.ToString() << " " << parameters.bandwidth_allocation.kbps() << " " << parameters.framerate_fps;
 	}
 
     int32_t Encode(const webrtc::VideoFrame& frame, const std::vector<webrtc::VideoFrameType>* frame_types) override {

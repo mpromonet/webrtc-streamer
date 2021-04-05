@@ -1,0 +1,15 @@
+{
+    "configurations": [
+        {
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/${workspaceFolder}/../webrtc/src"
+            ],
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++14"
+        }
+    ],
+    "version": 4
+}
