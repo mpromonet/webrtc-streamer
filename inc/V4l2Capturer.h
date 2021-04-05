@@ -89,11 +89,11 @@ private:
 			{
 				char* buffer = new char[m_capture->getBufferSize()];	
 				int frameSize = m_capture->read(buffer,  m_capture->getBufferSize());
-				int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
-
 				rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encodedData = webrtc::EncodedImageBuffer::Create((uint8_t*)buffer, frameSize);
-				rtc::scoped_refptr<webrtc::VideoFrameBuffer> frameBuffer = new rtc::RefCountedObject<EncodedVideoFrameBuffer>(m_capture->getWidth(), m_capture->getHeight(), encodedData);
+				delete [] buffer;				
 
+				int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
+				rtc::scoped_refptr<webrtc::VideoFrameBuffer> frameBuffer = new rtc::RefCountedObject<EncodedVideoFrameBuffer>(m_capture->getWidth(), m_capture->getHeight(), encodedData);
 				webrtc::VideoFrame frame = webrtc::VideoFrame::Builder()
 					.set_video_frame_buffer(frameBuffer)
 					.set_rotation(webrtc::kVideoRotation_0)
