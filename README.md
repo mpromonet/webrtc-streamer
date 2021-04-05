@@ -37,6 +37,7 @@ Nowdays there is builds on [CircleCI](https://circleci.com/gh/mpromonet/webrtc-s
  * for x86_64 on Ubuntu Bionic
  * for armv7 crosscompiled (this build is running on Raspberry Pi2 and NanoPi NEO)
  * for armv6+vfp crosscompiled (this build is running on Raspberry PiB and should run on a Raspberry Zero)
+ * for arm64 crosscompiled
  * Windows x64 build with clang
  
 The webrtc stream name could be :
@@ -45,7 +46,8 @@ The webrtc stream name could be :
  * an "file://" url that will be openned using an MKV capturer based on live555
  * an "screen://" url that will be openned by webrtc::DesktopCapturer::CreateScreenCapturer 
  * an "window://" url that will be openned by webrtc::DesktopCapturer::CreateWindowCapturer 
- * a V4L2 capture device name
+ * an "v4l2://" url that will capture H264 frames and store it using webrtc::VideoFrameBuffer::Type::kNative type (obviously not supported on Windows)
+ * a capture device name
 
 Dependencies :
 -------------
@@ -104,12 +106,14 @@ Usage
 		-o                                 : use null codec (keep frame encoded)
 
 		-C config.json                     : load urls from JSON config file 
-		-R [Udp port range min:max]        : Set the webrtc udp port range (default 0:65534)
+		-R [Udp port range min:max]        : Set the webrtc udp port range (default 0:65535)
 
 		-n name -u videourl -U audiourl    : register a name for a video url and an audio url
 		[url]                              : url to register in the source list
 
 Arguments of '-H' are forwarded to option [listening_ports](https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md#listening_ports-8080) of civetweb, then it is possible to use the civetweb syntax like `-H8000,9000` or `-H8080r,8443s`.
+
+Using `-o` allow to store compressed frame from backend stream using `webrtc::VideoFrameBuffer::Type::kNative`. This Hack the stucture `webrtc::VideoFrameBuffer` storing data in a override of i420 buffer. This allow to forward H264 frames from V4L2 device or RTSP stream to WebRTC stream. It use less CPU and have less adaptation (resize, codec, bandwidth are disabled).
 
 Examples
 -----
