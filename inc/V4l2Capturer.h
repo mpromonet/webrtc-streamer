@@ -48,6 +48,7 @@ public:
 	}
 	virtual ~V4l2Capturer()
 	{
+		Destroy();
 	}
 
 private:

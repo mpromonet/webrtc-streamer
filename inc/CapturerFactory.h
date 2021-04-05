@@ -88,6 +88,29 @@ class CapturerFactory {
 				}
 			}
 		}
+		if (std::regex_match("v4l2://",publishFilter)) {
+#ifdef HAVE_V4L2	
+			DIR *dir = opendir("/dev");
+			if (dir != nullptr) {
+				struct dirent* entry = NULL;
+				while (entry = readdir(dir)) {
+					if (strncmp(entry->d_name, "video", 5) == 0) {
+						std::string device("/dev/");
+						device.append(entry->d_name);
+						V4L2DeviceParameters param(device.c_str(), V4L2_PIX_FMT_H264, 0, 0, 0);
+						V4l2Capture* capture = V4l2Capture::create(param);
+						if (capture != NULL) {
+							delete capture;
+							std::string v4l2url("v4l2://");
+							v4l2url.append(device);
+							videoDeviceList.push_back(v4l2url);	
+						}
+					}
+				}
+				closedir(dir);
+			}
+#endif		
+		}
 
 		return videoDeviceList;
 	}
