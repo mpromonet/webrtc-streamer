@@ -211,7 +211,7 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 #endif
   	  m_video_decoder_factory(CreateDecoderFactory(useNullCodec)),
 	  m_peer_connection_factory(webrtc::CreateModularPeerConnectionFactory(CreatePeerConnectionFactoryDependencies(m_audioDeviceModule, m_audioDecoderfactory, useNullCodec))), 
-	  m_iceServerList(iceServerList), m_config(config), m_publishFilter(publishFilter)
+	  m_iceServerList(iceServerList), m_config(config), m_publishFilter(publishFilter), m_useNullCodec(useNullCodec)
 {
 	// build video audio map
 	m_videoaudiomap = getV4l2AlsaMap();
@@ -350,7 +350,7 @@ const Json::Value PeerConnectionManager::getMediaList()
 {
 	Json::Value value(Json::arrayValue);
 
-	const std::list<std::string> videoCaptureDevice = CapturerFactory::GetVideoCaptureDeviceList(m_publishFilter);
+	const std::list<std::string> videoCaptureDevice = CapturerFactory::GetVideoCaptureDeviceList(m_publishFilter, m_useNullCodec);
 	for (auto videoDevice : videoCaptureDevice)
 	{
 		Json::Value media;
@@ -364,7 +364,7 @@ const Json::Value PeerConnectionManager::getMediaList()
 		value.append(media);
 	}
 
-	const std::list<std::string> videoList = CapturerFactory::GetVideoSourceList(m_publishFilter);
+	const std::list<std::string> videoList = CapturerFactory::GetVideoSourceList(m_publishFilter, m_useNullCodec);
 	for (auto videoSource : videoList)
 	{
 		Json::Value media;
@@ -394,7 +394,7 @@ const Json::Value PeerConnectionManager::getVideoDeviceList()
 {
 	Json::Value value(Json::arrayValue);
 
-	const std::list<std::string> videoCaptureDevice = CapturerFactory::GetVideoCaptureDeviceList(m_publishFilter);
+	const std::list<std::string> videoCaptureDevice = CapturerFactory::GetVideoCaptureDeviceList(m_publishFilter, m_useNullCodec);
 	for (auto videoDevice : videoCaptureDevice)
 	{
 		value.append(videoDevice);

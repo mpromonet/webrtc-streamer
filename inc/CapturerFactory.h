@@ -57,11 +57,11 @@ private:
 class CapturerFactory {
 	public:
 
-	static const std::list<std::string> GetVideoCaptureDeviceList(const std::regex & publishFilter)
+	static const std::list<std::string> GetVideoCaptureDeviceList(const std::regex & publishFilter, bool useNullCodec)
 	{
 		std::list<std::string> videoDeviceList;
 
-		if (std::regex_match("videocap://",publishFilter)) {
+		if (std::regex_match("videocap://",publishFilter) && !useNullCodec) {
 			std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> info(webrtc::VideoCaptureFactory::CreateDeviceInfo());
 			if (info)
 			{
@@ -88,7 +88,7 @@ class CapturerFactory {
 				}
 			}
 		}
-		if (std::regex_match("v4l2://",publishFilter)) {
+		if (std::regex_match("v4l2://",publishFilter) && useNullCodec) {
 #ifdef HAVE_V4L2	
 			DIR *dir = opendir("/dev");
 			if (dir != nullptr) {
@@ -115,12 +115,12 @@ class CapturerFactory {
 		return videoDeviceList;
 	}
 	
-	static const std::list<std::string> GetVideoSourceList(const std::regex & publishFilter) {
+	static const std::list<std::string> GetVideoSourceList(const std::regex & publishFilter, bool useNullCodec) {
 	
 		std::list<std::string> videoList;
 		
 #ifdef USE_X11
-		if (std::regex_match("window://",publishFilter)) {
+		if (std::regex_match("window://",publishFilter) && !useNullCodec) {
 			std::unique_ptr<webrtc::DesktopCapturer> capturer = webrtc::DesktopCapturer::CreateWindowCapturer(webrtc::DesktopCaptureOptions::CreateDefault());	
 			if (capturer) {
 				webrtc::DesktopCapturer::SourceList sourceList;
@@ -133,7 +133,7 @@ class CapturerFactory {
 				}
 			}
 		}
-		if (std::regex_match("screen://",publishFilter)) {
+		if (std::regex_match("screen://",publishFilter) && !useNullCodec) {
 			std::unique_ptr<webrtc::DesktopCapturer> capturer = webrtc::DesktopCapturer::CreateScreenCapturer(webrtc::DesktopCaptureOptions::CreateDefault());		
 			if (capturer) {
 				webrtc::DesktopCapturer::SourceList sourceList;

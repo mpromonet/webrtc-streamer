@@ -313,5 +313,6 @@ class PeerConnectionManager {
 		const std::regex                                                          m_publishFilter;
 		std::map<std::string,HttpServerRequestHandler::httpFunction>              m_func;
 		std::string																  m_webrtcPortRange;
+		bool                                                                      m_useNullCodec;
 };
 
