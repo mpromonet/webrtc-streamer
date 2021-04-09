@@ -10,6 +10,9 @@
 #pragma once
 
 #include "media/base/video_broadcaster.h"
+#include "common_video/h264/h264_common.h"
+#include "common_video/h264/sps_parser.h"
+#include "modules/video_coding/h264_sprop_parameter_sets.h"
 
 #include "EncodedVideoFrameBuffer.h"
 
@@ -89,8 +92,36 @@ private:
 			{
 				char* buffer = new char[m_capture->getBufferSize()];	
 				int frameSize = m_capture->read(buffer,  m_capture->getBufferSize());
+
+				bool idr = false;
+				int cfg = 0;
+				std::vector<webrtc::H264::NaluIndex> naluIndexes = webrtc::H264::FindNaluIndices((uint8_t*)buffer, frameSize);
+				for (webrtc::H264::NaluIndex  index : naluIndexes) {
+					webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[index.payload_start_offset]);
+					if (nalu_type ==  webrtc::H264::NaluType::kSps) {
+						m_sps = webrtc::EncodedImageBuffer::Create((uint8_t*)buffer[index.start_offset], index.payload_size + index.payload_start_offset - index.start_offset);
+						cfg++;
+					}
+					else if (nalu_type ==  webrtc::H264::NaluType::kPps) {
+						m_pps = webrtc::EncodedImageBuffer::Create((uint8_t*)buffer[index.start_offset], index.payload_size + index.payload_start_offset - index.start_offset);
+						cfg++;
+					}
+					else if (nalu_type ==  webrtc::H264::NaluType::kIdr) {
+						idr = true;
+					}
+				}
+				
 				rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encodedData = webrtc::EncodedImageBuffer::Create((uint8_t*)buffer, frameSize);
-				delete [] buffer;				
+				delete [] buffer;			
+				// add last SPS/PPS if not present before an IDR
+				if (idr && (cfg == 0) && (m_sps->size() != 0) && (m_pps->size() != 0) ) {
+					char * newBuffer = new char[frameSize + m_sps->size() + m_pps->size()];
+					memcpy(newBuffer, m_sps->data(), m_sps->size());
+					memcpy(newBuffer+m_sps->size(), m_pps->data(), m_pps->size());
+					memcpy(newBuffer+m_sps->size()+m_pps->size(), buffer, frameSize);
+					encodedData = webrtc::EncodedImageBuffer::Create((uint8_t*)newBuffer, frameSize + m_sps->size() + m_pps->size());
+					delete [] newBuffer;
+				}
 
 				int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
 				rtc::scoped_refptr<webrtc::VideoFrameBuffer> frameBuffer = new rtc::RefCountedObject<EncodedVideoFrameBuffer>(m_capture->getWidth(), m_capture->getHeight(), encodedData);
@@ -130,4 +161,6 @@ private:
 	std::thread m_capturethread;
 	std::unique_ptr<V4l2Capture> m_capture;
 	rtc::VideoBroadcaster m_broadcaster;
+	rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> m_sps;
+	rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> m_pps;
 };
