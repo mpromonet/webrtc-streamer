@@ -13,6 +13,7 @@
 #include "common_video/h264/h264_common.h"
 #include "common_video/h264/sps_parser.h"
 #include "modules/video_coding/h264_sprop_parameter_sets.h"
+#include "rtc_base/logging.h"
 
 #include "EncodedVideoFrameBuffer.h"
 
@@ -110,16 +111,17 @@ private:
 						idr = true;
 					}
 				}
+				RTC_LOG(LS_VERBOSE) << __FUNCTION__ << " idr:" << idr << " cfg:" << cfg << " " << m_sps->size() << " " << m_pps->size() << " " << frameSize;
 				
 				rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encodedData = webrtc::EncodedImageBuffer::Create((uint8_t*)buffer, frameSize);
 				delete [] buffer;			
 				// add last SPS/PPS if not present before an IDR
 				if (idr && (cfg == 0) && (m_sps->size() != 0) && (m_pps->size() != 0) ) {
-					char * newBuffer = new char[frameSize + m_sps->size() + m_pps->size()];
+					char * newBuffer = new char[encodedData->size() + m_sps->size() + m_pps->size()];
 					memcpy(newBuffer, m_sps->data(), m_sps->size());
 					memcpy(newBuffer+m_sps->size(), m_pps->data(), m_pps->size());
-					memcpy(newBuffer+m_sps->size()+m_pps->size(), buffer, frameSize);
-					encodedData = webrtc::EncodedImageBuffer::Create((uint8_t*)newBuffer, frameSize + m_sps->size() + m_pps->size());
+					memcpy(newBuffer+m_sps->size()+m_pps->size(), encodedData->data(), encodedData->size());
+					encodedData = webrtc::EncodedImageBuffer::Create((uint8_t*)newBuffer, encodedData->size() + m_sps->size() + m_pps->size());
 					delete [] newBuffer;
 				}
 
