@@ -33,6 +33,10 @@ jobs:
   build_x86_64:
     <<: *defaults
     
+    parameters:
+      buildtype:
+        type: string    
+    
     environment:
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
@@ -45,7 +49,7 @@ jobs:
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
       - run: cd ${WEBRTCROOT} && gclient sync 
       
-      - run: cmake . && make && cpack 
+      - run: cmake -DCMAKE_BUILD_TYPE=<< parameters.buildtype >> . && make && cpack 
 
       - run: mkdir /distrib && cp webrtc-streamer*.tar.gz /distrib
       - persist_to_workspace:
@@ -161,6 +165,10 @@ jobs:
   build_rpi_armv6:
     <<: *defaults
     
+    parameters:
+      buildtype:
+        type: string    
+    
     environment:
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
@@ -179,7 +187,7 @@ jobs:
       - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
       - run: cd ${WEBRTCROOT} && gclient sync 
 
-      - run: cmake -DCMAKE_SYSTEM_PROCESSOR=armv6l -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY . && make 
+      - run: cmake -DCMAKE_BUILD_TYPE=<< parameters.buildtype >> -DCMAKE_SYSTEM_PROCESSOR=armv6l -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY . && make 
       - run: cpack
 
       - run: mkdir /distrib && cp webrtc-streamer*.tar.gz /distrib
@@ -194,6 +202,10 @@ jobs:
   build_arm64:
     <<: *defaults
     
+    parameters:
+      buildtype:
+        type: string    
+    
     environment:
       TAR_OPTIONS: --no-same-owner
       WEBRTCROOT: /webrtc 
@@ -207,7 +219,7 @@ jobs:
       - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
       - run: cd ${WEBRTCROOT} && gclient sync 
 
-      - run: cmake -DCMAKE_SYSTEM_PROCESSOR=arm64 -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF . && make 
+      - run: cmake -DCMAKE_BUILD_TYPE=<< parameters.buildtype >> -DCMAKE_SYSTEM_PROCESSOR=arm64 -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF . && make 
       - run: cpack
 
       - run: mkdir /distrib && cp webrtc-streamer*.tar.gz /distrib
@@ -326,6 +338,9 @@ workflows:
       - build_x86_64:
           requires:
             - setup
+          matrix:
+            parameters:
+              buildtype: ["Release", "Debug"]            
           filters:
             tags:
               only: /.*/            
@@ -347,12 +362,18 @@ workflows:
       - build_rpi_armv6:
           requires:
             - setup
+          matrix:
+            parameters:
+              buildtype: ["Release", "Debug"]            
           filters:
             tags:
               only: /.*/     
       - build_arm64:
           requires:
             - setup
+          matrix:
+            parameters:
+              buildtype: ["Release", "Debug"]            
           filters:
             tags:
               only: /.*/                          
