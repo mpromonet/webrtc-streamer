@@ -3,7 +3,7 @@ defaults: &defaults
   docker:
     - image: ubuntu:20.04
     
-version: 2
+version: 2.1
 jobs:
   # -------------------------------------
   # dowload common tools 
@@ -340,7 +340,7 @@ workflows:
             - setup
           matrix:
             parameters:
-              buildtype: [Release, Debug]            
+              buildtype: ["Release", "Debug"]            
           filters:
             tags:
               only: /.*/            
