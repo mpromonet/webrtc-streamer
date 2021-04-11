@@ -142,7 +142,7 @@ jobs:
       - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
       - run: cd ${WEBRTCROOT} && gclient sync
 
-      - run: cmake -DCMAKE_SYSTEM_PROCESSOR=armv7l -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY . && make 
+      - run: cmake -DCMAKE_BUILD_TYPE=<< parameters.buildtype >> -DCMAKE_SYSTEM_PROCESSOR=armv7l -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY . && make 
       - run: cpack
 
       - run: mkdir /distrib && cp webrtc-streamer*.tar.gz /distrib
@@ -334,6 +334,9 @@ workflows:
       - build_rpi_armv7:
           requires:
             - setup
+          matrix:
+            parameters:
+              buildtype: [Release, Debug]            
           filters:
             tags:
               only: /.*/            
