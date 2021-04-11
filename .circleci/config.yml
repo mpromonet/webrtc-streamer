@@ -123,6 +123,10 @@ jobs:
   # -------------------------------------
   build_rpi_armv7:
     <<: *defaults
+
+    parameters:
+      buildtype:
+        type: string    
     
     environment:
       TAR_OPTIONS: --no-same-owner
