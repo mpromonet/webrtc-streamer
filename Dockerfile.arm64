@@ -9,7 +9,7 @@ ARG ARCH=arm64
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python python-pkg-resources xz-utils cmake make pkg-config gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python python3 python-pkg-resources xz-utils cmake make pkg-config gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
 	&& mkdir /webrtc \
 	&& git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /webrtc/depot_tools \
 	&& export PATH=/webrtc/depot_tools:$PATH \
