@@ -49,10 +49,7 @@ MESSAGE("PulseAudio_FOUND = ${PulseAudio_FOUND}")
 # webrtc build
 if (NOT EXISTS ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE}/args.gn)
   set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nrtc_enable_libevent=false\nrtc_build_libevent=false\n)
-  # clang
-  if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    set (WEBRTCARGS use_custom_libcxx=false\n${WEBRTCARGS})
-  endif()
+  set (WEBRTCARGS use_custom_libcxx=false\n${WEBRTCARGS})
   # debug/release
   if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set (WEBRTCARGS is_debug=false\n${WEBRTCARGS})
@@ -203,7 +200,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC prometheus-cpp/core/incl
 # live555helper 
 add_subdirectory(live555helper EXCLUDE_FROM_ALL)
 target_link_libraries (${CMAKE_PROJECT_NAME} liblive555helper) 
-add_definitions(-DHAVE_LIVE555 -DNO_OPENSSL=1)
+add_definitions(-DHAVE_LIVE555 -DNO_OPENSSL=1 -DNO_GETIFADDRS)
 
 # static link of libatomic on armv6l
 if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
