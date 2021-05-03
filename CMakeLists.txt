@@ -49,7 +49,10 @@ MESSAGE("PulseAudio_FOUND = ${PulseAudio_FOUND}")
 # webrtc build
 if (NOT EXISTS ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE}/args.gn)
   set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nrtc_enable_libevent=false\nrtc_build_libevent=false\n)
-  set (WEBRTCARGS use_custom_libcxx=false\n${WEBRTCARGS})
+  # clang
+  if (NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set (WEBRTCARGS use_custom_libcxx=false\n${WEBRTCARGS})
+  endif()
   # debug/release
   if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set (WEBRTCARGS is_debug=false\n${WEBRTCARGS})
