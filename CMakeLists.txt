@@ -159,6 +159,8 @@ if (WIN32)
     add_library (getopt getopt/getopt.c)
     target_include_directories(getopt PUBLIC getopt) 
     target_link_libraries (${CMAKE_PROJECT_NAME} getopt)
+    # live555helper
+    add_definitions(-DNO_GETIFADDRS)
     # webrtc
     add_definitions(-DWEBRTC_WIN -EHsc -DNOMINMAX -D__PRETTY_FUNCTION__=__FUNCTION__ -D_HAS_ITERATOR_DEBUGGING=0)
     add_definitions(-DUSE_X11 -DHAVE_SOUND -D_WINSOCKAPI_)
@@ -200,7 +202,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC prometheus-cpp/core/incl
 # live555helper 
 add_subdirectory(live555helper EXCLUDE_FROM_ALL)
 target_link_libraries (${CMAKE_PROJECT_NAME} liblive555helper) 
-add_definitions(-DHAVE_LIVE555 -DNO_OPENSSL=1 -DNO_GETIFADDRS)
+add_definitions(-DHAVE_LIVE555 -DNO_OPENSSL=1)
 
 # static link of libatomic on armv6l
 if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
