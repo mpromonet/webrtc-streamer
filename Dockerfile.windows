@@ -8,7 +8,7 @@ COPY . /webrtc-streamer
 ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
        CLANG_VERSION=ToT \
        PYTHONIOENCODING=UTF-8 \
-       MSVC_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2017\Community" 
+       MSVC_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community" 
 
 # Install Chocolatey & packages 
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin" 
@@ -16,7 +16,7 @@ RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command
 RUN choco install --no-progress -y 7zip git python2 curl sed
 RUN choco install --no-progress -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
 RUN choco install --no-progress -y windows-sdk-10-version-2004-all
-RUN choco install --ignoredetectedreboot --no-progress -y visualstudio2017buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%" || IF "%ERRORLEVEL%"=="3010" EXIT 0
+RUN choco install --ignoredetectedreboot --no-progress -y visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%" || IF "%ERRORLEVEL%"=="3010" EXIT 0
        
 RUN git config --global core.autocrlf false \
        && git config --global core.filemode false \
