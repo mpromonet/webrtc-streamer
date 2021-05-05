@@ -184,7 +184,7 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
                     std::this_thread::sleep_for(std::chrono::milliseconds(delayms));			
                 }
             } else {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
             }                        
 
             m_broadcaster.OnFrame(decodedImage);

@@ -80,6 +80,7 @@ class NullEncoder : public webrtc::VideoEncoder {
     webrtc::VideoEncoder::EncoderInfo GetEncoderInfo() const override {
 	    webrtc::VideoEncoder::EncoderInfo info;
 		info.supports_native_handle = true;
+		info.has_trusted_rate_controller = true;
 		info.implementation_name = "NullEncoder";
 		return info;
 	}
