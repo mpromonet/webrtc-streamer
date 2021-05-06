@@ -1,10 +1,10 @@
 # build
-FROM mcr.microsoft.com/windows/servercore:ltsc2019 as builder
+FROM mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2019 as builder
 LABEL maintainer=michel.promonet@free.fr
-
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
+SHELL ["cmd", "/S", "/C"]
 ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
        CLANG_VERSION=ToT \
        PYTHONIOENCODING=UTF-8 \
