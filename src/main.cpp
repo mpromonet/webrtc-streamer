@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 			case 'R': localWebrtcUdpPortRange = optarg;                                             break;
 			case 'W': webrtcTrialsFields = optarg;                                                  break;
 
-			case 'a': audioLayer = optarg ? (webrtc::AudioDeviceModule::AudioLayer)atoi(optarg) : webrtc::AudioDeviceModule::kDummyAudio; break;
+			case 'a': audioLayer = optarg ? (webrtc::AudioDeviceModule::AudioLayer)atoi(optarg) : webrtc::AudioDeviceModule::kDummyAudio; break;	
 			case 'q': publishFilter = optarg ; break;
 			case 'o': useNullCodec = true; break;
 				
@@ -151,7 +151,9 @@ int main(int argc, char* argv[])
 				std::cout << "\t -T[username:password@]turn_address : start embeded TURN server (default:disabled)"				                         << std::endl;
 				std::cout << "\t -R Udp_port_min:Udp_port_min       : Set the webrtc udp port range (default:" << localWebrtcUdpPortRange << ")"         << std::endl;
 				std::cout << "\t -W webrtc_trials_fileds            : Set the webrtc trials fields (default:" << webrtcTrialsFields << ")"               << std::endl;
+#ifdef HAVE_SOUND				
 				std::cout << "\t -a[audio layer]                    : spefify audio capture layer to use (default:" << audioLayer << ")"                 << std::endl;
+#endif				
 				std::cout << "\t -q[filter]                         : spefify publish filter (default:" << publishFilter << ")"                          << std::endl;
 				std::cout << "\t -o                                 : use null codec (keep frame encoded)"                                               << std::endl;
 			
