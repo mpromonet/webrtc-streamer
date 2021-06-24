@@ -1,13 +1,24 @@
 image: gitpod/workspace-full
 checkoutLocation: gitpod-k3s
 tasks: 
-  - name: run kube-prometheus
+  - name: gclient
     command: |
-      alias localssh=sshpass -p 'root' ssh -o StrictHostKeychecking=no -p 2222 root@127.0.0.1
-      alias localscp=sshpass -p 'root' scp -o StrictHostKeychecking=no -P 2222
-      localssh "curl -sfL https://get.k3s.io | sh -"
-      mkdir -p ~/.kube
-      localscp root@127.0.0.1:/etc/rancher/k3s/k3s.yaml ~/.kube/config
+      pushd ..
+      git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+      popd
+      export PATH=$PATH:`realpath ../depot_tools`
+
+      mkdir ../webrtc
+      pushd ../webrtc
+      fetch --no-history webrtc 
+      popd
+
+  - name: build
+    command: |
+      export PATH=$PATH:`realpath ../depot_tools`
+      cmake .
+      make
+
 ports:
   - port: 8000
     onOpen: open-browser
