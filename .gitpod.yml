@@ -1,8 +1,8 @@
 image: gitpod/workspace-full
-checkoutLocation: gitpod-k3s
+checkoutLocation: webrtc-streamer
 tasks: 
-  - name: gclient
-    command: |
+  - name: build
+    init: |
       pushd ..
       git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
       popd
@@ -13,7 +13,6 @@ tasks:
       fetch --no-history webrtc 
       popd
 
-  - name: build
     command: |
       export PATH=$PATH:`realpath ../depot_tools`
       cmake .
