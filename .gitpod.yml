@@ -15,12 +15,13 @@ tasks:
 
     command: |
       export PATH=$PATH:`realpath ../depot_tools`
-      cmake .
+      cmake -DCMAKE_BUILD_TYPE=Debug .
       make
+      ./webrtc-streamer -C config.json
 
 ports:
   - port: 8000
     onOpen: open-browser
 vscode:
   extensions:
-    - kubernetes
+    - ms-vscode.cpptools
