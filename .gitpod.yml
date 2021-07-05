@@ -24,4 +24,5 @@ ports:
     onOpen: open-browser
 vscode:
   extensions:
-    - ms-vscode.cpptools
+    - vscode.cpp
+    - webfreak.debug
