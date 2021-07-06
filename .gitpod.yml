@@ -13,10 +13,12 @@ tasks:
       fetch --no-history webrtc 
       popd
 
-    command: |
+    prebuild: |
       export PATH=$PATH:`realpath ../depot_tools`
       cmake -DCMAKE_BUILD_TYPE=Debug .
       make
+
+    command: |
       ./webrtc-streamer -C config.json
 
 ports:
