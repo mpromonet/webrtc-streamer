@@ -143,7 +143,7 @@ target_link_libraries (${CMAKE_PROJECT_NAME} Threads::Threads)
 
 # civetweb
 add_library (civetweb STATIC civetweb/src/civetweb.c civetweb/src/CivetServer.cpp)	
-add_definitions(-DOPENSSL_API_1_1)
+add_definitions(-DOPENSSL_API_1_1 -DUSE_WEBSOCKET)
 target_link_libraries (${CMAKE_PROJECT_NAME} civetweb) 
 target_include_directories(civetweb PUBLIC civetweb/include) 
 

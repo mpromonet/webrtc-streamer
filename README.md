@@ -257,7 +257,7 @@ A short sample to publish WebRTC streams to a Jitsi Video Room could be :
 	<script src="libs/strophe.muc.min.js" ></script>
 	<script src="libs/strophe.disco.min.js" ></script>
 	<script src="libs/strophe.jingle.sdp.js"></script>
-	<script src="libs/jquery-1.12.4.min.js"></script>
+	<script src="libs/jquery-3.5.1.min.js"></script>
 	<script src="xmppvideoroom.js" ></script>
 	<script>        
 		var xmpp = new XMPPVideoRoom("meet.jit.si", null);

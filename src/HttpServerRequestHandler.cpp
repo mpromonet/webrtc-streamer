@@ -240,6 +240,72 @@ class PrometheusHandler : public CivetHandler
     prometheus::Gauge&     m_cpu; 
 };
 
+class WebsocketHandler: public CivetWebSocketHandler {	
+	public:
+		WebsocketHandler(std::map<std::string,HttpServerRequestHandler::httpFunction> & func): m_func(func) {
+		}
+				
+	private:
+		std::map<std::string,HttpServerRequestHandler::httpFunction>      m_func;		
+		Json::StreamWriterBuilder                   m_jsonWriterBuilder;
+	
+		virtual bool handleConnection(CivetServer *server, const struct mg_connection *conn) {
+			RTC_LOG(INFO) << "WS connected";
+			return true;
+		}
+
+		virtual void handleReadyState(CivetServer *server, struct mg_connection *conn) {
+			RTC_LOG(INFO) << "WS ready";
+		}
+
+		virtual bool handleData(CivetServer *server,
+					struct mg_connection *conn,
+					int bits,
+					char *data,
+					size_t data_len) {
+			int opcode = bits&0xf;
+			printf("WS got %lu bytes\n", (long unsigned)data_len);
+						
+			if (opcode == MG_WEBSOCKET_OPCODE_TEXT) {
+				// parse in
+				std::string body(data, data_len);
+				Json::CharReaderBuilder builder;
+				std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
+				Json::Value in;
+				if (!reader->parse(body.c_str(), body.c_str() + body.size(), &in, NULL))
+				{
+					RTC_LOG(WARNING) << "Received unknown message:" << body;
+				}
+                std::cout << Json::writeString(m_jsonWriterBuilder,in) << std::endl;
+
+                std::string request = in.isMember("request","").asString();
+                auto it = m_func.find(request);
+
+                std::string answer;
+                if (it != m_func.end()) {
+                    HttpServerRequestHandler::httpFunction func = it->second;
+                            
+                    // invoke API implementation
+                    const struct mg_request_info *req_info = mg_get_request_info(conn);
+                    Json::Value out(func(req_info, in.get("body","")));
+                    
+                    answer = Json::writeString(m_jsonWriterBuilder,out);
+                } else {
+                    answer = mg_get_response_code_text(conn, 500);
+                }
+
+				mg_websocket_write(conn, MG_WEBSOCKET_OPCODE_TEXT, answer.c_str(), answer.size());
+			}
+			
+			return true;
+		}
+
+		virtual void handleClose(CivetServer *server, const struct mg_connection *conn) {
+			RTC_LOG(INFO) << "WS closed";	
+		}
+		
+};
+
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
@@ -260,6 +326,8 @@ HttpServerRequestHandler::HttpServerRequestHandler(std::map<std::string,httpFunc
     CivetHandler* handler = new PrometheusHandler(m_registry);
     this->addHandler("/metrics", handler);
     m_handlers.push_back(handler);
+
+    this->addWebSocketHandler("/ws", new WebsocketHandler(func));    
 }	
 
 /* ---------------------------------------------------------------------------
