@@ -278,7 +278,7 @@ class WebsocketHandler: public CivetWebSocketHandler {
 				}
                 std::cout << Json::writeString(m_jsonWriterBuilder,in) << std::endl;
 
-                std::string request = in.isMember("request","").asString();
+                std::string request = in.get("request","").asString();
                 auto it = m_func.find(request);
 
                 std::string answer;
