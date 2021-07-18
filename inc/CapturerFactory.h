@@ -206,11 +206,19 @@ class CapturerFactory {
 				if (audioDeviceModule->RecordingDeviceName(i, name, id) != -1)
 				{
 					RTC_LOG(INFO) << "audio device name:" << name << " id:" << id;
-					audioList.push_back(name);
+					std::string devname;
+					auto it = std::find(audioList.begin(), audioList.end(), name);
+					if (it == audioList.end()) {
+						devname = name;
+					} else {
+						devname = "audiocap://";
+						devname += std::to_string(i);
+					}
+					audioList.push_back(devname);					
 				}
 			}
 		}	
-		return 	audioList;
+		return audioList;
 	}
 
 	static rtc::scoped_refptr<webrtc::AudioSourceInterface> CreateAudioSource(const std::string & audiourl, 
