@@ -1,9 +1,10 @@
 {
     "configurations": [
         {
+            "name": "default",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/${workspaceFolder}/../webrtc/src"
+                "${workspaceFolder}/../webrtc/src"
             ],
             "intelliSenseMode": "linux-gcc-x64",
             "compilerPath": "/usr/bin/gcc",

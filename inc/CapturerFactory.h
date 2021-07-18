@@ -192,6 +192,27 @@ class CapturerFactory {
 		return videoSource;
 	}
 
+	static const std::list<std::string> GetAudioCaptureDeviceList(const std::regex & publishFilter, rtc::scoped_refptr<webrtc::AudioDeviceModule>   audioDeviceModule) {
+		std::list<std::string> audioList;
+		if (std::regex_match("audiocap://", publishFilter))
+		{
+			int16_t num_audioDevices = audioDeviceModule->RecordingDevices();
+			RTC_LOG(INFO) << "nb audio devices:" << num_audioDevices;
+
+			for (int i = 0; i < num_audioDevices; ++i)
+			{
+				char name[webrtc::kAdmMaxDeviceNameSize] = {0};
+				char id[webrtc::kAdmMaxGuidSize] = {0};
+				if (audioDeviceModule->RecordingDeviceName(i, name, id) != -1)
+				{
+					RTC_LOG(INFO) << "audio device name:" << name << " id:" << id;
+					audioList.push_back(name);
+				}
+			}
+		}	
+		return 	audioList;
+	}
+
 	static rtc::scoped_refptr<webrtc::AudioSourceInterface> CreateAudioSource(const std::string & audiourl, 
 							const std::map<std::string,std::string> & opts, 
 							const std::regex & publishFilter, 

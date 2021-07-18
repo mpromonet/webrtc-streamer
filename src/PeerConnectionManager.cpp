@@ -410,21 +410,10 @@ const Json::Value PeerConnectionManager::getAudioDeviceList()
 {
 	Json::Value value(Json::arrayValue);
 
-	if (std::regex_match("audiocap://", m_publishFilter))
+	const std::list<std::string> audioCaptureDevice = CapturerFactory::GetAudioCaptureDeviceList(m_publishFilter, m_audioDeviceModule);
+	for (auto audioDevice : audioCaptureDevice)
 	{
-		int16_t num_audioDevices = m_audioDeviceModule->RecordingDevices();
-		RTC_LOG(INFO) << "nb audio devices:" << num_audioDevices;
-
-		for (int i = 0; i < num_audioDevices; ++i)
-		{
-			char name[webrtc::kAdmMaxDeviceNameSize] = {0};
-			char id[webrtc::kAdmMaxGuidSize] = {0};
-			if (m_audioDeviceModule->RecordingDeviceName(i, name, id) != -1)
-			{
-				RTC_LOG(INFO) << "audio device name:" << name << " id:" << id;
-				value.append(name);
-			}
-		}
+		value.append(audioDevice);
 	}
 
 	return value;
