@@ -659,7 +659,7 @@ const Json::Value PeerConnectionManager::call(const std::string &peerid, const s
 		else
 		{
 			rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = peerConnectionObserver->getPeerConnection();
-			RTC_LOG(INFO) << "nbStreams local:" << peerConnection->local_streams()->count() << " remote:" << peerConnection->remote_streams()->count() << " localDescription:" << peerConnection->local_description();
+			RTC_LOG(INFO) << "nbStreams local:" << peerConnection->GetSenders().size() << " remote:" << peerConnection->remote_streams()->count() << " localDescription:" << peerConnection->local_description();
 
 			// register peerid
 			{
@@ -734,10 +734,10 @@ bool PeerConnectionManager::streamStillUsed(const std::string &streamLabel)
 	for (auto it : m_peer_connectionobs_map)
 	{
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it.second->getPeerConnection();
-		rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams(peerConnection->local_streams());
-		for (unsigned int i = 0; i < localstreams->count(); i++)
+		std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> localstreams = peerConnection->GetSenders();
+		for (auto stream : localstreams)
 		{
-			if (localstreams->at(i)->id() == streamLabel)
+			if (stream->id() == streamLabel)
 			{
 				stillUsed = true;
 				break;
@@ -770,11 +770,9 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 		{
 			rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = pcObserver->getPeerConnection();
 
-			rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams(peerConnection->local_streams());
-			for (unsigned int i = 0; i < localstreams->count(); i++)
+			std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> localstreams = peerConnection->GetSenders();
+			for (auto stream : localstreams)
 			{
-				auto stream = localstreams->at(i);
-
 				std::string streamLabel = stream->id();
 				bool stillUsed = this->streamStillUsed(streamLabel);
 				if (!stillUsed)
@@ -790,7 +788,7 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 					RTC_LOG(LS_ERROR) << "hangUp stream closed " << streamLabel;
 				}
 
-				peerConnection->RemoveStream(stream);
+				peerConnection->RemoveTrackNew(stream);
 			}
 
 			delete pcObserver;
@@ -856,22 +854,17 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 			content["sdp"] = sdp;
 
 			Json::Value streams;
-			rtc::scoped_refptr<webrtc::StreamCollectionInterface> localstreams(peerConnection->local_streams());
-			if (localstreams)
+			std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> localstreams = peerConnection->GetSenders();
+			for (auto localStream : localstreams)
 			{
-				for (unsigned int i = 0; i < localstreams->count(); i++)
+				if (localStream != NULL)
 				{
-					auto localStream = localstreams->at(i);
-					if (localStream != NULL)
-					{
-						Json::Value tracks;
-
-						const webrtc::VideoTrackVector &videoTracks = localStream->GetVideoTracks();
-						for (unsigned int j = 0; j < videoTracks.size(); j++)
-						{
-							auto videoTrack = videoTracks.at(j);
-							Json::Value track;
-							track["kind"] = videoTrack->kind();
+					rtc::scoped_refptr<webrtc::MediaStreamTrackInterface> mediaTrack = localStream->track();			
+					if (mediaTrack) {
+						Json::Value track;
+						track["kind"] = mediaTrack->kind();
+						if (track["kind"] == "video") {
+							webrtc::VideoTrackInterface* videoTrack = (webrtc::VideoTrackInterface*)mediaTrack.get();
 							webrtc::VideoTrackSourceInterface::Stats stats;
 							if (videoTrack->GetSource())
 							{
@@ -881,16 +874,9 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 									track["width"] = stats.input_width;
 									track["height"] = stats.input_height;
 								}
-							}
-
-							tracks[videoTrack->id()] = track;
-						}
-						const webrtc::AudioTrackVector &audioTracks = localStream->GetAudioTracks();
-						for (unsigned int j = 0; j < audioTracks.size(); j++)
-						{
-							auto audioTrack = audioTracks.at(j);
-							Json::Value track;
-							track["kind"] = audioTrack->kind();
+							}							
+						} else if (track["kind"] == "audio") {
+							webrtc::AudioTrackInterface* audioTrack = (webrtc::AudioTrackInterface*)mediaTrack.get();
 							if (audioTrack->GetSource())
 							{
 								track["state"] = audioTrack->GetSource()->state();
@@ -898,17 +884,18 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 							int level = 0;
 							if (audioTrack->GetSignalLevel(&level)) {
 								track["level"] = level;
-							}
-
-							tracks[audioTrack->id()] = track;
+							}							
 						}
 
+						Json::Value tracks;
+						tracks[mediaTrack->id()] = track;						
 						streams[localStream->id()] = tracks;
 					}
 				}
 			}
 			content["streams"] = streams;
 		}
+		
 
 		// get Stats
 		//		content["stats"] = it.second->getStats();
@@ -948,6 +935,7 @@ bool PeerConnectionManager::InitializePeerConnection()
 PeerConnectionManager::PeerConnectionObserver *PeerConnectionManager::CreatePeerConnection(const std::string &peerid)
 {
 	webrtc::PeerConnectionInterface::RTCConfiguration config;
+	config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
 	for (auto iceServer : m_iceServerList)
 	{
 		webrtc::PeerConnectionInterface::IceServer server;
@@ -1124,13 +1112,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 		std::map<std::string, std::pair<rtc::scoped_refptr<webrtc::VideoTrackSourceInterface>, rtc::scoped_refptr<webrtc::AudioSourceInterface>>>::iterator it = m_stream_map.find(streamLabel);
 		if (it != m_stream_map.end())
 		{
-			rtc::scoped_refptr<webrtc::MediaStreamInterface> stream = m_peer_connection_factory->CreateLocalMediaStream(streamLabel);
-			if (!stream.get())
-			{
-				RTC_LOG(LS_ERROR) << "Cannot create stream";
-			}
-			else
-			{
+
 				std::pair<rtc::scoped_refptr<webrtc::VideoTrackSourceInterface>, rtc::scoped_refptr<webrtc::AudioSourceInterface>> pair = it->second;
 				rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource(pair.first);
 				rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track;
@@ -1144,10 +1126,15 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 					video_track = m_peer_connection_factory->CreateVideoTrack(streamLabel + "_video", videoScaled);
 				}
 
-				if ((video_track) && (!stream->AddTrack(video_track)))
+				if ((video_track) && (!peer_connection->AddTrack(video_track, {streamLabel}).ok()))
 				{
 					RTC_LOG(LS_ERROR) << "Adding VideoTrack to MediaStream failed";
 				}
+				else
+				{
+					RTC_LOG(INFO) << "stream added to PeerConnection";
+					ret = true;
+				}				
 
 				rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource(pair.second);
 				rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track;
@@ -1159,21 +1146,15 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 				{
 					audio_track = m_peer_connection_factory->CreateAudioTrack(streamLabel + "_audio", audioSource);
 				}
-				if ((audio_track) && (!stream->AddTrack(audio_track)))
+				if ((audio_track) && (!peer_connection->AddTrack(audio_track, {streamLabel}).ok()))
 				{
 					RTC_LOG(LS_ERROR) << "Adding AudioTrack to MediaStream failed";
-				}
-
-				if (!peer_connection->AddStream(stream))
-				{
-					RTC_LOG(LS_ERROR) << "Adding stream to PeerConnection failed";
-				}
+				} 
 				else
 				{
 					RTC_LOG(INFO) << "stream added to PeerConnection";
 					ret = true;
 				}
-			}
 		}
 		else
 		{
