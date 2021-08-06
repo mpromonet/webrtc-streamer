@@ -139,7 +139,7 @@ publish_docker_builder:
     - linuxarmv7
     - linuxarm64
     - linux
-    - windows
+    - windowsbranch
     - windowstag
   env:
     DOCKER_CLI_EXPERIMENTAL: enabled
