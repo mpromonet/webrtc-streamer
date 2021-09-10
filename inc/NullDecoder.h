@@ -17,26 +17,27 @@ class NullDecoder : public webrtc::VideoDecoder {
  	NullDecoder() {}
     virtual ~NullDecoder() override {}
 
-	int32_t InitDecode(const webrtc::VideoCodec* codec_settings, int32_t number_of_cores) override {
-		codec_settings_ = *codec_settings;
-    	return WEBRTC_VIDEO_CODEC_OK;
+	bool Configure(const webrtc::VideoDecoder::Settings& settings) override { 
+		m_settings = settings;
+		return true; 
 	}
+
     int32_t Release() override {
 		return WEBRTC_VIDEO_CODEC_OK;
 	}
 
     int32_t RegisterDecodeCompleteCallback(webrtc::DecodedImageCallback* callback) override {
-		decoded_image_callback_ = callback;
+		m_decoded_image_callback = callback;
 		return WEBRTC_VIDEO_CODEC_OK;
 	}
 
     int32_t Decode(const webrtc::EncodedImage& input_image, bool /*missing_frames*/, int64_t render_time_ms = -1) override {
-	    if (!decoded_image_callback_) {
+	    if (!m_decoded_image_callback) {
 			RTC_LOG(LS_WARNING) << "RegisterDecodeCompleteCallback() not called";
 			return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
 		}
 		rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encodedData = input_image.GetEncodedData();
-		rtc::scoped_refptr<webrtc::VideoFrameBuffer> buffer = new rtc::RefCountedObject<EncodedVideoFrameBuffer>(codec_settings_.width, codec_settings_.height, encodedData);
+		rtc::scoped_refptr<webrtc::VideoFrameBuffer> buffer = new rtc::RefCountedObject<EncodedVideoFrameBuffer>(m_settings.max_render_resolution().Width(), m_settings.max_render_resolution().Height(), encodedData);
 		
 		webrtc::VideoFrame frame(buffer, webrtc::kVideoRotation_0, render_time_ms * rtc::kNumMicrosecsPerMillisec);
 		frame.set_timestamp(input_image.Timestamp());
@@ -44,15 +45,15 @@ class NullDecoder : public webrtc::VideoDecoder {
 
 		RTC_LOG(LS_VERBOSE) << "Decode " << frame.id() << " " << input_image._frameType << " " <<  buffer->width() << "x" <<  buffer->height() << " " <<  buffer->GetI420()->StrideY();
 
-		decoded_image_callback_->Decoded(frame);
+		m_decoded_image_callback->Decoded(frame);
 
 		return WEBRTC_VIDEO_CODEC_OK;		
 	}
 
     const char* ImplementationName() const override { return "NullDecoder"; }
 
-	webrtc::DecodedImageCallback* decoded_image_callback_;
-	webrtc::VideoCodec codec_settings_;
+	webrtc::DecodedImageCallback* m_decoded_image_callback;
+	webrtc::VideoDecoder::Settings m_settings;
 };
 
 //

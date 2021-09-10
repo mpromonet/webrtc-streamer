@@ -1,11 +1,10 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   labels:
     app: webrtc-streamer
   name: webrtc-streamer
 spec:
-  replicas: 3
   selector:
     matchLabels:
       app: webrtc-streamer
@@ -14,16 +13,14 @@ spec:
       labels:
         app: webrtc-streamer
     spec:
+      hostNetwork: true
       containers:
       - image: mpromonet/webrtc-streamer
-        args: ["-S","-C","config.json"]
+        args: ["-o","-C","config.json"]
         name: webrtc-streamer
         ports:
         - name: web
           containerPort: 8000
-        - name: stun
-          protocol: UDP
-          containerPort: 3478
 ---
 apiVersion: v1
 kind: Service
@@ -37,9 +34,6 @@ spec:
   ports:
     - name: web
       port: 8000
-    - name: stun
-      protocol: UDP
-      port: 3478
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
