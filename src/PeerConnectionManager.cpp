@@ -659,7 +659,7 @@ const Json::Value PeerConnectionManager::call(const std::string &peerid, const s
 		else
 		{
 			rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = peerConnectionObserver->getPeerConnection();
-			RTC_LOG(INFO) << "nbStreams local:" << peerConnection->GetSenders().size() << " remote:" << peerConnection->remote_streams()->count() << " localDescription:" << peerConnection->local_description();
+			RTC_LOG(INFO) << "nbStreams local:" << peerConnection->GetSenders().size() << " remote:" << peerConnection->GetReceivers().size() << " localDescription:" << peerConnection->local_description();
 
 			// register peerid
 			{
