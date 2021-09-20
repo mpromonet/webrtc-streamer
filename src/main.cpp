@@ -61,6 +61,7 @@ int main(int argc, char* argv[])
 	std::string publishFilter(".*");
 	Json::Value config;  
 	bool        useNullCodec = false;
+	bool        usePlanB = false;
 	std::string webrtcTrialsFields = "WebRTC-FrameDropper/Disabled/";
 
 	std::string httpAddress("0.0.0.0:");
@@ -73,7 +74,7 @@ int main(int argc, char* argv[])
 	httpAddress.append(httpPort);
 
 	int c = 0;
-	while ((c = getopt (argc, argv, "hVv::" "c:H:w:N:A:D:C:" "T::t:S::s::R:W::" "a::q:o" "n:u:U:")) != -1)
+	while ((c = getopt (argc, argv, "hVv::" "c:H:w:N:A:D:C:" "T::t:S::s::R:W::" "a::q:ob" "n:u:U:")) != -1)
 	{
 		switch (c)
 		{
@@ -94,6 +95,7 @@ int main(int argc, char* argv[])
 			case 'a': audioLayer = optarg ? (webrtc::AudioDeviceModule::AudioLayer)atoi(optarg) : webrtc::AudioDeviceModule::kDummyAudio; break;	
 			case 'q': publishFilter = optarg ; break;
 			case 'o': useNullCodec = true; break;
+			case 'b': usePlanB = true; break;
 				
 			case 'C': {
 				std::ifstream stream(optarg);
@@ -156,6 +158,7 @@ int main(int argc, char* argv[])
 #endif				
 				std::cout << "\t -q[filter]                         : spefify publish filter (default:" << publishFilter << ")"                          << std::endl;
 				std::cout << "\t -o                                 : use null codec (keep frame encoded)"                                               << std::endl;
+				std::cout << "\t -b                                 : use sdp plan-B (defailt use unifiedPlan)"                                          << std::endl;
 			
 				exit(0);
 		}
@@ -192,7 +195,7 @@ int main(int argc, char* argv[])
 	// init trials fields
 	webrtc::field_trial::InitFieldTrialsFromString(webrtcTrialsFields.c_str());
 
-	webRtcServer = new PeerConnectionManager(iceServerList, config["urls"], audioLayer, publishFilter, localWebrtcUdpPortRange, useNullCodec);
+	webRtcServer = new PeerConnectionManager(iceServerList, config["urls"], audioLayer, publishFilter, localWebrtcUdpPortRange, useNullCodec, usePlanB);
 	if (!webRtcServer->InitializePeerConnection())
 	{
 		std::cout << "Cannot Initialize WebRTC server" << std::endl;

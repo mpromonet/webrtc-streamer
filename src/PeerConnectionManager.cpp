@@ -202,7 +202,7 @@ webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencie
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange, bool useNullCodec)
+PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange, bool useNullCodec, bool usePlanB)
 	: m_audioDecoderfactory(webrtc::CreateBuiltinAudioDecoderFactory()), m_task_queue_factory(webrtc::CreateDefaultTaskQueueFactory()),
 #ifdef HAVE_SOUND
 	  m_audioDeviceModule(webrtc::AudioDeviceModule::Create(audioLayer, m_task_queue_factory.get())),
@@ -211,7 +211,11 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 #endif
   	  m_video_decoder_factory(CreateDecoderFactory(useNullCodec)),
 	  m_peer_connection_factory(webrtc::CreateModularPeerConnectionFactory(CreatePeerConnectionFactoryDependencies(m_audioDeviceModule, m_audioDecoderfactory, useNullCodec))), 
-	  m_iceServerList(iceServerList), m_config(config), m_publishFilter(publishFilter), m_useNullCodec(useNullCodec)
+	  m_iceServerList(iceServerList), 
+	  m_config(config), 
+	  m_publishFilter(publishFilter), 
+	  m_useNullCodec(useNullCodec), 
+	  m_usePlanB(usePlanB)
 {
 	// build video audio map
 	m_videoaudiomap = getV4l2AlsaMap();
@@ -942,7 +946,11 @@ bool PeerConnectionManager::InitializePeerConnection()
 PeerConnectionManager::PeerConnectionObserver *PeerConnectionManager::CreatePeerConnection(const std::string &peerid)
 {
 	webrtc::PeerConnectionInterface::RTCConfiguration config;
-	config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
+	if (m_usePlanB) {
+		config.sdp_semantics = webrtc::SdpSemantics::kPlanB;
+	} else {
+		config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
+	}
 	for (auto iceServer : m_iceServerList)
 	{
 		webrtc::PeerConnectionInterface::IceServer server;
