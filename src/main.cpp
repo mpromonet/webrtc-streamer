@@ -287,7 +287,7 @@ int main(int argc, char* argv[])
 				rtc::SocketAddress external_server_addr;
 				external_server_addr.FromString(addr);		
 				std::cout << "TURN external addr:" << external_server_addr.ToString() << std::endl;			
-				turnserver->SetExternalSocketFactory(new rtc::BasicPacketSocketFactory(thread), rtc::SocketAddress(external_server_addr.ipaddr(), 0));
+				turnserver->SetExternalSocketFactory(new rtc::BasicPacketSocketFactory(thread->socketserver()), rtc::SocketAddress(external_server_addr.ipaddr(), 0));
 			}
 			
 			// mainloop
