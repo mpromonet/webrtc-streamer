@@ -35,7 +35,7 @@ jobs:
     - name: cpack 
       run: cpack -B $(pwd)/artifact
 
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v2
       with:
         name: pkg
         path: artifact/*.tar.gz      
