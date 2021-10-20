@@ -1,0 +1,41 @@
+name: C/C++ CI macos
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: pkg
+      run: brew install cmake p7zip gcc
+
+    - name: depot_tools
+      run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+
+    - name: fetch webrtc
+      run: |
+          export PATH=$(pwd)/depot_tools:$PATH
+          mkdir webrtc
+          pushd webrtc
+          fetch --no-history --nohooks webrtc
+          sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS 
+          gclient sync 
+          popd
+
+    - name: build
+      run: |
+          export PATH=$(pwd)/depot_tools:$PATH
+          cmake -DWEBRTCROOT=$(pwd)/webrtc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ .
+          make
+
+    - name: cpack 
+      run: cpack -B $(pwd)/artifact
+
+    - uses: actions/upload-artifact@v1
+      with:
+        name: pkg
+        path: artifact      
