@@ -164,6 +164,18 @@ if (WIN32)
     add_definitions(-DWEBRTC_WIN -EHsc -DNOMINMAX -D__PRETTY_FUNCTION__=__FUNCTION__ -D_HAS_ITERATOR_DEBUGGING=0)
     add_definitions(-DUSE_X11 -DHAVE_SOUND -D_WINSOCKAPI_)
     target_link_libraries (${CMAKE_PROJECT_NAME} secur32 dmoguids wmcodecdspuuid strmiids msdmo winmm dxgi d3d11)
+elseif (APPLE)
+    add_definitions(-DNEED_XLOCALE_H=1)
+    # webrtc
+    add_definitions(-DWEBRTC_MAC -DWEBRTC_POSIX -fno-rtti)
+    # civetweb
+    add_definitions(-DCRYPTO_LIB="libcrypto.so.1.1" -DSSL_LIB="libssl.so.1.1")
+    #target_link_libraries (${CMAKE_PROJECT_NAME} dl)
+
+    find_library(CORE_FOUNDATION Foundation)
+    find_library(APPLICATION_SERVICES ApplicationServices)
+    find_library(CORE_SERVICES CoreServices)
+    target_link_libraries (${CMAKE_PROJECT_NAME} ${CORE_FOUNDATION} ${APPLICATION_SERVICES} ${CORE_SERVICES})
 else()
     # libv4l2cpp
     add_definitions(-DHAVE_V4L2)
@@ -208,6 +220,7 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
     target_link_libraries (${CMAKE_PROJECT_NAME} -Wl,-Bstatic -latomic -Wl,-Bdynamic)
 endif()
 # static link of stdc++ if available
+if (NOT APPLE)
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-static-libgcc" CXX_SUPPORTS_STATIC_LIBGCC)
 if (CXX_SUPPORTS_STATIC_LIBGCC) 
@@ -216,7 +229,8 @@ endif()
 CHECK_CXX_COMPILER_FLAG("-static-libstdc++" CXX_SUPPORTS_STATIC_LIBSTDCPP)
 if (CXX_SUPPORTS_STATIC_LIBSTDCPP) 
   target_link_libraries (${CMAKE_PROJECT_NAME} -static-libstdc++)
-endif()    
+endif()
+endif()
 
 #cpack
 install (TARGETS ${CMAKE_PROJECT_NAME} RUNTIME DESTINATION .)
