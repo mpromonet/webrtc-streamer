@@ -623,6 +623,7 @@ const Json::Value PeerConnectionManager::setAnswer(const std::string &peerid, co
 				}
 				else
 				{
+					peerConnection->SetRemoteDescription(NULL,NULL);
 					RTC_LOG(WARNING) << "Can't get remote description.";
 					answer["error"] = "Can't get remote description.";
 				}
@@ -689,6 +690,7 @@ const Json::Value PeerConnectionManager::call(const std::string &peerid, const s
 				}
 				else
 				{
+					peerConnection->SetRemoteDescription(NULL, NULL);
 					RTC_LOG(WARNING) << "remote_description is NULL";
 				}
 			}
