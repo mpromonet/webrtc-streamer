@@ -1,9 +1,7 @@
 environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Ubuntu2004
-      INSTALLPKGS: "sudo apt-get install -y --no-install-recommends xz-utils libgtk-3-dev libasound2-dev libpulse-dev"
     - APPVEYOR_BUILD_WORKER_IMAGE: macos
-      INSTALLPKGS: "brew services list"
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       CLANG_VERSION: ToT
       DEPOT_TOOLS_WIN_TOOLCHAIN: 0
@@ -17,7 +15,7 @@ configuration:
 install:
   - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\depot_tools;%PATH%
   - sh: export PATH=${APPVEYOR_BUILD_FOLDER}/depot_tools:${PATH}
-  - sh: ${INSTALLPKGS}
+  - sh: "[ ${CI_LINUX:-false} == true ] && sudo apt-get update && sudo apt-get install -y --no-install-recommends libgtk-3-dev libasound2-dev libpulse-dev"
   - cmd: git config --global core.autocrlf false 
   - cmd: git config --global core.filemode false 
   - git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git 
