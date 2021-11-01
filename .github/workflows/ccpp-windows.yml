@@ -55,7 +55,9 @@ jobs:
 
     - name: cpack
       shell: cmd
-      run: cpack -B %GITHUB_WORKSPACE%\artifact
+      run: |
+          mkdir "%GITHUB_WORKSPACE%\artifact"
+          cpack -B "%GITHUB_WORKSPACE%\artifact"
 
     - uses: actions/upload-artifact@v2
       with:
