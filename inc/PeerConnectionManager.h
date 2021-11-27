@@ -58,30 +58,38 @@ class PeerConnectionManager {
 			virtual void OnSuccess()
 			{
 				std::string sdp;
-				if (m_pc->local_description())
-				{
-					m_promise.set_value(m_pc->local_description());
-					m_pc->local_description()->ToString(&sdp);
-					RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " Local SDP:" << sdp;
-				}
-				else if (m_pc->remote_description())
-				{
-					m_promise.set_value(m_pc->remote_description());
-					m_pc->remote_description()->ToString(&sdp);
-					RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " Remote SDP:" << sdp;
+				if (!m_cancelled) {
+					if (m_pc->local_description())
+					{
+						m_promise.set_value(m_pc->local_description());
+						m_pc->local_description()->ToString(&sdp);
+						RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " Local SDP:" << sdp;
+					}
+					else if (m_pc->remote_description())
+					{
+						m_promise.set_value(m_pc->remote_description());
+						m_pc->remote_description()->ToString(&sdp);
+						RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " Remote SDP:" << sdp;
+					}
 				}
 			}
 			virtual void OnFailure(webrtc::RTCError error)
 			{
 				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error.message();
-				m_promise.set_value(NULL);
+				if (!m_cancelled) {
+					m_promise.set_value(NULL);
+				}
 			}
+			void cancel() {
+				m_cancelled = true;
+			}			
 		protected:
-			SetSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise) : m_pc(pc), m_promise(promise) {};
+			SetSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise) : m_pc(pc), m_promise(promise), m_cancelled(false) {};
 
 		private:
 			webrtc::PeerConnectionInterface* m_pc;
-			std::promise<const webrtc::SessionDescriptionInterface*> & m_promise;		
+			std::promise<const webrtc::SessionDescriptionInterface*> & m_promise;	
+			bool                                                       m_cancelled;				
 	};
 
 	class CreateSessionDescriptionObserver : public webrtc::CreateSessionDescriptionObserver {
@@ -95,18 +103,26 @@ class PeerConnectionManager {
 				std::string sdp;
 				desc->ToString(&sdp);
 				RTC_LOG(INFO) << __PRETTY_FUNCTION__ << " type:" << desc->type() << " sdp:" << sdp;
-				m_pc->SetLocalDescription(SetSessionDescriptionObserver::Create(m_pc, m_promise), desc);
+				if (!m_cancelled) {
+					m_pc->SetLocalDescription(SetSessionDescriptionObserver::Create(m_pc, m_promise), desc);
+				}
 			}
 			virtual void OnFailure(webrtc::RTCError error) {
 				RTC_LOG(LERROR) << __PRETTY_FUNCTION__ << " " << error.message();
-				m_promise.set_value(NULL);
+				if (!m_cancelled) {
+					m_promise.set_value(NULL);
+				}
+			}
+			void cancel() {
+				m_cancelled = true;
 			}
 		protected:
-			CreateSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise) : m_pc(pc), m_promise(promise) {};
+			CreateSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise) : m_pc(pc), m_promise(promise), m_cancelled(false) {};
 
 		private:
 			webrtc::PeerConnectionInterface*                           m_pc;
 			std::promise<const webrtc::SessionDescriptionInterface*> & m_promise;
+			bool                                                       m_cancelled;
 	};
 
 	class PeerConnectionStatsCollectorCallback : public webrtc::RTCStatsCollectorCallback {
@@ -297,6 +313,8 @@ class PeerConnectionManager {
 		const std::string                                     sanitizeLabel(const std::string &label);
 
 	protected:
+		std::unique_ptr<rtc::Thread>                                              m_signalingThread;
+		std::unique_ptr<rtc::Thread>                                              m_workerThread;
 		typedef std::pair< rtc::scoped_refptr<webrtc::VideoTrackSourceInterface>, rtc::scoped_refptr<webrtc::AudioSourceInterface>> AudioVideoPair;
 		rtc::scoped_refptr<webrtc::AudioDecoderFactory>                           m_audioDecoderfactory;
 		std::unique_ptr<webrtc::TaskQueueFactory>                                 m_task_queue_factory;
