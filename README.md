@@ -40,6 +40,7 @@ Nowdays there is builds on [CircleCI](https://circleci.com/gh/mpromonet/webrtc-s
  * for armv6+vfp crosscompiled (this build is running on Raspberry PiB and should run on a Raspberry Zero)
  * for arm64 crosscompiled
  * Windows x64 build with clang
+ * MacOS
  
 The webrtc stream name could be :
  * an alias defined using -n argument then the corresponding -u argument will be used to create the capturer
