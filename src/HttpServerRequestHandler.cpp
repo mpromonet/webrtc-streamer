@@ -58,7 +58,7 @@ class RequestHandler : public CivetHandler
 
         const struct mg_request_info *req_info = mg_get_request_info(conn);
         
-        RTC_LOG(INFO) << "uri:" << req_info->request_uri;
+        RTC_LOG(LS_INFO) << "uri:" << req_info->request_uri;
         
 		// read input
 		Json::Value  in = this->getInputMessage(req_info, conn);
@@ -135,7 +135,7 @@ class RequestHandler : public CivetHandler
             std::string errors;
             if (!reader->parse(body.c_str(), body.c_str() + body.size(), &jmessage, &errors))
             {
-                RTC_LOG(WARNING) << "Received unknown message:" << body << " errors:" << errors;
+                RTC_LOG(LS_WARNING) << "Received unknown message:" << body << " errors:" << errors;
             }
         }
         return jmessage;
@@ -250,12 +250,12 @@ class WebsocketHandler: public CivetWebSocketHandler {
 		Json::StreamWriterBuilder                   m_jsonWriterBuilder;
 	
 		virtual bool handleConnection(CivetServer *server, const struct mg_connection *conn) {
-			RTC_LOG(INFO) << "WS connected";
+			RTC_LOG(LS_INFO) << "WS connected";
 			return true;
 		}
 
 		virtual void handleReadyState(CivetServer *server, struct mg_connection *conn) {
-			RTC_LOG(INFO) << "WS ready";
+			RTC_LOG(LS_INFO) << "WS ready";
 		}
 
 		virtual bool handleData(CivetServer *server,
@@ -274,7 +274,7 @@ class WebsocketHandler: public CivetWebSocketHandler {
 				Json::Value in;
 				if (!reader->parse(body.c_str(), body.c_str() + body.size(), &in, NULL))
 				{
-					RTC_LOG(WARNING) << "Received unknown message:" << body;
+					RTC_LOG(LS_WARNING) << "Received unknown message:" << body;
 				}
                 std::cout << Json::writeString(m_jsonWriterBuilder,in) << std::endl;
 
@@ -301,7 +301,7 @@ class WebsocketHandler: public CivetWebSocketHandler {
 		}
 
 		virtual void handleClose(CivetServer *server, const struct mg_connection *conn) {
-			RTC_LOG(INFO) << "WS closed";	
+			RTC_LOG(LS_INFO) << "WS closed";	
 		}
 		
 };

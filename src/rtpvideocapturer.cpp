@@ -16,7 +16,7 @@
 RTPVideoCapturer::RTPVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) 
 	: LiveVideoSource(uri, opts, videoDecoderFactory, false)
 {
-	RTC_LOG(INFO) << "RTSPVideoCapturer " << uri ;
+	RTC_LOG(LS_INFO) << "RTSPVideoCapturer " << uri ;
 
 }
 

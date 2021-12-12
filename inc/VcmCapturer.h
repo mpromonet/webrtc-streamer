@@ -55,7 +55,7 @@ class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public 
 
 	std::string deviceId;
 	int num_videoDevices = device_info->NumberOfDevices();
-	RTC_LOG(INFO) << "nb video devices:" << num_videoDevices;
+	RTC_LOG(LS_INFO) << "nb video devices:" << num_videoDevices;
 	const uint32_t kSize = 256;
 	char name[kSize] = {0};
 	char id[kSize] = {0};

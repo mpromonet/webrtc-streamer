@@ -76,14 +76,14 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
 
         void Start()
         {
-            RTC_LOG(INFO) << "VideoDecoder::start";
+            RTC_LOG(LS_INFO) << "VideoDecoder::start";
             m_stop = false;
             m_decoderthread = std::thread(&VideoDecoder::DecoderThread, this);
         }
 
         void Stop()
         {
-            RTC_LOG(INFO) << "VideoDecoder::stop";
+            RTC_LOG(LS_INFO) << "VideoDecoder::stop";
             m_stop = true;
             Frame frame;			
             {
@@ -123,7 +123,7 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
                     }
                     else
                     {
-                        RTC_LOG(WARNING) << "Cannot decode SPS:" << sprop;
+                        RTC_LOG(LS_WARNING) << "Cannot decode SPS:" << sprop;
                     }
                 }
             }

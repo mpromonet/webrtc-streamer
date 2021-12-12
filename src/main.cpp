@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
 	const char* localturnurl  = NULL;
 	const char* stunurl       = "stun.l.google.com:19302";
 	std::string localWebrtcUdpPortRange = "0:65535";
-	int logLevel              = rtc::LERROR;
+	int logLevel              = rtc::LS_ERROR;
 	const char* webroot       = "./html";
 	std::string sslCertificate;
 	webrtc::AudioDeviceModule::AudioLayer audioLayer = webrtc::AudioDeviceModule::kPlatformDefaultAudio;

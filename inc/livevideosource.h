@@ -50,13 +50,13 @@ public:
 
     void Start()
     {
-        RTC_LOG(INFO) << "LiveVideoSource::Start";
+        RTC_LOG(LS_INFO) << "LiveVideoSource::Start";
         m_capturethread = std::thread(&LiveVideoSource::CaptureThread, this);
         m_decoder.Start();
     }
     void Stop()
     {
-        RTC_LOG(INFO) << "LiveVideoSource::stop";
+        RTC_LOG(LS_INFO) << "LiveVideoSource::stop";
         m_env.stop();
         m_capturethread.join();
         m_decoder.Stop();
@@ -74,17 +74,17 @@ public:
         bool success = false;
         if (strcmp(media, "video") == 0)
         {
-            RTC_LOG(INFO) << "LiveVideoSource::onNewSession id:"<< id << " media:" << media << "/" << codec << " sdp:" << sdp;
+            RTC_LOG(LS_INFO) << "LiveVideoSource::onNewSession id:"<< id << " media:" << media << "/" << codec << " sdp:" << sdp;
 
             if ( (strcmp(codec, "H264") == 0)
                || (strcmp(codec, "JPEG") == 0)
                || (strcmp(codec, "VP9") == 0) )
             {
-                RTC_LOG(INFO) << "LiveVideoSource::onNewSession id:'" << id << "' '" << codec << "'\n";
+                RTC_LOG(LS_INFO) << "LiveVideoSource::onNewSession id:'" << id << "' '" << codec << "'\n";
                 m_codec[id] = codec;
                 success = true;
             }
-            RTC_LOG(INFO) << "LiveVideoSource::onNewSession success:" << success << "\n";
+            RTC_LOG(LS_INFO) << "LiveVideoSource::onNewSession success:" << success << "\n";
             if (success) 
             {
                 struct timeval presentationTime;
@@ -128,7 +128,7 @@ public:
                     {
                         if ((m_format.width != sps->width) || (m_format.height != sps->height))
                         {
-                            RTC_LOG(INFO) << "format changed => set format from " << m_format.width << "x" << m_format.height << " to " << sps->width << "x" << sps->height;
+                            RTC_LOG(LS_INFO) << "format changed => set format from " << m_format.width << "x" << m_format.height << " to " << sps->width << "x" << sps->height;
                             m_decoder.destroyDecoder();
                         }
                     }
@@ -136,7 +136,7 @@ public:
                     if (!m_decoder.hasDecoder())
                     {
                         int fps = 25;
-                        RTC_LOG(INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
+                        RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
                         cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
                         m_format = videoFormat;
 

@@ -29,13 +29,13 @@ public:
 
     virtual void AddSink(webrtc::AudioTrackSinkInterface *sink) override
     {
-        RTC_LOG(INFO) << "LiveAudioSource::AddSink ";
+        RTC_LOG(LS_INFO) << "LiveAudioSource::AddSink ";
         std::lock_guard<std::mutex> lock(m_sink_lock);
         m_sinks.push_back(sink);
     }
     virtual void RemoveSink(webrtc::AudioTrackSinkInterface *sink) override
     {
-        RTC_LOG(INFO) << "LiveAudioSource::RemoveSink ";
+        RTC_LOG(LS_INFO) << "LiveAudioSource::RemoveSink ";
         std::lock_guard<std::mutex> lock(m_sink_lock);
         m_sinks.remove(sink);
     }
@@ -51,7 +51,7 @@ public:
         bool success = false;
         if (strcmp(media, "audio") == 0)
         {
-            RTC_LOG(INFO) << "LiveAudioSource::onNewSession " << media << "/" << codec << " " << sdp;
+            RTC_LOG(LS_INFO) << "LiveAudioSource::onNewSession " << media << "/" << codec << " " << sdp;
 
             // parse sdp to extract freq and channel
             std::string fmt(sdp);
@@ -79,7 +79,7 @@ public:
                     m_channel = std::stoi(channel);
                 }
             }
-            RTC_LOG(INFO) << "LiveAudioSource::onNewSession codec:" << codecstr << " freq:" << m_freq << " channel:" << m_channel;
+            RTC_LOG(LS_INFO) << "LiveAudioSource::onNewSession codec:" << codecstr << " freq:" << m_freq << " channel:" << m_channel;
             std::map<std::string, std::string> params;
             if (m_channel == 2)
             {

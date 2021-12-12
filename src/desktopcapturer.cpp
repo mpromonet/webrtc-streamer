@@ -15,7 +15,7 @@
 
 void DesktopCapturer::OnCaptureResult(webrtc::DesktopCapturer::Result result, std::unique_ptr<webrtc::DesktopFrame> frame) {
 	
-	RTC_LOG(INFO) << "DesktopCapturer:OnCaptureResult";
+	RTC_LOG(LS_INFO) << "DesktopCapturer:OnCaptureResult";
 	
 	if (result == webrtc::DesktopCapturer::Result::SUCCESS) {
 		int width = frame->stride() / webrtc::DesktopFrame::kBytesPerPixel;
@@ -64,11 +64,11 @@ void DesktopCapturer::OnCaptureResult(webrtc::DesktopCapturer::Result result, st
 }
 		
 void DesktopCapturer::CaptureThread() {
-	RTC_LOG(INFO) << "DesktopCapturer:Run start";
+	RTC_LOG(LS_INFO) << "DesktopCapturer:Run start";
 	while (IsRunning()) {
 		m_capturer->CaptureFrame();
 	}
-	RTC_LOG(INFO) << "DesktopCapturer:Run exit";
+	RTC_LOG(LS_INFO) << "DesktopCapturer:Run exit";
 }
 bool DesktopCapturer::Start() {
 	m_isrunning = true;

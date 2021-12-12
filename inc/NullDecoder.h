@@ -64,7 +64,7 @@ class VideoDecoderFactory : public webrtc::VideoDecoderFactory {
     virtual ~VideoDecoderFactory() override {}
 
     std::unique_ptr<webrtc::VideoDecoder> CreateVideoDecoder(const webrtc::SdpVideoFormat& format) override {
-   		RTC_LOG(INFO) << "Create Null Decoder format:" << format.name;
+   		RTC_LOG(LS_INFO) << "Create Null Decoder format:" << format.name;
     	return std::make_unique<NullDecoder>();
 	}
     std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override { return supported_formats_; }

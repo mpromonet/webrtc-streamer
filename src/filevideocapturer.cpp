@@ -16,7 +16,7 @@
 FileVideoCapturer::FileVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) 
 	: LiveVideoSource(uri, opts, videoDecoderFactory, true)
 {
-	RTC_LOG(INFO) << "FileVideoCapturer " << uri ;
+	RTC_LOG(LS_INFO) << "FileVideoCapturer " << uri ;
 }
 
 FileVideoCapturer::~FileVideoCapturer()
