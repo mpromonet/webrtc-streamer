@@ -71,7 +71,10 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE}/args.gn)
   endif()
 
   # sound support
-  if (NOT WIN32)
+  if (APPLE)
+    set (WEBRTCARGS rtc_include_internal_audio_device=true\n${WEBRTCARGS})
+    set (WEBRTCARGS rtc_include_pulse_audio=true\n${WEBRTCARGS})
+  elseif (NOT WIN32)
     if (NOT PulseAudio_FOUND)
       set (WEBRTCARGS rtc_include_pulse_audio=false\n${WEBRTCARGS})
     endif()
@@ -167,6 +170,7 @@ if (WIN32)
 elseif (APPLE)
     add_definitions(-DNEED_XLOCALE_H=1)
     # webrtc
+    add_definitions(-DHAVE_SOUND)
     add_definitions(-DWEBRTC_MAC -DWEBRTC_POSIX -fno-rtti)
     # civetweb
     add_definitions(-DCRYPTO_LIB="libcrypto.so.1.1" -DSSL_LIB="libssl.so.1.1")
@@ -175,7 +179,10 @@ elseif (APPLE)
     find_library(CORE_FOUNDATION Foundation)
     find_library(APPLICATION_SERVICES ApplicationServices)
     find_library(CORE_SERVICES CoreServices)
-    target_link_libraries (${CMAKE_PROJECT_NAME} ${CORE_FOUNDATION} ${APPLICATION_SERVICES} ${CORE_SERVICES})
+    find_library(CORE_AUDIO CoreAudio)
+    find_library(AUDIO_TOOLBOX AudioToolBox)
+    target_link_libraries (${CMAKE_PROJECT_NAME} ${CORE_FOUNDATION} ${APPLICATION_SERVICES} ${CORE_SERVICES}
+                           ${CORE_AUDIO} ${AUDIO_TOOLBOX})
 else()
     # libv4l2cpp
     add_definitions(-DHAVE_V4L2)
