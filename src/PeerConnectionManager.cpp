@@ -239,7 +239,7 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 		return this->getIceServers(req_info->remote_addr);
 	};
 
-	m_func["/api/call"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
+	m_func["/api/call"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {		
 			std::string peerid;
 			std::string url;
 			std::string audiourl;
@@ -803,7 +803,7 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 						RTC_LOG(LS_ERROR) << "hangUp stream closed " << streamLabel;
 					}
 
-					peerConnection->RemoveTrack(stream);
+					peerConnection->RemoveTrackOrError(stream);
 				}
 			}
 
