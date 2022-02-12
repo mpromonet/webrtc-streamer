@@ -40,7 +40,7 @@ public:
 		if (!capturer) {
 			return nullptr;
 		}
-		return new rtc::RefCountedObject<TrackSource>(std::move(capturer));
+		return rtc::make_ref_counted<TrackSource>(std::move(capturer));
 	}
 
 protected:

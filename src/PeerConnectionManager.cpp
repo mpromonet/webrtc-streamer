@@ -541,7 +541,7 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 		rtcoptions.offer_to_receive_video = 0;
 		rtcoptions.offer_to_receive_audio = 0;
 		std::promise<const webrtc::SessionDescriptionInterface *> localpromise;
-		rtc::scoped_refptr<CreateSessionDescriptionObserver> localSessionObserver = CreateSessionDescriptionObserver::Create(peerConnection, localpromise);
+		rtc::scoped_refptr<CreateSessionDescriptionObserver> localSessionObserver(CreateSessionDescriptionObserver::Create(peerConnection, localpromise));
 		peerConnection->CreateOffer(localSessionObserver, rtcoptions);
 
 		// waiting for offer
@@ -604,7 +604,7 @@ const Json::Value PeerConnectionManager::setAnswer(const std::string &peerid, co
 			if (peerConnection)
 			{
 				std::promise<const webrtc::SessionDescriptionInterface *> remotepromise;
-				rtc::scoped_refptr<SetSessionDescriptionObserver> remoteSessionObserver = SetSessionDescriptionObserver::Create(peerConnection, remotepromise);
+				rtc::scoped_refptr<SetSessionDescriptionObserver> remoteSessionObserver(SetSessionDescriptionObserver::Create(peerConnection, remotepromise));
 				peerConnection->SetRemoteDescription(remoteSessionObserver, session_description);
 				// waiting for remote description
 				std::future<const webrtc::SessionDescriptionInterface *> remotefuture = remotepromise.get_future();
@@ -683,7 +683,7 @@ const Json::Value PeerConnectionManager::call(const std::string &peerid, const s
 			else
 			{
 				std::promise<const webrtc::SessionDescriptionInterface *> remotepromise;
-				rtc::scoped_refptr<SetSessionDescriptionObserver> remoteSessionObserver = SetSessionDescriptionObserver::Create(peerConnection, remotepromise);
+				rtc::scoped_refptr<SetSessionDescriptionObserver> remoteSessionObserver(SetSessionDescriptionObserver::Create(peerConnection, remotepromise));
 				peerConnection->SetRemoteDescription(remoteSessionObserver, session_description);
 				// waiting for remote description
 				std::future<const webrtc::SessionDescriptionInterface *> remotefuture = remotepromise.get_future();
@@ -707,7 +707,7 @@ const Json::Value PeerConnectionManager::call(const std::string &peerid, const s
 			// create answer
 			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions rtcoptions;
 			std::promise<const webrtc::SessionDescriptionInterface *> localpromise;
-			rtc::scoped_refptr<CreateSessionDescriptionObserver> localSessionObserver = CreateSessionDescriptionObserver::Create(peerConnection, localpromise);
+			rtc::scoped_refptr<CreateSessionDescriptionObserver> localSessionObserver(CreateSessionDescriptionObserver::Create(peerConnection, localpromise));
 			peerConnection->CreateAnswer(localSessionObserver, rtcoptions);
 			// waiting for answer
 			std::future<const webrtc::SessionDescriptionInterface *> localfuture = localpromise.get_future();

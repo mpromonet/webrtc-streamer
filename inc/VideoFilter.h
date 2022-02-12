@@ -18,7 +18,7 @@ public:
 		if (!source) {
 			return nullptr;
 		}
-		return new rtc::RefCountedObject<VideoFilter>(std::move(source));
+		return rtc::make_ref_counted<VideoFilter>(std::move(source));
 	}
 
 protected:
