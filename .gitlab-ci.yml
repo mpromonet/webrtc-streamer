@@ -9,9 +9,6 @@ build_x86_64:
   image: docker:stable
   services:
   - docker:dind
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_DRIVER: overlay2  
   stage: build
   script:
     - docker build -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_REF_SLUG}-linux .
