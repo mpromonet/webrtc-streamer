@@ -193,34 +193,31 @@ webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencie
 **  Constructor
 ** -------------------------------------------------------------------------*/
 PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange, bool useNullCodec, bool usePlanB)
-	: m_signalingThread(rtc::Thread::Current()),
-	  m_workerThread(rtc::Thread::Current()),
+	: m_signalingThread(rtc::Thread::Create()),
+	  m_workerThread(rtc::Thread::Create()),
 	  m_audioDecoderfactory(webrtc::CreateBuiltinAudioDecoderFactory()), 
 	  m_task_queue_factory(webrtc::CreateDefaultTaskQueueFactory()),
   	  m_video_decoder_factory(CreateDecoderFactory(useNullCodec)),
 	  m_iceServerList(iceServerList), 
 	  m_config(config), 
 	  m_publishFilter(publishFilter), 
+	  m_webrtcPortRange(webrtcUdpPortRange),
 	  m_useNullCodec(useNullCodec), 
 	  m_usePlanB(usePlanB)
 {
-#ifdef HAVE_SOUND
-	m_audioDeviceModule = webrtc::AudioDeviceModule::Create(audioLayer, m_task_queue_factory.get());
-	if (m_audioDeviceModule->Init() != 0) {
-		RTC_LOG(LS_WARNING) << "audio init fails -> disable audio capture";
-		m_audioDeviceModule = new webrtc::FakeAudioDeviceModule();
-	}
-#else
-	m_audioDeviceModule = new webrtc::FakeAudioDeviceModule();
-#endif		
+	m_workerThread->SetName("worker", NULL);
+	m_workerThread->Start();
 
+	m_workerThread->Invoke<void>(RTC_FROM_HERE, [this, audioLayer] {
+		this->createAudioModule(audioLayer);
+    });
+		
+	m_signalingThread->SetName("signaling", NULL);
+	m_signalingThread->Start();
 	m_peer_connection_factory = webrtc::CreateModularPeerConnectionFactory(CreatePeerConnectionFactoryDependencies(m_signalingThread.get(), m_workerThread.get(), m_audioDeviceModule, m_audioDecoderfactory, useNullCodec));
 
 	// build video audio map
 	m_videoaudiomap = getV4l2AlsaMap();
-
-	// Set the webrtc port range
-	m_webrtcPortRange = webrtcUdpPortRange;
 
 	// register api in http server
 	m_func["/api/getMediaList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
@@ -239,7 +236,7 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 		return this->getIceServers(req_info->remote_addr);
 	};
 
-	m_func["/api/call"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {		
+	m_func["/api/call"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {	
 			std::string peerid;
 			std::string url;
 			std::string audiourl;
@@ -346,6 +343,17 @@ PeerConnectionManager::~PeerConnectionManager()
 {
 }
 
+void PeerConnectionManager::createAudioModule(webrtc::AudioDeviceModule::AudioLayer audioLayer) {
+#ifdef HAVE_SOUND
+	m_audioDeviceModule = webrtc::AudioDeviceModule::Create(audioLayer, m_task_queue_factory.get());
+	if (m_audioDeviceModule->Init() != 0) {
+		RTC_LOG(LS_WARNING) << "audio init fails -> disable audio capture";
+		m_audioDeviceModule = new webrtc::FakeAudioDeviceModule();
+	}
+#else
+	m_audioDeviceModule = new webrtc::FakeAudioDeviceModule();
+#endif	
+}
 /* ---------------------------------------------------------------------------
 **  return deviceList as JSON vector
 ** -------------------------------------------------------------------------*/
@@ -1020,7 +1028,9 @@ rtc::scoped_refptr<webrtc::AudioSourceInterface> PeerConnectionManager::CreateAu
 		audio = it->second;
 	}
 
-	return CapturerFactory::CreateAudioSource(audio, opts, m_publishFilter, m_peer_connection_factory, m_audioDecoderfactory, m_audioDeviceModule);
+	return m_workerThread->Invoke<rtc::scoped_refptr<webrtc::AudioSourceInterface>>(RTC_FROM_HERE, [this, audio, opts] {
+		return CapturerFactory::CreateAudioSource(audio, opts, m_publishFilter, m_peer_connection_factory, m_audioDecoderfactory, m_audioDeviceModule);
+    });
 }
 
 const std::string PeerConnectionManager::sanitizeLabel(const std::string &label)

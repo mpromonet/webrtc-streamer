@@ -284,7 +284,7 @@ class PeerConnectionManager {
 	};
 
 	public:
-		PeerConnectionManager(const std::list<std::string> & iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter, const std::string& webrtcUdpPortRange, bool useNullCodec = true, bool usePlanB = true);
+		PeerConnectionManager(const std::list<std::string> & iceServerList, const Json::Value & config, webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter, const std::string& webrtcUdpPortRange, bool useNullCodec = true, bool usePlanB = true);
 		virtual ~PeerConnectionManager();
 
 		bool InitializePeerConnection();
@@ -313,6 +313,7 @@ class PeerConnectionManager {
 		const std::list<std::string>                          getVideoCaptureDeviceList();
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface>   getPeerConnection(const std::string& peerid);
 		const std::string                                     sanitizeLabel(const std::string &label);
+		void                                                  createAudioModule(webrtc::AudioDeviceModule::AudioLayer audioLayer);
 
 	protected:
 		std::unique_ptr<rtc::Thread>                                              m_signalingThread;
