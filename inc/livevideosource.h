@@ -166,9 +166,15 @@ public:
                 {
                     RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SLICE NALU:" << nalu_type;
                 }
-                content.insert(content.end(), buffer, buffer + size);
-                rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
-                m_decoder.PostFrame(frame, ts, frameType);
+                std::string decoderName(m_decoder.m_decoder->ImplementationName());
+                if (m_prevTimestamp && ts < m_prevTimestamp && decoderName == "FFmpeg") {
+                    RTC_LOG(LS_ERROR) << "LiveVideoSource:onData drop frame in past for FFmpeg:" << (m_prevTimestamp-ts);
+
+                } else {
+                    content.insert(content.end(), buffer, buffer + size);
+                    rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
+                    m_decoder.PostFrame(frame, ts, frameType);
+                }
             }
             else
             {
@@ -232,6 +238,7 @@ public:
             }
         }
 
+        m_prevTimestamp = ts;
         return (res == 0);
     }
 
@@ -261,4 +268,5 @@ private:
 
     rtc::VideoBroadcaster              m_broadcaster;
     VideoDecoder                       m_decoder;
+    uint64_t                           m_prevTimestamp;
 };
