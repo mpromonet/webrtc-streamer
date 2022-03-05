@@ -4,6 +4,9 @@ on: [push]
 
 jobs:
   build:
+    strategy:
+      matrix:
+        buildtype: [Debug, Release]
 
     runs-on: ubuntu-latest
     
@@ -29,7 +32,7 @@ jobs:
 
     - name: build
       run: |
-          cmake -DWEBRTCROOT=$(pwd)/webrtc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ .
+          cmake -DWEBRTCROOT=$(pwd)/webrtc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} .
           make
 
     - name: cpack 
