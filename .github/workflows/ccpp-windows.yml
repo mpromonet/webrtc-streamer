@@ -59,7 +59,7 @@ jobs:
       shell: cmd
       run: cpack -B artifact -G TGZ -V
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
         name: pkg
         path: artifact/*.tar.gz

@@ -152,7 +152,7 @@ class CapturerFactory {
 
 	static rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(const std::string & videourl, const std::map<std::string,std::string> & opts, const std::regex & publishFilter, rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
 		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource;
-		if ((videourl.find("rtsp://") == 0) && (std::regex_match("rtsp://", publishFilter))) {
+		if ( ((videourl.find("rtsp://") == 0) || (videourl.find("rtsps://") == 0) )  && (std::regex_match("rtsp://", publishFilter))) {
 #ifdef HAVE_LIVE555
 			videoSource = TrackSource<RTSPVideoCapturer>::Create(videourl,opts, videoDecoderFactory);
 #endif	

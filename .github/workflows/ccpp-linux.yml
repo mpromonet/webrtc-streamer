@@ -14,11 +14,12 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils libasound2-dev libpulse-dev libgtk-3-dev cmake p7zip-full
 
     - name: depot_tools
-      run: git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+      run: |
+          git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          echo "$(pwd)/depot_tools" >> $GITHUB_PATH
 
     - name: fetch webrtc
       run: |
-          export PATH=$(pwd)/depot_tools:$PATH
           mkdir webrtc
           pushd webrtc
           fetch --no-history --nohooks webrtc
@@ -28,14 +29,16 @@ jobs:
 
     - name: build
       run: |
-          export PATH=$(pwd)/depot_tools:$PATH
           cmake -DWEBRTCROOT=$(pwd)/webrtc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ .
           make
 
     - name: cpack 
-      run: cpack -B $(pwd)/artifact
+      run: | 
+          rm -f *.tar.gz
+          cpack
+          echo "artifactName=$(ls *.tar.gz)" >> $GITHUB_ENV
 
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v3
       with:
-        name: pkg
-        path: artifact/*.tar.gz   
+        name: ${{ env.artifactPath }}
+        path: ${{ env.artifactPath }}   

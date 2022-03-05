@@ -174,7 +174,6 @@ elseif (APPLE)
     add_definitions(-DWEBRTC_MAC -DWEBRTC_POSIX -fno-rtti)
     # civetweb
     add_definitions(-DCRYPTO_LIB="libcrypto.so.1.1" -DSSL_LIB="libssl.so.1.1")
-    #target_link_libraries (${CMAKE_PROJECT_NAME} dl)
 
     find_library(CORE_FOUNDATION Foundation)
     find_library(APPLICATION_SERVICES ApplicationServices)
@@ -215,7 +214,7 @@ include(GNUInstallDirs)
 set(PROJECT_NAME prometheus-cpp)
 add_subdirectory(prometheus-cpp/core EXCLUDE_FROM_ALL)
 target_link_libraries (${CMAKE_PROJECT_NAME} core)  
-target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC prometheus-cpp/core/include)
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE prometheus-cpp/core/include)
 
 # live555helper 
 add_subdirectory(live555helper EXCLUDE_FROM_ALL)
