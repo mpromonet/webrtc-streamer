@@ -133,7 +133,7 @@ add_executable (${CMAKE_PROJECT_NAME} ${SOURCE} ${WEBRTCEXTRAOBJS})
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc) 
 
 # webrtc 
-set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
+set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include ${WEBRTCROOT}/src/third_party/boringssl/src/include)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
 target_link_libraries (${CMAKE_PROJECT_NAME} ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX} ${WEBRTCOBJS}/rtc_base/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_json${CMAKE_STATIC_LIBRARY_SUFFIX}) 
 add_definitions(-DHAVE_JPEG)
