@@ -31,14 +31,3 @@ script:
 before_deploy:
 - export RELEASE_PKG_FILE=$(ls *.tar.gz)
 - echo "RELEASE_PKG_FILE=${RELEASE_PKG_FILE}"   
-
-jobs:
-  include:
-    - stage: docker
-      os: windows 
-      script:
-        - docker info
-        - travis_wait 120 docker build -f Dockerfile.windows .
-stages:
-  - docker
-  - test
