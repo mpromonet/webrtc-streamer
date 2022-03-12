@@ -217,8 +217,9 @@ target_link_libraries (${CMAKE_PROJECT_NAME} core)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE prometheus-cpp/core/include)
 
 # live555helper 
+include_directories(${WEBRTCROOT}/src/third_party/boringssl/src/include)
 add_subdirectory(live555helper EXCLUDE_FROM_ALL)
-target_link_libraries (${CMAKE_PROJECT_NAME} liblive555helper) 
+target_link_libraries (${CMAKE_PROJECT_NAME} liblive555helper ${WEBRTCOBJS}/third_party/boringssl/${CMAKE_STATIC_LIBRARY_PREFIX}boringssl${CMAKE_STATIC_LIBRARY_SUFFIX}) 
 add_definitions(-DHAVE_LIVE555)
 
 # static link of libatomic on armv6l
