@@ -18,23 +18,25 @@ jobs:
       run: |
         choco install --no-progress -y windows-sdk-10-version-2004-all 
         choco install --ignorepackagecodes --no-progress -y visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%"
+        git config --global core.autocrlf false 
+        git config --global core.filemode false 
       env:
         MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community"
 
     - name: depot_tools
-      shell: cmd
+      shell: bash
       run: |
-          git config --global core.autocrlf false 
-          git config --global core.filemode false 
-          git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          echo "$(pwd)/depot_tools" >> $GITHUB_PATH
 
     - name: fetch webrtc
-      shell: cmd
+      shell: bash
       run: |
-          set "PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%"
-          mkdir C:\webrtc
-          pushd C:\webrtc
-          fetch --no-history webrtc
+          mkdir webrtc
+          pushd webrtc
+          fetch --no-history --nohooks webrtc
+          sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS 
+          gclient sync 
           popd
       env:
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
@@ -46,10 +48,10 @@ jobs:
       shell: cmd
       run: |
           dir /b /s "C:\Program Files (x86)\vcvars64.bat"
-          set "PATH=%PATH%;%GITHUB_WORKSPACE%\depot_tools;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win"
+          set "PATH=%PATH%;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win"
           call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" 
           set
-          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=C:/webrtc -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }}.
+          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=C:/webrtc -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} .
           ninja 
       env:
         MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community"
