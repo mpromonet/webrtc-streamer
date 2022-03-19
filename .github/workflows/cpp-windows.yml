@@ -30,13 +30,11 @@ jobs:
           echo "$(pwd)/depot_tools" >> $GITHUB_PATH
 
     - name: fetch webrtc
-      shell: bash
+      shell: cmd
       run: |
           mkdir webrtc
           pushd webrtc
-          fetch --no-history --nohooks webrtc
-          sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS 
-          gclient sync 
+          fetch --no-history webrtc
           popd
       env:
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
@@ -48,10 +46,10 @@ jobs:
       shell: cmd
       run: |
           dir /b /s "C:\Program Files (x86)\vcvars64.bat"
-          set "PATH=%PATH%;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win"
+          set "PATH=%PATH%;%GITHUB_WORKSPACE%\webrtc\src\third_party\llvm-build\Release+Asserts\bin;%GITHUB_WORKSPACE%\webrtc\src\build\toolchain\win\rc\win"
           call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" 
           set
-          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=C:/webrtc -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} .
+          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=%GITHUB_WORKSPACE%\webrtc -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} .
           ninja 
       env:
         MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community"
