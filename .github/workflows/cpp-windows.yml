@@ -4,6 +4,9 @@ on: [push]
 
 jobs:
   build:
+    strategy:
+      matrix:
+        buildtype: [Debug, Release]
 
     runs-on: windows-latest
     
@@ -46,7 +49,7 @@ jobs:
           set "PATH=%PATH%;%GITHUB_WORKSPACE%\depot_tools;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win"
           call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" 
           set
-          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=C:/webrtc .
+          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=C:/webrtc -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }}.
           ninja 
       env:
         MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community"
@@ -56,11 +59,14 @@ jobs:
         GCLIENT_PY3: 1
 
     - name: cpack
-      shell: cmd
-      run: cpack -B artifact -G TGZ -V
+      shell: bash
+      run: | 
+          rm -f *.tar.gz
+          cpack
+          echo "artifactPath=$(ls *.tar.gz)" >> $GITHUB_ENV
 
     - uses: actions/upload-artifact@v3
       with:
-        name: pkg
-        path: artifact/*.tar.gz
+        name: ${{ env.artifactPath }}
+        path: ${{ env.artifactPath }}
 
