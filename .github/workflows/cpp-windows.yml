@@ -50,7 +50,7 @@ jobs:
           set "PATH=%PATH%;%GITHUB_WORKSPACE%\depot_tools;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win"
           call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" 
           set
-          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=C:\webrtc -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} .
+          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=C:/webrtc -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} .
           ninja 
       env:
         MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community"

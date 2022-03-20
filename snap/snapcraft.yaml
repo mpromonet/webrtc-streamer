@@ -14,7 +14,7 @@
 
   grade: stable 
   confinement: strict
-  base: core18
+  base: core20
   architectures:
     - build-on: amd64
 
