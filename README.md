@@ -1,10 +1,9 @@
-[![TravisCI](https://travis-ci.org/mpromonet/webrtc-streamer.png)](https://travis-ci.org/mpromonet/webrtc-streamer)
 [![CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer.svg?style=shield)](https://circleci.com/gh/mpromonet/webrtc-streamer)
-[![Appveyor](https://ci.appveyor.com/api/projects/status/github/mpromonet/webrtc-streamer?branch=master&svg=true)](https://ci.appveyor.com/project/mpromonet/webrtc-streamer/build/artifacts)
 [![CirusCI](https://api.cirrus-ci.com/github/mpromonet/webrtc-streamer.svg)](https://cirrus-ci.com/github/mpromonet/webrtc-streamer)
 [![Snap Status](https://snapcraft.io//webrtc-streamer/badge.svg)](https://snapcraft.io/webrtc-streamer)
-[![GithubCI](https://github.com/mpromonet/webrtc-streamer/workflows/C/C++%20CI%20linux/badge.svg)](https://github.com/mpromonet/webrtc-streamer/actions)
-[![GithubCI](https://github.com/mpromonet/webrtc-streamer/workflows/C/C++%20CI%20windows/badge.svg)](https://github.com/mpromonet/webrtc-streamer/actions)
+[![GithubCI](https://github.com/mpromonet/webrtc-streamer/workflows/C/C++%20CI%20linux/badge.svg)](https://github.com/mpromonet/webrtc-streamer/actions/workflows/cpp-linux.yml)
+[![GithubCI](https://github.com/mpromonet/webrtc-streamer/workflows/C/C++%20CI%20windows/badge.svg)](https://github.com/mpromonet/webrtc-streamer/actions/workflows/cpp-windows.yml)
+[![GithubCI](https://github.com/mpromonet/webrtc-streamer/workflows/C/C++%20CI%20macos/badge.svg)](https://github.com/mpromonet/webrtc-streamer/actions/workflows/cpp-macos.yml)
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c209c81a15854964a08df5c300f56804)](https://www.codacy.com/app/michelpromonet_2643/webrtc-streamer?utm_source=github.com&utm_medium=referral&utm_content=mpromonet/webrtc-streamer&utm_campaign=badger)
 
@@ -34,7 +33,7 @@ The WebRTC signaling is implemented through HTTP requests:
 
 The list of HTTP API is available using /api/help.
 
-Nowdays there is builds on [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer), [Appveyor](https://ci.appveyor.com/project/mpromonet/webrtc-streamer), [CirrusCI](https://cirrus-ci.com/github/mpromonet/webrtc-streamer) and [GitHub CI](https://github.com/mpromonet/webrtc-streamer/actions) :
+Nowdays there is builds on [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer), [CirrusCI](https://cirrus-ci.com/github/mpromonet/webrtc-streamer) and [GitHub CI](https://github.com/mpromonet/webrtc-streamer/actions) :
  * for x86_64 on Ubuntu Bionic
  * for armv7 crosscompiled (this build is running on Raspberry Pi2 and NanoPi NEO)
  * for armv6+vfp crosscompiled (this build is running on Raspberry PiB and should run on a Raspberry Zero)
@@ -88,10 +87,10 @@ Usage
 	./webrtc-streamer [-H http port] [-S[embeded stun address]] -[v[v]]  [url1]...[urln]
 	./webrtc-streamer [-H http port] [-s[external stun address]] -[v[v]] [url1]...[urln]
 	./webrtc-streamer -V
-        	-v[v[v]]           : verbosity
-        	-V                 : print version
+		-v[v[v]]           : verbosity
+		-V                 : print version
 
-        	-H [hostname:]port : HTTP server binding (default 0.0.0.0:8000)
+		-H [hostname:]port : HTTP server binding (default 0.0.0.0:8000)
 		-w webroot         : path to get files
 		-c sslkeycert      : path to private key and certificate for HTTPS
 		-N nbthreads       : number of threads for HTTP server
@@ -167,7 +166,7 @@ A short sample HTML page using webrtc-streamer running locally on port 8000 :
 	    var webRtcServer      = null;
 	    window.onload         = function() { 
 	        webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000");
-		webRtcServer.connect("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov");
+	        webRtcServer.connect("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov");
 	    }
 	    window.onbeforeunload = function() { webRtcServer.disconnect(); }
 	</script>
