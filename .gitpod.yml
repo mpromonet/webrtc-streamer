@@ -13,8 +13,6 @@ tasks:
       fetch --no-history webrtc 
       popd
 
-    prebuild: |
-      export PATH=$PATH:`realpath ../depot_tools`
       cmake -DCMAKE_BUILD_TYPE=Debug .
       make
 
@@ -26,5 +24,4 @@ ports:
     onOpen: open-browser
 vscode:
   extensions:
-    - vscode.cpp
     - webfreak.debug

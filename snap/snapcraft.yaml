@@ -39,7 +39,7 @@
       plugin: cmake
       source: .
       source-type: git
-      configflags:
+      cmake-parameters:
       - -DWEBRTCROOT=/webrtc
       build-packages:
       - g++
