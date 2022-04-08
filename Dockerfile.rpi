@@ -1,7 +1,7 @@
 ARG IMAGE=balenalib/raspberry-pi
 
 # build
-FROM ubuntu:20.04 as builder
+FROM ubuntu:22.04 as builder
 LABEL maintainer=michel.promonet@free.fr
 
 ARG ARCH=armv6l
