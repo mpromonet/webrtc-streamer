@@ -8,6 +8,7 @@ COPY . /webrtc-streamer
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python3 python3-pkg-resources g++ autoconf automake libtool xz-utils libpulse-dev libasound2-dev libgtk-3-dev libxtst-dev libssl-dev cmake make pkg-config p7zip-full \
 	&& git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools \
 	&& export PATH=/depot_tools:$PATH \
+	&& mkdir /webrtc \
 	&& cd /webrtc \
 	&& fetch --no-history --nohooks webrtc \
 	&& sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \

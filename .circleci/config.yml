@@ -1,7 +1,7 @@
 defaults: &defaults
   working_directory: /webrtc-streamer
   docker:
-    - image: cimg/base
+    - image: cimg/base:2022.04
     
 version: 2.1
 jobs:
