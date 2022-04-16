@@ -267,7 +267,6 @@ jobs:
       - run: git submodule update --init
       - setup_remote_docker:
           version: 20.10.12
-          docker_layer_caching: true
       - run:
           command: |
             export TAG=${CIRCLE_TAG:-circle-latest}
@@ -289,7 +288,6 @@ jobs:
       - run: git submodule update --init
       - setup_remote_docker:
           version: 20.10.12
-          docker_layer_caching: true
       - run:
           command: |
             export TAG=${CIRCLE_TAG:-circle-latest}
@@ -309,7 +307,6 @@ jobs:
       - run: git submodule update --init
       - setup_remote_docker:
           version: 20.10.12
-          docker_layer_caching: true
       - run:
           command: |
             export TAG=${CIRCLE_TAG:-circle-latest}
@@ -327,7 +324,6 @@ jobs:
     steps:
       - setup_remote_docker:
           version: 20.10.12
-          docker_layer_caching: true
       - run:
           command: |
             mkdir $HOME/.docker
