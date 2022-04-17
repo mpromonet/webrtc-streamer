@@ -12,6 +12,7 @@ jobs:
   setup:
     <<: *defaults
     
+    resource_class: large
     environment:
       WEBRTCROOT: /webrtc 
 
