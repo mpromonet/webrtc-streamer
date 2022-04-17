@@ -102,7 +102,7 @@ if (NOT EXISTS ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE}/args.gn)
   # screen capture support
   find_package(PkgConfig QUIET)
   pkg_check_modules(GTK3 QUIET gtk+-3.0)
-  MESSAGE("GTK_FOUND = ${GTK3_FOUND}")
+  MESSAGE("GTK3_FOUND = ${GTK3_FOUND}")
   if(NOT GTK3_FOUND OR (WEBRTCDESKTOPCAPTURE STREQUAL "OFF"))
     set (WEBRTCARGS rtc_use_x11=false\nrtc_use_pipewire=false\n${WEBRTCARGS})
   endif()
@@ -150,6 +150,15 @@ add_library (civetweb STATIC civetweb/src/civetweb.c civetweb/src/CivetServer.cp
 add_definitions(-DOPENSSL_API_1_1 -DUSE_WEBSOCKET)
 target_link_libraries (${CMAKE_PROJECT_NAME} civetweb) 
 target_include_directories(civetweb PUBLIC civetweb/include) 
+
+# rtmp ?
+find_package(PkgConfig QUIET)
+pkg_check_modules(RTMP QUIET librtmp)
+MESSAGE("RTMP_FOUND = ${RTMP_FOUND}")
+if (RTMP_FOUND)
+  add_definitions(-DHAVE_RTMP)
+  target_link_libraries (${CMAKE_PROJECT_NAME} ${RTMP_LIBRARIES}) 
+endif()
 
 # compiler specific
 if (WIN32)

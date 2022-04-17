@@ -30,6 +30,10 @@
 #include "windowcapturer.h"
 #endif
 
+#ifdef HAVE_RTMP
+#include "rtmpvideosource.h"
+#endif
+
 #include "pc/video_track_source.h"
 
 template<class T>
@@ -179,6 +183,11 @@ class CapturerFactory {
 		{
 #ifdef USE_X11
 			videoSource = TrackSource<WindowCapturer>::Create(videourl, opts, videoDecoderFactory);
+#endif 
+		}
+		else if ((videourl.find("rtmp://") == 0) && (std::regex_match("rtmp://",publishFilter))) {
+#ifdef HAVE_RTMP
+			videoSource = TrackSource<RtmpVideoSource>::Create(videourl, opts, videoDecoderFactory);
 #endif 
 		}
 		else if ((videourl.find("v4l2://") == 0) && (std::regex_match("v4l2://",publishFilter))) {
