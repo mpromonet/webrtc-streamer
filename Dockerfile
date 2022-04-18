@@ -5,7 +5,7 @@ LABEL maintainer=michel.promonet@free.fr
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python3 python3-pkg-resources g++ autoconf automake libtool xz-utils libpulse-dev libasound2-dev libgtk-3-dev libxtst-dev libssl-dev cmake make pkg-config p7zip-full \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python3 python3-pkg-resources g++ autoconf automake libtool xz-utils libpulse-dev libasound2-dev libgtk-3-dev libxtst-dev libssl-dev librtmp-dev cmake make pkg-config p7zip-full \
 	&& git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools \
 	&& export PATH=/depot_tools:$PATH \
 	&& mkdir /webrtc \
@@ -26,7 +26,7 @@ FROM builder
 WORKDIR /app
 COPY --from=builder /app/ /app/
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libssl-dev libasound2 libgtk-3-0 libxtst6 libpulse0 avahi-utils \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libssl-dev libasound2 libgtk-3-0 libxtst6 libpulse0 librtmp1 avahi-utils \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/ \
 	&& ./webrtc-streamer -V
 
