@@ -43,24 +43,21 @@ public:
     virtual ~RtmpVideoSource()
     {
         this->Stop();
-        RTMP_Close(m_rtmp);
-        RTMP_Free(m_rtmp);
+        RTMP_Close(&m_rtmp);
     }
 
 private:
     RtmpVideoSource(const std::string &uri, const std::map<std::string, std::string> &opts, std::unique_ptr<webrtc::VideoDecoderFactory> &videoDecoderFactory) : 
         m_stop(false),
+        m_url(uri),
         m_decoder(m_broadcaster, opts, videoDecoderFactory)
     {
-        m_rtmp = RTMP_Alloc();
-        if (!m_rtmp)
-        {
-            RTC_LOG(LS_INFO) << "Unable to create rtmp object";
-        }
-        RTMP_Init(m_rtmp);
+        RTMP_Init(&m_rtmp);
         RTMP_LogSetLevel(RTMP_LOGALL);
         RTMP_LogSetOutput(stderr);
-        RTMP_SetupURL(m_rtmp, const_cast<char *>(uri.c_str()));
+        if (!RTMP_SetupURL(&m_rtmp, const_cast<char*>(m_url.c_str()))) {
+            RTC_LOG(LS_INFO) << "Unable to parse rtmp url:" << m_url;
+        }
 
         this->Start();
     }
@@ -82,26 +79,24 @@ private:
 
     void CaptureThread()
     {
-        RTC_LOG(LS_INFO) << "RtmpVideoSource::CaptureThread";
+        RTC_LOG(LS_INFO) << "RtmpVideoSource::CaptureThread begin";
         while (!m_stop)
         {
-            if (!RTMP_IsConnected(m_rtmp))
-            {
-                if (!RTMP_Connect(m_rtmp, NULL))
-                {
+            if ( !RTMP_IsConnected(&m_rtmp) ) {
+                RTC_LOG(LS_INFO) << "try to connect";
+                if (!RTMP_Connect(&m_rtmp, NULL) || !RTMP_ConnectStream(&m_rtmp, 0) ) {
                     RTC_LOG(LS_INFO) << "Unable to connect to stream";
                 }
-                if (!RTMP_ConnectStream(m_rtmp, 0))
-                {
-                    RTC_LOG(LS_INFO) << "Unable to connect to stream";
-                }
-            }
+            } 
 
-            if (RTMP_ReadPacket(m_rtmp, &m_packet))
-            {
-                RTC_LOG(LS_INFO) << "rtmp packet type:" << m_packet.m_packetType;
+            if (RTMP_IsConnected(&m_rtmp)) {
+                if (RTMP_ReadPacket(&m_rtmp, &m_packet)) {
+                    RTMPPacket_Dump(&m_packet);
+                }
+                RTMPPacket_Free(&m_packet);
             }
         }
+        RTC_LOG(LS_INFO) << "RtmpVideoSource::CaptureThread end";
     }
 
     // overide T::Callback
@@ -238,8 +233,9 @@ private:
     char m_stop;
 
 protected:
-    RTMP *m_rtmp;
+    RTMP m_rtmp;
     RTMPPacket m_packet;
+    std::string m_url;
 
 private:
     std::thread m_capturethread;
