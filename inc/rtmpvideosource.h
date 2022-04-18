@@ -119,7 +119,7 @@ private:
                                     RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession PPS size:" << ppssize;
 
 				    m_cfg.insert(m_cfg.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
-                                    m_cfg.insert(m_cfg.end(), &m_packet.m_body[16], &m_packet.m_body[16] + ppssize);
+                                    m_cfg.insert(m_cfg.end(), &m_packet.m_body[16+spssize], &m_packet.m_body[16+spssize] + ppssize);
                                 }                                
                             } 
                         } else if (m_packet.m_body[0] == 0x17 && m_packet.m_body[1] == 1) {
