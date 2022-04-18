@@ -21,7 +21,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 	&& apt-get clean && rm -rf /var/lib/apt/lists/
 
 # run
-FROM builder
+FROM ubuntu:22.04
 
 WORKDIR /app
 COPY --from=builder /app/ /app/
