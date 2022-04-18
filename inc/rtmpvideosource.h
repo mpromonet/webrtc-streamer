@@ -110,40 +110,36 @@ private:
                                 } else {
                                     RTC_LOG(LS_ERROR) << "sps " << sps->width << "x" << sps->height;
                                     this->resetDecoderWhenGeometryUpdated(sps);
-				    m_cfg.insert(m_cfg.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
-                                    m_cfg.insert(m_cfg.end(), &m_packet.m_body[13], &m_packet.m_body[13] + spssize);
+                                    m_cfg.insert(m_cfg.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
+                                    m_cfg.insert(m_cfg.end(), &m_packet.m_body[13], &m_packet.m_body[13 + spssize + 1]);
 
                                     nalu_type = webrtc::H264::ParseNaluType(m_packet.m_body[16+spssize]);
                                     RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession NALU type:" << nalu_type;
                                     int ppssize = (m_packet.m_body[14+spssize]<<8) + m_packet.m_body[15+spssize];
                                     RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession PPS size:" << ppssize;
 
-				    m_cfg.insert(m_cfg.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
-                                    m_cfg.insert(m_cfg.end(), &m_packet.m_body[16+spssize], &m_packet.m_body[16+spssize] + ppssize);
+                                    m_cfg.insert(m_cfg.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
+                                    m_cfg.insert(m_cfg.end(), &m_packet.m_body[16+spssize], &m_packet.m_body[16 + spssize  + ppssize + 1]);
                                 }                                
                             } 
                         } else if (m_packet.m_body[0] == 0x17 && m_packet.m_body[1] == 1) {
-                            int framesize = ((((unsigned char)m_packet.m_body[7])&0xff)<<8) + m_packet.m_body[8];
-                            RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession IDR size:" << framesize;                            
                             webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(m_packet.m_body[9]);
                             RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession IDR type:" << nalu_type;
 
                             std::vector<uint8_t> content;
                             content.insert(content.end(), m_cfg.begin(), m_cfg.end());
-			    content.insert(content.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
-                            content.insert(content.end(), &m_packet.m_body[9], &m_packet.m_body[9]+framesize);
+                            content.insert(content.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
+                            content.insert(content.end(), &m_packet.m_body[9], &m_packet.m_body[m_packet.m_nBodySize]);
                             rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
                             m_decoder.PostFrame(frame, ts, webrtc::VideoFrameType::kVideoFrameKey);
 
                         }
                         else if (m_packet.m_body[0] == 0x27) {
-                            int framesize = ((((unsigned char)m_packet.m_body[7])&0xff)<<8) + m_packet.m_body[8];
-                            RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession Slice size:" << framesize;                            
                             webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(m_packet.m_body[9]);
                             RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession Slice NALU type:" << nalu_type;                            
                             std::vector<uint8_t> content;
-			    content.insert(content.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
-                            content.insert(content.end(), &m_packet.m_body[9], &m_packet.m_body[9]+framesize);
+                            content.insert(content.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
+                            content.insert(content.end(), &m_packet.m_body[9], &m_packet.m_body[m_packet.m_nBodySize]);
                             rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
                             m_decoder.PostFrame(frame, ts, webrtc::VideoFrameType::kVideoFrameDelta);
                         }
