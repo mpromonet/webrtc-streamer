@@ -31,7 +31,7 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
         };
 
     public:
-        VideoDecoder(rtc::VideoBroadcaster& broadcaster, const std::map<std::string,std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory, bool wait) : 
+        VideoDecoder(rtc::VideoBroadcaster& broadcaster, const std::map<std::string,std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory, bool wait = false) : 
                 m_broadcaster(broadcaster),
                 m_factory(videoDecoderFactory),
                 m_stop(false),
