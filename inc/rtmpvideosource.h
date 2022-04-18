@@ -53,8 +53,8 @@ private:
         m_decoder(m_broadcaster, opts, videoDecoderFactory)
     {
         RTMP_Init(&m_rtmp);
-        RTMP_LogSetLevel(RTMP_LOGALL);
         RTMP_LogSetOutput(stderr);
+        RTMP_LogSetLevel(RTMP_LOGDEBUG);
         if (!RTMP_SetupURL(&m_rtmp, const_cast<char*>(m_url.c_str()))) {
             RTC_LOG(LS_INFO) << "Unable to parse rtmp url:" << m_url;
         }
@@ -82,16 +82,39 @@ private:
         RTC_LOG(LS_INFO) << "RtmpVideoSource::CaptureThread begin";
         while (!m_stop)
         {
-            if ( !RTMP_IsConnected(&m_rtmp) ) {
-                RTC_LOG(LS_INFO) << "try to connect";
-                if (!RTMP_Connect(&m_rtmp, NULL) || !RTMP_ConnectStream(&m_rtmp, 0) ) {
-                    RTC_LOG(LS_INFO) << "Unable to connect to stream";
-                }
+            if ( !RTMP_IsConnected(&m_rtmp) && (!RTMP_Connect(&m_rtmp, NULL) || !RTMP_ConnectStream(&m_rtmp, 0)) ) {
+                RTC_LOG(LS_INFO) << "Unable to connect to stream";
             } 
 
             if (RTMP_IsConnected(&m_rtmp)) {
                 if (RTMP_ReadPacket(&m_rtmp, &m_packet)) {
                     RTMPPacket_Dump(&m_packet);
+
+                    if (m_packet.m_packetType == RTMP_PACKET_TYPE_VIDEO) {
+                        if (m_packet.m_body[0] == 0x17) {
+                            RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession SPS/PPS";
+                            webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(m_packet.m_body[13]);
+                            RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession NALU type:" << nalu_type;
+                            if (nalu_type == webrtc::H264::NaluType::kSps)
+                            {
+                                m_cfg.clear();
+                                int spssize = (m_packet.m_body[11]<<8) + m_packet.m_body[12];
+                                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession size:" << spssize;
+                                absl::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps((const unsigned char*)(&m_packet.m_body[14]), spssize);
+                                if (!sps)
+                                {
+                                    RTC_LOG(LS_ERROR) << "cannot parse sps";
+                                } else {
+                                    RTC_LOG(LS_ERROR) << "sps " << sps->width << "x" << sps->height;
+                                    this->resetDecoderWhenGeometryUpdated(sps);
+                                    m_cfg.insert(m_cfg.end(), &m_packet.m_body[13], &m_packet.m_body[13] + spssize);
+                                }
+                            } 
+                        }
+                        else if (m_packet.m_body[0] == 0x27) {
+                            RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession Image";
+                        }
+                    }
                 }
                 RTMPPacket_Free(&m_packet);
             }
@@ -99,35 +122,27 @@ private:
         RTC_LOG(LS_INFO) << "RtmpVideoSource::CaptureThread end";
     }
 
-    // overide T::Callback
-    virtual bool onNewSession(const char *id, const char *media, const char *codec, const char *sdp)
-    {
-        bool success = false;
-        if (strcmp(media, "video") == 0)
+    void resetDecoderWhenGeometryUpdated(const absl::optional<webrtc::SpsParser::SpsState>& sps) {
+        if (m_decoder.hasDecoder())
         {
-            RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession id:" << id << " media:" << media << "/" << codec << " sdp:" << sdp;
-
-            if (strcmp(codec, "H264") == 0)
+            if ((m_format.width != sps->width) || (m_format.height != sps->height))
             {
-                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession id:'" << id << "' '" << codec << "'\n";
-                m_codec[id] = codec;
-                success = true;
-            }
-            RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession success:" << success << "\n";
-            if (success)
-            {
-                struct timeval presentationTime;
-                timerclear(&presentationTime);
-
-                std::vector<std::vector<uint8_t>> initFrames = m_decoder.getInitFrames(codec, sdp);
-                for (auto frame : initFrames)
-                {
-                    onData(id, frame.data(), frame.size(), presentationTime);
-                }
+                RTC_LOG(LS_INFO) << "format changed => set format from " << m_format.width << "x" << m_format.height << " to " << sps->width << "x" << sps->height;
+                m_decoder.destroyDecoder();
             }
         }
-        return success;
+
+        if (!m_decoder.hasDecoder())
+        {
+            int fps = 25;
+            RTC_LOG(LS_INFO) << "RtmpVideoSource:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
+            cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
+            m_format = videoFormat;
+
+            m_decoder.createDecoder("H264", sps->width, sps->height);
+        }
     }
+
     virtual bool onData(const char *id, unsigned char *buffer, ssize_t size, struct timeval presentationTime)
     {
         int64_t ts = presentationTime.tv_sec;
@@ -153,24 +168,6 @@ private:
                 }
                 else
                 {
-                    if (m_decoder.hasDecoder())
-                    {
-                        if ((m_format.width != sps->width) || (m_format.height != sps->height))
-                        {
-                            RTC_LOG(LS_INFO) << "format changed => set format from " << m_format.width << "x" << m_format.height << " to " << sps->width << "x" << sps->height;
-                            m_decoder.destroyDecoder();
-                        }
-                    }
-
-                    if (!m_decoder.hasDecoder())
-                    {
-                        int fps = 25;
-                        RTC_LOG(LS_INFO) << "RtmpVideoSource:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
-                        cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
-                        m_format = videoFormat;
-
-                        m_decoder.createDecoder(codec, sps->width, sps->height);
-                    }
                 }
             }
             else if (nalu_type == webrtc::H264::NaluType::kPps)
