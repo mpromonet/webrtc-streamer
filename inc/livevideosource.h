@@ -124,24 +124,10 @@ public:
                 }
                 else
                 {
-                    if (m_decoder.hasDecoder())
-                    {
-                        if ((m_format.width != sps->width) || (m_format.height != sps->height))
-                        {
-                            RTC_LOG(LS_INFO) << "format changed => set format from " << m_format.width << "x" << m_format.height << " to " << sps->width << "x" << sps->height;
-                            m_decoder.destroyDecoder();
-                        }
-                    }
-
-                    if (!m_decoder.hasDecoder())
-                    {
-                        int fps = 25;
-                        RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
-                        cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
-                        m_format = videoFormat;
-
-                        m_decoder.createDecoder(codec, sps->width, sps->height);
-                    }
+                    int fps = 25;
+                    RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
+                    cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
+                    m_decoder.updateFormat(codec, videoFormat);
                 }
             }
             else if (nalu_type == webrtc::H264::NaluType::kPps)
@@ -262,7 +248,6 @@ protected:
 
 private:
     std::thread                        m_capturethread;
-    cricket::VideoFormat               m_format;
     std::vector<uint8_t>               m_cfg;
     std::map<std::string, std::string> m_codec;
 

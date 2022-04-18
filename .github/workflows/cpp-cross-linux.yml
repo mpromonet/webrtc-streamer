@@ -1,4 +1,4 @@
-name: C/C++ CI linux croos compilation arm64
+name: C/C++ CI linux cross compilation arm64
 
 on: [push]
 

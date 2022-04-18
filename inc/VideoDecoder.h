@@ -131,6 +131,38 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
             return frames;
         }
 
+        bool hasDecoder() {
+            return (m_decoder.get() != NULL);
+        }
+
+        void updateFormat(const std::string& codec, const cricket::VideoFormat & format) {
+            if (this->hasDecoder())
+            {
+                if ((m_format.width != format.width) || (m_format.height != format.height))
+                {
+                    RTC_LOG(LS_INFO) << "format changed => set format from " << m_format.width << "x" << m_format.height << " to " << format.width << "x" << format.height;
+                    m_decoder.reset(NULL);
+                }
+            }
+
+            if (!this->hasDecoder())
+            {
+                RTC_LOG(LS_INFO) << "RtmpVideoSource:onData SPS set format " << format.width << "x" << format.height << " fps:" << format.interval;
+                m_format = format;
+
+                this->createDecoder(codec, format.width, format.height);
+            }
+        }
+
+        void PostFrame(const rtc::scoped_refptr<webrtc::EncodedImageBuffer>& content, uint64_t ts, webrtc::VideoFrameType frameType) {
+			Frame frame(content, ts, frameType);			
+			{
+				std::unique_lock<std::mutex> lock(m_queuemutex);
+				m_queue.push(frame);
+			}
+			m_queuecond.notify_all();
+        }
+
         void createDecoder(const std::string & codec, int width = 0, int height = 0) {
             webrtc::VideoDecoder::Settings settings;
             webrtc::RenderResolution resolution(width, height);
@@ -148,25 +180,8 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
             }
         }
 
-        void destroyDecoder() {
-            m_decoder.reset(NULL);
-        }
-
-        bool hasDecoder() {
-            return (m_decoder.get() != NULL);
-        }
-
-        void PostFrame(const rtc::scoped_refptr<webrtc::EncodedImageBuffer>& content, uint64_t ts, webrtc::VideoFrameType frameType) {
-			Frame frame(content, ts, frameType);			
-			{
-				std::unique_lock<std::mutex> lock(m_queuemutex);
-				m_queue.push(frame);
-			}
-			m_queuecond.notify_all();
-        }
-
 		// overide webrtc::DecodedImageCallback
-		virtual int32_t Decoded(webrtc::VideoFrame& decodedImage) override {
+	virtual int32_t Decoded(webrtc::VideoFrame& decodedImage) override {
             int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
 
             RTC_LOG(LS_VERBOSE) << "VideoDecoder::Decoded size:" << decodedImage.size() 
@@ -198,6 +213,7 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
         rtc::VideoBroadcaster&                        m_broadcaster;
         std::unique_ptr<webrtc::VideoDecoderFactory>& m_factory;
         std::unique_ptr<webrtc::VideoDecoder>         m_decoder;
+        cricket::VideoFormat m_format;
 
 		std::queue<Frame>                     m_queue;
 		std::mutex                            m_queuemutex;

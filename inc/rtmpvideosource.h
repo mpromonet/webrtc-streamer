@@ -109,7 +109,11 @@ private:
                                     RTC_LOG(LS_ERROR) << "cannot parse sps";
                                 } else {
                                     RTC_LOG(LS_ERROR) << "sps " << sps->width << "x" << sps->height;
-                                    this->resetDecoderWhenGeometryUpdated(sps);
+                                    int fps = 25;
+                                    RTC_LOG(LS_INFO) << "RtmpVideoSource:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
+                                    cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
+                                    m_decoder.updateFormat("H264", videoFormat);
+                                    
                                     m_cfg.insert(m_cfg.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
                                     m_cfg.insert(m_cfg.end(), &m_packet.m_body[13], &m_packet.m_body[13 + spssize + 1]);
 
@@ -151,27 +155,6 @@ private:
         RTC_LOG(LS_INFO) << "RtmpVideoSource::CaptureThread end";
     }
 
-    void resetDecoderWhenGeometryUpdated(const absl::optional<webrtc::SpsParser::SpsState>& sps) {
-        if (m_decoder.hasDecoder())
-        {
-            if ((m_format.width != sps->width) || (m_format.height != sps->height))
-            {
-                RTC_LOG(LS_INFO) << "format changed => set format from " << m_format.width << "x" << m_format.height << " to " << sps->width << "x" << sps->height;
-                m_decoder.destroyDecoder();
-            }
-        }
-
-        if (!m_decoder.hasDecoder())
-        {
-            int fps = 25;
-            RTC_LOG(LS_INFO) << "RtmpVideoSource:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
-            cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
-            m_format = videoFormat;
-
-            m_decoder.createDecoder("H264", sps->width, sps->height);
-        }
-    }
-
     // overide rtc::VideoSourceInterface<webrtc::VideoFrame>
     void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink, const rtc::VideoSinkWants &wants)
     {
@@ -193,7 +176,6 @@ protected:
 
 private:
     std::thread m_capturethread;
-    cricket::VideoFormat m_format;
     std::vector<uint8_t> m_cfg;
 
     rtc::VideoBroadcaster m_broadcaster;

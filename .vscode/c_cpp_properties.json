@@ -4,7 +4,10 @@
             "name": "default",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/../webrtc/src"
+                "${workspaceFolder}/../webrtc/src",
+                "${workspaceFolder}/../webrtc/src/third_party/abseil-cpp",
+                "${workspaceFolder}/../webrtc/src/third_party/jsoncpp/source/include",
+                "${workspaceFolder}/../webrtc/src/third_party/jsoncpp/generated"
             ],
             "intelliSenseMode": "linux-gcc-x64",
             "compilerPath": "/usr/bin/gcc",
