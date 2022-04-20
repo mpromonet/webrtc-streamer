@@ -17,7 +17,7 @@
 #include "modules/video_coding/h264_sprop_parameter_sets.h"
 
 
-class VideoDecoder : public webrtc::DecodedImageCallback {
+class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public webrtc::DecodedImageCallback {
     private:
         class Frame
         {
@@ -31,67 +31,17 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
         };
 
     public:
-        VideoDecoder(rtc::VideoBroadcaster& broadcaster, const std::map<std::string,std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory, bool wait = false) : 
-                m_broadcaster(broadcaster),
+        VideoDecoder(const std::map<std::string,std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory, bool wait = false) : 
                 m_factory(videoDecoderFactory),
                 m_stop(false),
                 m_wait(wait),
                 m_previmagets(0),
                 m_prevts(0) {
+            this->Start();                    
         }
 
         virtual ~VideoDecoder() {
-        }
-
-        void DecoderThread() 
-        {
-            while (!m_stop) {
-                std::unique_lock<std::mutex> mlock(m_queuemutex);
-                while (m_queue.empty())
-                {
-                    m_queuecond.wait(mlock);
-                }
-                Frame frame = m_queue.front();
-                m_queue.pop();		
-                mlock.unlock();
-                
-                if (frame.m_content.get() != NULL) {
-                    RTC_LOG(LS_VERBOSE) << "VideoDecoder::DecoderThread size:" << frame.m_content->size() << " ts:" << frame.m_timestamp_ms;
-                    ssize_t size = frame.m_content->size();
-                    
-                    if (size) {
-                        webrtc::EncodedImage input_image;
-                        input_image.SetEncodedData(frame.m_content);		
-                        input_image._frameType = frame.m_frameType;
-                        input_image.ntp_time_ms_ = frame.m_timestamp_ms;
-                        input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
-                        int res = m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
-                        if (res != WEBRTC_VIDEO_CODEC_OK) {
-                            RTC_LOG(LS_ERROR) << "VideoDecoder::DecoderThread failure:" << res;
-                        }
-                    }
-                }
-            }
-        }
-
-        void Start()
-        {
-            RTC_LOG(LS_INFO) << "VideoDecoder::start";
-            m_stop = false;
-            m_decoderthread = std::thread(&VideoDecoder::DecoderThread, this);
-        }
-
-        void Stop()
-        {
-            RTC_LOG(LS_INFO) << "VideoDecoder::stop";
-            m_stop = true;
-            Frame frame;			
-            {
-                std::unique_lock<std::mutex> lock(m_queuemutex);
-                m_queue.push(frame);
-            }
-            m_queuecond.notify_all();
-            m_decoderthread.join();
+            this->Stop();                    
         }
 
         std::vector< std::vector<uint8_t> > getInitFrames(const std::string & codec, const char* sdp) {
@@ -181,7 +131,7 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
         }
 
 		// overide webrtc::DecodedImageCallback
-	virtual int32_t Decoded(webrtc::VideoFrame& decodedImage) override {
+	    virtual int32_t Decoded(webrtc::VideoFrame& decodedImage) override {
             int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
 
             RTC_LOG(LS_VERBOSE) << "VideoDecoder::Decoded size:" << decodedImage.size() 
@@ -210,9 +160,72 @@ class VideoDecoder : public webrtc::DecodedImageCallback {
             return 1;
         }
 
-        rtc::VideoBroadcaster&                        m_broadcaster;
-        std::unique_ptr<webrtc::VideoDecoderFactory>& m_factory;
+        void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink, const rtc::VideoSinkWants &wants) override {
+            m_broadcaster.AddOrUpdateSink(sink, wants);
+        }
+
+        void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink) override {
+            m_broadcaster.RemoveSink(sink);
+        }
+
+    protected:
+        void DecoderThread() 
+        {
+            while (!m_stop) {
+                std::unique_lock<std::mutex> mlock(m_queuemutex);
+                while (m_queue.empty())
+                {
+                    m_queuecond.wait(mlock);
+                }
+                Frame frame = m_queue.front();
+                m_queue.pop();		
+                mlock.unlock();
+                
+                if (frame.m_content.get() != NULL) {
+                    RTC_LOG(LS_VERBOSE) << "VideoDecoder::DecoderThread size:" << frame.m_content->size() << " ts:" << frame.m_timestamp_ms;
+                    ssize_t size = frame.m_content->size();
+                    
+                    if (size) {
+                        webrtc::EncodedImage input_image;
+                        input_image.SetEncodedData(frame.m_content);		
+                        input_image._frameType = frame.m_frameType;
+                        input_image.ntp_time_ms_ = frame.m_timestamp_ms;
+                        input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
+                        int res = m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
+                        if (res != WEBRTC_VIDEO_CODEC_OK) {
+                            RTC_LOG(LS_ERROR) << "VideoDecoder::DecoderThread failure:" << res;
+                        }
+                    }
+                }
+            }
+        }
+
+        void Start()
+        {
+            RTC_LOG(LS_INFO) << "VideoDecoder::start";
+            m_stop = false;
+            m_decoderthread = std::thread(&VideoDecoder::DecoderThread, this);
+        }
+
+        void Stop()
+        {
+            RTC_LOG(LS_INFO) << "VideoDecoder::stop";
+            m_stop = true;
+            Frame frame;			
+            {
+                std::unique_lock<std::mutex> lock(m_queuemutex);
+                m_queue.push(frame);
+            }
+            m_queuecond.notify_all();
+            m_decoderthread.join();
+        }
+
+    public:
         std::unique_ptr<webrtc::VideoDecoder>         m_decoder;
+
+    protected:
+        rtc::VideoBroadcaster                         m_broadcaster;
+        std::unique_ptr<webrtc::VideoDecoderFactory>& m_factory;
         cricket::VideoFormat m_format;
 
 		std::queue<Frame>                     m_queue;

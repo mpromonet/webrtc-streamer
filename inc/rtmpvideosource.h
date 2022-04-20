@@ -50,7 +50,7 @@ private:
     RtmpVideoSource(const std::string &uri, const std::map<std::string, std::string> &opts, std::unique_ptr<webrtc::VideoDecoderFactory> &videoDecoderFactory) : 
         m_stop(false),
         m_url(uri),
-        m_decoder(m_broadcaster, opts, videoDecoderFactory)
+        m_decoder(opts, videoDecoderFactory)
     {
         RTMP_Init(&m_rtmp);
         RTMP_LogSetOutput(stderr);
@@ -66,14 +66,12 @@ private:
     {
         RTC_LOG(LS_INFO) << "RtmpVideoSource::Start";
         m_capturethread = std::thread(&RtmpVideoSource::CaptureThread, this);
-        m_decoder.Start();
     }
     void Stop()
     {
         RTC_LOG(LS_INFO) << "RtmpVideoSource::stop";
         m_stop = true;
         m_capturethread.join();
-        m_decoder.Stop();
     }
     bool IsRunning() { return (!m_stop); }
 
@@ -158,12 +156,12 @@ private:
     // overide rtc::VideoSourceInterface<webrtc::VideoFrame>
     void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink, const rtc::VideoSinkWants &wants)
     {
-        m_broadcaster.AddOrUpdateSink(sink, wants);
+        m_decoder.AddOrUpdateSink(sink, wants);
     }
 
     void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink)
     {
-        m_broadcaster.RemoveSink(sink);
+        m_decoder.RemoveSink(sink);
     }
 
 private:
@@ -178,6 +176,5 @@ private:
     std::thread m_capturethread;
     std::vector<uint8_t> m_cfg;
 
-    rtc::VideoBroadcaster m_broadcaster;
     VideoDecoder m_decoder;
 };
