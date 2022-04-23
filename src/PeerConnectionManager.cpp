@@ -25,9 +25,6 @@
 #include "V4l2AlsaMap.h"
 #include "CapturerFactory.h"
 
-#include "VideoScaler.h"
-#include "VideoFilter.h"
-
 #include "NullEncoder.h"
 #include "NullDecoder.h"
 
@@ -1151,8 +1148,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 				}
 				else
 				{
-					rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoScaled = VideoFilter<VideoScaler>::Create(videoSource, opts);
-					rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track = m_peer_connection_factory->CreateVideoTrack(streamLabel + "_video", videoScaled);
+					rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track = m_peer_connection_factory->CreateVideoTrack(streamLabel + "_video", videoSource);
 					if ((video_track) && (!peer_connection->AddTrack(video_track, {streamLabel}).ok()))
 					{
 						RTC_LOG(LS_ERROR) << "Adding VideoTrack to MediaStream failed";
