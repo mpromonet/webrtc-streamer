@@ -5,6 +5,10 @@ defaults: &defaults
       user: root
     
 version: 2.1
+
+orbs:
+  heroku: circleci/heroku@0.0.10
+
 jobs:
   # -------------------------------------
   # dowload common tools 
@@ -96,36 +100,15 @@ jobs:
       - attach_workspace:
           at: /
 
-      - checkout
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates git openssh-client
-      - run:
-          name: Setup Heroku
-          command: |  
-            echo setup
-            pwd
-            mkdir ~/.ssh
-            ssh-keyscan -H heroku.com >> ~/.ssh/known_hosts
-            cat > ~/.netrc \<< EOF
-            machine api.heroku.com
-              login $HEROKU_LOGIN
-              password $HEROKU_API_KEY
-            EOF
-            cat >> ~/.ssh/config \<< EOF
-            VerifyHostKeyDNS yes
-            StrictHostKeyChecking no
-            EOF
-      - add_ssh_keys:
-          fingerprints:
-            - "9d:ef:66:ee:e1:95:2b:e6:98:05:01:ac:48:5c:53:be"
-      - deploy:
-          name: "Deploy to Heroku"
-          command: |
-            git clone git@heroku.com:webrtc-streamer.git
-            cd webrtc-streamer
-            tar xzf /distrib/webrtc-streamer*heroku.tar.gz --strip=1
-            [ "$GCLOUD_APIKEY" != "" ] && sed -i -e "s|https://maps.googleapis.com/maps/api/js?|https://maps.googleapis.com/maps/api/js?key=${GCLOUD_APIKEY}\&|" html/map.html
-            sed -i -e 's!<head>!<head><script async src="https://www.googletagmanager.com/gtag/js?id=UA-167114443-1"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag("js", new Date());gtag("config", "UA-167114443-1");</script>!' html/index.html html/map.html html/webrtc-streamer-element.html html/webrtcstreamer.html
-            git add -A && git -c user.name='ci' -c user.email='ci@email.org' commit -m 'heroku deployement' --allow-empty && git push --force git@heroku.com:webrtc-streamer.git HEAD:refs/heads/master
+      - heroku/deploy-via-git: 
+        - pre-steps:
+          - run:
+            command: |
+              mkdir webrtc-streamer 
+              cd webrtc-streamer
+              tar xzf /distrib/webrtc-streamer*heroku.tar.gz --strip=1
+              [ "$GCLOUD_APIKEY" != "" ] && sed -i -e "s|https://maps.googleapis.com/maps/api/js?|https://maps.googleapis.com/maps/api/js?key=${GCLOUD_APIKEY}\&|" html/map.html
+              sed -i -e 's!<head>!<head><script async src="https://www.googletagmanager.com/gtag/js?id=UA-167114443-1"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag("js", new Date());gtag("config", "UA-167114443-1");</script>!' html/index.html html/map.html html/webrtc-streamer-element.html html/webrtcstreamer.html
 
   # -------------------------------------
   # build for RPI2
