@@ -7,9 +7,9 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: windows-latest
-          dockerfile: Dockerfile.windows
-          label: windows
+        - os: ubuntu-latest
+          dockerfile: Dockerfile.arm64
+          label: arm64
         - os: ubuntu-latest
           dockerfile: Dockerfile.rpi
           label: armv6l

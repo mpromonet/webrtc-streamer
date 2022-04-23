@@ -101,6 +101,9 @@ jobs:
       - run:
           name: Setup Heroku
           command: |  
+            echo setup
+            pwd
+            mkdir ~/.ssh
             ssh-keyscan -H heroku.com >> ~/.ssh/known_hosts
             cat > ~/.netrc \<< EOF
             machine api.heroku.com
