@@ -7,7 +7,7 @@ defaults: &defaults
 version: 2.1
 
 orbs:
-  heroku: circleci/heroku@0.0.10
+  heroku: circleci/heroku@1.2.6
 
 jobs:
   # -------------------------------------
@@ -100,15 +100,14 @@ jobs:
       - attach_workspace:
           at: /
 
-      - heroku/deploy-via-git: 
-        - pre-steps:
-          - run:
-            command: |
-              mkdir webrtc-streamer 
-              cd webrtc-streamer
-              tar xzf /distrib/webrtc-streamer*heroku.tar.gz --strip=1
-              [ "$GCLOUD_APIKEY" != "" ] && sed -i -e "s|https://maps.googleapis.com/maps/api/js?|https://maps.googleapis.com/maps/api/js?key=${GCLOUD_APIKEY}\&|" html/map.html
-              sed -i -e 's!<head>!<head><script async src="https://www.googletagmanager.com/gtag/js?id=UA-167114443-1"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag("js", new Date());gtag("config", "UA-167114443-1");</script>!' html/index.html html/map.html html/webrtc-streamer-element.html html/webrtcstreamer.html
+      - heroku/install
+      - run: |
+          mkdir webrtc-streamer 
+          cd webrtc-streamer
+          tar xzf /distrib/webrtc-streamer*heroku.tar.gz --strip=1
+          [ "$GCLOUD_APIKEY" != "" ] && sed -i -e "s|https://maps.googleapis.com/maps/api/js?|https://maps.googleapis.com/maps/api/js?key=${GCLOUD_APIKEY}\&|" html/map.html
+          sed -i -e 's!<head>!<head><script async src="https://www.googletagmanager.com/gtag/js?id=UA-167114443-1"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag("js", new Date());gtag("config", "UA-167114443-1");</script>!' html/index.html html/map.html html/webrtc-streamer-element.html html/webrtcstreamer.html
+      - heroku/deploy-via-git 
 
   # -------------------------------------
   # build for RPI2
