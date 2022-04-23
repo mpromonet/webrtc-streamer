@@ -51,6 +51,10 @@ protected:
 	explicit TrackSource(std::unique_ptr<T> capturer)
 		: webrtc::VideoTrackSource(/*remote=*/false), capturer_(std::move(capturer)) {}
 
+   	SourceState state() const override { 
+		return kLive; 
+   	}
+
 private:
 	rtc::VideoSourceInterface<webrtc::VideoFrame>* source() override {
 		return capturer_.get();

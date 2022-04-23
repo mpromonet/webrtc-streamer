@@ -16,6 +16,7 @@
 #include "modules/video_coding/include/video_error_codes.h"
 #include "modules/video_coding/h264_sprop_parameter_sets.h"
 
+#include "VideoScaler.h"
 
 class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public webrtc::DecodedImageCallback {
     private:
@@ -32,6 +33,7 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
 
     public:
         VideoDecoder(const std::map<std::string,std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory, bool wait = false) : 
+                m_scaler(opts),
                 m_factory(videoDecoderFactory),
                 m_stop(false),
                 m_wait(wait),
@@ -152,7 +154,7 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
                 std::this_thread::sleep_for(std::chrono::milliseconds(5));
             }                        
 
-            m_broadcaster.OnFrame(decodedImage);
+            m_scaler.OnFrame(decodedImage);
 
 	        m_previmagets = decodedImage.timestamp();
 	        m_prevts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
@@ -161,11 +163,11 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
         }
 
         void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink, const rtc::VideoSinkWants &wants) override {
-            m_broadcaster.AddOrUpdateSink(sink, wants);
+            m_scaler.AddOrUpdateSink(sink, wants);
         }
 
         void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink) override {
-            m_broadcaster.RemoveSink(sink);
+            m_scaler.RemoveSink(sink);
         }
 
     protected:
@@ -224,7 +226,7 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
         std::unique_ptr<webrtc::VideoDecoder>         m_decoder;
 
     protected:
-        rtc::VideoBroadcaster                         m_broadcaster;
+        VideoScaler                                   m_scaler;
         std::unique_ptr<webrtc::VideoDecoderFactory>& m_factory;
         cricket::VideoFormat m_format;
 

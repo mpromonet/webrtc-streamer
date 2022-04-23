@@ -17,8 +17,7 @@ class VideoScaler :  public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public
 {
 public:
 
-    VideoScaler(rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource, const std::map<std::string, std::string> &opts) :
-                m_videoSource(videoSource),
+    VideoScaler(const std::map<std::string, std::string> &opts) :
                 m_width(0), m_height(0), 
                 m_rotation(webrtc::kVideoRotation_0),
                 m_roi_x(0), m_roi_y(0), m_roi_width(0), m_roi_height(0) 
@@ -160,15 +159,11 @@ public:
 
     void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink, const rtc::VideoSinkWants &wants) override
     {
-        m_videoSource->AddOrUpdateSink(this,wants);
-
         m_broadcaster.AddOrUpdateSink(sink, wants);
     }
 
     void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink) override
     {
-        m_videoSource->RemoveSink(this);
-
         m_broadcaster.RemoveSink(sink);
     }
 
@@ -176,7 +171,6 @@ public:
     int height() { return m_roi_height;  }
 
 private:
-    rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> m_videoSource;
     rtc::VideoBroadcaster  m_broadcaster;
 
     int                    m_width;
