@@ -104,7 +104,7 @@ windowsbranch_docker_builder:
   only_if: $CIRRUS_TAG == '' && $CIRRUS_BRANCH == 'master'
   timeout_in: 120m
   platform: windows
-  os_version: 2019  
+  os_version: 2022  
   env:
     DOCKERHUB_USER: ENCRYPTED[ccd1af2835558f6b3e08fa3dd8ad95e7b3eaf3b83220433093d6335a3f4727f4c53c4053587d1594799e72e331d1017d]
     DOCKERHUB_PASS: ENCRYPTED[7b81d2ca7878761ea497619cae892e267c0e0fdee71d8ce48dcd4ba11b9351a9d3f2f781dce84a7f8aab92a278007509]
@@ -120,7 +120,7 @@ windowstag_docker_builder:
   only_if: $CIRRUS_TAG != ''
   timeout_in: 120m
   platform: windows
-  os_version: 2019
+  os_version: 2022
   env:
     DOCKERHUB_USER: ENCRYPTED[ccd1af2835558f6b3e08fa3dd8ad95e7b3eaf3b83220433093d6335a3f4727f4c53c4053587d1594799e72e331d1017d]
     DOCKERHUB_PASS: ENCRYPTED[7b81d2ca7878761ea497619cae892e267c0e0fdee71d8ce48dcd4ba11b9351a9d3f2f781dce84a7f8aab92a278007509]
