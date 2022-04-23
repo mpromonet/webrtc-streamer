@@ -179,27 +179,31 @@ class PeerConnectionManager {
 			, m_localChannel(NULL)
 			, m_remoteChannel(NULL)
 			, m_iceCandidateList(Json::arrayValue)
-			, m_deleting(false) {
+			, m_deleting(false)
+			, m_networkManager() {
 				std::unique_ptr<cricket::PortAllocator> portAllocator(new cricket::BasicPortAllocator(&m_networkManager));
 				portAllocator->SetPortRange(minPort, maxPort);
 
 				RTC_LOG(LS_INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
-				m_pc = m_peerConnectionManager->m_peer_connection_factory->CreatePeerConnection(config,
-								std::move(portAllocator),
-							    NULL,
-							    this);
-				
-				RTC_LOG(LS_INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
-				if (m_pc.get()) {
-					RTC_LOG(LS_INFO) << __FUNCTION__ << "CreateDataChannel peerid:" << peerid;
+				webrtc::PeerConnectionDependencies dependencies(this);
+				dependencies.allocator = std::move(portAllocator);
+				webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::PeerConnectionInterface>> result = m_peerConnectionManager->m_peer_connection_factory->CreatePeerConnectionOrError(config, std::move(dependencies));
+				if (result.ok()) {
+					m_pc = result.MoveValue();
 
-					rtc::scoped_refptr<webrtc::DataChannelInterface>   channel = m_pc->CreateDataChannel("ServerDataChannel", NULL);
-					m_localChannel = new DataChannelObserver(channel);
+					webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::DataChannelInterface>>  errorOrChannel = m_pc->CreateDataChannelOrError("ServerDataChannel", NULL);
+					if (errorOrChannel.ok()) {
+						m_localChannel = new DataChannelObserver(errorOrChannel.MoveValue());
+					} else {
+						RTC_LOG(LS_ERROR) << __FUNCTION__ << "CreateDataChannel peerid:" << peerid << " error:" << errorOrChannel.error().message();
+					}
+
+				} else {
+					RTC_LOG(LS_ERROR) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid << " error:" << result.error().message();
 				}
 
 				m_statsCallback = new rtc::RefCountedObject<PeerConnectionStatsCollectorCallback>();
 				RTC_LOG(LS_INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
-
 			};
 
 			virtual ~PeerConnectionObserver() {

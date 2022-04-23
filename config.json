@@ -1,15 +1,10 @@
 {
-    "urls":{
-	    "Bunny": {"video": "rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov"},
-       
+    "urls":{       
         "PriceCenterPlaza" : { "video": "rtsp://132.239.12.145:554/axis-media/media.amp"},
 
-        "Bahia": {"video": "rtsp://187.1.147.77:2000/axis-media/media.amp", "position": "-12.618330,-38.955830" },
         "Honk-Kong": {"video": "rtsp://weathercam.gsis.edu.hk/axis-media/media.amp", "position":"22.352734,114.1277", "options":"rtptransport=tcp&timeout=60"},
         
         "VyhladJazero": {"video": "rtsp://stream.strba.sk:1935/strba/VYHLAD_JAZERO.stream"}, 
-
-        "Curacao": {"video": "rtsp://srv13.arkasis.nl:80/498/default.stream", "position":"12.2376122,-69.1801954"},  
 
         "Zeeland": { "video": "rtsp://213.34.225.97/axis-media/media.amp", "position":"51.5,3.613890"},
         "Vancouver": { "video": "rtsp://174.6.126.86/axis-media/media.amp", "position":"49.249660,-123.119340"},
@@ -34,6 +29,5 @@
         "Wershofen": {"video":"rtsp://80.90.151.112/axis-media/media.amp", "position":"50.444820,6.813330"},
         
         "rtmp": {"video": "rtmp://171.25.232.10/12d525bc9f014e209c1280bc0d46a87e" }
-
     }
 }

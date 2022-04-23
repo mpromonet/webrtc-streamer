@@ -50,7 +50,13 @@ void DesktopCapturer::OnCaptureResult(webrtc::DesktopCapturer::Result result, st
 				int stride_uv = (width + 1) / 2;
 				rtc::scoped_refptr<webrtc::I420Buffer> scaled_buffer = webrtc::I420Buffer::Create(width, height, stride_y, stride_uv, stride_uv);
 				scaled_buffer->ScaleFrom(*videoFrame.video_frame_buffer()->ToI420());
-				webrtc::VideoFrame frame = webrtc::VideoFrame(scaled_buffer, webrtc::kVideoRotation_0, rtc::TimeMicros());
+
+	            webrtc::VideoFrame frame = webrtc::VideoFrame::Builder()
+					.set_video_frame_buffer(scaled_buffer)
+					.set_rotation(webrtc::kVideoRotation_0)
+					.set_timestamp_us(rtc::TimeMicros())
+					.build();
+				
 						
 				broadcaster_.OnFrame(frame);
 			}

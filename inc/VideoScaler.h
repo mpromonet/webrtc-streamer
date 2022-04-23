@@ -150,8 +150,14 @@ public:
             {
                 scaled_buffer->ScaleFrom(*frame.video_frame_buffer()->ToI420());
             }
-            webrtc::VideoFrame scaledFrame = webrtc::VideoFrame(scaled_buffer, frame.timestamp(),
-                                                          frame.render_time_ms(), m_rotation);
+            
+            webrtc::VideoFrame scaledFrame = webrtc::VideoFrame::Builder()
+                .set_video_frame_buffer(scaled_buffer)
+                .set_rotation(m_rotation)
+                .set_timestamp_rtp(frame.timestamp())
+                .set_timestamp_ms(frame.render_time_ms())
+                .set_id(frame.timestamp())
+                .build();
 
             m_broadcaster.OnFrame(scaledFrame);
         }
