@@ -336,8 +336,10 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 /* ---------------------------------------------------------------------------
 **  Destructor
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::~PeerConnectionManager()
-{
+PeerConnectionManager::~PeerConnectionManager() {
+	m_workerThread->Invoke<void>(RTC_FROM_HERE, [this] {
+		m_audioDeviceModule->Release();
+    });	
 }
 
 void PeerConnectionManager::createAudioModule(webrtc::AudioDeviceModule::AudioLayer audioLayer) {
