@@ -32,9 +32,9 @@ add_definitions(-DVERSION=\"${VERSION}\")
 
 # set CMAKE_FIND_ROOT_PATH to search package in WebRTC sysroot
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
-  set (CMAKE_FIND_ROOT_PATH ${WEBRTCROOT}/src/build/linux/debian_sid_arm-sysroot)
+  set (CMAKE_FIND_ROOT_PATH ${WEBRTCROOT}/src/build/linux/debian_bullseye_arm-sysroot)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
-  set (CMAKE_FIND_ROOT_PATH ${WEBRTCROOT}/src/build/linux/debian_sid_arm64-sysroot)
+  set (CMAKE_FIND_ROOT_PATH ${WEBRTCROOT}/src/build/linux/debian_bullseye_arm64-sysroot)
 endif()
 MESSAGE("CMAKE_FIND_ROOT_PATH = ${CMAKE_FIND_ROOT_PATH}")
 
