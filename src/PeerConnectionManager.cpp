@@ -532,7 +532,7 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 	{
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = peerConnectionObserver->getPeerConnection();
 
-		if (!this->AddStreams(peerConnection, videourl, audiourl, options))
+		if (!this->AddStreams(peerConnection.get(), videourl, audiourl, options))
 		{
 			RTC_LOG(LS_WARNING) << "Can't add stream";
 		}
@@ -549,7 +549,7 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 		rtcoptions.offer_to_receive_audio = 0;
 		std::promise<const webrtc::SessionDescriptionInterface *> localpromise;
 		rtc::scoped_refptr<CreateSessionDescriptionObserver> localSessionObserver(CreateSessionDescriptionObserver::Create(peerConnection, localpromise));
-		peerConnection->CreateOffer(localSessionObserver, rtcoptions);
+		peerConnection->CreateOffer(localSessionObserver.get(), rtcoptions);
 
 		// waiting for offer
 		std::future<const webrtc::SessionDescriptionInterface *> future = localpromise.get_future();
@@ -612,7 +612,7 @@ const Json::Value PeerConnectionManager::setAnswer(const std::string &peerid, co
 			{
 				std::promise<const webrtc::SessionDescriptionInterface *> remotepromise;
 				rtc::scoped_refptr<SetSessionDescriptionObserver> remoteSessionObserver(SetSessionDescriptionObserver::Create(peerConnection, remotepromise));
-				peerConnection->SetRemoteDescription(remoteSessionObserver, session_description);
+				peerConnection->SetRemoteDescription(remoteSessionObserver.get(), session_description);
 				// waiting for remote description
 				std::future<const webrtc::SessionDescriptionInterface *> remotefuture = remotepromise.get_future();
 				if (remotefuture.wait_for(std::chrono::milliseconds(5000)) == std::future_status::ready)
@@ -691,7 +691,7 @@ const Json::Value PeerConnectionManager::call(const std::string &peerid, const s
 			{
 				std::promise<const webrtc::SessionDescriptionInterface *> remotepromise;
 				rtc::scoped_refptr<SetSessionDescriptionObserver> remoteSessionObserver(SetSessionDescriptionObserver::Create(peerConnection, remotepromise));
-				peerConnection->SetRemoteDescription(remoteSessionObserver, session_description);
+				peerConnection->SetRemoteDescription(remoteSessionObserver.get(), session_description);
 				// waiting for remote description
 				std::future<const webrtc::SessionDescriptionInterface *> remotefuture = remotepromise.get_future();
 				if (remotefuture.wait_for(std::chrono::milliseconds(5000)) == std::future_status::ready)
@@ -706,7 +706,7 @@ const Json::Value PeerConnectionManager::call(const std::string &peerid, const s
 			}
 
 			// add local stream
-			if (!this->AddStreams(peerConnection, videourl, audiourl, options))
+			if (!this->AddStreams(peerConnection.get(), videourl, audiourl, options))
 			{
 				RTC_LOG(LS_WARNING) << "Can't add stream";
 			}
@@ -715,7 +715,7 @@ const Json::Value PeerConnectionManager::call(const std::string &peerid, const s
 			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions rtcoptions;
 			std::promise<const webrtc::SessionDescriptionInterface *> localpromise;
 			rtc::scoped_refptr<CreateSessionDescriptionObserver> localSessionObserver(CreateSessionDescriptionObserver::Create(peerConnection, localpromise));
-			peerConnection->CreateAnswer(localSessionObserver, rtcoptions);
+			peerConnection->CreateAnswer(localSessionObserver.get(), rtcoptions);
 			// waiting for answer
 			std::future<const webrtc::SessionDescriptionInterface *> localfuture = localpromise.get_future();
 			if (localfuture.wait_for(std::chrono::milliseconds(5000)) == std::future_status::ready)
@@ -1150,7 +1150,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 				}
 				else
 				{
-					rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track = m_peer_connection_factory->CreateVideoTrack(streamLabel + "_video", videoSource);
+					rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track = m_peer_connection_factory->CreateVideoTrack(streamLabel + "_video", videoSource.get());
 					if ((video_track) && (!peer_connection->AddTrack(video_track, {streamLabel}).ok()))
 					{
 						RTC_LOG(LS_ERROR) << "Adding VideoTrack to MediaStream failed";
@@ -1169,7 +1169,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 				}
 				else
 				{
-					rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track = m_peer_connection_factory->CreateAudioTrack(streamLabel + "_audio", audioSource);
+					rtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track = m_peer_connection_factory->CreateAudioTrack(streamLabel + "_audio", audioSource.get());
 					if ((audio_track) && (!peer_connection->AddTrack(audio_track, {streamLabel}).ok()))
 					{
 						RTC_LOG(LS_ERROR) << "Adding AudioTrack to MediaStream failed";

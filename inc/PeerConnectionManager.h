@@ -30,7 +30,7 @@
 class PeerConnectionManager {
 	class VideoSink : public rtc::VideoSinkInterface<webrtc::VideoFrame> {
 		public:
-			VideoSink(webrtc::VideoTrackInterface* track): m_track(track) {
+			VideoSink(const rtc::scoped_refptr<webrtc::VideoTrackInterface> & track): m_track(track) {
 				RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " track:" << m_track->id();
 				m_track->AddOrUpdateSink(this, rtc::VideoSinkWants());
 			}
@@ -51,7 +51,7 @@ class PeerConnectionManager {
 	
 	class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver {
 		public:
-			static SetSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise)
+			static SetSessionDescriptionObserver* Create(const rtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise)
 			{
 				return  new rtc::RefCountedObject<SetSessionDescriptionObserver>(pc, promise);
 			}
@@ -84,17 +84,17 @@ class PeerConnectionManager {
 				m_cancelled = true;
 			}			
 		protected:
-			SetSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise) : m_pc(pc), m_promise(promise), m_cancelled(false) {};
+			SetSessionDescriptionObserver(const rtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise) : m_pc(pc), m_promise(promise), m_cancelled(false) {};
 
 		private:
-			webrtc::PeerConnectionInterface* m_pc;
+			rtc::scoped_refptr<webrtc::PeerConnectionInterface>        m_pc;
 			std::promise<const webrtc::SessionDescriptionInterface*> & m_promise;	
 			bool                                                       m_cancelled;				
 	};
 
 	class CreateSessionDescriptionObserver : public webrtc::CreateSessionDescriptionObserver {
 		public:
-			static CreateSessionDescriptionObserver* Create(webrtc::PeerConnectionInterface* pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise)
+			static CreateSessionDescriptionObserver* Create(const rtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise)
 			{
 				return new rtc::RefCountedObject<CreateSessionDescriptionObserver>(pc,promise);
 			}
@@ -117,10 +117,10 @@ class PeerConnectionManager {
 				m_cancelled = true;
 			}
 		protected:
-			CreateSessionDescriptionObserver(webrtc::PeerConnectionInterface* pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise) : m_pc(pc), m_promise(promise), m_cancelled(false) {};
+			CreateSessionDescriptionObserver(const rtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise) : m_pc(pc), m_promise(promise), m_cancelled(false) {};
 
 		private:
-			webrtc::PeerConnectionInterface*                           m_pc;
+			rtc::scoped_refptr<webrtc::PeerConnectionInterface>        m_pc;
 			std::promise<const webrtc::SessionDescriptionInterface*> & m_promise;
 			bool                                                       m_cancelled;
 	};
@@ -221,7 +221,7 @@ class PeerConnectionManager {
 			
 			Json::Value getStats() {
 				m_statsCallback->clearReport();
-				m_pc->GetStats(m_statsCallback);
+				m_pc->GetStats(m_statsCallback.get());
 				int count=10;
 				while ( (m_statsCallback->getReport().empty()) && (--count > 0) ) {
 					std::this_thread::sleep_for(std::chrono::milliseconds(1000));					
