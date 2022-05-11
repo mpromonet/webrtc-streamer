@@ -84,7 +84,8 @@ jobs:
           version: 20.10.12
 
       - heroku/install
-      - heroku/push-docker-image
+      - heroku/push-docker-image:
+          process-types: web
       - heroku/release-docker-image
 
   # -------------------------------------
