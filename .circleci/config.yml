@@ -64,33 +64,6 @@ jobs:
             - distrib 
             
   # -------------------------------------
-  # build x86_64 without desktop without sound feature
-  # -------------------------------------
-  build_heroku:
-    <<: *defaults
-    
-    environment:
-      TAR_OPTIONS: --no-same-owner
-      WEBRTCROOT: /webrtc 
-
-    steps:
-      - attach_workspace:
-          at: /          
-      - checkout
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python3 python3-pkg-resources autoconf automake libtool git cmake make g++ xz-utils pkg-config libglib2.0-dev
-      - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
-      - run: cd ${WEBRTCROOT} && gclient sync 
-
-      - run: cmake . && make && cpack 
-      - run: mv webrtc-streamer*.tar.gz webrtc-streamer-heroku.tar.gz
-
-      - run: mkdir /distrib && cp webrtc-streamer*.tar.gz /distrib
-      - persist_to_workspace:
-          root: /
-          paths:
-            - distrib
-
-  # -------------------------------------
   # deploy to heroku
   # -------------------------------------
   deploy_heroku:
@@ -105,17 +78,11 @@ jobs:
 
       - heroku/install
       - run: |
-          cat > ~/.netrc \<< EOF
-          machine api.heroku.com
-            login $HEROKU_LOGIN
-            password $HEROKU_API_KEY
-          EOF
-          tar xzf /distrib/webrtc-streamer*heroku.tar.gz --strip=1
           [ "$GCLOUD_APIKEY" != "" ] && sed -i -e "s|https://maps.googleapis.com/maps/api/js?|https://maps.googleapis.com/maps/api/js?key=${GCLOUD_APIKEY}\&|" html/map.html
           sed -i -e 's!<head>!<head><script async src="https://www.googletagmanager.com/gtag/js?id=UA-167114443-1"></script><script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag("js", new Date());gtag("config", "UA-167114443-1");</script>!' html/index.html html/map.html html/webrtc-streamer-element.html html/webrtcstreamer.html
           git add -A -f && git -c user.name='ci' -c user.email='ci@email.org' commit -m 'heroku deployement' --allow-empty
-      - heroku/deploy-via-git:
-          force: true 
+      - heroku/push-docker-image
+      - heroku/release-docker-image
 
   # -------------------------------------
   # build for RPI2
@@ -345,12 +312,6 @@ workflows:
           filters:
             tags:
               only: /.*/            
-      - build_heroku:
-          requires:
-            - setup
-          filters:
-            tags:
-              only: /.*/                       
       - build_rpi_armv7:
           requires:
             - setup
@@ -381,21 +342,12 @@ workflows:
       - store_artifact:
           requires:
             - build_x86_64
-            - build_heroku
             - build_rpi_armv7
             - build_rpi_armv6
             - build_arm64
           filters:
             tags:
               only: /.*/            
-      - deploy_heroku:
-          requires:
-            - build_heroku
-          filters:
-            tags:
-              only: /.*/
-            branches:
-              only: master                 
       - github_release:
           requires:
             - store_artifact
@@ -426,3 +378,9 @@ workflows:
           filters:
             tags:
               only: /.*/            
+      - deploy_heroku:
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: master                 
