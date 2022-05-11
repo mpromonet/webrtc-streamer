@@ -13,14 +13,14 @@ ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
 # Install Chocolatey & packages 
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin" 
 
-RUN choco install --no-progress -y 7zip git python2 curl sed windows-sdk-10-version-2004-all
+RUN choco install --no-progress -y 7zip git python2 curl sed windows-sdk-10-version-2004-all windows-sdk-11-version-21h2-all
 RUN choco install --no-progress -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
 RUN choco install --ignoredetectedreboot --no-progress -y visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%" || IF "%ERRORLEVEL%"=="3010" EXIT 0
        
 RUN git config --global core.autocrlf false \
        && git config --global core.filemode false \
        && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git C:\depot_tools \
-       && SETX PATH "%PATH%;C:\depot_tools\;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win" \
+       && SETX PATH "C:\depot_tools\;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win;%PATH%" \
        && refreshenv \
        && call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" \
        && set \
