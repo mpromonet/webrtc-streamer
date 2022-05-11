@@ -176,7 +176,7 @@ if (WIN32)
     # webrtc
     add_definitions(-DWEBRTC_WIN -EHsc -DNOMINMAX -D__PRETTY_FUNCTION__=__FUNCTION__ -D_HAS_ITERATOR_DEBUGGING=0)
     add_definitions(-DUSE_X11 -DHAVE_SOUND -D_WINSOCKAPI_)
-    target_link_libraries (${CMAKE_PROJECT_NAME} secur32 dmoguids wmcodecdspuuid strmiids msdmo winmm dxgi d3d11 iphlpapi)
+    target_link_libraries (${CMAKE_PROJECT_NAME} secur32 dmoguids wmcodecdspuuid strmiids msdmo winmm dxgi d3d11 iphlpapi dwmapi)
 elseif (APPLE)
     add_definitions(-DNEED_XLOCALE_H=1)
     # webrtc
