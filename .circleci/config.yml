@@ -108,7 +108,7 @@ jobs:
           cat > ~/.netrc \<< EOF
           machine api.heroku.com
             login $HEROKU_LOGIN
-            password $HEROKU_PASSWORD
+            password $HEROKU_API_KEY
           EOF
           tar xzf /distrib/webrtc-streamer*heroku.tar.gz --strip=1
           [ "$GCLOUD_APIKEY" != "" ] && sed -i -e "s|https://maps.googleapis.com/maps/api/js?|https://maps.googleapis.com/maps/api/js?key=${GCLOUD_APIKEY}\&|" html/map.html
