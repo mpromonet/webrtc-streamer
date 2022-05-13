@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
 
 	std::string streamName;
 	int c = 0;
-	while ((c = getopt (argc, argv, "hVv::C:" "c:H:w:N:A:D:X" "T::t:S::s::R:W::" "a::q:ob" "n:u:U:")) != -1)
+	while ((c = getopt (argc, argv, "hVv::C:" "c:H:w:N:A:D:X" "T::t:S::s::R:W:" "a::q:ob" "n:u:U:")) != -1)
 	{
 		switch (c)
 		{
