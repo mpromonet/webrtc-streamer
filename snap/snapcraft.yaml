@@ -52,11 +52,13 @@
       - libasound2-dev
       - libpulse-dev
       - libssl-dev
+      - librtmp-dev
       stage-packages:
       - libgtk-3-0
       - libasound2
       - libpulse0
       - libssl-dev
+      - librtmp1
 
   apps:
     webrtc-streamer:
