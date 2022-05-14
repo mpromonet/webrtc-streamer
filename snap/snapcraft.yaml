@@ -32,7 +32,7 @@
         gclient sync
       build-packages:
       - curl
-      - python
+      - python3
 
     webrtc-streamer:
       after: [webrtc]
@@ -45,7 +45,6 @@
       - g++
       - make
       - pkg-config
-      - python-pkg-resources
       - python3 
       - python3-pkg-resources
       - libgtk-3-dev
