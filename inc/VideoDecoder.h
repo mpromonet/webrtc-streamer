@@ -99,14 +99,14 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
             {
                 if ((m_format.width != format.width) || (m_format.height != format.height))
                 {
-                    RTC_LOG(LS_INFO) << "format changed => set format from " << m_format.width << "x" << m_format.height << " to " << format.width << "x" << format.height;
+                    RTC_LOG(LS_INFO) << "format changed => set format from " << m_format.ToString() << " to " << format.ToString();
                     m_decoder.reset(NULL);
                 }
             }
 
             if (!this->hasDecoder())
             {
-                RTC_LOG(LS_INFO) << "RtmpVideoSource:onData SPS set format " << format.width << "x" << format.height << " fps:" << format.interval;
+                RTC_LOG(LS_INFO) << "VideoDecoder:updateFormat set format " << format.ToString();
                 m_format = format;
 
                 this->createDecoder(format);
@@ -178,17 +178,22 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
         }
 
     protected:
+        Frame getFrame() {
+            std::unique_lock<std::mutex> mlock(m_queuemutex);
+            while (m_queue.empty())
+            {
+                m_queuecond.wait(mlock);
+            }
+            Frame frame = m_queue.front();
+            m_queue.pop();		
+            mlock.unlock();
+            return frame;
+        }
+
         void DecoderThread() 
         {
             while (!m_stop) {
-                std::unique_lock<std::mutex> mlock(m_queuemutex);
-                while (m_queue.empty())
-                {
-                    m_queuecond.wait(mlock);
-                }
-                Frame frame = m_queue.front();
-                m_queue.pop();		
-                mlock.unlock();
+                Frame frame = this->getFrame();
                 
                 if (frame.m_content.get() != NULL) {
                     RTC_LOG(LS_VERBOSE) << "VideoDecoder::DecoderThread size:" << frame.m_content->size() << " ts:" << frame.m_timestamp_ms;
@@ -200,9 +205,14 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
                         input_image._frameType = frame.m_frameType;
                         input_image.ntp_time_ms_ = frame.m_timestamp_ms;
                         input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
-                        int res = m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
-                        if (res != WEBRTC_VIDEO_CODEC_OK) {
-                            RTC_LOG(LS_ERROR) << "VideoDecoder::DecoderThread failure:" << res;
+
+                        if (this->hasDecoder()) {
+                            int res = m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
+                            if (res != WEBRTC_VIDEO_CODEC_OK) {
+                                RTC_LOG(LS_ERROR) << "VideoDecoder::DecoderThread failure:" << res;
+                            }
+                        } else {
+                                RTC_LOG(LS_ERROR) << "VideoDecoder::DecoderThread no decoder";
                         }
                     }
                 }

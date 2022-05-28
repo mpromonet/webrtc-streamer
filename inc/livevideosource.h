@@ -136,7 +136,7 @@ public:
             else if (nalu_type == webrtc::H264::NaluType::kSei) 
             {
             }            
-            else if (m_decoder.hasDecoder())
+            else
             {
                 webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameDelta;
                 std::vector<uint8_t> content;
@@ -159,11 +159,6 @@ public:
                     rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
                     m_decoder.PostFrame(frame, ts, frameType);
                 }
-            }
-            else
-            {
-                RTC_LOG(LS_ERROR) << "LiveVideoSource:onData no decoder";
-                res = -1;
             }
         }
         else if (codec == "JPEG")
@@ -211,13 +206,10 @@ public:
         {
             cricket::VideoFormat videoFormat(0, 0, cricket::VideoFormat::FpsToInterval(0), FOURCC_VP9);
             m_decoder.updateFormat(videoFormat);
-            if (m_decoder.hasDecoder())
-            {
 
-                webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameKey;
-                rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(buffer, size);
-                m_decoder.PostFrame(frame, ts, frameType);
-            }
+            webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameKey;
+            rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(buffer, size);
+            m_decoder.PostFrame(frame, ts, frameType);
         }
 
         m_prevTimestamp = ts;
