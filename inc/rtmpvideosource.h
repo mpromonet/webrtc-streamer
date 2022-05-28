@@ -131,8 +131,8 @@ private:
                     RTC_LOG(LS_ERROR) << "sps " << sps->width << "x" << sps->height;
                     int fps = 25;
                     RTC_LOG(LS_INFO) << "RtmpVideoSource:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
-                    cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
-                    m_decoder.updateFormat("H264", videoFormat);
+                    cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_H264);
+                    m_decoder.updateFormat(videoFormat);
                     
                     m_cfg.insert(m_cfg.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
                     m_cfg.insert(m_cfg.end(), &body[13], &body[13 + spssize + 1]);

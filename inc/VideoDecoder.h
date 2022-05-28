@@ -18,6 +18,13 @@
 
 #include "VideoScaler.h"
 
+#define FOURCC(a, b, c, d)                                \
+  ((static_cast<uint32_t>(a)) | (static_cast<uint32_t>(b) << 8) | \
+   (static_cast<uint32_t>(c) << 16) | (static_cast<uint32_t>(d) << 24))
+
+const uint32_t FOURCC_VP9 = FOURCC('V','P','9', 0);
+#undef FOURCC
+
 class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public webrtc::DecodedImageCallback {
     private:
         class Frame
@@ -87,7 +94,7 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
             return (m_decoder.get() != NULL);
         }
 
-        void updateFormat(const std::string& codec, const cricket::VideoFormat & format) {
+        void updateFormat(const cricket::VideoFormat & format) {
             if (this->hasDecoder())
             {
                 if ((m_format.width != format.width) || (m_format.height != format.height))
@@ -102,7 +109,7 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
                 RTC_LOG(LS_INFO) << "RtmpVideoSource:onData SPS set format " << format.width << "x" << format.height << " fps:" << format.interval;
                 m_format = format;
 
-                this->createDecoder(codec, format.width, format.height);
+                this->createDecoder(format);
             }
         }
 
@@ -115,14 +122,14 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
 			m_queuecond.notify_all();
         }
 
-        void createDecoder(const std::string & codec, int width = 0, int height = 0) {
+        void createDecoder(const cricket::VideoFormat & format) {
             webrtc::VideoDecoder::Settings settings;
-            webrtc::RenderResolution resolution(width, height);
+            webrtc::RenderResolution resolution(format.width, format.height);
             settings.set_max_render_resolution(resolution);
-            if (codec == "H264") {
+            if (format.fourcc == cricket::FOURCC_H264) {
                 m_decoder=m_factory->CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kH264CodecName));
                 settings.set_codec_type(webrtc::VideoCodecType::kVideoCodecH264);
-            } else if (codec == "VP9") {
+            } else if (format.fourcc == FOURCC_VP9) {
                 m_decoder=m_factory->CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kVp9CodecName));
                 settings.set_codec_type(webrtc::VideoCodecType::kVideoCodecVP9);	                
             }

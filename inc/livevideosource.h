@@ -124,8 +124,8 @@ public:
                 {
                     int fps = 25;
                     RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
-                    cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_I420);
-                    m_decoder.updateFormat(codec, videoFormat);
+                    cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_H264);
+                    m_decoder.updateFormat(videoFormat);
                 }
             }
             else if (nalu_type == webrtc::H264::NaluType::kPps)
@@ -209,10 +209,8 @@ public:
         }
         else if (codec == "VP9")
         {
-            if (!m_decoder.hasDecoder())
-            {
-                m_decoder.createDecoder(codec);
-            }
+            cricket::VideoFormat videoFormat(0, 0, cricket::VideoFormat::FpsToInterval(0), FOURCC_VP9);
+            m_decoder.updateFormat(videoFormat);
             if (m_decoder.hasDecoder())
             {
 
