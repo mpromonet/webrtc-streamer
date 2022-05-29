@@ -32,10 +32,12 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
             public:
                 Frame(): m_timestamp_ms(0) {}
                 Frame(const rtc::scoped_refptr<webrtc::EncodedImageBuffer> & content, uint64_t timestamp_ms, webrtc::VideoFrameType frameType) : m_content(content), m_timestamp_ms(timestamp_ms), m_frameType(frameType) {}
+                Frame(const cricket::VideoFormat & format) : m_format(format) {}
             
                 rtc::scoped_refptr<webrtc::EncodedImageBuffer>   m_content;
                 uint64_t               m_timestamp_ms;
                 webrtc::VideoFrameType m_frameType;
+                cricket::VideoFormat   m_format;
         };
 
     public:
@@ -90,27 +92,13 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
             return frames;
         }
 
-        bool hasDecoder() {
-            return (m_decoder.get() != NULL);
-        }
-
-        void updateFormat(const cricket::VideoFormat & format) {
-            if (this->hasDecoder())
-            {
-                if ((m_format.width != format.width) || (m_format.height != format.height))
-                {
-                    RTC_LOG(LS_INFO) << "format changed => set format from " << m_format.ToString() << " to " << format.ToString();
-                    m_decoder.reset(NULL);
-                }
-            }
-
-            if (!this->hasDecoder())
-            {
-                RTC_LOG(LS_INFO) << "VideoDecoder:updateFormat set format " << format.ToString();
-                m_format = format;
-
-                this->createDecoder(format);
-            }
+        void postFormat(const cricket::VideoFormat & format) {
+			Frame frame(format);			
+			{
+				std::unique_lock<std::mutex> lock(m_queuemutex);
+				m_queue.push(frame);
+			}
+			m_queuecond.notify_all();
         }
 
         void PostFrame(const rtc::scoped_refptr<webrtc::EncodedImageBuffer>& content, uint64_t ts, webrtc::VideoFrameType frameType) {
@@ -120,23 +108,6 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
 				m_queue.push(frame);
 			}
 			m_queuecond.notify_all();
-        }
-
-        void createDecoder(const cricket::VideoFormat & format) {
-            webrtc::VideoDecoder::Settings settings;
-            webrtc::RenderResolution resolution(format.width, format.height);
-            settings.set_max_render_resolution(resolution);
-            if (format.fourcc == cricket::FOURCC_H264) {
-                m_decoder=m_factory->CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kH264CodecName));
-                settings.set_codec_type(webrtc::VideoCodecType::kVideoCodecH264);
-            } else if (format.fourcc == FOURCC_VP9) {
-                m_decoder=m_factory->CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kVp9CodecName));
-                settings.set_codec_type(webrtc::VideoCodecType::kVideoCodecVP9);	                
-            }
-            if (m_decoder.get() != NULL) {
-                m_decoder->Configure(settings);
-                m_decoder->RegisterDecodeCompleteCallback(this);
-            }
         }
 
 		// overide webrtc::DecodedImageCallback
@@ -178,6 +149,27 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
         }
 
     protected:
+        bool hasDecoder() {
+            return (m_decoder.get() != NULL);
+        }
+
+        void createDecoder(const cricket::VideoFormat & format) {
+            webrtc::VideoDecoder::Settings settings;
+            webrtc::RenderResolution resolution(format.width, format.height);
+            settings.set_max_render_resolution(resolution);
+            if (format.fourcc == cricket::FOURCC_H264) {
+                m_decoder=m_factory->CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kH264CodecName));
+                settings.set_codec_type(webrtc::VideoCodecType::kVideoCodecH264);
+            } else if (format.fourcc == FOURCC_VP9) {
+                m_decoder=m_factory->CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kVp9CodecName));
+                settings.set_codec_type(webrtc::VideoCodecType::kVideoCodecVP9);	                
+            }
+            if (m_decoder.get() != NULL) {
+                m_decoder->Configure(settings);
+                m_decoder->RegisterDecodeCompleteCallback(this);
+            }
+        }
+
         Frame getFrame() {
             std::unique_lock<std::mutex> mlock(m_queuemutex);
             while (m_queue.empty())
@@ -186,7 +178,7 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
             }
             Frame frame = m_queue.front();
             m_queue.pop();		
-            mlock.unlock();
+            
             return frame;
         }
 
@@ -194,7 +186,25 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
         {
             while (!m_stop) {
                 Frame frame = this->getFrame();
-                
+
+                if (frame.m_format.fourcc != 0) {
+                    cricket::VideoFormat & format = frame.m_format;
+
+                    if (this->hasDecoder()) {
+                        if ((m_format.width != format.width) || (m_format.height != format.height)) {
+                            RTC_LOG(LS_INFO) << "format changed => set format from " << m_format.ToString() << " to " << format.ToString();
+                            m_decoder.reset(NULL);
+                        }
+                    }
+
+                    if (!this->hasDecoder()) {
+                        RTC_LOG(LS_INFO) << "VideoDecoder:DecoderThread set format:" << format.ToString();
+                        m_format = format;
+
+                        this->createDecoder(format);
+                    }
+                }                
+
                 if (frame.m_content.get() != NULL) {
                     RTC_LOG(LS_VERBOSE) << "VideoDecoder::DecoderThread size:" << frame.m_content->size() << " ts:" << frame.m_timestamp_ms;
                     ssize_t size = frame.m_content->size();
