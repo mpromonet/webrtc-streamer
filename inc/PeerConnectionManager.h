@@ -318,6 +318,8 @@ class PeerConnectionManager {
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface>   getPeerConnection(const std::string& peerid);
 		const std::string                                     sanitizeLabel(const std::string &label);
 		void                                                  createAudioModule(webrtc::AudioDeviceModule::AudioLayer audioLayer);
+		std::unique_ptr<webrtc::SessionDescriptionInterface>  getAnswer(const std::string & peerid, webrtc::SessionDescriptionInterface *session_description, const std::string & videourl, const std::string & audiourl, const std::string & options);
+
 
 	protected:
 		std::unique_ptr<rtc::Thread>                                              m_signalingThread;
