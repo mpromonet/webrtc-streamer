@@ -72,7 +72,11 @@ class RequestHandler : public CivetHandler
 		// fill out
 		if (out.isNull() == false)
 		{
-            answer = Json::writeString(m_writerBuilder,out);
+            if (out.isString()) {
+                answer = out.asString();
+            } else {
+                answer = Json::writeString(m_writerBuilder,out);
+            }
             code = 200;
 		} else {
             code = 500;
@@ -136,6 +140,7 @@ class RequestHandler : public CivetHandler
             if (!reader->parse(body.c_str(), body.c_str() + body.size(), &jmessage, &errors))
             {
                 RTC_LOG(LS_WARNING) << "Received unknown message:" << body << " errors:" << errors;
+                jmessage = body;
             }
         }
         return jmessage;
