@@ -101,7 +101,15 @@ class RequestHandler : public CivetHandler
     {
         return handle(server, conn);
     }
-
+    bool handlePatch(CivetServer *server, struct mg_connection *conn)
+    {
+        return handle(server, conn);
+    }
+    bool handleDelete(CivetServer *server, struct mg_connection *conn)
+    {
+        return handle(server, conn);
+    }
+    
   private:
     HttpServerRequestHandler::httpFunction      m_func;	
     Json::StreamWriterBuilder                   m_writerBuilder;
@@ -116,23 +124,7 @@ class RequestHandler : public CivetHandler
         long long tlen = req_info->content_length;
         if (tlen > 0)
         {
-            std::string body;
-            long long nlen = 0;
-            const long long bufSize = 1024;
-            char buf[bufSize];
-            while (nlen < tlen) {
-                long long rlen = tlen - nlen;
-                if (rlen > bufSize) {
-                    rlen = bufSize;
-                }
-                rlen = mg_read(conn, buf, (size_t)rlen);
-                if (rlen <= 0) {
-                    break;
-                }
-                body.append(buf, rlen);
-
-                nlen += rlen;
-            }
+            std::string body = CivetServer::getPostData(conn);
 
             // parse in
             std::unique_ptr<Json::CharReader> reader(m_readerBuilder.newCharReader());
@@ -164,7 +156,9 @@ class PrometheusHandler : public CivetHandler
 
     bool handleGet(CivetServer *server, struct mg_connection *conn)
     {
+#ifndef WIN32
         updateMetrics();
+#endif        
 
         auto collected = m_registry.Collect();
 
@@ -186,9 +180,7 @@ class PrometheusHandler : public CivetHandler
     }
 
   private:
-  #ifdef WIN32
-    void updateMetrics() {}
-  #else
+  #ifndef WIN32
     void updateMetrics() {
         long fds = get_fds_total();
         m_fds.Set(fds);
