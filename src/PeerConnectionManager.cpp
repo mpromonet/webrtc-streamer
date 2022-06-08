@@ -261,21 +261,25 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 				CivetServer::getParam(req_info->query_string, "options", options);
 			}
 
-			std::string offersdp(in.asString());
-			RTC_LOG(LS_ERROR) << "offer:" << offersdp;
 			std::string answersdp;
-			webrtc::SessionDescriptionInterface *session_description(webrtc::CreateSessionDescription(webrtc::SessionDescriptionInterface::kOffer, offersdp, NULL));
-			if (!session_description) {
-				RTC_LOG(LS_WARNING) << "Can't parse received session description message.";
+			if (strcmp(req_info->request_method,"DELETE")==0) {
+				this->hangUp(peerid);
 			} else {
-				std::unique_ptr<webrtc::SessionDescriptionInterface> desc = this->getAnswer(peerid, session_description, videourl, audiourl, options);
-				if (desc.get()) {
-					desc->ToString(&answersdp);
+				std::string offersdp(in.asString());
+				RTC_LOG(LS_ERROR) << "offer:" << offersdp;
+				webrtc::SessionDescriptionInterface *session_description(webrtc::CreateSessionDescription(webrtc::SessionDescriptionInterface::kOffer, offersdp, NULL));
+				if (!session_description) {
+					RTC_LOG(LS_WARNING) << "Can't parse received session description message.";
 				} else {
-					RTC_LOG(LS_ERROR) << "Failed to create answer - no SDP";
+					std::unique_ptr<webrtc::SessionDescriptionInterface> desc = this->getAnswer(peerid, session_description, videourl, audiourl, options);
+					if (desc.get()) {
+						desc->ToString(&answersdp);
+					} else {
+						RTC_LOG(LS_ERROR) << "Failed to create answer - no SDP";
+					}
 				}
+				RTC_LOG(LS_ERROR) << "anwser:" << answersdp;
 			}
-			RTC_LOG(LS_ERROR) << "anwser:" << answersdp;
 			return answersdp;
 	};
 
