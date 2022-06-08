@@ -173,20 +173,17 @@ class PeerConnectionManager {
 
 	class PeerConnectionObserver : public webrtc::PeerConnectionObserver {
 		public:
-			PeerConnectionObserver(PeerConnectionManager* peerConnectionManager, const std::string& peerid, const webrtc::PeerConnectionInterface::RTCConfiguration & config, int minPort, int maxPort)
+			PeerConnectionObserver(PeerConnectionManager* peerConnectionManager, const std::string& peerid, const webrtc::PeerConnectionInterface::RTCConfiguration & config)
 			: m_peerConnectionManager(peerConnectionManager)
 			, m_peerid(peerid)
 			, m_localChannel(NULL)
 			, m_remoteChannel(NULL)
 			, m_iceCandidateList(Json::arrayValue)
-			, m_deleting(false)
-			, m_networkManager() {
-				std::unique_ptr<cricket::PortAllocator> portAllocator(new cricket::BasicPortAllocator(&m_networkManager));
-				portAllocator->SetPortRange(minPort, maxPort);
+			, m_deleting(false) {
 
 				RTC_LOG(LS_INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
 				webrtc::PeerConnectionDependencies dependencies(this);
-				dependencies.allocator = std::move(portAllocator);
+
 				webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::PeerConnectionInterface>> result = m_peerConnectionManager->m_peer_connection_factory->CreatePeerConnectionOrError(config, std::move(dependencies));
 				if (result.ok()) {
 					m_pc = result.MoveValue();
@@ -284,7 +281,6 @@ class PeerConnectionManager {
 			rtc::scoped_refptr<PeerConnectionStatsCollectorCallback> m_statsCallback;
 			std::unique_ptr<VideoSink>                               m_videosink;
 			bool                                                     m_deleting;
-			rtc::BasicNetworkManager                                 m_networkManager;
 	};
 
 	public:

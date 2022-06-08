@@ -1029,10 +1029,14 @@ PeerConnectionManager::PeerConnectionObserver *PeerConnectionManager::CreatePeer
 			maxPort = std::stoi(port);
 		}
 	}
+
+	config.port_allocator_config.min_port = minPort;
+	config.port_allocator_config.max_port = maxPort;
+
 	RTC_LOG(LS_INFO) << __FUNCTION__ << "CreatePeerConnection webrtcPortRange:" << minPort << ":" << maxPort;
 
 	RTC_LOG(LS_INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
-	PeerConnectionObserver *obs = new PeerConnectionObserver(this, peerid, config, minPort, maxPort);
+	PeerConnectionObserver *obs = new PeerConnectionObserver(this, peerid, config);
 	if (!obs)
 	{
 		RTC_LOG(LS_ERROR) << __FUNCTION__ << "CreatePeerConnection failed";
