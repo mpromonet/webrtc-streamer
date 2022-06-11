@@ -31,11 +31,11 @@ class PeerConnectionManager {
 	class VideoSink : public rtc::VideoSinkInterface<webrtc::VideoFrame> {
 		public:
 			VideoSink(const rtc::scoped_refptr<webrtc::VideoTrackInterface> & track): m_track(track) {
-				RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " track:" << m_track->id();
+				RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " videotrack:" << m_track->id();
 				m_track->AddOrUpdateSink(this, rtc::VideoSinkWants());
 			}
 			virtual ~VideoSink() {
-				RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " track:" << m_track->id();
+				RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " videotrack:" << m_track->id();
 				m_track->RemoveSink(this);
 			}		
 
@@ -47,6 +47,29 @@ class PeerConnectionManager {
 
 		protected:
 			rtc::scoped_refptr<webrtc::VideoTrackInterface> m_track;
+	};
+
+	class AudioSink : public webrtc::AudioTrackSinkInterface {
+		public:
+			AudioSink(const rtc::scoped_refptr<webrtc::AudioTrackInterface> & track): m_track(track) {
+				RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " audiotrack:" << m_track->id();
+				m_track->AddSink(this);
+			}
+			virtual ~AudioSink() {
+				RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " audiotrack:" << m_track->id();
+				m_track->RemoveSink(this);
+			}		
+
+			virtual void OnData(const void* audio_data,
+								int bits_per_sample,
+								int sample_rate,
+								size_t number_of_channels,
+								size_t number_of_frames) {
+				RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << "size:" << bits_per_sample << " format:" << sample_rate << "/" << number_of_channels << "/" << number_of_frames;
+			}
+
+		protected:
+			rtc::scoped_refptr<webrtc::AudioTrackInterface> m_track;
 	};
 	
 	class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver {
@@ -235,10 +258,16 @@ class PeerConnectionManager {
 				if (videoTracks.size()>0) {					
 					m_videosink.reset(new VideoSink(videoTracks.at(0)));
 				}
+				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " nb audio tracks:" << stream->GetAudioTracks().size();
+				webrtc::AudioTrackVector audioTracks = stream->GetAudioTracks();
+				if (audioTracks.size()>0) {					
+					m_audiosink.reset(new AudioSink(audioTracks.at(0)));
+				}
 			}
 			virtual void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
 				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__;
 				m_videosink.reset();
+				m_audiosink.reset();
 			}
 			virtual void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
 				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__;
@@ -280,6 +309,7 @@ class PeerConnectionManager {
 			Json::Value                                              m_iceCandidateList;
 			rtc::scoped_refptr<PeerConnectionStatsCollectorCallback> m_statsCallback;
 			std::unique_ptr<VideoSink>                               m_videosink;
+			std::unique_ptr<AudioSink>                               m_audiosink;
 			bool                                                     m_deleting;
 	};
 
