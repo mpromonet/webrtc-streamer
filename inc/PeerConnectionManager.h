@@ -202,7 +202,8 @@ class PeerConnectionManager {
 			, m_localChannel(NULL)
 			, m_remoteChannel(NULL)
 			, m_iceCandidateList(Json::arrayValue)
-			, m_deleting(false) {
+			, m_deleting(false)
+			, m_creationTime(rtc::TimeMicros()) {
 
 				RTC_LOG(LS_INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
 				webrtc::PeerConnectionDependencies dependencies(this);
@@ -299,6 +300,8 @@ class PeerConnectionManager {
 			virtual void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState) {
 			}
 
+			uint64_t    getCreationTime() { return m_creationTime; }
+			std::string getPeerId() { return m_peerid; }
 
 		private:
 			PeerConnectionManager*                                   m_peerConnectionManager;
@@ -311,10 +314,12 @@ class PeerConnectionManager {
 			std::unique_ptr<VideoSink>                               m_videosink;
 			std::unique_ptr<AudioSink>                               m_audiosink;
 			bool                                                     m_deleting;
+			uint64_t                                                 m_creationTime;
+
 	};
 
 	public:
-		PeerConnectionManager(const std::list<std::string> & iceServerList, const Json::Value & config, webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter, const std::string& webrtcUdpPortRange, bool useNullCodec = true, bool usePlanB = true);
+		PeerConnectionManager(const std::list<std::string> & iceServerList, const Json::Value & config, webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string& publishFilter, const std::string& webrtcUdpPortRange, bool useNullCodec = true, bool usePlanB = true, int maxpc = 0);
 		virtual ~PeerConnectionManager();
 
 		bool InitializePeerConnection();
@@ -345,6 +350,7 @@ class PeerConnectionManager {
 		const std::string                                     sanitizeLabel(const std::string &label);
 		void                                                  createAudioModule(webrtc::AudioDeviceModule::AudioLayer audioLayer);
 		std::unique_ptr<webrtc::SessionDescriptionInterface>  getAnswer(const std::string & peerid, webrtc::SessionDescriptionInterface *session_description, const std::string & videourl, const std::string & audiourl, const std::string & options);
+		std::string                                           getOldestPeerCannection();
 
 
 	protected:
@@ -369,5 +375,6 @@ class PeerConnectionManager {
 		std::string																  m_webrtcPortRange;
 		bool                                                                      m_useNullCodec;
 		bool                                                                      m_usePlanB;
+		int                                                                       m_maxpc;
 };
 

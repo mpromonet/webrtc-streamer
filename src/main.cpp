@@ -63,6 +63,7 @@ int main(int argc, char* argv[])
 	Json::Value config;  
 	bool        useNullCodec = false;
 	bool        usePlanB = false;
+	int         maxpc = 0;
 	std::string webrtcTrialsFields = "WebRTC-FrameDropper/Disabled/";
 
 	std::string httpAddress("0.0.0.0:");
@@ -76,7 +77,7 @@ int main(int argc, char* argv[])
 
 	std::string streamName;
 	int c = 0;
-	while ((c = getopt (argc, argv, "hVv::C:" "c:H:w:N:A:D:X" "T::t:S::s::R:W:" "a::q:ob" "n:u:U:")) != -1)
+	while ((c = getopt (argc, argv, "hVv::C:" "c:H:w:N:A:D:Xm:" "T::t:S::s::R:W:" "a::q:ob" "n:u:U:")) != -1)
 	{
 		switch (c)
 		{
@@ -87,6 +88,7 @@ int main(int argc, char* argv[])
 			case 'A': passwdFile = optarg;         break;
 			case 'D': authDomain = optarg;         break;
 			case 'X': disableXframeOptions = true; break;
+			case 'm': maxpc = atoi(optarg);        break;
 
 			case 'T': localturnurl = optarg ? optarg : defaultlocalturnurl; turnurl = localturnurl; break;
 			case 't': turnurl = optarg;                                                             break;
@@ -199,7 +201,7 @@ int main(int argc, char* argv[])
 	// init trials fields
 	webrtc::field_trial::InitFieldTrialsFromString(webrtcTrialsFields.c_str());
 
-	webRtcServer = new PeerConnectionManager(iceServerList, config["urls"], audioLayer, publishFilter, localWebrtcUdpPortRange, useNullCodec, usePlanB);
+	webRtcServer = new PeerConnectionManager(iceServerList, config["urls"], audioLayer, publishFilter, localWebrtcUdpPortRange, useNullCodec, usePlanB, maxpc);
 	if (!webRtcServer->InitializePeerConnection())
 	{
 		std::cout << "Cannot Initialize WebRTC server" << std::endl;

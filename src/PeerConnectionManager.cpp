@@ -189,7 +189,7 @@ webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencie
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange, bool useNullCodec, bool usePlanB)
+PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange, bool useNullCodec, bool usePlanB, int maxpc)
 	: m_signalingThread(rtc::Thread::Create()),
 	  m_workerThread(rtc::Thread::Create()),
 	  m_audioDecoderfactory(webrtc::CreateBuiltinAudioDecoderFactory()), 
@@ -200,7 +200,8 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 	  m_publishFilter(publishFilter), 
 	  m_webrtcPortRange(webrtcUdpPortRange),
 	  m_useNullCodec(useNullCodec), 
-	  m_usePlanB(usePlanB)
+	  m_usePlanB(usePlanB),
+	  m_maxpc(maxpc)
 {
 	m_workerThread->SetName("worker", NULL);
 	m_workerThread->Start();
@@ -1002,10 +1003,35 @@ bool PeerConnectionManager::InitializePeerConnection()
 }
 
 /* ---------------------------------------------------------------------------
+**  get oldest PeerConnection
+** -------------------------------------------------------------------------*/
+std::string PeerConnectionManager::getOldestPeerCannection()
+{
+	uint64_t oldestpc = std::numeric_limits<uint64_t>::max();
+	std::string oldestpeerid;
+	std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
+	if ( (m_maxpc > 0) && (m_peer_connectionobs_map.size() >= m_maxpc) ) {
+		for (auto it : m_peer_connectionobs_map) {
+			uint64_t creationTime = it.second->getCreationTime();
+			if (creationTime < oldestpc) {
+				oldestpc = creationTime;
+				oldestpeerid = it.second->getPeerId();
+			}
+		}
+	}
+	return oldestpeerid;
+}
+
+/* ---------------------------------------------------------------------------
 **  create a new PeerConnection
 ** -------------------------------------------------------------------------*/
 PeerConnectionManager::PeerConnectionObserver *PeerConnectionManager::CreatePeerConnection(const std::string &peerid)
 {
+	std::string oldestpeerid = this->getOldestPeerCannection();
+	if (!oldestpeerid.empty()) {
+		this->hangUp(oldestpeerid);
+	}
+
 	webrtc::PeerConnectionInterface::RTCConfiguration config;
 	if (m_usePlanB) {
 		config.sdp_semantics = webrtc::SdpSemantics::kPlanB;
@@ -1037,9 +1063,8 @@ PeerConnectionManager::PeerConnectionObserver *PeerConnectionManager::CreatePeer
 	config.port_allocator_config.min_port = minPort;
 	config.port_allocator_config.max_port = maxPort;
 
-	RTC_LOG(LS_INFO) << __FUNCTION__ << "CreatePeerConnection webrtcPortRange:" << minPort << ":" << maxPort;
+	RTC_LOG(LS_INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid << " webrtcPortRange:" << minPort << ":" << maxPort;
 
-	RTC_LOG(LS_INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
 	PeerConnectionObserver *obs = new PeerConnectionObserver(this, peerid, config);
 	if (!obs)
 	{
