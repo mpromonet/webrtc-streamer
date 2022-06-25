@@ -64,18 +64,19 @@ class RequestHandler : public CivetHandler
 		Json::Value  in = this->getInputMessage(req_info, conn);
 		
 		// invoke API implementation
-		Json::Value out(m_func(req_info, in));
+		std::pair<std::map<std::string,std::string>,Json::Value> out(m_func(req_info, in));
 		
         int code;
         std::string answer;
 
 		// fill out
-		if (out.isNull() == false)
+        Json::Value& body = out.second;
+		if (body.isNull() == false)
 		{
-            if (out.isString()) {
-                answer = out.asString();
+            if (body.isString()) {
+                answer = body.asString();
             } else {
-                answer = Json::writeString(m_writerBuilder,out);
+                answer = Json::writeString(m_writerBuilder,body);
             }
             code = 200;
 		} else {
@@ -88,6 +89,10 @@ class RequestHandler : public CivetHandler
         mg_printf(conn,"Access-Control-Allow-Origin: *\r\n");
         mg_printf(conn,"Content-Type: text/plain\r\n");
         mg_printf(conn,"Content-Length: %zd\r\n", answer.size());
+        std::map<std::string,std::string> & headers = out.first;
+        for (auto & it : headers) {
+            mg_printf(conn,"%s: %s\r\n", it.first.c_str(), it.second.c_str());
+        } 
         mg_printf(conn,"\r\n");
         mg_write(conn,answer.c_str(),answer.size());
         
@@ -284,9 +289,9 @@ class WebsocketHandler: public CivetWebSocketHandler {
                             
                     // invoke API implementation
                     const struct mg_request_info *req_info = mg_get_request_info(conn);
-                    Json::Value out(func(req_info, in.get("body","")));
+                    std::pair<std::map<std::string,std::string>,Json::Value> out(func(req_info, in.get("body","")));
                     
-                    answer = Json::writeString(m_jsonWriterBuilder,out);
+                    answer = Json::writeString(m_jsonWriterBuilder,out.second);
                 } else {
                     answer = mg_get_response_code_text(conn, 500);
                 }

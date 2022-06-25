@@ -218,23 +218,23 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 	m_videoaudiomap = getV4l2AlsaMap();
 
 	// register api in http server
-	m_func["/api/getMediaList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
-			return this->getMediaList();
+	m_func["/api/getMediaList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
+			return std::make_pair(std::map<std::string,std::string>(),this->getMediaList());
 	};
 
-	m_func["/api/getVideoDeviceList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
-			return this->getVideoDeviceList();
+	m_func["/api/getVideoDeviceList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
+			return std::make_pair(std::map<std::string,std::string>(),this->getVideoDeviceList());
 	};
 
-	m_func["/api/getAudioDeviceList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
-			return this->getAudioDeviceList();
+	m_func["/api/getAudioDeviceList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
+			return std::make_pair(std::map<std::string,std::string>(),this->getAudioDeviceList());
 	};
 
-	m_func["/api/getIceServers"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
-		return this->getIceServers(req_info->remote_addr);
+	m_func["/api/getIceServers"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
+		return std::make_pair(std::map<std::string,std::string>(),this->getIceServers(req_info->remote_addr));
 	};
 
-	m_func["/api/call"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {	
+	m_func["/api/call"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {	
 			std::string peerid;
 			std::string url;
 			std::string audiourl;
@@ -246,10 +246,10 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 				CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
 				CivetServer::getParam(req_info->query_string, "options", options);
 			}
-			return this->call(peerid, url, audiourl, options, in);
+			return std::make_pair(std::map<std::string,std::string>(),this->call(peerid, url, audiourl, options, in));
 	};
 
-	m_func["/api/whip"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {	
+	m_func["/api/whip"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {	
 			std::string peerid;
 			std::string videourl;
 			std::string audiourl;
@@ -281,19 +281,21 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 				}
 				RTC_LOG(LS_ERROR) << "anwser:" << answersdp;
 			}
-			return answersdp;
+			std::map<std::string,std::string> headers;
+			headers["location"] = req_info->request_uri;
+			return std::make_pair(headers,answersdp);
 	};
 
-	m_func["/api/hangup"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
+	m_func["/api/hangup"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
 			std::string peerid;
 			if (req_info->query_string)
 			{
 				CivetServer::getParam(req_info->query_string, "peerid", peerid);
 			}
-			return this->hangUp(peerid);
+			return std::make_pair(std::map<std::string,std::string>(),this->hangUp(peerid));
 	};
 
-	m_func["/api/createOffer"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
+	m_func["/api/createOffer"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
 			std::string peerid;
 			std::string url;
 			std::string audiourl;
@@ -305,48 +307,48 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 				CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
 				CivetServer::getParam(req_info->query_string, "options", options);
 			}
-			return this->createOffer(peerid, url, audiourl, options);
+			return std::make_pair(std::map<std::string,std::string>(),this->createOffer(peerid, url, audiourl, options));
 	};
-	m_func["/api/setAnswer"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
+	m_func["/api/setAnswer"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
 			std::string peerid;
 			if (req_info->query_string)
 			{
 				CivetServer::getParam(req_info->query_string, "peerid", peerid);
 			}
-			return this->setAnswer(peerid, in);
+			return std::make_pair(std::map<std::string,std::string>(),this->setAnswer(peerid, in));
 	};
 
-	m_func["/api/getIceCandidate"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
+	m_func["/api/getIceCandidate"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
 			std::string peerid;
 			if (req_info->query_string)
 			{
 				CivetServer::getParam(req_info->query_string, "peerid", peerid);
 			}
-			return this->getIceCandidateList(peerid);
+			return std::make_pair(std::map<std::string,std::string>(),this->getIceCandidateList(peerid));
 	};
 
-	m_func["/api/addIceCandidate"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
+	m_func["/api/addIceCandidate"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
 			std::string peerid;
 			if (req_info->query_string)
 			{
 				CivetServer::getParam(req_info->query_string, "peerid", peerid);
 			}
-			return this->addIceCandidate(peerid, in);
+			return std::make_pair(std::map<std::string,std::string>(),this->addIceCandidate(peerid, in));
 	};
 
-	m_func["/api/getPeerConnectionList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
-			return this->getPeerConnectionList();
+	m_func["/api/getPeerConnectionList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
+			return std::make_pair(std::map<std::string,std::string>(),this->getPeerConnectionList());
 	};
 
-	m_func["/api/getStreamList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
-			return this->getStreamList();
+	m_func["/api/getStreamList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
+			return std::make_pair(std::map<std::string,std::string>(),this->getStreamList());
 	};
 
-	m_func["/api/version"] = [](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
+	m_func["/api/version"] = [](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
 		Json::Value answer(VERSION);
-		return answer;
+		return std::make_pair(std::map<std::string,std::string>(), answer);
 	};
-	m_func["/api/log"] = [](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
+	m_func["/api/log"] = [](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
 		std::string loglevel;
 		if (req_info->query_string)
 		{
@@ -357,15 +359,15 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 			}
 		}
 		Json::Value answer(rtc::LogMessage::GetLogToDebug());
-		return answer;
+		return std::make_pair(std::map<std::string,std::string>(), answer);
 	};
-	m_func["/api/help"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> Json::Value {
+	m_func["/api/help"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
 		Json::Value answer;
 		for (auto it : m_func)
 		{
 			answer.append(it.first);
 		}
-		return answer;
+		return std::make_pair(std::map<std::string,std::string>(), answer);
 	};
 }
 
