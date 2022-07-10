@@ -249,41 +249,8 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 			return std::make_pair(std::map<std::string,std::string>(),this->call(peerid, url, audiourl, options, in));
 	};
 
-	m_func["/api/whip"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {	
-			std::string peerid;
-			std::string videourl;
-			std::string audiourl;
-			std::string options;
-			if (req_info->query_string)
-			{
-				CivetServer::getParam(req_info->query_string, "peerid", peerid);
-				CivetServer::getParam(req_info->query_string, "url", videourl);
-				CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
-				CivetServer::getParam(req_info->query_string, "options", options);
-			}
-
-			std::string answersdp;
-			if (strcmp(req_info->request_method,"DELETE")==0) {
-				this->hangUp(peerid);
-			} else {
-				std::string offersdp(in.asString());
-				RTC_LOG(LS_ERROR) << "offer:" << offersdp;
-				webrtc::SessionDescriptionInterface *session_description(webrtc::CreateSessionDescription(webrtc::SessionDescriptionInterface::kOffer, offersdp, NULL));
-				if (!session_description) {
-					RTC_LOG(LS_WARNING) << "Can't parse received session description message.";
-				} else {
-					std::unique_ptr<webrtc::SessionDescriptionInterface> desc = this->getAnswer(peerid, session_description, videourl, audiourl, options);
-					if (desc.get()) {
-						desc->ToString(&answersdp);
-					} else {
-						RTC_LOG(LS_ERROR) << "Failed to create answer - no SDP";
-					}
-				}
-				RTC_LOG(LS_ERROR) << "anwser:" << answersdp;
-			}
-			std::map<std::string,std::string> headers;
-			headers["location"] = req_info->request_uri;
-			return std::make_pair(headers,answersdp);
+	m_func["/api/whip"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
+			return this->whip(req_info, in);	
 	};
 
 	m_func["/api/hangup"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
@@ -378,6 +345,44 @@ PeerConnectionManager::~PeerConnectionManager() {
 	m_workerThread->Invoke<void>(RTC_FROM_HERE, [this] {
 		m_audioDeviceModule->Release();
     });	
+}
+
+std::pair<std::map<std::string,std::string>,Json::Value> PeerConnectionManager::whip(const struct mg_request_info *req_info, const Json::Value &in) {
+	std::string peerid;
+	std::string videourl;
+	std::string audiourl;
+	std::string options;
+	if (req_info->query_string)
+	{
+		CivetServer::getParam(req_info->query_string, "peerid", peerid);
+		CivetServer::getParam(req_info->query_string, "url", videourl);
+		CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
+		CivetServer::getParam(req_info->query_string, "options", options);
+	}
+
+	std::map<std::string,std::string> headers;
+	std::string answersdp;
+	if (strcmp(req_info->request_method,"DELETE")==0) {
+		this->hangUp(peerid);
+	} else if (strcmp(req_info->request_method,"PATCH")==0) {
+	} else {
+		std::string offersdp(in.asString());
+		RTC_LOG(LS_ERROR) << "offer:" << offersdp;
+		webrtc::SessionDescriptionInterface *session_description(webrtc::CreateSessionDescription(webrtc::SessionDescriptionInterface::kOffer, offersdp, NULL));
+		if (!session_description) {
+			RTC_LOG(LS_WARNING) << "Can't parse received session description message.";
+		} else {
+			std::unique_ptr<webrtc::SessionDescriptionInterface> desc = this->getAnswer(peerid, session_description, videourl, audiourl, options);
+			if (desc.get()) {
+				desc->ToString(&answersdp);
+			} else {
+				RTC_LOG(LS_ERROR) << "Failed to create answer - no SDP";
+			}
+		}
+		RTC_LOG(LS_ERROR) << "anwser:" << answersdp;
+		headers["location"] = req_info->request_uri;
+	}
+	return std::make_pair(headers,answersdp);
 }
 
 void PeerConnectionManager::createAudioModule(webrtc::AudioDeviceModule::AudioLayer audioLayer) {

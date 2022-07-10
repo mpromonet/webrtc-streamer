@@ -337,6 +337,7 @@ class PeerConnectionManager {
 		const Json::Value getStreamList();
 		const Json::Value createOffer(const std::string &peerid, const std::string & videourl, const std::string & audiourl, const std::string & options);
 		const Json::Value setAnswer(const std::string &peerid, const Json::Value& jmessage);
+		std::pair<std::map<std::string,std::string>,Json::Value> whip(const struct mg_request_info *req_info, const Json::Value &in);
 
 
 	protected:
