@@ -13,7 +13,9 @@
 #include "api/media_stream_interface.h"
 #include "api/video/i420_buffer.h"
 
-class VideoScaler :  public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public rtc::VideoSourceInterface<webrtc::VideoFrame> 
+#include "VideoSource.h"
+
+class VideoScaler :  public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public VideoSource 
 {
 public:
 
@@ -163,22 +165,10 @@ public:
         }
     }
 
-    void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink, const rtc::VideoSinkWants &wants) override
-    {
-        m_broadcaster.AddOrUpdateSink(sink, wants);
-    }
-
-    void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink) override
-    {
-        m_broadcaster.RemoveSink(sink);
-    }
-
     int width() { return m_roi_width;  }
     int height() { return m_roi_height;  }
 
 private:
-    rtc::VideoBroadcaster  m_broadcaster;
-
     int                    m_width;
     int                    m_height;
     webrtc::VideoRotation  m_rotation;

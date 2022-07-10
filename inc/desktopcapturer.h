@@ -17,12 +17,12 @@
 #include "libyuv/convert.h"
 
 #include "media/base/video_common.h"
-#include "media/base/video_broadcaster.h"
 #include "modules/desktop_capture/desktop_capturer.h"
 #include "modules/desktop_capture/desktop_capture_options.h"
 
+#include "VideoSource.h"
 
-class DesktopCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public webrtc::DesktopCapturer::Callback  {
+class DesktopCapturer : public VideoSource, public webrtc::DesktopCapturer::Callback  {
 	public:
 		DesktopCapturer(const std::map<std::string,std::string> & opts) : m_width(0), m_height(0) {
 			if (opts.find("width") != opts.end()) {
@@ -49,15 +49,6 @@ class DesktopCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, pu
 		// overide webrtc::DesktopCapturer::Callback
 		virtual void OnCaptureResult(webrtc::DesktopCapturer::Result result, std::unique_ptr<webrtc::DesktopFrame> frame);
 		
-		// overide rtc::VideoSourceInterface<webrtc::VideoFrame>
-		virtual void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink, const rtc::VideoSinkWants& wants) {
-			broadcaster_.AddOrUpdateSink(sink, wants);
-		}
-
-		virtual void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) {
-			broadcaster_.RemoveSink(sink);
-		}
-
         int width() { return m_width;  }
         int height() { return m_height;  }        
 
@@ -68,7 +59,6 @@ class DesktopCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, pu
 		int                                      m_width;		
 		int                                      m_height;	
 		bool                                     m_isrunning;
-		rtc::VideoBroadcaster                    broadcaster_;
 };
 
 

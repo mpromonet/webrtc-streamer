@@ -976,10 +976,6 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 			content["streams"] = streams;
 		}
 		
-
-		// get Stats
-		//		content["stats"] = it.second->getStats();
-
 		Json::Value pc;
 		pc[it.first] = content;
 		value.append(pc);

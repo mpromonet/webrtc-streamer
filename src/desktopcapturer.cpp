@@ -35,7 +35,7 @@ void DesktopCapturer::OnCaptureResult(webrtc::DesktopCapturer::Result result, st
 		if (conversionResult >= 0) {
 			webrtc::VideoFrame videoFrame(I420buffer, webrtc::VideoRotation::kVideoRotation_0, rtc::TimeMicros());
 			if ( (m_height == 0) && (m_width == 0) ) {
-				broadcaster_.OnFrame(videoFrame);	
+				m_broadcaster.OnFrame(videoFrame);	
 
 			} else {
 				int height = m_height;
@@ -58,7 +58,7 @@ void DesktopCapturer::OnCaptureResult(webrtc::DesktopCapturer::Result result, st
 					.build();
 				
 						
-				broadcaster_.OnFrame(frame);
+				m_broadcaster.OnFrame(frame);
 			}
 		} else {
 			RTC_LOG(LS_ERROR) << "DesktopCapturer:OnCaptureResult conversion error:" << conversionResult;

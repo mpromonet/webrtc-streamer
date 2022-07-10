@@ -10,9 +10,9 @@
 #pragma once
 
 #include "modules/video_capture/video_capture_factory.h"
-#include "media/base/video_broadcaster.h"
+#include "VideoSource.h"
 
-class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public rtc::VideoSourceInterface<webrtc::VideoFrame> {
+class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public VideoSource {
  public:
 	static VcmCapturer* Create(const std::string & videourl, const std::map<std::string, std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
 		std::unique_ptr<VcmCapturer> vcm_capturer(new VcmCapturer());
@@ -120,16 +120,7 @@ class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public 
 	} 
   }
 
-  	void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink, const rtc::VideoSinkWants& wants) override {
-		m_broadcaster.AddOrUpdateSink(sink, wants);
-  	}
-
-  	void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) override {
-		m_broadcaster.RemoveSink(sink);
-  	}
-
 	int                                            m_width;		
  	int                                            m_height;
 	rtc::scoped_refptr<webrtc::VideoCaptureModule> m_vcm;
-	rtc::VideoBroadcaster                          m_broadcaster;
 };

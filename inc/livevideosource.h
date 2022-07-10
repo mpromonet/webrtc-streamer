@@ -35,21 +35,18 @@
 #include "VideoDecoder.h"
 
 template <typename T>
-class LiveVideoSource : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public T::Callback
+class LiveVideoSource : public VideoSourceWithDecoder, public T::Callback
 {
 public:
     LiveVideoSource(const std::string &uri, const std::map<std::string, std::string> &opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory, bool wait) :
         m_env(m_stop),
 	    m_liveclient(m_env, this, uri.c_str(), opts, rtc::LogMessage::GetLogToDebug()<=2),
-	    m_decoder(opts, videoDecoderFactory, wait) {
+	    VideoSourceWithDecoder(opts, videoDecoderFactory, wait) {
             this->Start();
     }
     virtual ~LiveVideoSource() {
             this->Stop();
     }
-
-    int width() { return m_decoder.width();  }
-    int height() { return m_decoder.height();  }        
 
     void Start()
     {
@@ -220,16 +217,6 @@ public:
         return (res == 0);
     }
 
-    // overide rtc::VideoSourceInterface<webrtc::VideoFrame>
-    void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink, const rtc::VideoSinkWants &wants)
-    {
-        m_decoder.AddOrUpdateSink(sink, wants);
-    }
-
-    void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink)
-    {
-        m_decoder.RemoveSink(sink);
-    }    
 
 private:
     char        m_stop;
@@ -243,6 +230,5 @@ private:
     std::vector<uint8_t>               m_cfg;
     std::map<std::string, std::string> m_codec;
 
-    VideoDecoder                       m_decoder;
     uint64_t                           m_prevTimestamp;
 };

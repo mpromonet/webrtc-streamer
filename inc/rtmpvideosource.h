@@ -32,7 +32,7 @@
 #include <librtmp/rtmp.h>
 #include <librtmp/log.h>
 
-class RtmpVideoSource : public rtc::VideoSourceInterface<webrtc::VideoFrame>
+class RtmpVideoSource : public VideoSourceWithDecoder
 {
 public:
     static RtmpVideoSource *Create(const std::string &url, const std::map<std::string, std::string> &opts, std::unique_ptr<webrtc::VideoDecoderFactory> &videoDecoderFactory)
@@ -46,14 +46,11 @@ public:
         RTMP_Close(&m_rtmp);
     }
     
-    int width() { return m_decoder.width();  }
-    int height() { return m_decoder.height();  }
-
 private:
     RtmpVideoSource(const std::string &uri, const std::map<std::string, std::string> &opts, std::unique_ptr<webrtc::VideoDecoderFactory> &videoDecoderFactory) : 
         m_stop(false),
         m_url(uri),
-        m_decoder(opts, videoDecoderFactory)
+        VideoSourceWithDecoder(opts, videoDecoderFactory)
     {
         RTMP_Init(&m_rtmp);
         RTMP_LogSetOutput(stderr);
@@ -98,17 +95,6 @@ private:
             }
         }
         RTC_LOG(LS_INFO) << "RtmpVideoSource::CaptureThread end";
-    }
-
-    // overide rtc::VideoSourceInterface<webrtc::VideoFrame>
-    void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink, const rtc::VideoSinkWants &wants)
-    {
-        m_decoder.AddOrUpdateSink(sink, wants);
-    }
-
-    void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink)
-    {
-        m_decoder.RemoveSink(sink);
     }
 
 private:
@@ -179,6 +165,4 @@ protected:
 private:
     std::thread m_capturethread;
     std::vector<uint8_t> m_cfg;
-
-    VideoDecoder m_decoder;
 };
