@@ -57,6 +57,10 @@ class DesktopCapturer : public rtc::VideoSourceInterface<webrtc::VideoFrame>, pu
 		virtual void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) {
 			broadcaster_.RemoveSink(sink);
 		}
+
+        int width() { return m_width;  }
+        int height() { return m_height;  }        
+
 	
 	protected:
 		std::thread                              m_capturethread;

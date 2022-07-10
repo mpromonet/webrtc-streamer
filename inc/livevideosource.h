@@ -48,6 +48,9 @@ public:
             this->Stop();
     }
 
+    int width() { return m_decoder.width();  }
+    int height() { return m_decoder.height();  }        
+
     void Start()
     {
         RTC_LOG(LS_INFO) << "LiveVideoSource::Start";
@@ -97,6 +100,7 @@ public:
         }
         return success;
     }
+
     virtual bool onData(const char *id, unsigned char *buffer, ssize_t size, struct timeval presentationTime)
     {
         int64_t ts = presentationTime.tv_sec;
@@ -225,7 +229,7 @@ public:
     void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink)
     {
         m_decoder.RemoveSink(sink);
-    }
+    }    
 
 private:
     char        m_stop;

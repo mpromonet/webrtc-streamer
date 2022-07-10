@@ -45,6 +45,9 @@ public:
         this->Stop();
         RTMP_Close(&m_rtmp);
     }
+    
+    int width() { return m_decoder.width();  }
+    int height() { return m_decoder.height();  }
 
 private:
     RtmpVideoSource(const std::string &uri, const std::map<std::string, std::string> &opts, std::unique_ptr<webrtc::VideoDecoderFactory> &videoDecoderFactory) : 

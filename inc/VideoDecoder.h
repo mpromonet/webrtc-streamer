@@ -55,6 +55,9 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
             this->Stop();                    
         }
 
+        int width() { return m_scaler.width();  }
+        int height() { return m_scaler.height();  }
+
         std::vector< std::vector<uint8_t> > getInitFrames(const std::string & codec, const char* sdp) {
             std::vector< std::vector<uint8_t> > frames;
 

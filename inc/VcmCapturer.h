@@ -14,31 +14,33 @@
 
 class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public rtc::VideoSourceInterface<webrtc::VideoFrame> {
  public:
-  static VcmCapturer* Create(const std::string & videourl, const std::map<std::string, std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
-	std::unique_ptr<VcmCapturer> vcm_capturer(new VcmCapturer());
-	size_t width = 0;
-	size_t height = 0;
-	size_t fps = 0;
-	if (opts.find("width") != opts.end()) {
-		width = std::stoi(opts.at("width"));
+	static VcmCapturer* Create(const std::string & videourl, const std::map<std::string, std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
+		std::unique_ptr<VcmCapturer> vcm_capturer(new VcmCapturer());
+		size_t width = 0;
+		size_t height = 0;
+		size_t fps = 0;
+		if (opts.find("width") != opts.end()) {
+			width = std::stoi(opts.at("width"));
+		}
+		if (opts.find("height") != opts.end()) {
+			height = std::stoi(opts.at("height"));
+		}
+		if (opts.find("fps") != opts.end()) {
+			fps = std::stoi(opts.at("fps"));
+		}	
+		if (!vcm_capturer->Init(width, height, fps, videourl)) {
+			RTC_LOG(LS_WARNING) << "Failed to create VcmCapturer(w = " << width
+								<< ", h = " << height << ", fps = " << fps
+								<< ")";
+			return nullptr;
+		}
+		return vcm_capturer.release();
 	}
-	if (opts.find("height") != opts.end()) {
-		height = std::stoi(opts.at("height"));
+	virtual ~VcmCapturer() {
+		Destroy();
 	}
-	if (opts.find("fps") != opts.end()) {
-		fps = std::stoi(opts.at("fps"));
-	}	
-	if (!vcm_capturer->Init(width, height, fps, videourl)) {
-		RTC_LOG(LS_WARNING) << "Failed to create VcmCapturer(w = " << width
-							<< ", h = " << height << ", fps = " << fps
-							<< ")";
-		return nullptr;
-	}
-	return vcm_capturer.release();
-  }
-  virtual ~VcmCapturer() {
-	  Destroy();
-  }
+	int width() { return m_width;  }
+	int height() { return m_height;  }
 
   void OnFrame(const webrtc::VideoFrame& frame) override {
 	  m_broadcaster.OnFrame(frame);
@@ -52,6 +54,8 @@ class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public 
             size_t target_fps,
             const std::string & videourl) {
 	std::unique_ptr<webrtc::VideoCaptureModule::DeviceInfo> device_info(webrtc::VideoCaptureFactory::CreateDeviceInfo());
+	m_width = width;
+	m_height = height;
 
 	std::string deviceId;
 	int num_videoDevices = device_info->NumberOfDevices();
@@ -116,14 +120,16 @@ class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public 
 	} 
   }
 
-  void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink, const rtc::VideoSinkWants& wants) override {
-	m_broadcaster.AddOrUpdateSink(sink, wants);
-  }
+  	void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink, const rtc::VideoSinkWants& wants) override {
+		m_broadcaster.AddOrUpdateSink(sink, wants);
+  	}
 
-  void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) override {
-	m_broadcaster.RemoveSink(sink);
-  }
+  	void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) override {
+		m_broadcaster.RemoveSink(sink);
+  	}
 
-  rtc::scoped_refptr<webrtc::VideoCaptureModule> m_vcm;
-  rtc::VideoBroadcaster m_broadcaster;
+	int                                            m_width;		
+ 	int                                            m_height;
+	rtc::scoped_refptr<webrtc::VideoCaptureModule> m_vcm;
+	rtc::VideoBroadcaster                          m_broadcaster;
 };

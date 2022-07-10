@@ -47,9 +47,21 @@ public:
 		return rtc::make_ref_counted<TrackSource>(std::move(capturer));
 	}
 
+	virtual bool GetStats(Stats* stats) override {
+		bool result = false;
+		T* source =  m_capturer.get();
+		if (source) {
+			stats->input_height = source->height();
+			stats->input_width = source->width();
+			result = true;
+		}
+		return result;
+	}
+
+
 protected:
 	explicit TrackSource(std::unique_ptr<T> capturer)
-		: webrtc::VideoTrackSource(/*remote=*/false), capturer_(std::move(capturer)) {}
+		: webrtc::VideoTrackSource(/*remote=*/false), m_capturer(std::move(capturer)) {}
 
    	SourceState state() const override { 
 		return kLive; 
@@ -57,9 +69,9 @@ protected:
 
 private:
 	rtc::VideoSourceInterface<webrtc::VideoFrame>* source() override {
-		return capturer_.get();
+		return m_capturer.get();
 	}
-	std::unique_ptr<T> capturer_;
+	std::unique_ptr<T> m_capturer;
 };
 
 class CapturerFactory {
@@ -101,7 +113,7 @@ class CapturerFactory {
 			DIR *dir = opendir("/dev");
 			if (dir != nullptr) {
 				struct dirent* entry = NULL;
-				while (entry = readdir(dir)) {
+				while ((entry = readdir(dir)) != NULL) {
 					if (strncmp(entry->d_name, "video", 5) == 0) {
 						std::string device("/dev/");
 						device.append(entry->d_name);
