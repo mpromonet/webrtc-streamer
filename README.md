@@ -89,6 +89,9 @@ Usage
 	./webrtc-streamer -V
 		-v[v[v]]           : verbosity
 		-V                 : print version
+		-C config.json                     : load urls from JSON config file 
+		-n name -u videourl -U audiourl    : register a name for a video url and an audio url
+		[url]                              : url to register in the source list
 
 		-H [hostname:]port : HTTP server binding (default 0.0.0.0:8000)
 		-w webroot         : path to get files
@@ -101,16 +104,12 @@ Usage
 		-s[stun_address]                   : use an external STUN server (default:stun.l.google.com:19302 , -:means no STUN)
 		-t[username:password@]turn_address : use an external TURN relay server (default:disabled)
 		-T[username:password@]turn_address : start embeded TURN server (default:disabled)
-		
+		-R [Udp port range min:max]        : Set the webrtc udp port range (default 0:65535)
+		-W webrtc_trials_fields            : Set the webrtc trials fields (default:WebRTC-FrameDropper/Disabled/)		
 		-a[audio layer]                    : spefify audio capture layer to use (default:0)		
 		-q[filter]                         : spefify publish filter (default:.*)
 		-o                                 : use null codec (keep frame encoded)
-
-		-C config.json                     : load urls from JSON config file 
-		-R [Udp port range min:max]        : Set the webrtc udp port range (default 0:65535)
-
-		-n name -u videourl -U audiourl    : register a name for a video url and an audio url
-		[url]                              : url to register in the source list
+ 
 
 Arguments of '-H' are forwarded to option [listening_ports](https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md#listening_ports-8080) of civetweb, then it is possible to use the civetweb syntax like `-H8000,9000` or `-H8080r,8443s`.
 
