@@ -400,6 +400,7 @@ std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionMan
 			if (desc.get()) {
 				desc->ToString(&answersdp);
 				headers["location"] = locationurl;
+				headers["Content-Type"] = "application/sdp";
 				httpcode = 201;
 			} else {
 				RTC_LOG(LS_ERROR) << "Failed to create answer - no SDP";
