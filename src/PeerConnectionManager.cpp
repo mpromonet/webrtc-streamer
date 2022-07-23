@@ -346,6 +346,23 @@ PeerConnectionManager::~PeerConnectionManager() {
     });	
 }
 
+// from https://stackoverflow.com/a/12468109/3102264
+std::string random_string( size_t length )
+{
+    auto randchar = []() -> char
+    {
+        const char charset[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+        const size_t max_index = (sizeof(charset) - 1);
+        return charset[ rand() % max_index ];
+    };
+    std::string str(length,0);
+    std::generate_n( str.begin(), length, randchar );
+    return str;
+}
+
 std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionManager::whip(const struct mg_request_info *req_info, const Json::Value &in) {
 	std::string peerid;
 	std::string videourl;
@@ -358,6 +375,14 @@ std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionMan
 		CivetServer::getParam(req_info->query_string, "url", videourl);
 		CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
 		CivetServer::getParam(req_info->query_string, "options", options);
+	}
+	std::string locationurl(req_info->request_uri);
+	locationurl.append("?").append(req_info->query_string);
+
+	if (peerid.empty()) {
+		
+		peerid = random_string(32);
+		locationurl.append("&").append("peerid=").append(peerid);
 	}
 	std::map<std::string,std::string> headers;
 	std::string answersdp;
@@ -374,16 +399,14 @@ std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionMan
 			std::unique_ptr<webrtc::SessionDescriptionInterface> desc = this->getAnswer(peerid, session_description, videourl, audiourl, options);
 			if (desc.get()) {
 				desc->ToString(&answersdp);
+				headers["location"] = locationurl;
 				httpcode = 201;
 			} else {
 				RTC_LOG(LS_ERROR) << "Failed to create answer - no SDP";
 			}
 		}
-		RTC_LOG(LS_ERROR) << "anwser:" << answersdp;
+		RTC_LOG(LS_INFO) << "anwser:" << answersdp;
 
-		std::string locationurl(req_info->request_uri);
-		locationurl.append("?").append(req_info->query_string);
-		headers["location"] = locationurl;
 	}
 	return std::make_tuple(httpcode, headers,answersdp);
 }
