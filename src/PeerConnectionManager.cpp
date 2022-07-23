@@ -389,6 +389,37 @@ std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionMan
 	if (strcmp(req_info->request_method,"DELETE")==0) {
 		this->hangUp(peerid);
 	} else if (strcmp(req_info->request_method,"PATCH")==0) {
+		RTC_LOG(LS_INFO) << "PATCH\n" << in.asString();
+		std::istringstream is(in.asString());
+		std::string str;
+		std::string mid;
+    		while(std::getline(is,str)) {
+			str.erase(std::remove(str.begin(), str.end(), '\r'), str.end());
+			if (strstr(str.c_str(),"a=mid:")) {
+				mid = str.substr(strlen("a=mid:"));
+			} else if (strstr(str.c_str(),"a=candidate")) {
+				std::string sdp = str.substr(strlen("a="));
+				std::unique_ptr<webrtc::IceCandidateInterface> candidate(webrtc::CreateIceCandidate(mid, 0, sdp, NULL));
+				if (!candidate.get()) {
+					RTC_LOG(LS_WARNING) << "Can't parse received candidate message.";
+				} else {
+					std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
+					rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = this->getPeerConnection(peerid);
+					if (peerConnection) {
+						if (!peerConnection->AddIceCandidate(candidate.get())) {
+							RTC_LOG(LS_WARNING) << "Failed to apply the received candidate";
+						} else {
+							httpcode = 200;
+						}
+					}
+				}
+			} else if (strstr(str.c_str(),"a=end-of-candidates")) {
+				RTC_LOG(LS_INFO) << "end of candidate";
+				httpcode = 200;
+			}
+    		}
+
+
 	} else {
 		std::string offersdp(in.asString());
 		RTC_LOG(LS_ERROR) << "offer:" << offersdp;
