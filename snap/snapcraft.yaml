@@ -25,7 +25,7 @@
       source-type: git
       override-build: |
         cp -r ../src/* /usr/local/bin/
-        mkdir /webrtc
+        mkdir -p /webrtc
         cd /webrtc
         fetch --no-history --nohooks webrtc
         sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
@@ -33,7 +33,6 @@
       build-packages:
       - curl
       - python3
-      - python3-httplib2
 
     webrtc-streamer:
       after: [webrtc]
