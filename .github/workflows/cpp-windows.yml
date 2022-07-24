@@ -41,6 +41,7 @@ jobs:
         CLANG_VERSION: ToT
         PYTHONIOENCODING: UTF-8
         GCLIENT_PY3: 1
+        GYP_MSVS_VERSION: 2019
 
     - name: build
       shell: cmd
@@ -57,6 +58,7 @@ jobs:
         CLANG_VERSION: ToT
         PYTHONIOENCODING: UTF-8
         GCLIENT_PY3: 1
+        GYP_MSVS_VERSION: 2019
 
     - name: cpack
       shell: bash
