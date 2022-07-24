@@ -218,104 +218,104 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 	m_videoaudiomap = getV4l2AlsaMap();
 
 	// register api in http server
-	m_func["/api/getMediaList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
-			return std::make_pair(std::map<std::string,std::string>(),this->getMediaList());
+	m_func["/api/getMediaList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+		return std::make_tuple(200, std::map<std::string,std::string>(),this->getMediaList());
 	};
 
-	m_func["/api/getVideoDeviceList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
-			return std::make_pair(std::map<std::string,std::string>(),this->getVideoDeviceList());
+	m_func["/api/getVideoDeviceList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+		return std::make_tuple(200, std::map<std::string,std::string>(),this->getVideoDeviceList());
 	};
 
-	m_func["/api/getAudioDeviceList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
-			return std::make_pair(std::map<std::string,std::string>(),this->getAudioDeviceList());
+	m_func["/api/getAudioDeviceList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+		return std::make_tuple(200, std::map<std::string,std::string>(),this->getAudioDeviceList());
 	};
 
-	m_func["/api/getIceServers"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
-		return std::make_pair(std::map<std::string,std::string>(),this->getIceServers(req_info->remote_addr));
+	m_func["/api/getIceServers"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+		return std::make_tuple(200, std::map<std::string,std::string>(),this->getIceServers(req_info->remote_addr));
 	};
 
-	m_func["/api/call"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {	
-			std::string peerid;
-			std::string url;
-			std::string audiourl;
-			std::string options;
-			if (req_info->query_string)
-			{
-				CivetServer::getParam(req_info->query_string, "peerid", peerid);
-				CivetServer::getParam(req_info->query_string, "url", url);
-				CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
-				CivetServer::getParam(req_info->query_string, "options", options);
-			}
-			return std::make_pair(std::map<std::string,std::string>(),this->call(peerid, url, audiourl, options, in));
+	m_func["/api/call"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {	
+		std::string peerid;
+		std::string url;
+		std::string audiourl;
+		std::string options;
+		if (req_info->query_string)
+		{
+			CivetServer::getParam(req_info->query_string, "peerid", peerid);
+			CivetServer::getParam(req_info->query_string, "url", url);
+			CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
+			CivetServer::getParam(req_info->query_string, "options", options);
+		}
+		return std::make_tuple(200, std::map<std::string,std::string>(),this->call(peerid, url, audiourl, options, in));
 	};
 
-	m_func["/api/whip"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
-			return this->whip(req_info, in);	
+	m_func["/api/whip"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+		return this->whip(req_info, in);	
 	};
 
-	m_func["/api/hangup"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
-			std::string peerid;
-			if (req_info->query_string)
-			{
-				CivetServer::getParam(req_info->query_string, "peerid", peerid);
-			}
-			return std::make_pair(std::map<std::string,std::string>(),this->hangUp(peerid));
+	m_func["/api/hangup"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+		std::string peerid;
+		if (req_info->query_string)
+		{
+			CivetServer::getParam(req_info->query_string, "peerid", peerid);
+		}
+		return std::make_tuple(200, std::map<std::string,std::string>(),this->hangUp(peerid));
 	};
 
-	m_func["/api/createOffer"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
-			std::string peerid;
-			std::string url;
-			std::string audiourl;
-			std::string options;
-			if (req_info->query_string)
-			{
-				CivetServer::getParam(req_info->query_string, "peerid", peerid);
-				CivetServer::getParam(req_info->query_string, "url", url);
-				CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
-				CivetServer::getParam(req_info->query_string, "options", options);
-			}
-			return std::make_pair(std::map<std::string,std::string>(),this->createOffer(peerid, url, audiourl, options));
+	m_func["/api/createOffer"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+		std::string peerid;
+		std::string url;
+		std::string audiourl;
+		std::string options;
+		if (req_info->query_string)
+		{
+			CivetServer::getParam(req_info->query_string, "peerid", peerid);
+			CivetServer::getParam(req_info->query_string, "url", url);
+			CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
+			CivetServer::getParam(req_info->query_string, "options", options);
+		}
+		return std::make_tuple(200, std::map<std::string,std::string>(),this->createOffer(peerid, url, audiourl, options));
 	};
-	m_func["/api/setAnswer"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
-			std::string peerid;
-			if (req_info->query_string)
-			{
-				CivetServer::getParam(req_info->query_string, "peerid", peerid);
-			}
-			return std::make_pair(std::map<std::string,std::string>(),this->setAnswer(peerid, in));
-	};
-
-	m_func["/api/getIceCandidate"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
-			std::string peerid;
-			if (req_info->query_string)
-			{
-				CivetServer::getParam(req_info->query_string, "peerid", peerid);
-			}
-			return std::make_pair(std::map<std::string,std::string>(),this->getIceCandidateList(peerid));
+	m_func["/api/setAnswer"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+		std::string peerid;
+		if (req_info->query_string)
+		{
+			CivetServer::getParam(req_info->query_string, "peerid", peerid);
+		}
+		return std::make_tuple(200, std::map<std::string,std::string>(),this->setAnswer(peerid, in));
 	};
 
-	m_func["/api/addIceCandidate"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
-			std::string peerid;
-			if (req_info->query_string)
-			{
-				CivetServer::getParam(req_info->query_string, "peerid", peerid);
-			}
-			return std::make_pair(std::map<std::string,std::string>(),this->addIceCandidate(peerid, in));
+	m_func["/api/getIceCandidate"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+		std::string peerid;
+		if (req_info->query_string)
+		{
+			CivetServer::getParam(req_info->query_string, "peerid", peerid);
+		}
+		return std::make_tuple(200, std::map<std::string,std::string>(),this->getIceCandidateList(peerid));
 	};
 
-	m_func["/api/getPeerConnectionList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
-			return std::make_pair(std::map<std::string,std::string>(),this->getPeerConnectionList());
+	m_func["/api/addIceCandidate"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+		std::string peerid;
+		if (req_info->query_string)
+		{
+			CivetServer::getParam(req_info->query_string, "peerid", peerid);
+		}
+		return std::make_tuple(200, std::map<std::string,std::string>(),this->addIceCandidate(peerid, in));
 	};
 
-	m_func["/api/getStreamList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
-			return std::make_pair(std::map<std::string,std::string>(),this->getStreamList());
+	m_func["/api/getPeerConnectionList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+		return std::make_tuple(200, std::map<std::string,std::string>(),this->getPeerConnectionList());
 	};
 
-	m_func["/api/version"] = [](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
+	m_func["/api/getStreamList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+		return std::make_tuple(200, std::map<std::string,std::string>(),this->getStreamList());
+	};
+
+	m_func["/api/version"] = [](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		Json::Value answer(VERSION);
-		return std::make_pair(std::map<std::string,std::string>(), answer);
+		return std::make_tuple(200, std::map<std::string,std::string>(), answer);
 	};
-	m_func["/api/log"] = [](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
+	m_func["/api/log"] = [](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		std::string loglevel;
 		if (req_info->query_string)
 		{
@@ -326,15 +326,14 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 			}
 		}
 		Json::Value answer(rtc::LogMessage::GetLogToDebug());
-		return std::make_pair(std::map<std::string,std::string>(), answer);
+		return std::make_tuple(200, std::map<std::string,std::string>(), answer);
 	};
-	m_func["/api/help"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> std::pair<std::map<std::string,std::string>,Json::Value> {
+	m_func["/api/help"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		Json::Value answer;
-		for (auto it : m_func)
-		{
+		for (auto it : m_func) {
 			answer.append(it.first);
 		}
-		return std::make_pair(std::map<std::string,std::string>(), answer);
+		return std::make_tuple(200, std::map<std::string,std::string>(), answer);
 	};
 }
 
@@ -347,11 +346,29 @@ PeerConnectionManager::~PeerConnectionManager() {
     });	
 }
 
-std::pair<std::map<std::string,std::string>,Json::Value> PeerConnectionManager::whip(const struct mg_request_info *req_info, const Json::Value &in) {
+// from https://stackoverflow.com/a/12468109/3102264
+std::string random_string( size_t length )
+{
+    auto randchar = []() -> char
+    {
+        const char charset[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+        const size_t max_index = (sizeof(charset) - 1);
+        return charset[ rand() % max_index ];
+    };
+    std::string str(length,0);
+    std::generate_n( str.begin(), length, randchar );
+    return str;
+}
+
+std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionManager::whip(const struct mg_request_info *req_info, const Json::Value &in) {
 	std::string peerid;
 	std::string videourl;
 	std::string audiourl;
 	std::string options;
+	int httpcode = 501;
 	if (req_info->query_string)
 	{
 		CivetServer::getParam(req_info->query_string, "peerid", peerid);
@@ -359,12 +376,50 @@ std::pair<std::map<std::string,std::string>,Json::Value> PeerConnectionManager::
 		CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
 		CivetServer::getParam(req_info->query_string, "options", options);
 	}
+	std::string locationurl(req_info->request_uri);
+	locationurl.append("?").append(req_info->query_string);
 
+	if (peerid.empty()) {
+		
+		peerid = random_string(32);
+		locationurl.append("&").append("peerid=").append(peerid);
+	}
 	std::map<std::string,std::string> headers;
 	std::string answersdp;
 	if (strcmp(req_info->request_method,"DELETE")==0) {
 		this->hangUp(peerid);
 	} else if (strcmp(req_info->request_method,"PATCH")==0) {
+		RTC_LOG(LS_INFO) << "PATCH\n" << in.asString();
+		std::istringstream is(in.asString());
+		std::string str;
+		std::string mid;
+    		while(std::getline(is,str)) {
+			str.erase(std::remove(str.begin(), str.end(), '\r'), str.end());
+			if (strstr(str.c_str(),"a=mid:")) {
+				mid = str.substr(strlen("a=mid:"));
+			} else if (strstr(str.c_str(),"a=candidate")) {
+				std::string sdp = str.substr(strlen("a="));
+				std::unique_ptr<webrtc::IceCandidateInterface> candidate(webrtc::CreateIceCandidate(mid, 0, sdp, NULL));
+				if (!candidate.get()) {
+					RTC_LOG(LS_WARNING) << "Can't parse received candidate message.";
+				} else {
+					std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
+					rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = this->getPeerConnection(peerid);
+					if (peerConnection) {
+						if (!peerConnection->AddIceCandidate(candidate.get())) {
+							RTC_LOG(LS_WARNING) << "Failed to apply the received candidate";
+						} else {
+							httpcode = 200;
+						}
+					}
+				}
+			} else if (strstr(str.c_str(),"a=end-of-candidates")) {
+				RTC_LOG(LS_INFO) << "end of candidate";
+				httpcode = 200;
+			}
+    		}
+
+
 	} else {
 		std::string offersdp(in.asString());
 		RTC_LOG(LS_ERROR) << "offer:" << offersdp;
@@ -375,14 +430,17 @@ std::pair<std::map<std::string,std::string>,Json::Value> PeerConnectionManager::
 			std::unique_ptr<webrtc::SessionDescriptionInterface> desc = this->getAnswer(peerid, session_description, videourl, audiourl, options);
 			if (desc.get()) {
 				desc->ToString(&answersdp);
+				headers["location"] = locationurl;
+				headers["Content-Type"] = "application/sdp";
+				httpcode = 201;
 			} else {
 				RTC_LOG(LS_ERROR) << "Failed to create answer - no SDP";
 			}
 		}
-		RTC_LOG(LS_ERROR) << "anwser:" << answersdp;
-		headers["location"] = req_info->request_uri;
+		RTC_LOG(LS_INFO) << "anwser:" << answersdp;
+
 	}
-	return std::make_pair(headers,answersdp);
+	return std::make_tuple(httpcode, headers,answersdp);
 }
 
 void PeerConnectionManager::createAudioModule(webrtc::AudioDeviceModule::AudioLayer audioLayer) {
