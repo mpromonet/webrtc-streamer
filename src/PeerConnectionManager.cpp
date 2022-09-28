@@ -206,7 +206,7 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 	m_workerThread->SetName("worker", NULL);
 	m_workerThread->Start();
 
-	m_workerThread->Invoke<void>(RTC_FROM_HERE, [this, audioLayer] {
+	m_workerThread->BlockingCall([this, audioLayer] {
 		this->createAudioModule(audioLayer);
     });
 		
@@ -341,7 +341,7 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 **  Destructor
 ** -------------------------------------------------------------------------*/
 PeerConnectionManager::~PeerConnectionManager() {
-	m_workerThread->Invoke<void>(RTC_FROM_HERE, [this] {
+	m_workerThread->BlockingCall([this] {
 		m_audioDeviceModule->Release();
     });	
 }
@@ -1165,7 +1165,7 @@ rtc::scoped_refptr<webrtc::AudioSourceInterface> PeerConnectionManager::CreateAu
 		audio = it->second;
 	}
 
-	return m_workerThread->Invoke<rtc::scoped_refptr<webrtc::AudioSourceInterface>>(RTC_FROM_HERE, [this, audio, opts] {
+	return m_workerThread->BlockingCall([this, audio, opts] {
 		return CapturerFactory::CreateAudioSource(audio, opts, m_publishFilter, m_peer_connection_factory, m_audioDecoderfactory, m_audioDeviceModule);
     });
 }
