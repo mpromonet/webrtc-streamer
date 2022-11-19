@@ -11,7 +11,7 @@
 [![Download](https://img.shields.io/github/downloads/mpromonet/webrtc-streamer/total.svg)](https://github.com/mpromonet/webrtc-streamer/releases/latest)
 [![Docker Pulls](https://img.shields.io/docker/pulls/mpromonet/webrtc-streamer.svg)](https://hub.docker.com/r/mpromonet/webrtc-streamer/)
 
-[![Heroku](https://heroku-badge.herokuapp.com/?app=webrtc-streamer)](https://webrtc-streamer.herokuapp.com/)
+[![Heroku](https://heroku-badge.herokuapp.com/?app=webrtc-streamer)](https://webrtcstreamer.herokuapp.com/)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mpromonet/webrtc-streamer)
 
 WebRTC-streamer
@@ -120,19 +120,19 @@ Examples
 	./webrtc-streamer rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
 
 
-[![Screenshot](images/snapshot.png)](https://webrtc-streamer.herokuapp.com/)
+[![Screenshot](images/snapshot.png)](https://webrtcstreamer.herokuapp.com/)
 
-[Live Demo](https://webrtc-streamer.herokuapp.com/)
+[Live Demo](https://webrtcstreamer.herokuapp.com/)
 
 We can access to the WebRTC stream using [webrtcstreamer.html](https://github.com/mpromonet/webrtc-streamer-html/blob/master/webrtcstreamer.html) for instance :
 
- * https://webrtc-streamer.herokuapp.com/webrtcstreamer.html?rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
- * https://webrtc-streamer.herokuapp.com/webrtcstreamer.html?Bunny
+ * https://webrtcstreamer.herokuapp.com/webrtcstreamer.html?rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
+ * https://webrtcstreamer.herokuapp.com/webrtcstreamer.html?Bunny
 
 An example displaying grid of WebRTC Streams is available using option "layout=<lines>x<columns>"
-[![Screenshot](images/layout2x4.png)](https://webrtc-streamer.herokuapp.com/?layout=2x4)
+[![Screenshot](images/layout2x4.png)](https://webrtcstreamer.herokuapp.com/?layout=2x4)
 
-[Live Demo](https://webrtc-streamer.herokuapp.com/?layout=2x4)
+[Live Demo](https://webrtcstreamer.herokuapp.com/?layout=2x4)
 
 Using embedded STUN/TURN server behind a NAT:
 ===============
@@ -188,26 +188,26 @@ Using web-component could be a simple way to display some webrtc stream, a minim
 	</body>
 	</html>
 
-[Live Demo](https://webrtc-streamer.herokuapp.com/Bunny.html)  
+[Live Demo](https://webrtcstreamer.herokuapp.com/Bunny.html)  
 
 Using the webcomponent with a stream selector :
 
-[![Screenshot](images/wc-selector.jpg)](https://webrtc-streamer.herokuapp.com/webrtc-streamer-element.html)
+[![Screenshot](images/wc-selector.jpg)](https://webrtcstreamer.herokuapp.com/webrtc-streamer-element.html)
 
-[Live Demo](https://webrtc-streamer.herokuapp.com/webrtc-streamer-element.html)
+[Live Demo](https://webrtcstreamer.herokuapp.com/webrtc-streamer-element.html)
 
 Using the webcomponent over google map :
 
-[![Screenshot](images/wc-map.jpg)](https://webrtc-streamer.herokuapp.com/map.html)
+[![Screenshot](images/wc-map.jpg)](https://webrtcstreamer.herokuapp.com/map.html)
 
-[Live Demo](https://webrtc-streamer.herokuapp.com/map.html)
+[Live Demo](https://webrtcstreamer.herokuapp.com/map.html)
 
 Object detection using tensorflow.js
 ===============
 
-[![Screenshot](images/tensorflow.jpg)](https://webrtc-streamer.herokuapp.com/tensorflow.html)
+[![Screenshot](images/tensorflow.jpg)](https://webrtcstreamer.herokuapp.com/tensorflow.html)
 
-[Live Demo](https://webrtc-streamer.herokuapp.com/tensorflow.html)
+[Live Demo](https://webrtcstreamer.herokuapp.com/tensorflow.html)
 
 
 Connect to Janus Gateway Video Room
@@ -229,11 +229,11 @@ A short sample to publish WebRTC streams to Janus Video Room could be :
 	</head>
 	</html>
 
-[![Screenshot](images/janusvideoroom.png)](https://webrtc-streamer.herokuapp.com/janusvideoroom.html)
+[![Screenshot](images/janusvideoroom.png)](https://webrtcstreamer.herokuapp.com/janusvideoroom.html)
 
-[Live Demo](https://webrtc-streamer.herokuapp.com/janusvideoroom.html)
+[Live Demo](https://webrtcstreamer.herokuapp.com/janusvideoroom.html)
 
-This way the communication between [Janus API](https://janus.conf.meetecho.com/docs/JS.html) and [WebRTC Streamer API](https://webrtc-streamer.herokuapp.com/help) is implemented in Javascript running in browser.
+This way the communication between [Janus API](https://janus.conf.meetecho.com/docs/JS.html) and [WebRTC Streamer API](https://webrtcstreamer.herokuapp.com/help) is implemented in Javascript running in browser.
 
 The same logic could be implemented in NodeJS using the same JS API :
 
@@ -265,7 +265,7 @@ A short sample to publish WebRTC streams to a Jitsi Video Room could be :
 	</head>
 	</html>
 
-[Live Demo](https://webrtc-streamer.herokuapp.com/xmppvideoroom.html)
+[Live Demo](https://webrtcstreamer.herokuapp.com/xmppvideoroom.html)
 
 Docker image
 ===============
