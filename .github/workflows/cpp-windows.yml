@@ -16,7 +16,7 @@ jobs:
     - name: pkg
       shell: cmd
       run: |
-        choco install --no-progress -y windows-sdk-10-version-2104-all
+        choco install --no-progress -y windows-sdk-11-version-22h2-all
         choco install --ignorepackagecodes --no-progress -y visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%"
         git config --global core.autocrlf false 
         git config --global core.filemode false 
