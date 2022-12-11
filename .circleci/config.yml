@@ -107,16 +107,16 @@ jobs:
       - attach_workspace:
           at: /
       - checkout
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python3 python3-pkg-resources autoconf automake libtool git make cmake g++ xz-utils pkg-config
-      - run: 
-          command: wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
+      - run:
+          command: | 
+            apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python3 python3-pkg-resources autoconf automake libtool git make cmake g++ xz-utils pkg-config
+            wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
+            echo "export PATH=$(ls -d /opt/cross-pi-gcc-*/bin):/depot_tools:$PATH" >> $BASH_ENV
+            ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
+            pushd ${WEBRTCROOT} && gclient sync && popd 
+            cmake -DCMAKE_BUILD_TYPE=<< parameters.buildtype >> -DCMAKE_SYSTEM_PROCESSOR=armv7l -DCMAKE_LIBRARY_ARCHITECTURE=arm-linux-gnueabihf -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY . && make 
+            cpack
           no_output_timeout: 30m
-      - run: echo "export PATH=$(ls -d /opt/cross-pi-gcc-*/bin):/depot_tools:$PATH" >> $BASH_ENV
-      - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
-      - run: cd ${WEBRTCROOT} && gclient sync
-
-      - run: cmake -DCMAKE_BUILD_TYPE=<< parameters.buildtype >> -DCMAKE_SYSTEM_PROCESSOR=armv7l -DCMAKE_LIBRARY_ARCHITECTURE=arm-linux-gnueabihf -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY . && make 
-      - run: cpack
 
       - run: mkdir /distrib && cp webrtc-streamer*.tar.gz /distrib
       - persist_to_workspace:
@@ -143,16 +143,17 @@ jobs:
       - attach_workspace:
           at: /
       - checkout
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python3 python3-pkg-resources autoconf automake libtool git cmake make g++ xz-utils pkg-config
       - run: 
-          command: wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
-          no_output_timeout: 30m
-      - run: echo "export PATH=$(ls -d /opt/cross-pi-gcc-*/bin):/depot_tools:$PATH" >> $BASH_ENV
-      - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
-      - run: cd ${WEBRTCROOT} && gclient sync 
+          command: |
+            apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python3 python3-pkg-resources autoconf automake libtool git cmake make g++ xz-utils pkg-config
+            wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
+            echo "export PATH=$(ls -d /opt/cross-pi-gcc-*/bin):/depot_tools:$PATH" >> $BASH_ENV
+            ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
+            pushd ${WEBRTCROOT} && gclient sync && popd 
+            cmake -DCMAKE_BUILD_TYPE=<< parameters.buildtype >> -DCMAKE_SYSTEM_PROCESSOR=armv6l -DCMAKE_LIBRARY_ARCHITECTURE=arm-linux-gnueabihf -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY . && make 
+            cpack
 
-      - run: cmake -DCMAKE_BUILD_TYPE=<< parameters.buildtype >> -DCMAKE_SYSTEM_PROCESSOR=armv6l -DCMAKE_LIBRARY_ARCHITECTURE=arm-linux-gnueabihf -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY . && make 
-      - run: cpack
+          no_output_timeout: 30m
 
       - run: mkdir /distrib && cp webrtc-streamer*.tar.gz /distrib
       - persist_to_workspace:
@@ -178,13 +179,15 @@ jobs:
       - attach_workspace:
           at: /
       - checkout
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python3 python3-pkg-resources autoconf automake libtool git cmake make g++ xz-utils pkg-config gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-      - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
-      - run: ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
-      - run: cd ${WEBRTCROOT} && gclient sync 
-
-      - run: cmake -DCMAKE_BUILD_TYPE=<< parameters.buildtype >> -DCMAKE_SYSTEM_PROCESSOR=arm64 -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF . && make 
-      - run: cpack
+      - run: 
+          command: |
+            apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python3 python3-pkg-resources autoconf automake libtool git cmake make g++ xz-utils pkg-config gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+            echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
+            ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
+            pushd ${WEBRTCROOT} && gclient sync && popd 
+            cmake -DCMAKE_BUILD_TYPE=<< parameters.buildtype >> -DCMAKE_SYSTEM_PROCESSOR=arm64 -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF . && make 
+            cpack
+          no_output_timeout: 30m
 
       - run: mkdir /distrib && cp webrtc-streamer*.tar.gz /distrib
       - persist_to_workspace:
