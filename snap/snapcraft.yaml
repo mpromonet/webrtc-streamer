@@ -33,6 +33,8 @@
       build-packages:
       - curl
       - python3
+      python-packages:
+      - httplib2      
 
     webrtc-streamer:
       after: [webrtc]
