@@ -31,3 +31,6 @@ jobs:
       uses: azure/container-apps-deploy-action@v0
       with:
         imageToDeploy: ghcr.io/mpromonet/webrtc-streamer:latest
+        containerAppName: webrtcstreamer
+        resourceGroup: deploy
+        targetPort: 8000
