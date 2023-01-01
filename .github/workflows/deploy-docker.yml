@@ -1,4 +1,4 @@
-name: C/C++ CI docker
+name: Deploy docker
 
 on: [push]
 
@@ -10,12 +10,12 @@ jobs:
 
     - name: Build and push
       uses: docker/build-push-action@v3
-      env:
-        GIT_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}      
       with:
         context: .
         push: true
         tags: ghcr.io/mpromonet/webrtc-streamer:latest
+        secrets: |
+          GIT_AUTH_TOKEN=${{ github.token }}      
 
     - name: Log in to Azure
       uses: azure/login@v1
