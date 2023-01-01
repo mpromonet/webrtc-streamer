@@ -1,0 +1,28 @@
+name: C/C++ CI docker
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build and push
+      uses: docker/build-push-action@v3
+      env:
+        GIT_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}      
+      with:
+        context: .
+        push: true
+        tags: ghcr.io/mpromonet/webrtc-streamer:latest
+
+    - name: Log in to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Build and deploy Container App
+      uses: azure/container-apps-deploy-action@v0
+      with:
+        imageToDeploy: ghcr.io/mpromonet/webrtc-streamer:latest
