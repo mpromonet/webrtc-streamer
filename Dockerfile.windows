@@ -28,7 +28,6 @@ RUN git config --global core.autocrlf false \
        && mkdir c:\webrtc && cd c:\webrtc \
        && fetch --no-history --nohooks webrtc \
        && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
-       && sed -i -e "s|#include <vector>|#include <vector>\n#include <cwctype>|" src/modules/desktop_capture/win/full_screen_win_application_handler.cc \
        && gclient sync \
        && time /t \
        && cd C:\webrtc-streamer \

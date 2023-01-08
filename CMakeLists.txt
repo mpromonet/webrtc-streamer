@@ -116,6 +116,11 @@ set (WEBRTCOBJS ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE}/obj)
 if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX})
   if (WIN32)
     SET (SHELLCOMMAND cmd /c )
+
+    # patch
+    file(READ ${WEBRTCROOT}/src/modules/desktop_capture/win/full_screen_win_application_handler.cc filecontent)
+    string(REPLACE "#include <vector>" "#include <vector>\n#include <cwctype>" filecontent "${filecontent}")
+    file(WRITE ${WEBRTCROOT}/src/modules/desktop_capture/win/full_screen_win_application_handler.cc "${filecontent}")
   endif()
   EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE} COMMAND ${SHELLCOMMAND} gn gen .)
   
