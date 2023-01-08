@@ -35,6 +35,7 @@ jobs:
           mkdir C:\webrtc
           pushd C:\webrtc
           fetch --no-history webrtc
+          sed -i -e "s|#include <vector>|#include <vector>\n#include <cwctype>|" src/modules/desktop_capture/win/full_screen_win_application_handler.cc
           popd
       env:
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
