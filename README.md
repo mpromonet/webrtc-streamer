@@ -16,13 +16,17 @@
 
 [![NanoPi](images/nanopi.jpg)](http://wiki.friendlyarm.com/wiki/index.php/NanoPi_NEO_Air)
 
+## Overview
+
 WebRTC-streamer is an experiment to stream various sources (such as v4l2
 streams, rstp streams, or file streams) through WebRTC using simple mechanisms.
 
 It embeds a HTTP server that implements an API and serves a simple HTML page
 that use them through AJAX.
 
-The WebRTC signaling is implemented through HTTP requests:
+WebRTC-streamer implements
+[WebRTC signaling](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling)
+through HTTP requests:
 
 - `/api/call` - send offer and get answer
 - `/api/hangup` - close a call
@@ -31,20 +35,6 @@ The WebRTC signaling is implemented through HTTP requests:
 - `/api/getIceCandidate` - get the list of candidates
 
 The list of HTTP API is available using /api/help.
-
-Nowdays there is builds on
-[CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer),
-[CirrusCI](https://cirrus-ci.com/github/mpromonet/webrtc-streamer) and
-[GitHub CI](https://github.com/mpromonet/webrtc-streamer/actions):
-
-- for x86_64 on Ubuntu Bionic
-- for armv7 crosscompiled (this build is running on Raspberry Pi2 and NanoPi
-  NEO)
-- for armv6+vfp crosscompiled (this build is running on Raspberry PiB and should
-  run on a Raspberry Zero)
-- for arm64 crosscompiled
-- Windows x64 build with clang
-- MacOS
 
 The webrtc stream name could be:
 
@@ -61,9 +51,25 @@ The webrtc stream name could be:
   Windows)
 - a capture device name
 
+## Artifacts
+
+If you don't want to [compile it yourself](#build), you can download the
+artifacts off of: [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer),
+[CirrusCI](https://cirrus-ci.com/github/mpromonet/webrtc-streamer), or
+[GitHub CI](https://github.com/mpromonet/webrtc-streamer/actions):
+
+- for x86_64 on Ubuntu Bionic
+- for armv7 crosscompiled (this build is running on Raspberry Pi2 and NanoPi
+  NEO)
+- for armv6+vfp crosscompiled (this build is running on Raspberry PiB and should
+  run on a Raspberry Zero)
+- for arm64 crosscompiled
+- Windows x64 build with clang
+- MacOS
+
 ## Dependencies
 
-It is based on:
+This package depends on the following packages:
 
 - [WebRTC Native Code Package](http://www.webrtc.org) for WebRTC
 - [civetweb HTTP server](https://github.com/civetweb/civetweb) for HTTP server
@@ -71,29 +77,28 @@ It is based on:
 
 ## Build
 
-Install the Chromium depot tools (for WebRTC).
+- Install the Chromium depot tools (for WebRTC - contains a variety of tools
+  that helps external WebRTC development).
+  ```sh
+  pushd ..
+  git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+  export PATH=$PATH:`realpath depot_tools`
+  popd
+  ```
+- Download WebRTC
 
-```sh
-pushd ..
-git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-export PATH=$PATH:`realpath depot_tools`
-popd
-```
+  ```sh
+  mkdir ../webrtc
+  pushd ../webrtc
+  fetch --no-history webrtc 
+  popd
+  ```
 
-Download WebRTC
+- Build WebRTC Streamer
 
-```sh
-mkdir ../webrtc
-pushd ../webrtc
-fetch --no-history webrtc 
-popd
-```
-
-Build WebRTC Streamer
-
-```sh
-cmake . && make
-```
+  ```sh
+  cmake . && make
+  ```
 
 It is possible to specify cmake parameters `WEBRTCROOT` &
 `WEBRTCDESKTOPCAPTURE`:
@@ -136,11 +141,11 @@ Arguments of '-H' are forwarded to option
 of civetweb, then it is possible to use the civetweb syntax like `-H8000,9000`
 or `-H8080r,8443s`.
 
-Using `-o` allow to store compressed frame from backend stream using
+Using `-o` allows storing compressed frame data from the backend stream using
 `webrtc::VideoFrameBuffer::Type::kNative`. This Hack the stucture
 `webrtc::VideoFrameBuffer` storing data in a override of i420 buffer. This allow
 to forward H264 frames from V4L2 device or RTSP stream to WebRTC stream. It use
-less CPU and have less adaptation (resize, codec, bandwidth are disabled).
+less CPU and has less adaptation (resize, codec, bandwidth are disabled).
 
 Examples
 
@@ -160,14 +165,14 @@ For instance:
 - https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/webrtcstreamer.html?Bunny
 
 An example displaying grid of WebRTC Streams is available using option
-"layout=<lines>x<columns>"
+`layout=<lines>x<columns>`
 [![Screenshot](images/layout2x4.png)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/?layout=2x4)
 
 [Live Demo](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/?layout=2x4)
 
 ## Using embedded STUN/TURN server behind a NAT
 
-It is possible to start embeded ICE server and publish its url using:
+It is possible to start embeded ICE server and publish its URL using:
 
 ```sh
 ./webrtc-streamer -S0.0.0.0:3478 -s$(curl -s ifconfig.me):3478
@@ -225,8 +230,8 @@ A short sample HTML page using webrtc-streamer running locally on port 8000:
 
 # Using WebComponent
 
-Using web-component could be a simple way to display some webrtc stream, a
-minimal page could be:
+[Web Components](https://www.webcomponents.org/) are an alternative way to
+display a WebRTC stream in an HTML page. For example:
 
 ```html
 <html>
