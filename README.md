@@ -1,5 +1,5 @@
 <div align="center">
-	<a href="https://wiki.friendlyelec.com/wiki/index.php/NanoPi_NEO_Air"><img src="images/nanopi.jpg" width="500"></a>
+	<a href="https://wiki.friendlyelec.com/wiki/index.php/NanoPi_NEO_Air"><img alt="A picture of a Nano PI NEO Air, a small device with a camera. The camera is pointing towards the viewer." src="images/nanopi.jpg" width="500"></a>
 	<h1>WebRTC-Streamer</h1>
 </div>
 
@@ -27,16 +27,16 @@
 ## Installation
 
 If you don't want to [compile it yourself](#build), you can download the
-artifacts off of: [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer),
+artifacts off of [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer),
 [CirrusCI](https://cirrus-ci.com/github/mpromonet/webrtc-streamer), or
-[GitHub CI](https://github.com/mpromonet/webrtc-streamer/actions):
+[GitHub CI](https://github.com/mpromonet/webrtc-streamer/actions), for the following architectures:
 
-- for x86_64 on Ubuntu Bionic
-- for armv7 crosscompiled (this build is running on Raspberry Pi2 and NanoPi
+- x86_64 on Ubuntu Bionic
+- armv7 crosscompiled (this build is running on Raspberry Pi2 and NanoPi
   NEO)
-- for armv6+vfp crosscompiled (this build is running on Raspberry PiB and should
+- armv6+vfp crosscompiled (this build is running on Raspberry PiB and should
   run on a Raspberry Zero)
-- for arm64 crosscompiled
+- arm64 crosscompiled
 - Windows x64 build with clang
 - MacOS
 
