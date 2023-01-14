@@ -1,10 +1,7 @@
 <div align="center">
 	<a href="https://wiki.friendlyelec.com/wiki/index.php/NanoPi_NEO_Air"><img alt="A picture of a Nano PI NEO Air, a small device with a camera. The camera is pointing towards the viewer." src="images/nanopi.jpg" width="500"></a>
-	<h1>WebRTC-Streamer</h1>
-</div>
 
-<div align="center">
-
+# WebRTC-Streamer
 [![CircleCI](https://img.shields.io/circleci/build/github/mpromonet/webrtc-streamer?label=circleci&logo=circleci)](https://circleci.com/gh/mpromonet/webrtc-streamer)
 [![CirusCI](https://img.shields.io/cirrus/github/mpromonet/webrtc-streamer?label=cirrusci&logo=cirrusci)](https://cirrus-ci.com/github/mpromonet/webrtc-streamer)
 [![Snap Status](https://snapcraft.io//webrtc-streamer/badge.svg)](https://snapcraft.io/webrtc-streamer)
