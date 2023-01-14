@@ -5,13 +5,13 @@
 
 <div align="center">
 
-[![CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer.svg?style=shield)](https://circleci.com/gh/mpromonet/webrtc-streamer)
-[![CirusCI](https://api.cirrus-ci.com/github/mpromonet/webrtc-streamer.svg)](https://cirrus-ci.com/github/mpromonet/webrtc-streamer)
+[![CircleCI](https://img.shields.io/circleci/build/github/mpromonet/webrtc-streamer?label=circleci&logo=circleci)](https://circleci.com/gh/mpromonet/webrtc-streamer)
+[![CirusCI](https://img.shields.io/cirrus/github/mpromonet/webrtc-streamer?label=cirrusci&logo=cirrusci)](https://cirrus-ci.com/github/mpromonet/webrtc-streamer)
 [![Snap Status](https://snapcraft.io//webrtc-streamer/badge.svg)](https://snapcraft.io/webrtc-streamer)
 
-[![GithubCI](https://github.com/mpromonet/webrtc-streamer/workflows/C/C++%20CI%20linux/badge.svg)](https://github.com/mpromonet/webrtc-streamer/actions/workflows/cpp-linux.yml)
-[![GithubCI](https://github.com/mpromonet/webrtc-streamer/workflows/C/C++%20CI%20windows/badge.svg)](https://github.com/mpromonet/webrtc-streamer/actions/workflows/cpp-windows.yml)
-[![GithubCI](https://github.com/mpromonet/webrtc-streamer/workflows/C/C++%20CI%20macos/badge.svg)](https://github.com/mpromonet/webrtc-streamer/actions/workflows/cpp-macos.yml)
+[![GithubCI](https://img.shields.io/github/actions/workflow/status/mpromonet/webrtc-streamer/cpp-linux.yml?label=C%2FC%2B%2B%20ci%20linux&logo=github)](https://github.com/mpromonet/webrtc-streamer/actions/workflows/cpp-linux.yml)
+[![GithubCI](https://img.shields.io/github/actions/workflow/status/mpromonet/webrtc-streamer/cpp-windows.yml?label=C%2FC%2B%2B%20ci%20windows&logo=github)](https://github.com/mpromonet/webrtc-streamer/actions/workflows/cpp-windows.yml)
+[![GithubCI](https://img.shields.io/github/actions/workflow/status/mpromonet/webrtc-streamer/cpp-macos.yml?label=C%2FC%2B%2B%20ci%20macos&logo=github)](https://github.com/mpromonet/webrtc-streamer/actions/workflows/cpp-macos.yml)
 
 [![Release](https://img.shields.io/github/release/mpromonet/webrtc-streamer.svg)](https://github.com/mpromonet/webrtc-streamer/releases/latest)
 [![Download](https://img.shields.io/github/downloads/mpromonet/webrtc-streamer/total.svg)](https://github.com/mpromonet/webrtc-streamer/releases/latest)
@@ -20,22 +20,23 @@
 [![Demo](https://img.shields.io/badge/heroku-demo-blue)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mpromonet/webrtc-streamer)
 
-**An experimental, straight-forward abstraction over WebRTC to stream various media sources.**
+**An experimental, straight-forward abstraction over WebRTC to stream various
+media sources.**
 
 </div>
 
 ## Installation
 
-If you don't want to [compile it yourself](#build), you can download the
+If you don't want to [compile it yourself](#manual-build), you can download the
 artifacts off of [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer),
 [CirrusCI](https://cirrus-ci.com/github/mpromonet/webrtc-streamer), or
-[GitHub CI](https://github.com/mpromonet/webrtc-streamer/actions), for the following architectures:
+[GitHub CI](https://github.com/mpromonet/webrtc-streamer/actions), for the
+following architectures:
 
 - x86_64 on Ubuntu Bionic
-- armv7 crosscompiled (this build is running on Raspberry Pi2 and NanoPi
-  NEO)
-- armv6+vfp crosscompiled (this build is running on Raspberry PiB and should
-  run on a Raspberry Zero)
+- armv7 crosscompiled (this build is running on Raspberry Pi2 and NanoPi NEO)
+- armv6+vfp crosscompiled (this build is running on Raspberry PiB and should run
+  on a Raspberry Zero)
 - arm64 crosscompiled
 - Windows x64 build with clang
 - MacOS
@@ -61,8 +62,8 @@ artifacts off of [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer),
 
 	-S[stun_address]                   : start embeded STUN server bind to address (default 0.0.0.0:3478)
 	-s[stun_address]                   : use an external STUN server (default:stun.l.google.com:19302 , -:means no STUN)
-	-t[username:password@]turn_address : use an external TURN relay server (default:disabled)
 	-T[username:password@]turn_address : start embeded TURN server (default:disabled)
+	-t[username:password@]turn_address : use an external TURN relay server (default:disabled)
 	-R [Udp port range min:max]        : Set the webrtc udp port range (default 0:65535)
 	-W webrtc_trials_fields            : Set the webrtc trials fields (default:WebRTC-FrameDropper/Disabled/)		
 	-a[audio layer]                    : spefify audio capture layer to use (default:0)		
@@ -100,20 +101,20 @@ The list of HTTP API endpoints is available by GETting `/api/help`.
 
 Options for the WebRTC stream name:
 
-- an alias defined using -n argument then the corresponding -u argument will be
+- an alias defined using `-n` argument then the corresponding `-u` argument will be
   used to create the capturer
 - an "rtsp://" url that will be opened using an RTSP capturer based on live555
 - an "file://" url that will be opened using an MKV capturer based on live555
 - an "screen://" url that will be opened by
-  webrtc::DesktopCapturer::CreateScreenCapturer
+  `webrtc::DesktopCapturer::CreateScreenCapturer`
 - an "window://" url that will be opened by
-  webrtc::DesktopCapturer::CreateWindowCapturer
-- an "v4l2://" url that will capture H264 frames and store it using
-  webrtc::VideoFrameBuffer::Type::kNative type (obviously not supported on
+  `webrtc::DesktopCapturer::CreateWindowCapturer`
+- an "v4l2://" url that will capture [H264](https://en.wikipedia.org/wiki/Advanced_Video_Coding) frames and store it using
+  webrtc::VideoFrameBuffer::Type::kNative type (not supported on
   Windows)
 - a capture device name
 
-## Build
+## Manual Build
 
 ### Dependencies
 
@@ -123,30 +124,32 @@ This package depends on the following packages:
 - [civetweb HTTP server](https://github.com/civetweb/civetweb) for HTTP server
 - [live555](http://www.live555.com/liveMedia) for RTSP/MKV source
 
-The following steps are required to build the project, and will install the dependencies above:
+The following steps are required to build the project, and will install the
+dependencies above:
 
-- Install the Chromium depot tools (for WebRTC - contains a variety of tools
-  that helps external WebRTC development).
-  ```sh
-  pushd ..
-  git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-  export PATH=$PATH:`realpath depot_tools`
-  popd
-  ```
-- Download WebRTC
+1. Install the Chromium depot tools (for WebRTC - contains a variety of tools
+   that helps external WebRTC development).
 
-  ```sh
-  mkdir ../webrtc
-  pushd ../webrtc
-  fetch --no-history webrtc 
-  popd
-  ```
+   ```sh
+   pushd ..
+   git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+   export PATH=$PATH:`realpath depot_tools`
+   popd
+   ```
+2. Download WebRTC
 
-- Build WebRTC Streamer
+   ```sh
+   mkdir ../webrtc
+   pushd ../webrtc
+   fetch --no-history webrtc 
+   popd
+   ```
 
-  ```sh
-  cmake . && make
-  ```
+3. Build WebRTC Streamer
+
+   ```sh
+   cmake . && make
+   ```
 
 It is possible to specify cmake parameters `WEBRTCROOT` &
 `WEBRTCDESKTOPCAPTURE`:
@@ -168,18 +171,22 @@ We can access to the WebRTC stream using
 [webrtcstreamer.html](https://github.com/mpromonet/webrtc-streamer-html/blob/master/webrtcstreamer.html).
 For instance:
 
-- https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/webrtcstreamer.html?rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
-- https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/webrtcstreamer.html?Bunny
+- [webrtcstreamer.html?rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/webrtcstreamer.html?rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov)
+- [webrtcstreamer.html?Bunny](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/webrtcstreamer.html?Bunny)
+
+---
 
 An example displaying grid of WebRTC Streams is available using option
 `layout=<lines>x<columns>`
 [![Screenshot](images/layout2x4.png)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/?layout=2x4)
 
-[Live Demo](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/?layout=2x4)
+[Live Demo (?layout=2x4)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/?layout=2x4)
 
 ## Using embedded STUN/TURN server behind a NAT
 
-It is possible to start embeded ICE server and publish its URL using:
+It is possible to start an embeded [STUN](https://en.wikipedia.org/wiki/STUN)
+and [TURN](https://en.wikipedia.org/wiki/Traversal_Using_Relays_around_NAT)
+server and publish its URL:
 
 ```sh
 ./webrtc-streamer -S0.0.0.0:3478 -s$(curl -s ifconfig.me):3478
@@ -201,7 +208,7 @@ upnpc -r 8000 tcp 3478 tcp 3478 udp
 
 Adapting with the HTTP port, STUN port, TURN port.
 
-## Embed in a HTML page
+## HTML Embedding
 
 Instead of using the internal HTTP server, it is easy to display a WebRTC stream
 in a HTML page served by another HTTP server. The URL of the WebRTC-streamer to
@@ -210,7 +217,7 @@ use should be given creating the
 instance:
 
 ```js
-var webRtcServer      = new WebRtcStreamer(<video tag>, <webrtc-streamer url>);
+var webRtcServer = new WebRtcStreamer(<video tag>, <webrtc-streamer url>);
 ```
 
 A short sample HTML page using webrtc-streamer running locally on port 8000:
@@ -235,9 +242,10 @@ A short sample HTML page using webrtc-streamer running locally on port 8000:
 </html>
 ```
 
-## Using WebComponent
+## Using WebComponents
 
-[Web Components](https://www.webcomponents.org/) are an alternative way to
+WebRTC-streamer provides its own
+[Web Components](https://www.webcomponents.org/) as an alternative way to
 display a WebRTC stream in an HTML page. For example:
 
 ```html
@@ -366,17 +374,21 @@ docker run --device=/dev/video0 -p 8000:8000 -it mpromonet/webrtc-streamer
 
 The container entry point is the webrtc-streamer application, then you can:
 
-- get the help using:
+- view all commands
   ```sh
-  docker run -p 8000:8000 -it mpromonet/webrtc-streamer -h
+  docker run -p 8000:8000 -it mpromonet/webrtc-streamer --help
   ```
-- run the container registering a RTSP url using:
+- run the container registering a RTSP url:
 
   ```sh
   docker run -p 8000:8000 -it mpromonet/webrtc-streamer -n raspicam -u rtsp://pi2.local:8554/unicast
   ```
-- run the container giving config.json file using:
+- run the container giving config.json file:
 
   ```sh
   docker run -p 8000:8000 -v $PWD/config.json:/app/config.json mpromonet/webrtc-streamer
   ```
+
+## License
+
+Distributed under the UNLICENSE license. See [`LICENSE`](./LICENSE) for more information.
