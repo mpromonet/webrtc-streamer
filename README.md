@@ -387,8 +387,3 @@ The container entry point is the webrtc-streamer application, then you can:
   ```sh
   docker run -p 8000:8000 -v $PWD/config.json:/app/config.json mpromonet/webrtc-streamer
   ```
-
-## License
-
-Distributed under the UNLICENSE license. See [`LICENSE`](./LICENSE) for more
-information.
