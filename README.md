@@ -1,6 +1,14 @@
+<div align="center">
+	<a href="http://wiki.friendlyarm.com/wiki/index.php/NanoPi_NEO_Air"><img src="images/nanopi.jpg" width="500"></a>
+	<h1>WebRTC-Streamer</h1>
+</div>
+
+<div align="center">
+
 [![CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer.svg?style=shield)](https://circleci.com/gh/mpromonet/webrtc-streamer)
 [![CirusCI](https://api.cirrus-ci.com/github/mpromonet/webrtc-streamer.svg)](https://cirrus-ci.com/github/mpromonet/webrtc-streamer)
 [![Snap Status](https://snapcraft.io//webrtc-streamer/badge.svg)](https://snapcraft.io/webrtc-streamer)
+
 [![GithubCI](https://github.com/mpromonet/webrtc-streamer/workflows/C/C++%20CI%20linux/badge.svg)](https://github.com/mpromonet/webrtc-streamer/actions/workflows/cpp-linux.yml)
 [![GithubCI](https://github.com/mpromonet/webrtc-streamer/workflows/C/C++%20CI%20windows/badge.svg)](https://github.com/mpromonet/webrtc-streamer/actions/workflows/cpp-windows.yml)
 [![GithubCI](https://github.com/mpromonet/webrtc-streamer/workflows/C/C++%20CI%20macos/badge.svg)](https://github.com/mpromonet/webrtc-streamer/actions/workflows/cpp-macos.yml)
@@ -12,46 +20,11 @@
 [![Demo](https://img.shields.io/badge/heroku-demo-blue)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mpromonet/webrtc-streamer)
 
-# WebRTC-streamer
+**An experimental, straight-forward abstraction over WebRTC to stream various media sources.**
 
-[![NanoPi](images/nanopi.jpg)](http://wiki.friendlyarm.com/wiki/index.php/NanoPi_NEO_Air)
+</div>
 
-## Overview
-
-WebRTC-streamer is an experiment to stream various sources (such as v4l2
-streams, rstp streams, or file streams) through WebRTC using simple mechanisms.
-
-It embeds a HTTP server that implements an API and serves a simple HTML page
-that use them through AJAX.
-
-WebRTC-streamer implements
-[WebRTC signaling](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling)
-through HTTP requests:
-
-- `/api/call` - send offer and get answer
-- `/api/hangup` - close a call
-
-- `/api/addIceCandidate` - add a candidate
-- `/api/getIceCandidate` - get the list of candidates
-
-The list of HTTP API is available using /api/help.
-
-The webrtc stream name could be:
-
-- an alias defined using -n argument then the corresponding -u argument will be
-  used to create the capturer
-- an "rtsp://" url that will be openned using an RTSP capturer based on live555
-- an "file://" url that will be openned using an MKV capturer based on live555
-- an "screen://" url that will be openned by
-  webrtc::DesktopCapturer::CreateScreenCapturer
-- an "window://" url that will be openned by
-  webrtc::DesktopCapturer::CreateWindowCapturer
-- an "v4l2://" url that will capture H264 frames and store it using
-  webrtc::VideoFrameBuffer::Type::kNative type (obviously not supported on
-  Windows)
-- a capture device name
-
-## Artifacts
+## Installation
 
 If you don't want to [compile it yourself](#build), you can download the
 artifacts off of: [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer),
@@ -67,50 +40,11 @@ artifacts off of: [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer),
 - Windows x64 build with clang
 - MacOS
 
-## Dependencies
-
-This package depends on the following packages:
-
-- [WebRTC Native Code Package](http://www.webrtc.org) for WebRTC
-- [civetweb HTTP server](https://github.com/civetweb/civetweb) for HTTP server
-- [live555](http://www.live555.com/liveMedia) for RTSP/MKV source
-
-## Build
-
-- Install the Chromium depot tools (for WebRTC - contains a variety of tools
-  that helps external WebRTC development).
-  ```sh
-  pushd ..
-  git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-  export PATH=$PATH:`realpath depot_tools`
-  popd
-  ```
-- Download WebRTC
-
-  ```sh
-  mkdir ../webrtc
-  pushd ../webrtc
-  fetch --no-history webrtc 
-  popd
-  ```
-
-- Build WebRTC Streamer
-
-  ```sh
-  cmake . && make
-  ```
-
-It is possible to specify cmake parameters `WEBRTCROOT` &
-`WEBRTCDESKTOPCAPTURE`:
-
-- `$WEBRTCROOT/src` should contains source (default is $(pwd)/../webrtc)
-- `WEBRTCDESKTOPCAPTURE` enabling desktop capture if available (default is ON)
-
 ## Usage
 
-```
-./webrtc-streamer [-H http port] [-S[embeded stun address]] -[v[v]]  [url1]...[urln]
-./webrtc-streamer [-H http port] [-s[external stun address]] -[v[v]] [url1]...[urln]
+```roff
+./webrtc-streamer [-H http port] [-S[embeded stun address]] -[v[v]]  [urls...]
+./webrtc-streamer [-H http port] [-s[external stun address]] -[v[v]] [urls...]
 ./webrtc-streamer -V
 	-v[v[v]]           : verbosity
 	-V                 : print version
@@ -147,7 +81,80 @@ Using `-o` allows storing compressed frame data from the backend stream using
 to forward H264 frames from V4L2 device or RTSP stream to WebRTC stream. It use
 less CPU and has less adaptation (resize, codec, bandwidth are disabled).
 
-Examples
+## API
+
+It embeds a HTTP server that implements an API and serves a simple HTML page
+that uses the endpoints through AJAX calls.
+
+WebRTC-streamer implements
+[WebRTC signaling](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling)
+through HTTP requests:
+
+- `/api/call` - send offer and get answer
+- `/api/hangup` - close a call
+
+- `/api/addIceCandidate` - add a candidate
+- `/api/getIceCandidate` - get the list of candidates
+
+The list of HTTP API endpoints is available by GETting `/api/help`.
+
+Options for the WebRTC stream name:
+
+- an alias defined using -n argument then the corresponding -u argument will be
+  used to create the capturer
+- an "rtsp://" url that will be opened using an RTSP capturer based on live555
+- an "file://" url that will be opened using an MKV capturer based on live555
+- an "screen://" url that will be opened by
+  webrtc::DesktopCapturer::CreateScreenCapturer
+- an "window://" url that will be opened by
+  webrtc::DesktopCapturer::CreateWindowCapturer
+- an "v4l2://" url that will capture H264 frames and store it using
+  webrtc::VideoFrameBuffer::Type::kNative type (obviously not supported on
+  Windows)
+- a capture device name
+
+## Build
+
+### Dependencies
+
+This package depends on the following packages:
+
+- [WebRTC Native Code Package](http://www.webrtc.org) for WebRTC
+- [civetweb HTTP server](https://github.com/civetweb/civetweb) for HTTP server
+- [live555](http://www.live555.com/liveMedia) for RTSP/MKV source
+
+The following steps are required to build the project, and will install the dependencies above:
+
+- Install the Chromium depot tools (for WebRTC - contains a variety of tools
+  that helps external WebRTC development).
+  ```sh
+  pushd ..
+  git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+  export PATH=$PATH:`realpath depot_tools`
+  popd
+  ```
+- Download WebRTC
+
+  ```sh
+  mkdir ../webrtc
+  pushd ../webrtc
+  fetch --no-history webrtc 
+  popd
+  ```
+
+- Build WebRTC Streamer
+
+  ```sh
+  cmake . && make
+  ```
+
+It is possible to specify cmake parameters `WEBRTCROOT` &
+`WEBRTCDESKTOPCAPTURE`:
+
+- `$WEBRTCROOT/src` should contains source (default is $(pwd)/../webrtc)
+- `WEBRTCDESKTOPCAPTURE` enabling desktop capture if available (default is ON)
+
+## Examples
 
 ```sh
 ./webrtc-streamer rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
@@ -197,7 +204,7 @@ Adapting with the HTTP port, STUN port, TURN port.
 ## Embed in a HTML page
 
 Instead of using the internal HTTP server, it is easy to display a WebRTC stream
-in a HTML page served by another HTTP server. The URL of the webrtc-streamer to
+in a HTML page served by another HTTP server. The URL of the WebRTC-streamer to
 use should be given creating the
 [WebRtcStreamer](http://htmlpreview.github.io/?https://github.com/mpromonet/webrtc-streamer-html/blob/master/jsdoc/WebRtcStreamer.html)
 instance:
@@ -228,7 +235,7 @@ A short sample HTML page using webrtc-streamer running locally on port 8000:
 </html>
 ```
 
-# Using WebComponent
+## Using WebComponent
 
 [Web Components](https://www.webcomponents.org/) are an alternative way to
 display a WebRTC stream in an HTML page. For example:
@@ -343,7 +350,7 @@ A short sample to publish WebRTC streams to a Jitsi Video Room could be:
 
 [Live Demo](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/xmppvideoroom.html)
 
-# Docker Image
+## Docker Image
 
 You can start the application using the docker image:
 
