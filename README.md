@@ -14,7 +14,7 @@
 [![Download](https://img.shields.io/github/downloads/mpromonet/webrtc-streamer/total.svg)](https://github.com/mpromonet/webrtc-streamer/releases/latest)
 [![Docker Pulls](https://img.shields.io/docker/pulls/mpromonet/webrtc-streamer.svg)](https://hub.docker.com/r/mpromonet/webrtc-streamer/)
 
-[![Demo](https://img.shields.io/badge/heroku-demo-blue)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/)
+[![Demo](https://img.shields.io/badge/azure-demo-blue)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mpromonet/webrtc-streamer)
 
 **An experimental, straight-forward abstraction over WebRTC to stream various
