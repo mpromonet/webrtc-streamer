@@ -72,17 +72,18 @@ following architectures:
 ```
 
 Arguments of '-H' are forwarded to option
-[listening_ports](https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md#listening_ports-8080)
-of civetweb, then it is possible to use the civetweb syntax like `-H8000,9000`
-or `-H8080r,8443s`.
+[`listening_ports`](https://github.com/civetweb/civetweb/blob/master/docs/UserManual.md#listening_ports-8080)
+of civetweb, allowing use of the civetweb syntax like `-H8000,9000` or
+`-H8080r,8443s`.
 
 Using `-o` allows storing compressed frame data from the backend stream using
-`webrtc::VideoFrameBuffer::Type::kNative`. This Hack the stucture
-`webrtc::VideoFrameBuffer` storing data in a override of i420 buffer. This allow
-to forward H264 frames from V4L2 device or RTSP stream to WebRTC stream. It use
-less CPU and has less adaptation (resize, codec, bandwidth are disabled).
+`webrtc::VideoFrameBuffer::Type::kNative`. This hacks the stucture
+`webrtc::VideoFrameBuffer` storing data in a override of the i420 buffer. This
+allows forwarding H264 frames from V4L2 device or RTSP stream to WebRTC stream.
+It uses less CPU, but has less features (resize, codec, and bandwidth are
+disabled).
 
-## API
+## HTTP API
 
 It embeds a HTTP server that implements an API and serves a simple HTML page
 that uses the endpoints through AJAX calls.
@@ -101,16 +102,17 @@ The list of HTTP API endpoints is available by GETting `/api/help`.
 
 Options for the WebRTC stream name:
 
-- an alias defined using `-n` argument then the corresponding `-u` argument will be
-  used to create the capturer
+- an alias defined using `-n` argument then the corresponding `-u` argument will
+  be used to create the capturer
 - an "rtsp://" url that will be opened using an RTSP capturer based on live555
 - an "file://" url that will be opened using an MKV capturer based on live555
 - an "screen://" url that will be opened by
   `webrtc::DesktopCapturer::CreateScreenCapturer`
 - an "window://" url that will be opened by
   `webrtc::DesktopCapturer::CreateWindowCapturer`
-- an "v4l2://" url that will capture [H264](https://en.wikipedia.org/wiki/Advanced_Video_Coding) frames and store it using
-  webrtc::VideoFrameBuffer::Type::kNative type (not supported on
+- an "v4l2://" url that will capture
+  [H264](https://en.wikipedia.org/wiki/Advanced_Video_Coding) frames and store
+  it using webrtc::VideoFrameBuffer::Type::kNative type (not supported on
   Windows)
 - a capture device name
 
@@ -391,4 +393,5 @@ The container entry point is the webrtc-streamer application, then you can:
 
 ## License
 
-Distributed under the UNLICENSE license. See [`LICENSE`](./LICENSE) for more information.
+Distributed under the UNLICENSE license. See [`LICENSE`](./LICENSE) for more
+information.
