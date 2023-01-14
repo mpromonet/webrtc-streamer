@@ -1,6 +1,6 @@
 
 # WebRTC-Streamer
-[![NanoPi](images/nanopi.jpg)](http://wiki.friendlyarm.com/wiki/index.php/NanoPi_NEO_Air)
+<a href="https://wiki.friendlyelec.com/wiki/index.php/NanoPi_NEO_Air"><img alt="A picture of a Nano PI NEO Air" src="images/nanopi.jpg" width="500"></a>
 
 [![CircleCI](https://img.shields.io/circleci/build/github/mpromonet/webrtc-streamer?label=circleci&logo=circleci)](https://circleci.com/gh/mpromonet/webrtc-streamer)
 [![CirusCI](https://img.shields.io/cirrus/github/mpromonet/webrtc-streamer?label=cirrusci&logo=cirrusci)](https://cirrus-ci.com/github/mpromonet/webrtc-streamer)
@@ -17,7 +17,7 @@
 [![Demo](https://img.shields.io/badge/azure-demo-blue)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mpromonet/webrtc-streamer)
 
-experimentation to stream WebRTC media sources like capture devices, screen capture, mkv files and RTSP sources using simple signaling.  
+Experimentation to stream WebRTC media sources like capture devices, screen capture, mkv files and RTSP sources using simple signaling.  
 
 ## Artefacts
 
