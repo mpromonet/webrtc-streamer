@@ -1,5 +1,5 @@
 <div align="center">
-	<a href="http://wiki.friendlyarm.com/wiki/index.php/NanoPi_NEO_Air"><img src="images/nanopi.jpg" width="500"></a>
+	<a href="https://wiki.friendlyelec.com/wiki/index.php/NanoPi_NEO_Air"><img src="images/nanopi.jpg" width="500"></a>
 	<h1>WebRTC-Streamer</h1>
 </div>
 
