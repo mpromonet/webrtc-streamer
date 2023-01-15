@@ -13,7 +13,9 @@ jobs:
         token: ${{ secrets.OKTETO_TOKEN }}
 
     - uses: okteto/namespace@latest
-
+      with:
+        namespace: webrtc-streamer-mpromonet
+        
     - uses: okteto/pipeline@latest
       with:
         name: master
