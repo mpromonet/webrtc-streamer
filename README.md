@@ -1,7 +1,7 @@
-<div align="center">
-	<a href="https://wiki.friendlyelec.com/wiki/index.php/NanoPi_NEO_Air"><img alt="A picture of a Nano PI NEO Air, a small device with a camera. The camera is pointing towards the viewer." src="images/nanopi.jpg" width="500"></a>
 
 # WebRTC-Streamer
+<a href="https://wiki.friendlyelec.com/wiki/index.php/NanoPi_NEO_Air"><img alt="A picture of a Nano PI NEO Air" src="images/nanopi.jpg" width="500"></a>
+
 [![CircleCI](https://img.shields.io/circleci/build/github/mpromonet/webrtc-streamer?label=circleci&logo=circleci)](https://circleci.com/gh/mpromonet/webrtc-streamer)
 [![CirusCI](https://img.shields.io/cirrus/github/mpromonet/webrtc-streamer?label=cirrusci&logo=cirrusci)](https://cirrus-ci.com/github/mpromonet/webrtc-streamer)
 [![Snap Status](https://snapcraft.io//webrtc-streamer/badge.svg)](https://snapcraft.io/webrtc-streamer)
@@ -17,26 +17,13 @@
 [![Demo](https://img.shields.io/badge/azure-demo-blue)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mpromonet/webrtc-streamer)
 
-**An experimental, straight-forward abstraction over WebRTC to stream various
-media sources.**
+Experimentation to stream WebRTC media sources like capture devices, screen capture, mkv files and RTSP sources using simple signaling.  
 
-</div>
+## Artefacts
 
-## Installation
+* packages are available from https://github.com/mpromonet/webrtc-streamer/releases/latest
+* container image are available from  https://hub.docker.com/r/mpromonet/webrtc-streamer
 
-If you don't want to [compile it yourself](#manual-build), you can download the
-artifacts off of [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer),
-[CirrusCI](https://cirrus-ci.com/github/mpromonet/webrtc-streamer), or
-[GitHub CI](https://github.com/mpromonet/webrtc-streamer/actions), for the
-following architectures:
-
-- x86_64 on Ubuntu Bionic
-- armv7 crosscompiled (this build is running on Raspberry Pi2 and NanoPi NEO)
-- armv6+vfp crosscompiled (this build is running on Raspberry PiB and should run
-  on a Raspberry Zero)
-- arm64 crosscompiled
-- Windows x64 build with clang
-- MacOS
 
 ## Usage
 
@@ -80,23 +67,6 @@ allows forwarding H264 frames from V4L2 device or RTSP stream to WebRTC stream.
 It uses less CPU, but has less features (resize, codec, and bandwidth are
 disabled).
 
-## HTTP API
-
-It embeds a HTTP server that implements an API and serves a simple HTML page
-that uses the endpoints through AJAX calls.
-
-WebRTC-streamer implements
-[WebRTC signaling](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling)
-through HTTP requests:
-
-- `/api/call` - send offer and get answer
-- `/api/hangup` - close a call
-
-- `/api/addIceCandidate` - add a candidate
-- `/api/getIceCandidate` - get the list of candidates
-
-The list of HTTP API endpoints is available by GETting `/api/help`.
-
 Options for the WebRTC stream name:
 
 - an alias defined using `-n` argument then the corresponding `-u` argument will
@@ -113,50 +83,7 @@ Options for the WebRTC stream name:
   Windows)
 - a capture device name
 
-## Manual Build
-
-### Dependencies
-
-This package depends on the following packages:
-
-- [WebRTC Native Code Package](http://www.webrtc.org) for WebRTC
-- [civetweb HTTP server](https://github.com/civetweb/civetweb) for HTTP server
-- [live555](http://www.live555.com/liveMedia) for RTSP/MKV source
-
-The following steps are required to build the project, and will install the
-dependencies above:
-
-1. Install the Chromium depot tools (for WebRTC - contains a variety of tools
-   that helps external WebRTC development).
-
-   ```sh
-   pushd ..
-   git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-   export PATH=$PATH:`realpath depot_tools`
-   popd
-   ```
-2. Download WebRTC
-
-   ```sh
-   mkdir ../webrtc
-   pushd ../webrtc
-   fetch --no-history webrtc 
-   popd
-   ```
-
-3. Build WebRTC Streamer
-
-   ```sh
-   cmake . && make
-   ```
-
-It is possible to specify cmake parameters `WEBRTCROOT` &
-`WEBRTCDESKTOPCAPTURE`:
-
-- `$WEBRTCROOT/src` should contains source (default is $(pwd)/../webrtc)
-- `WEBRTCDESKTOPCAPTURE` enabling desktop capture if available (default is ON)
-
-## Examples
+#### Examples
 
 ```sh
 ./webrtc-streamer rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
@@ -173,13 +100,42 @@ For instance:
 - [webrtcstreamer.html?rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/webrtcstreamer.html?rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov)
 - [webrtcstreamer.html?Bunny](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/webrtcstreamer.html?Bunny)
 
----
-
 An example displaying grid of WebRTC Streams is available using option
 `layout=<lines>x<columns>`
 [![Screenshot](images/layout2x4.png)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/?layout=2x4)
 
 [Live Demo (?layout=2x4)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/?layout=2x4)
+
+## Using docker image
+
+You can start the application using the docker image:
+
+```sh
+docker run -p 8000:8000 -it mpromonet/webrtc-streamer
+```
+
+You can expose V4L2 devices from your host using:
+
+```sh
+docker run --device=/dev/video0 -p 8000:8000 -it mpromonet/webrtc-streamer
+```
+
+The container entry point is the webrtc-streamer application, then you can:
+
+- view all commands
+  ```sh
+  docker run -p 8000:8000 -it mpromonet/webrtc-streamer --help
+  ```
+- run the container registering a RTSP url:
+
+  ```sh
+  docker run -p 8000:8000 -it mpromonet/webrtc-streamer -n raspicam -u rtsp://pi2.local:8554/unicast
+  ```
+- run the container giving config.json file:
+
+  ```sh
+  docker run -p 8000:8000 -v $PWD/config.json:/app/config.json mpromonet/webrtc-streamer
+  ```
 
 ## Using embedded STUN/TURN server behind a NAT
 
@@ -357,33 +313,60 @@ A short sample to publish WebRTC streams to a Jitsi Video Room could be:
 
 [Live Demo](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/xmppvideoroom.html)
 
-## Docker Image
+## Build
 
-You can start the application using the docker image:
+### Dependencies
 
-```sh
-docker run -p 8000:8000 -it mpromonet/webrtc-streamer
-```
+This package depends on the following packages:
 
-You can expose V4L2 devices from your host using:
+- [WebRTC Native Code Package](http://www.webrtc.org) for WebRTC
+- [civetweb HTTP server](https://github.com/civetweb/civetweb) for HTTP server
+- [live555](http://www.live555.com/liveMedia) for RTSP/MKV source
 
-```sh
-docker run --device=/dev/video0 -p 8000:8000 -it mpromonet/webrtc-streamer
-```
+The following steps are required to build the project, and will install the
+dependencies above:
 
-The container entry point is the webrtc-streamer application, then you can:
+1. Install the Chromium depot tools
 
-- view all commands
-  ```sh
-  docker run -p 8000:8000 -it mpromonet/webrtc-streamer --help
-  ```
-- run the container registering a RTSP url:
+   ```sh
+   pushd ..
+   git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+   export PATH=$PATH:`realpath depot_tools`
+   popd
+   ```
+2. Download WebRTC
 
-  ```sh
-  docker run -p 8000:8000 -it mpromonet/webrtc-streamer -n raspicam -u rtsp://pi2.local:8554/unicast
-  ```
-- run the container giving config.json file:
+   ```sh
+   mkdir ../webrtc
+   pushd ../webrtc
+   fetch --no-history webrtc 
+   popd
+   ```
 
-  ```sh
-  docker run -p 8000:8000 -v $PWD/config.json:/app/config.json mpromonet/webrtc-streamer
-  ```
+3. Build WebRTC Streamer
+
+   ```sh
+   cmake . && make
+   ```
+
+It is possible to specify cmake parameters `WEBRTCROOT` &
+`WEBRTCDESKTOPCAPTURE`:
+
+- `$WEBRTCROOT/src` should contains source (default is $(pwd)/../webrtc)
+- `WEBRTCDESKTOPCAPTURE` enabling desktop capture if available (default is ON)
+
+
+## Pipelines
+
+There is pipelines on [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer),
+[CirrusCI](https://cirrus-ci.com/github/mpromonet/webrtc-streamer), or
+[GitHub CI](https://github.com/mpromonet/webrtc-streamer/actions), for the
+following architectures:
+
+- x86_64 on Ubuntu
+- armv7 crosscompiled (this build is running on Raspberry Pi2 and NanoPi NEO)
+- armv6+vfp crosscompiled (this build is running on Raspberry PiB and should run
+  on a Raspberry Zero)
+- arm64 crosscompiled
+- Windows x64 build with clang
+- MacOS
