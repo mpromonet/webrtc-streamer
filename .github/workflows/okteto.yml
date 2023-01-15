@@ -13,10 +13,7 @@ jobs:
         token: ${{ secrets.OKTETO_TOKEN }}
 
     - uses: okteto/namespace@latest
-      with:
-        name: mpromonet
 
-    - name: "Trigger the pipeline"
-      uses: okteto/pipeline@latest
+    - uses: okteto/pipeline@latest
       with:
         name: master
