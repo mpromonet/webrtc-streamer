@@ -15,7 +15,7 @@
 		}
 	},
 
-	"postCreateCommand": "mkdir /workspaces/webrtc && cd /workspaces/webrtc && fetch --no-history webrtc",
+	"postCreateCommand": "bash -c 'sudo chown -R vscode:vscode /workspaces/depot_tools && sudo mkdir -p /workspaces/webrtc && sudo chown -R vscode:vscode /workspaces/webrtc && cd /workspaces/webrtc && fetch --no-history webrtc'",
 	"forwardPorts": [8000],
 	"remoteUser": "vscode"
 }
