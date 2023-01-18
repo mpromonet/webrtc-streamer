@@ -334,7 +334,7 @@ dependencies above:
    export PATH=$PATH:`realpath depot_tools`
    popd
    ```
-2. Download WebRTC
+2. Download WebRTC (do note that this may take a while, since the WebRTC dependency is large).
 
    ```sh
    mkdir ../webrtc
