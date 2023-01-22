@@ -14,7 +14,7 @@ jobs:
 
     - uses: okteto/namespace@latest
       with:
-        namespace: webrtc-streamer-mpromonet
+        namespace: mpromonet
         
     - uses: okteto/pipeline@latest
       with:
