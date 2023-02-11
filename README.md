@@ -14,7 +14,7 @@
 [![Download](https://img.shields.io/github/downloads/mpromonet/webrtc-streamer/total.svg)](https://github.com/mpromonet/webrtc-streamer/releases/latest)
 [![Docker Pulls](https://img.shields.io/docker/pulls/mpromonet/webrtc-streamer.svg)](https://hub.docker.com/r/mpromonet/webrtc-streamer/)
 
-[![Demo](https://img.shields.io/badge/azure-demo-blue)](https://webrtc-streamer-mpromonet.cloud.okteto.net/)
+[![Demo](https://img.shields.io/badge/okteto-livedemo-green)](https://webrtc-streamer-mpromonet.cloud.okteto.net/)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mpromonet/webrtc-streamer)
 
 Experimentation to stream WebRTC media sources like capture devices, screen capture, mkv files and RTSP sources using simple signaling.  
