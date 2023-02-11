@@ -60,11 +60,11 @@ class NullDecoder : public webrtc::VideoDecoder {
 // Implementation of video decoder factory
 class VideoDecoderFactory : public webrtc::VideoDecoderFactory {
    public:
-    VideoDecoderFactory(): supported_formats_(webrtc::SupportedH264Codecs()) {}
+    VideoDecoderFactory(): supported_formats_({webrtc::SdpVideoFormat(cricket::kH264CodecName)}) {}
     virtual ~VideoDecoderFactory() override {}
 
     std::unique_ptr<webrtc::VideoDecoder> CreateVideoDecoder(const webrtc::SdpVideoFormat& format) override {
-   		RTC_LOG(LS_INFO) << "Create Null Decoder format:" << format.name;
+   		RTC_LOG(LS_INFO) << "Create Null Decoder format:" << format.ToString();
     	return std::make_unique<NullDecoder>();
 	}
     std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override { return supported_formats_; }
