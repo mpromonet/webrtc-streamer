@@ -85,24 +85,24 @@ public:
 
     void OnFrame(const webrtc::VideoFrame &frame) override
     {
-        if (m_roi_x >= frame.width())
+        if ((m_roi_x != 0) && (m_roi_x >= frame.width()))
         {
-            RTC_LOG(LS_ERROR) << "The ROI position protrudes beyond the right edge of the image. Ignore roi_x.";
+            RTC_LOG(LS_WARNING) << "The ROI position protrudes beyond the right edge of the image. Ignore roi_x.";
             m_roi_x = 0;
         }
-        if (m_roi_y >= frame.height())
+        if ((m_roi_y !=0) && (m_roi_y >= frame.height()))
         {
-            RTC_LOG(LS_ERROR) << "The ROI position protrudes beyond the bottom edge of the image. Ignore roi_y.";
+            RTC_LOG(LS_WARNING) << "The ROI position protrudes beyond the bottom edge of the image. Ignore roi_y.";
             m_roi_y = 0;
         }
-        if (m_roi_width != 0 && (m_roi_width + m_roi_x) > frame.width())
+        if ((m_roi_width != 0) && ((m_roi_width + m_roi_x) > frame.width()))
         {
-            RTC_LOG(LS_ERROR) << "The ROI protrudes beyond the right edge of the image. Ignore roi_width.";
+            RTC_LOG(LS_WARNING) << "The ROI protrudes beyond the right edge of the image. Ignore roi_width.";
             m_roi_width = 0;
         }
-        if (m_roi_height != 0 && (m_roi_height + m_roi_y) > frame.height())
+        if ((m_roi_height != 0) && ((m_roi_height + m_roi_y) > frame.height()))
         {
-            RTC_LOG(LS_ERROR) << "The ROI protrudes beyond the bottom edge of the image. Ignore roi_height.";
+            RTC_LOG(LS_WARNING) << "The ROI protrudes beyond the bottom edge of the image. Ignore roi_height.";
             m_roi_height = 0;
         }
 
@@ -146,10 +146,12 @@ public:
             rtc::scoped_refptr<webrtc::I420Buffer> scaled_buffer = webrtc::I420Buffer::Create(width, height);
             if (m_roi_width != frame.width() || m_roi_height != frame.height())
             {
+                RTC_LOG(LS_VERBOSE) << "crop:" << m_roi_x << "x" << m_roi_y << " " << m_roi_width << "x" << m_roi_height << " scale: " << width << "x" << height;
                 scaled_buffer->CropAndScaleFrom(*frame.video_frame_buffer()->ToI420(), m_roi_x, m_roi_y, m_roi_width, m_roi_height);
             }
             else
             {
+                RTC_LOG(LS_VERBOSE) << "scale: " << width << "x" << height;
                 scaled_buffer->ScaleFrom(*frame.video_frame_buffer()->ToI420());
             }
             
