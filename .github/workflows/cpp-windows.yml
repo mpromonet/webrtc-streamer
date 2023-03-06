@@ -46,11 +46,12 @@ jobs:
       shell: cmd
       run: |
           dir /b /s "C:\Program Files (x86)\vcvars64.bat"
-          set "PATH=%GITHUB_WORKSPACE%\depot_tools;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win;%PATH%"
           call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" 
+          set "PATH=%GITHUB_WORKSPACE%\depot_tools;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win;%PATH%"
           set
+          where ninja
           cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=C:/webrtc -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} .
-          ninja 
+          ninja
       env:
         MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community"
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
