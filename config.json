@@ -1,5 +1,7 @@
 {
     "urls":{       
+        "Test" : { "video": "rtsp://demo:demo@ipvmdemo.dyndns.org:5541/onvif-media/media.amp?sessiontimeout=60&streamtype=unicast"},
+
         "PriceCenterPlaza" : { "video": "rtsp://132.239.12.145:554/axis-media/media.amp"},
 
         "Honk-Kong": {"video": "rtsp://weathercam.gsis.edu.hk/axis-media/media.amp", "position":"22.352734,114.1277", "options":"rtptransport=tcp&timeout=60"},
@@ -16,6 +18,7 @@
         "Trento": {"video": "rtsp://194.32.173.211/axis-media/media.amp"},
         "Great Falls": {"video": "rtsp://76.75.8.116/axis-media/media.amp", "position":"47.551039,-111.539400"},
         "Western Cape": {"video":"rtsp://196.21.92.82/axis-media/media.amp", "position":"-33.925840,18.423220"},
+        "Mendoza": {"video":"rtsp://190.113.172.8/", "position":"-32.890840,-68.827170"},
         "Nordland": {"video":"rtsp://77.110.228.219/axis-media/media.amp", "position":"67.280000,14.405010" },
 
         "Ottawa": {"video":"rtsp://67.69.107.188:554/axis-media/media.amp", "position":"45.402420,-75.653957" },
