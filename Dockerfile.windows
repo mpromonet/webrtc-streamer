@@ -31,7 +31,7 @@ RUN git config --global core.autocrlf false \
        && gclient sync \
        && time /t \
        && cd C:\webrtc-streamer \
-       && cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe . \
+       && cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_MAKE_PROGRAM=ninja.bat . \
        && time /t \
        && ninja \
        && mkdir c:\app && copy webrtc-streamer.exe c:\app && copy config.json c:\app && xcopy /E html c:\app\html\ \
