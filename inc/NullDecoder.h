@@ -14,7 +14,7 @@
 
 class NullDecoder : public webrtc::VideoDecoder {
    public:
- 	NullDecoder() {}
+ 	NullDecoder(const webrtc::SdpVideoFormat& format) : m_format(format) {}
     virtual ~NullDecoder() override {}
 
 	bool Configure(const webrtc::VideoDecoder::Settings& settings) override { 
@@ -54,6 +54,7 @@ class NullDecoder : public webrtc::VideoDecoder {
 
 	webrtc::DecodedImageCallback* m_decoded_image_callback;
 	webrtc::VideoDecoder::Settings m_settings;
+	webrtc::SdpVideoFormat m_format;	
 };
 
 //
@@ -65,7 +66,7 @@ class VideoDecoderFactory : public webrtc::VideoDecoderFactory {
 
     std::unique_ptr<webrtc::VideoDecoder> CreateVideoDecoder(const webrtc::SdpVideoFormat& format) override {
    		RTC_LOG(LS_INFO) << "Create Null Decoder format:" << format.ToString();
-    	return std::make_unique<NullDecoder>();
+    	return std::make_unique<NullDecoder>(format);
 	}
     std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override { return supported_formats_; }
 
