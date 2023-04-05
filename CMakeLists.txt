@@ -135,7 +135,8 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc)
 # webrtc 
 set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
-target_link_libraries (${CMAKE_PROJECT_NAME} ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX} ${WEBRTCOBJS}/rtc_base/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_json${CMAKE_STATIC_LIBRARY_SUFFIX}) 
+FILE(GLOB_RECURSE LIBWEBRTC ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}*${CMAKE_STATIC_LIBRARY_SUFFIX})
+target_link_libraries (${CMAKE_PROJECT_NAME} ${WEBRTCOBJS}/rtc_base/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_json${CMAKE_STATIC_LIBRARY_SUFFIX} ${LIBWEBRTC}) 
 add_definitions(-DHAVE_JPEG)
 
 # thread
