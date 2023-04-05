@@ -154,7 +154,7 @@ public:
                     {
                         RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SLICE NALU:" << nalu_type;
                     }
-                    if (m_prevTimestamp && ts < m_prevTimestamp && m_decoder.m_decoder && m_decoder.m_decoder->ImplementationName() == "FFmpeg") 
+                    if (m_prevTimestamp && ts < m_prevTimestamp && m_decoder.m_decoder && strcmp(m_decoder.m_decoder->ImplementationName(),"FFmpeg")==0) 
                     {
                         RTC_LOG(LS_ERROR) << "LiveVideoSource:onData drop frame in past for FFmpeg:" << (m_prevTimestamp-ts);
 
