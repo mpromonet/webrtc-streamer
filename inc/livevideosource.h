@@ -39,9 +39,9 @@ class LiveVideoSource : public VideoSourceWithDecoder, public T::Callback
 {
 public:
     LiveVideoSource(const std::string &uri, const std::map<std::string, std::string> &opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory, bool wait) :
+	    VideoSourceWithDecoder(opts, videoDecoderFactory, wait),
         m_env(m_stop),
-	    m_liveclient(m_env, this, uri.c_str(), opts, rtc::LogMessage::GetLogToDebug()<=2),
-	    VideoSourceWithDecoder(opts, videoDecoderFactory, wait) {
+	    m_liveclient(m_env, this, uri.c_str(), opts, rtc::LogMessage::GetLogToDebug()<=2) {
             this->Start();
     }
     virtual ~LiveVideoSource() {
