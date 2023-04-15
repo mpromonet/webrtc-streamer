@@ -1,13 +1,17 @@
 # build
 FROM ubuntu:22.04 as builder
 LABEL maintainer=michel.promonet@free.fr
-
+ARG USERNAME=dev
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python3 python3-pkg-resources g++ autoconf automake libtool xz-utils libpulse-dev libasound2-dev libgtk-3-dev libxtst-dev libssl-dev librtmp-dev cmake make pkg-config p7zip-full \
+ENV PATH /depot_tools:$PATH
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python3 python3-pkg-resources g++ autoconf automake libtool xz-utils libpulse-dev libasound2-dev libgtk-3-dev libxtst-dev libssl-dev librtmp-dev cmake make pkg-config p7zip-full sudo \
+	&& useradd $USERNAME \
+	&& echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+	&& chmod 0440 /etc/sudoers.d/$USERNAME \
 	&& git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools \
-	&& export PATH=/depot_tools:$PATH \
 	&& mkdir /webrtc \
 	&& cd /webrtc \
 	&& fetch --no-history --nohooks webrtc \
@@ -16,9 +20,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 	&& cd /webrtc-streamer \
 	&& cmake . && make \
 	&& cpack \
-	&& mkdir /app && tar xvzf webrtc-streamer*.tar.gz --strip=1 -C /app/ \
-	&& rm -rf /webrtc && rm -f *.a && rm -f src/*.o \
-	&& apt-get clean && rm -rf /var/lib/apt/lists/
+	&& mkdir /app && tar xvzf webrtc-streamer*.tar.gz --strip=1 -C /app/ && rm webrtc-streamer*.tar.gz \
+	&& apt-get clean && rm -rf /var/lib/apt/lists/ 
 
 # run
 FROM ubuntu:22.04
