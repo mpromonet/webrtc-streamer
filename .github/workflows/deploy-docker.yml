@@ -18,17 +18,17 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build and push devcontainer
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v4
       with:
         context: .
         push: true
         target: builder
-        cache-from: type=local,src=./cache
-        cache-to: type=local,dest=./cache
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
         tags: ghcr.io/${{ github.actor }}/webrtc-streamer:dev 
 
     - name: Build and push
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v4
       with:
         context: .
         push: true
