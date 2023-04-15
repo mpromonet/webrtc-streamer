@@ -21,9 +21,9 @@ class VideoEncoderFactory : public webrtc::VideoEncoderFactory {
     virtual ~VideoEncoderFactory() override {}
 
     std::unique_ptr<webrtc::VideoEncoder> CreateVideoEncoder(const webrtc::SdpVideoFormat& format) override {
-		RTC_LOG(LS_INFO) << "Create Null Encoder format:" << format.ToString();
-		return std::make_unique<NullEncoder>(format);
-	}
+      RTC_LOG(LS_INFO) << "Create Null Encoder format:" << format.ToString();
+      return std::make_unique<NullEncoder>(format);
+    }
 
     std::vector<webrtc::SdpVideoFormat> GetSupportedFormats() const override { return supported_formats_; }
 
