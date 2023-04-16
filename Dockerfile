@@ -8,7 +8,7 @@ COPY . /webrtc-streamer
 ENV PATH /depot_tools:$PATH
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python3 python3-pkg-resources g++ autoconf automake libtool xz-utils libpulse-dev libasound2-dev libgtk-3-dev libxtst-dev libssl-dev librtmp-dev cmake make pkg-config p7zip-full sudo \
-	&& useradd -m $USERNAME \
+	&& useradd -m -s /bin/bash $USERNAME \
 	&& echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
 	&& chmod 0440 /etc/sudoers.d/$USERNAME \
 	&& git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools \
@@ -21,6 +21,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 	&& cmake . && make \
 	&& cpack \
 	&& mkdir /app && tar xvzf webrtc-streamer*.tar.gz --strip=1 -C /app/ && rm webrtc-streamer*.tar.gz \
+	&& rm -rf /webrtc/src/out \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/ 
 
 # run
