@@ -251,8 +251,8 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->call(peerid, url, audiourl, options, in));
 	};
 
-	m_func["/api/whip"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
-		return this->whip(req_info, in);	
+	m_func["/api/whep"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+		return this->whep(req_info, in);	
 	};
 
 	m_func["/api/hangup"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
@@ -338,7 +338,7 @@ std::string random_string( size_t length )
     return str;
 }
 
-std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionManager::whip(const struct mg_request_info *req_info, const Json::Value &in) {
+std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionManager::whep(const struct mg_request_info *req_info, const Json::Value &in) {
 	std::string peerid;
 	std::string videourl;
 	std::string audiourl;
@@ -392,8 +392,7 @@ std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionMan
 				RTC_LOG(LS_INFO) << "end of candidate";
 				httpcode = 200;
 			}
-    		}
-
+    	}
 
 	} else {
 		std::string offersdp(in.asString());
@@ -405,7 +404,8 @@ std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionMan
 			std::unique_ptr<webrtc::SessionDescriptionInterface> desc = this->getAnswer(peerid, session_description, videourl, audiourl, options);
 			if (desc.get()) {
 				desc->ToString(&answersdp);
-				headers["location"] = locationurl;
+				headers["Location"] = locationurl;
+				headers["Access-Control-Expose-Headers"] = "Location";
 				headers["Content-Type"] = "application/sdp";
 				httpcode = 201;
 			} else {
