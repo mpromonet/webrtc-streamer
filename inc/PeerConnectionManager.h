@@ -281,10 +281,10 @@ class PeerConnectionManager {
 			virtual void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
 			
 			virtual void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState state) {
-				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " state:" << state << " peerid:" << m_peerid;				
+				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " state:" << webrtc::PeerConnectionInterface::AsString(state) << " peerid:" << m_peerid;				
 			}
 			virtual void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState state) {
-				RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " state:" << state  << " peerid:" << m_peerid;
+				RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " state:" << webrtc::PeerConnectionInterface::AsString(state)  << " peerid:" << m_peerid;
 				if ( (state == webrtc::PeerConnectionInterface::kIceConnectionFailed)
 				   ||(state == webrtc::PeerConnectionInterface::kIceConnectionClosed) )
 				{ 
@@ -297,7 +297,8 @@ class PeerConnectionManager {
 				}
 			}
 			
-			virtual void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState) {
+			virtual void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState state) {
+				RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " state:" << webrtc::PeerConnectionInterface::AsString(state)  << " peerid:" << m_peerid;
 			}
 
 			uint64_t    getCreationTime() { return m_creationTime; }

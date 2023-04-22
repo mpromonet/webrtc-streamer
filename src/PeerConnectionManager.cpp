@@ -407,6 +407,7 @@ std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionMan
 				headers["Location"] = locationurl;
 				headers["Access-Control-Expose-Headers"] = "Location";
 				headers["Content-Type"] = "application/sdp";
+
 				httpcode = 201;
 			} else {
 				RTC_LOG(LS_ERROR) << "Failed to create answer - no SDP";
@@ -415,7 +416,7 @@ std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionMan
 		RTC_LOG(LS_INFO) << "anwser:" << answersdp;
 
 	}
-	return std::make_tuple(httpcode, headers,answersdp);
+	return std::make_tuple(httpcode, headers, answersdp);
 }
 
 void PeerConnectionManager::createAudioModule(webrtc::AudioDeviceModule::AudioLayer audioLayer) {
@@ -964,6 +965,8 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 			std::string sdp;
 			peerConnection->local_description()->ToString(&sdp);
 			content["sdp"] = sdp;
+
+			content["candidateList"] = it.second->getIceCandidateList();
 
 			Json::Value streams;
 			std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> localstreams = peerConnection->GetSenders();
