@@ -368,7 +368,7 @@ std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionMan
 		std::istringstream is(in.asString());
 		std::string str;
 		std::string mid;
-    		while(std::getline(is,str)) {
+    	while(std::getline(is,str)) {
 			str.erase(std::remove(str.begin(), str.end(), '\r'), str.end());
 			if (strstr(str.c_str(),"a=mid:")) {
 				mid = str.substr(strlen("a=mid:"));
@@ -742,6 +742,12 @@ std::unique_ptr<webrtc::SessionDescriptionInterface> PeerConnectionManager::getA
 				std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
 				m_peer_connectionobs_map.insert(std::pair<std::string, PeerConnectionObserver *>(peerid, peerConnectionObserver));
 			}
+			
+			// add local stream
+			if (!this->AddStreams(peerConnection.get(), videourl, audiourl, options))
+			{
+				RTC_LOG(LS_WARNING) << "Can't add stream";
+			}
 
 			// set remote offer
 			std::promise<const webrtc::SessionDescriptionInterface *> remotepromise;
@@ -757,12 +763,6 @@ std::unique_ptr<webrtc::SessionDescriptionInterface> PeerConnectionManager::getA
 			{
 				remoteSessionObserver->cancel();
 				RTC_LOG(LS_WARNING) << "remote_description is NULL";
-			}
-
-			// add local stream
-			if (!this->AddStreams(peerConnection.get(), videourl, audiourl, options))
-			{
-				RTC_LOG(LS_WARNING) << "Can't add stream";
 			}
 
 			// create answer
