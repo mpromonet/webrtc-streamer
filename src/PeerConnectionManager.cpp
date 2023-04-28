@@ -770,6 +770,14 @@ std::unique_ptr<webrtc::SessionDescriptionInterface> PeerConnectionManager::getA
 			std::promise<const webrtc::SessionDescriptionInterface *> localpromise;
 			rtc::scoped_refptr<CreateSessionDescriptionObserver> localSessionObserver(CreateSessionDescriptionObserver::Create(peerConnection, localpromise));
 			peerConnection->CreateAnswer(localSessionObserver.get(), rtcoptions);
+
+			int retry = 5;
+			while ( (peerConnectionObserver->getGatheringState() != webrtc::PeerConnectionInterface::IceGatheringState::kIceGatheringComplete) && (retry > 0) ) {
+				RTC_LOG(LS_ERROR) << "waiting..." << retry;
+				retry --;
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			}
+
 			// waiting for answer
 			std::future<const webrtc::SessionDescriptionInterface *> localfuture = localpromise.get_future();
 			if (localfuture.wait_for(std::chrono::milliseconds(5000)) == std::future_status::ready)
