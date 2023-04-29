@@ -104,7 +104,7 @@ An example displaying grid of WebRTC Streams is available using option
 `layout=<lines>x<columns>`
 [![Screenshot](images/layout2x4.png)](https://webrtc-streamer-mpromonet.cloud.okteto.net/?layout=2x4)
 
-[Live Demo (?layout=2x4)](https://webrtc-streamer-mpromonet.cloud.okteto.net/?layout=2x4)
+[Live Demo](https://webrtc-streamer-mpromonet.cloud.okteto.net/?layout=2x4)
 
 ## Using docker image
 
@@ -229,6 +229,12 @@ Using the webcomponent over google map:
 [Live Demo](https://webrtc-streamer-mpromonet.cloud.okteto.net/map.html)
 
 ## Using WHEP
+
+It allow to stream using draft standard [WHEP](https://www.ietf.org/archive/id/draft-murillo-whep-02.txt)
+
+[WebRTC player](https://github.com/Eyevinn/webrtc-player) can display WebRTC stream from webrtc-streamer.
+
+[Live Demo](https://webrtc-streamer-whep.pages.dev/)
 
 
 ## Object detection using tensorflow.js
