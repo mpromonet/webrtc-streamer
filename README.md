@@ -86,7 +86,7 @@ Options for the WebRTC stream name:
 #### Examples
 
 ```sh
-./webrtc-streamer rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov
+./webrtc-streamer -C config.json
 ```
 
 [![Screenshot](images/snapshot.png)](https://webrtc-streamer-mpromonet.cloud.okteto.net/)
@@ -227,6 +227,9 @@ Using the webcomponent over google map:
 [![Screenshot](images/wc-map.jpg)](https://webrtc-streamer-mpromonet.cloud.okteto.net/map.html)
 
 [Live Demo](https://webrtc-streamer-mpromonet.cloud.okteto.net/map.html)
+
+## Using WHEP
+
 
 ## Object detection using tensorflow.js
 
