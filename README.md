@@ -17,7 +17,7 @@
 [![Demo](https://img.shields.io/badge/okteto-livedemo-green)](https://webrtc-streamer-mpromonet.cloud.okteto.net/)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mpromonet/webrtc-streamer)
 
-Experimentation to stream WebRTC media sources like capture devices, screen capture, mkv files and RTSP sources using simple signaling.  
+Experimentation to stream WebRTC media sources like capture devices, screen capture, mkv files and RMTP/RTSP sources using simple signaling mechanism (see [api](docs/api.md)).  
 
 ## Artefacts
 
@@ -73,6 +73,7 @@ Options for the WebRTC stream name:
   be used to create the capturer
 - an "rtsp://" url that will be opened using an RTSP capturer based on live555
 - an "file://" url that will be opened using an MKV capturer based on live555
+- an "rmtp://" url that will be opened using an RMTP capturer based on librmtp
 - an "screen://" url that will be opened by
   `webrtc::DesktopCapturer::CreateScreenCapturer`
 - an "window://" url that will be opened by
@@ -81,7 +82,8 @@ Options for the WebRTC stream name:
   [H264](https://en.wikipedia.org/wiki/Advanced_Video_Coding) frames and store
   it using webrtc::VideoFrameBuffer::Type::kNative type (not supported on
   Windows)
-- a capture device name
+- an "videocap://" url video capture device name
+- an "audiocap://" url audio capture device name
 
 #### Examples
 
@@ -185,7 +187,7 @@ A short sample HTML page using webrtc-streamer running locally on port 8000:
 <script>        
 	var webRtcServer      = null;
 	window.onload         = function() { 
-		webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+window.location.hostname+":8000");
+		webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+location.hostname+":8000");
 		webRtcServer.connect("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov");
 	}
 	window.onbeforeunload = function() { webRtcServer.disconnect(); }
@@ -287,7 +289,7 @@ var janus = new JanusVideoRoom(
   "http://192.168.0.15:8088/janus",
   "http://192.168.0.15:8000",
 );
-janus.join(1234, "mmal service 16.1", "video");
+janus.join(1234, "videocap://0", "video");
 ```
 
 ## Connect to Jitsi

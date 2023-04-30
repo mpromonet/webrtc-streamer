@@ -9,6 +9,10 @@
 
 #pragma once
 
+#ifdef WIN32
+#include "base/win/wincrypt_shim.h"
+#endif
+
 #include <string.h>
 #include <vector>
 #include <queue>

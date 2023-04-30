@@ -96,13 +96,8 @@ class CapturerFactory {
 					{
 						RTC_LOG(LS_INFO) << "video device name:" << name << " id:" << id;
 						std::string devname;
-						auto it = std::find(videoDeviceList.begin(), videoDeviceList.end(), name);
-						if (it == videoDeviceList.end()) {
-							devname = name;
-						} else {
-							devname = "videocap://";
-							devname += std::to_string(i);
-						}
+						devname = "videocap://";
+						devname += std::to_string(i);
 						videoDeviceList.push_back(devname);
 					}
 				}
@@ -232,13 +227,8 @@ class CapturerFactory {
 				{
 					RTC_LOG(LS_INFO) << "audio device name:" << name << " id:" << id;
 					std::string devname;
-					auto it = std::find(audioList.begin(), audioList.end(), name);
-					if (it == audioList.end()) {
-						devname = name;
-					} else {
-						devname = "audiocap://";
-						devname += std::to_string(i);
-					}
+					devname = "audiocap://";
+					devname += std::to_string(i);
 					audioList.push_back(devname);					
 				}
 			}

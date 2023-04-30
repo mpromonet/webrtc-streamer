@@ -9,10 +9,9 @@
 
 #pragma once
 
-#include "rtspconnectionclient.h"
 
 #include "livevideosource.h"
-
+#include "rtspconnectionclient.h"
 
 class RTSPVideoCapturer : public LiveVideoSource<RTSPConnection>
 {
