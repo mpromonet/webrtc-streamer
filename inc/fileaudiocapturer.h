@@ -17,7 +17,7 @@
 class FileAudioSource : public LiveAudioSource<MKVClient> {
 	public:
 		static rtc::scoped_refptr<FileAudioSource> Create(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri, const std::map<std::string,std::string> & opts) {
-			rtc::scoped_refptr<FileAudioSource> source(new rtc::RefCountedObject<FileAudioSource>(audioDecoderFactory, uri, opts));
+			rtc::scoped_refptr<FileAudioSource> source(new rtc::FinalRefCountedObject<FileAudioSource>(audioDecoderFactory, uri, opts));
 			return source;
 		}
 	

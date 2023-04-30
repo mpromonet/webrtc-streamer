@@ -48,7 +48,7 @@ jobs:
           call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" 
           set "PATH=%GITHUB_WORKSPACE%\depot_tools;%GITHUB_WORKSPACE%\..\webrtc\src\third_party\llvm-build\Release+Asserts\bin;%PATH%"
           set
-          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DCMAKE_MAKE_PROGRAM=ninja.bat .
+          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DCMAKE_MAKE_PROGRAM=ninja.bat -DDETECT_OPENSSL=OFF .
           ninja 
       env:
         MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community"
