@@ -17,7 +17,7 @@
 
 class VideoEncoderFactory : public webrtc::VideoEncoderFactory {
    public:
-    VideoEncoderFactory(): supported_formats_(webrtc::SupportedH264Codecs()) {}
+    VideoEncoderFactory(): supported_formats_({webrtc::SdpVideoFormat(cricket::kH264CodecName)}) {}
     virtual ~VideoEncoderFactory() override {}
 
     std::unique_ptr<webrtc::VideoEncoder> CreateVideoEncoder(const webrtc::SdpVideoFormat& format) override {

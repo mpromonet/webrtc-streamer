@@ -340,7 +340,7 @@ class PeerConnectionManager {
 		const Json::Value getStreamList();
 		const Json::Value createOffer(const std::string &peerid, const std::string & videourl, const std::string & audiourl, const std::string & options);
 		const Json::Value setAnswer(const std::string &peerid, const Json::Value& jmessage);
-		std::tuple<int,std::map<std::string,std::string>,Json::Value> whep(const struct mg_request_info *req_info, const Json::Value &in);
+		std::tuple<int,std::map<std::string,std::string>,Json::Value> whep( const std::string &method,  const std::string &url,  const std::string &peerid, const std::string & videourl, const std::string & audiourl, const std::string & options, const Json::Value &in);
 
 
 	protected:

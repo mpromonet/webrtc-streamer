@@ -252,7 +252,13 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 	};
 
 	m_func["/api/whep"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
-		return this->whep(req_info, in);	
+		std::string peerid   = getParam(req_info->query_string, "peerid");
+		std::string videourl      = getParam(req_info->query_string, "url");
+		std::string audiourl = getParam(req_info->query_string, "audiourl");
+		std::string options  = getParam(req_info->query_string, "options");
+		std::string url(req_info->request_uri);
+		url.append("?").append(req_info->query_string);		
+		return this->whep(req_info->request_method, url, peerid, videourl, audiourl, options, in);	
 	};
 
 	m_func["/api/hangup"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
@@ -338,32 +344,27 @@ std::string random_string( size_t length )
     return str;
 }
 
-std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionManager::whep(const struct mg_request_info *req_info, const Json::Value &in) {
-	std::string peerid;
-	std::string videourl;
-	std::string audiourl;
-	std::string options;
-	int httpcode = 501;
-	if (req_info->query_string)
-	{
-		CivetServer::getParam(req_info->query_string, "peerid", peerid);
-		CivetServer::getParam(req_info->query_string, "url", videourl);
-		CivetServer::getParam(req_info->query_string, "audiourl", audiourl);
-		CivetServer::getParam(req_info->query_string, "options", options);
-	}
-	std::string locationurl(req_info->request_uri);
-	locationurl.append("?").append(req_info->query_string);
+std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionManager::whep(const std::string & method,
+		const std::string & url,
+		const std::string & requestPeerId, 
+		const std::string & videourl,
+		const std::string & audiourl,
+		const std::string & options,
+		const Json::Value &in) {
 
+	int httpcode = 501;
+
+	std::string locationurl(url);
+	std::string peerid(requestPeerId);
 	if (peerid.empty()) {
-		
 		peerid = random_string(32);
 		locationurl.append("&").append("peerid=").append(peerid);
 	}
 	std::map<std::string,std::string> headers;
 	std::string answersdp;
-	if (strcmp(req_info->request_method,"DELETE")==0) {
+	if (method == "DELETE") {
 		this->hangUp(peerid);
-	} else if (strcmp(req_info->request_method,"PATCH")==0) {
+	} else if (method == "PATCH") {
 		RTC_LOG(LS_INFO) << "PATCH\n" << in.asString();
 		std::istringstream is(in.asString());
 		std::string str;
