@@ -28,14 +28,14 @@ jobs:
         target: builder
         cache-from: type=gha
         cache-to: type=gha,mode=max
-        tags: ghcr.io/${{ github.actor }}/webrtc-streamer:dev 
+        tags: ghcr.io/${{ github.repository }}:dev 
 
     - name: Build and push
       uses: docker/build-push-action@v4
       with:
         context: .
         push: true
-        tags: ghcr.io/${{ github.actor }}/webrtc-streamer:latest 
+        tags: ghcr.io/${{ github.repository }}:latest 
 
     - name: Log in to Azure
       uses: azure/login@v1
@@ -45,7 +45,7 @@ jobs:
     - name: Build and deploy Container App
       uses: azure/container-apps-deploy-action@v0
       with:
-        imageToDeploy: ghcr.io/mpromonet/webrtc-streamer:latest
+        imageToDeploy: ghcr.io/${{ github.repository }}:latest
         containerAppName: webrtcstreamer
         resourceGroup: deploy
         targetPort: 8000
