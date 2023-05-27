@@ -272,20 +272,6 @@ class CapturerFactory {
 				{
 					idx_audioDevice = deviceNumber;
 				}
-
-			} else {
-				for (int i = 0; i < num_audioDevices; ++i)
-				{
-					if (audioDeviceModule->RecordingDeviceName(i, name, id) != -1)
-					{
-						RTC_LOG(LS_INFO) << "audiourl:" << audiourl << " idx_audioDevice:" << i << " " << name;
-						if (audiourl == name)
-						{
-							idx_audioDevice = i;
-							break;
-						}
-					}
-				}
 			}
 			RTC_LOG(LS_ERROR) << "audiourl:" << audiourl << " idx_audioDevice:" << idx_audioDevice << "/" << num_audioDevices;
 			if ( (idx_audioDevice >= 0) && (idx_audioDevice < num_audioDevices) )

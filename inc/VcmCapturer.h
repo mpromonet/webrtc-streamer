@@ -70,17 +70,6 @@ class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public 
 		{
 			deviceId = id;
 		}
-
-	} else {
-		for (int i = 0; i < num_videoDevices; ++i) {
-			if (device_info->GetDeviceName(i, name, kSize, id, kSize) == 0)
-			{
-				if (videourl == name) {
-					deviceId = id;
-					break;
-				}
-			}
-		}
 	}
 
 	if (deviceId.empty()) {
