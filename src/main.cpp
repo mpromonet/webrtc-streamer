@@ -274,12 +274,6 @@ int main(int argc, char* argv[])
 				server_addr.FromString(addr);
 				turnserver.reset(new cricket::TurnServer(rtc::Thread::Current()));
 
-				rtc::AsyncUDPSocket* server_socket = rtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
-				if (server_socket)
-				{
-					std::cout << "TURN Listening UDP at " << server_addr.ToString() << std::endl;
-					turnserver->AddInternalSocket(server_socket, cricket::PROTO_UDP);
-				}
 				rtc::Socket* tcp_server_socket = thread->socketserver()->CreateSocket(AF_INET, SOCK_STREAM);
 				if (tcp_server_socket) {
 					std::cout << "TURN Listening TCP at " << server_addr.ToString() << std::endl;
