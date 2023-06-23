@@ -67,7 +67,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
     string(REPLACE "--enable-armv6t2" "--disable-armv6t2" filecontent "${filecontent}")
     string(REPLACE "--enable-thumb" "--disable-thumb" filecontent "${filecontent}")
     string(REPLACE "--extra-cflags=-march=armv7-a" "--extra-cflags=-march=armv6" filecontent "${filecontent}")
-    string(REPLACE "debian_sid_arm-sysroot" "debian_bullseye_arm-sysroot" filecontent "${filecontent}")
+    string(REPLACE "debian_bullseye_arm-sysroot" "debian_bullseye_armhf-sysroot" filecontent "${filecontent}")
     file(WRITE ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/scripts/build_ffmpeg.py "${filecontent}")
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg COMMAND python3 chromium/scripts/build_ffmpeg.py linux arm --config-only)
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg COMMAND chromium/scripts/copy_config.sh)
