@@ -15,6 +15,7 @@
 
 #ifdef HAVE_V4L2
 #include "V4l2Capturer.h"
+#include "dirent.h"
 #endif
 
 #ifdef HAVE_LIVE555
