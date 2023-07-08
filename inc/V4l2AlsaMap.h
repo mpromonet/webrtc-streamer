@@ -16,6 +16,9 @@
 #include <filesystem>
 #include <sstream>
 #include <iostream>
+#include <linux/videodev2.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
 
 /* ---------------------------------------------------------------------------
 **  get "deviceid" 
@@ -32,7 +35,34 @@ std::string getDeviceId(const std::string& devicePath) {
 	return deviceid;
 }
 
+std::map<int,int> videoDev2Idx() {
+  std::map<int,int> dev2idx;
+  uint32_t count = 0;
+  char device[20];
+  int fd = -1;
+  struct v4l2_capability cap;
+
+  for (int devId = 0; devId < 64; devId++) {
+    snprintf(device, sizeof(device), "/dev/video%d", devId);
+    if ((fd = open(device, O_RDONLY)) != -1) {
+      if (ioctl(fd, VIDIOC_QUERYCAP, &cap) < 0 ||
+          !(cap.device_caps & V4L2_CAP_VIDEO_CAPTURE)) {
+        close(fd);
+        continue;
+      } else {
+		close(fd);
+		dev2idx[devId] = count;
+		count++;
+	  }
+    }
+  }
+  return dev2idx;
+}
+
+
+
 std::map<std::string,std::string> getVideoDevices() {
+	std::map<int,int> dev2Idx = videoDev2Idx();
 	std::map<std::string,std::string> videodevices;
 	std::string video4linuxPath("/sys/class/video4linux");
 	for (auto const& dir_entry : std::filesystem::directory_iterator{video4linuxPath}) {
@@ -46,7 +76,7 @@ std::map<std::string,std::string> getVideoDevices() {
 			if (!deviceid.empty()) {
 				int deviceNumber = atoi(devname.substr(strlen("video")).c_str());
 				std::string devicename = "videocap://";
-				devicename += std::to_string(deviceNumber);				
+				devicename += std::to_string(dev2Idx[deviceNumber]);				
 				videodevices[devicename] = deviceid;
 			}
 		}

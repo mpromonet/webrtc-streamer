@@ -332,6 +332,7 @@ class PeerConnectionManager {
 		const Json::Value addIceCandidate(const std::string &peerid, const Json::Value& jmessage);
 		const Json::Value getVideoDeviceList();
 		const Json::Value getAudioDeviceList();
+		const Json::Value getAudioPlayoutList();
 		const Json::Value getMediaList();
 		const Json::Value hangUp(const std::string &peerid);
 		const Json::Value call(const std::string &peerid, const std::string & videourl, const std::string & audiourl, const std::string & options, const Json::Value& jmessage);

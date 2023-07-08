@@ -239,6 +239,10 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->getAudioDeviceList());
 	};
 
+	m_func["/api/getAudioPlayoutList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+		return std::make_tuple(200, std::map<std::string,std::string>(),this->getAudioPlayoutList());
+	};
+
 	m_func["/api/getIceServers"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->getIceServers(req_info->remote_addr));
 	};
@@ -495,6 +499,19 @@ const Json::Value PeerConnectionManager::getAudioDeviceList()
 
 	const std::list<std::string> audioCaptureDevice = CapturerFactory::GetAudioCaptureDeviceList(m_publishFilter, m_audioDeviceModule);
 	for (auto audioDevice : audioCaptureDevice)
+	{
+		value.append(audioDevice);
+	}
+
+	return value;
+}
+
+const Json::Value PeerConnectionManager::getAudioPlayoutList()
+{
+	Json::Value value(Json::arrayValue);
+
+	const std::list<std::string> audioPlayoutDevice = CapturerFactory::GetAudioPlayoutDeviceList(m_publishFilter, m_audioDeviceModule);
+	for (auto audioDevice : audioPlayoutDevice)
 	{
 		value.append(audioDevice);
 	}
