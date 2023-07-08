@@ -22,3 +22,5 @@ live
 /.vs/
 install_manifest.txt
 Makefile
+.ninja*
+build.ninja

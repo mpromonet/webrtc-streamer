@@ -42,13 +42,5 @@ after_build:
 artifacts:
   - path: webrtc-streamer*.tar.gz
 
-deploy:
-  provider: GitHub
-  auth_token:
-    secure: POOFDWEgY+sJ7crMbwmYRevjWbodvlL53yidR+Fg3Ir2Kg/0SPfja7DQObWY+PKi
-  draft: false
-  prerelease: false
-  on:
-    branch: master                 
-    APPVEYOR_REPO_TAG: true       
+ 
 

@@ -1,0 +1,20 @@
+{
+	"name": "webrtc-streamer",
+	"image": "ghcr.io/mpromonet/webrtc-streamer:dev",
+	"runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined"],
+		
+	"customizations": {
+		"vscode": {
+			"settings": {},
+			
+			"extensions": [
+				"ms-vscode.cpptools"
+			]
+		}
+	},
+
+	"remoteUser": "dev",
+	"workspaceFolder": "/webrtc-streamer",
+	"workspaceMount": "source=${localWorkspaceFolder},target=/webrtc-streamer,type=bind",  
+	"forwardPorts": [8000]
+}

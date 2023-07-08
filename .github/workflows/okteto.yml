@@ -1,0 +1,21 @@
+# File: .github/workflows/workflow.yml
+on: [push]
+
+name: okteto
+
+jobs:
+
+  devflow:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: okteto/context@latest
+      with:
+        token: ${{ secrets.OKTETO_TOKEN }}
+
+    - uses: okteto/namespace@latest
+      with:
+        namespace: mpromonet
+        
+    - uses: okteto/pipeline@latest
+      with:
+        name: master

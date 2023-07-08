@@ -281,10 +281,10 @@ class PeerConnectionManager {
 			virtual void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
 			
 			virtual void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState state) {
-				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " state:" << state << " peerid:" << m_peerid;				
+				RTC_LOG(LS_WARNING) << __PRETTY_FUNCTION__ << " state:" << webrtc::PeerConnectionInterface::AsString(state) << " peerid:" << m_peerid;				
 			}
 			virtual void OnIceConnectionChange(webrtc::PeerConnectionInterface::IceConnectionState state) {
-				RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " state:" << state  << " peerid:" << m_peerid;
+				RTC_LOG(LS_WARNING) << __PRETTY_FUNCTION__ << " state:" << webrtc::PeerConnectionInterface::AsString(state)  << " peerid:" << m_peerid;
 				if ( (state == webrtc::PeerConnectionInterface::kIceConnectionFailed)
 				   ||(state == webrtc::PeerConnectionInterface::kIceConnectionClosed) )
 				{ 
@@ -297,11 +297,14 @@ class PeerConnectionManager {
 				}
 			}
 			
-			virtual void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState) {
+			virtual void OnIceGatheringChange(webrtc::PeerConnectionInterface::IceGatheringState state) {
+				RTC_LOG(LS_WARNING) << __PRETTY_FUNCTION__ << " state:" << webrtc::PeerConnectionInterface::AsString(state)  << " peerid:" << m_peerid;
+				m_gatheringState = state;
 			}
 
 			uint64_t    getCreationTime() { return m_creationTime; }
 			std::string getPeerId() { return m_peerid; }
+			webrtc::PeerConnectionInterface::IceGatheringState getGatheringState() { return m_gatheringState; }
 
 		private:
 			PeerConnectionManager*                                   m_peerConnectionManager;
@@ -315,7 +318,7 @@ class PeerConnectionManager {
 			std::unique_ptr<AudioSink>                               m_audiosink;
 			bool                                                     m_deleting;
 			uint64_t                                                 m_creationTime;
-
+			webrtc::PeerConnectionInterface::IceGatheringState       m_gatheringState;
 	};
 
 	public:
@@ -337,7 +340,7 @@ class PeerConnectionManager {
 		const Json::Value getStreamList();
 		const Json::Value createOffer(const std::string &peerid, const std::string & videourl, const std::string & audiourl, const std::string & options);
 		const Json::Value setAnswer(const std::string &peerid, const Json::Value& jmessage);
-		std::pair<std::map<std::string,std::string>,Json::Value> whip(const struct mg_request_info *req_info, const Json::Value &in);
+		std::tuple<int,std::map<std::string,std::string>,Json::Value> whep( const std::string &method,  const std::string &url,  const std::string &peerid, const std::string & videourl, const std::string & audiourl, const std::string & options, const Json::Value &in);
 
 
 	protected:
@@ -350,7 +353,8 @@ class PeerConnectionManager {
 		rtc::scoped_refptr<webrtc::PeerConnectionInterface>   getPeerConnection(const std::string& peerid);
 		const std::string                                     sanitizeLabel(const std::string &label);
 		void                                                  createAudioModule(webrtc::AudioDeviceModule::AudioLayer audioLayer);
-		std::unique_ptr<webrtc::SessionDescriptionInterface>  getAnswer(const std::string & peerid, webrtc::SessionDescriptionInterface *session_description, const std::string & videourl, const std::string & audiourl, const std::string & options);
+		std::unique_ptr<webrtc::SessionDescriptionInterface>  getAnswer(const std::string & peerid, const std::string & sdpoffer, const std::string & videourl, const std::string & audiourl, const std::string & options, bool waitgatheringcompletion = false);
+		std::unique_ptr<webrtc::SessionDescriptionInterface>  getAnswer(const std::string & peerid, webrtc::SessionDescriptionInterface *session_description, const std::string & videourl, const std::string & audiourl, const std::string & options, bool waitgatheringcompletion = false);
 		std::string                                           getOldestPeerCannection();
 
 

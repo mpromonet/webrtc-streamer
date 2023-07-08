@@ -14,13 +14,13 @@
 
   grade: stable 
   confinement: strict
-  base: core20
+  base: core22
   architectures:
     - build-on: amd64
 
   parts:
     webrtc:
-      plugin: dump
+      plugin: python
       source: https://chromium.googlesource.com/chromium/tools/depot_tools.git
       source-type: git
       override-build: |

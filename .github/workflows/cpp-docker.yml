@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
 
     - name: Build an image from Dockerfile
       run: docker build -t docker.io/${{ github.repository }}:${{ matrix.label }} -f ${{ matrix.dockerfile }} .

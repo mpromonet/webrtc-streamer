@@ -11,12 +11,12 @@ jobs:
     runs-on: windows-latest
     
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
 
     - name: pkg
       shell: cmd
       run: |
-        choco install --no-progress -y windows-sdk-10-version-2004-all windows-sdk-11-version-21h2-all
+        choco install --no-progress -y windows-sdk-11-version-22h2-all
         choco install --ignorepackagecodes --no-progress -y visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%"
         git config --global core.autocrlf false 
         git config --global core.filemode false 
@@ -32,31 +32,30 @@ jobs:
       shell: cmd
       run: |
           set "PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%"
-          mkdir C:\webrtc
-          pushd C:\webrtc
+          mkdir %GITHUB_WORKSPACE%\..\webrtc
+          cd /d %GITHUB_WORKSPACE%\..\webrtc
           fetch --no-history webrtc
-          popd
       env:
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
         CLANG_VERSION: ToT
         PYTHONIOENCODING: UTF-8
-        GCLIENT_PY3: 1
+        GYP_MSVS_VERSION: 2019
 
     - name: build
       shell: cmd
       run: |
           dir /b /s "C:\Program Files (x86)\vcvars64.bat"
-          set "PATH=%GITHUB_WORKSPACE%\depot_tools;C:\webrtc\src\third_party\llvm-build\Release+Asserts\bin;C:\webrtc\src\build\toolchain\win\rc\win;%PATH%"
           call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" 
+          set "PATH=%GITHUB_WORKSPACE%\depot_tools;%GITHUB_WORKSPACE%\..\webrtc\src\third_party\llvm-build\Release+Asserts\bin;%PATH%"
           set
-          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DWEBRTCROOT=C:/webrtc -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} .
+          cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DCMAKE_MAKE_PROGRAM=ninja.bat -DDETECT_OPENSSL=OFF .
           ninja 
       env:
         MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community"
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
         CLANG_VERSION: ToT
         PYTHONIOENCODING: UTF-8
-        GCLIENT_PY3: 1
+        GYP_MSVS_VERSION: 2019
 
     - name: cpack
       shell: bash

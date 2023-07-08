@@ -16,6 +16,7 @@
 #include "modules/video_coding/include/video_error_codes.h"
 #include "modules/video_coding/h264_sprop_parameter_sets.h"
 
+#include "SessionSink.h"
 #include "VideoScaler.h"
 
 #define FOURCC(a, b, c, d)                                \
