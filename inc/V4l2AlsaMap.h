@@ -9,7 +9,7 @@
 
 #pragma once
 
-#ifndef WIN32
+#ifdef HAVE_V4L2
 #include <string>
 #include <cstring>
 #include <map>
