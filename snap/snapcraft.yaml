@@ -57,6 +57,7 @@
       stage-packages:
       - libgtk-3-0
       - libxt6
+      - libxtst6
       - libasound2
       - libpulse0
       - libssl-dev
