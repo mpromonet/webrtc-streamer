@@ -64,6 +64,6 @@
 
   apps:
     webrtc-streamer:
-      command: usr/local/bin/webrtc-streamer -C $SNAP/usr/share/webrtc-streamer/config.json -w $SNAP/usr/share/webrtc-streamer/html
+      command: usr/local/webrtc-streamer -C $SNAP/usr/local/config.json -w $SNAP/usr/local/html
       daemon: simple   
       plugs: [network-bind]
