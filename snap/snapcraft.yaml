@@ -24,15 +24,15 @@
       source: https://chromium.googlesource.com/chromium/tools/depot_tools.git
       source-type: git
       override-build: |
-        cp -r ../src/* /usr/local/bin/
         mkdir -p /webrtc
         cd /webrtc
         fetch --no-history --nohooks webrtc
         sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
         gclient sync
+      build-environment:
+      - PATH: $SNAPCRAFT_PART_SRC:$PATH        
       build-packages:
       - curl
-      - python3-httplib2
 
     webrtc-streamer:
       after: [webrtc]
@@ -41,6 +41,8 @@
       source-type: git
       cmake-parameters:
       - -DWEBRTCROOT=/webrtc
+      build-environment:
+      - PATH: $SNAPCRAFT_PART_SRC/../../webrtc/src:$PATH        
       build-packages:
       - g++
       - make
@@ -62,6 +64,6 @@
 
   apps:
     webrtc-streamer:
-      command: webrtc-streamer -C $SNAP/config.json -w $SNAP/html
+      command: usr/local/bin/webrtc-streamer -C $SNAP/usr/share/webrtc-streamer/config.json -w $SNAP/usr/share/webrtc-streamer/html
       daemon: simple   
       plugs: [network-bind]
