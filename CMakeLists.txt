@@ -152,7 +152,7 @@ target_include_directories(civetweb PUBLIC civetweb/include)
 # rtmp ?
 find_package(PkgConfig QUIET)
 pkg_check_modules(RTMP QUIET librtmp)
-MESSAGE("RTMP_FOUND = ${RTMP_FOUND}")
+MESSAGE("RTMP_FOUND = ${RTMP_FOUND} RTMP_INCLUDE_DIRS=${RTMP_INCLUDE_DIRS} RTMP_LIBRARIES=${RTMP_LIBRARIES}")
 if (RTMP_FOUND)
   add_definitions(-DHAVE_RTMP)
   target_link_libraries (${CMAKE_PROJECT_NAME} ${RTMP_LIBRARIES}) 

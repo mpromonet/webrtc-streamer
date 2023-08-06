@@ -201,7 +201,7 @@ class PrometheusHandler : public CivetHandler
 
     static std::vector<std::string> read_proc_stat() {
         char stat_path[32];
-        std::sprintf(stat_path, "/proc/%d/stat", getpid());
+        std::snprintf(stat_path, sizeof(stat_path),"/proc/%d/stat", getpid());
         std::ifstream file(stat_path);
         std::string line;
         std::getline(file, line);
@@ -212,7 +212,7 @@ class PrometheusHandler : public CivetHandler
 
     static long get_fds_total() {
         char fd_path[32];
-        std::sprintf(fd_path, "/proc/%d/fd", getpid());
+        std::snprintf(fd_path, sizeof(fd_path), "/proc/%d/fd", getpid());
 
         long file_total = 0;
         DIR *dirp = opendir(fd_path);
