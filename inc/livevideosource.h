@@ -112,6 +112,7 @@ public:
             RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData nbNalu:" << indexes.size();
             for (const webrtc::H264::NaluIndex & index : indexes) {
                 webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[index.payload_start_offset]);
+                RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData NALU type:" << nalu_type << " payload_size:" << index.payload_size << " payload_start_offset:" << index.payload_start_offset << " start_offset:" << index.start_offset;
                 if (nalu_type == webrtc::H264::NaluType::kSps)
                 {
                     RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SPS";
