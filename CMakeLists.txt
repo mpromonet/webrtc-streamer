@@ -155,6 +155,7 @@ pkg_check_modules(RTMP QUIET librtmp)
 MESSAGE("RTMP_FOUND = ${RTMP_FOUND} RTMP_INCLUDE_DIRS=${RTMP_INCLUDE_DIRS} RTMP_LIBRARIES=${RTMP_LIBRARIES}")
 if (RTMP_FOUND)
   add_definitions(-DHAVE_RTMP)
+  target_include_directories (${CMAKE_PROJECT_NAME} PUBLIC ${RTMP_INCLUDE_DIRS}) 
   target_link_libraries (${CMAKE_PROJECT_NAME} ${RTMP_LIBRARIES}) 
 endif()
 
