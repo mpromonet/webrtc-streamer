@@ -15,6 +15,7 @@
 #include "api/video/i420_buffer.h"
 #include "modules/video_coding/include/video_error_codes.h"
 #include "modules/video_coding/h264_sprop_parameter_sets.h"
+#include "rtc_base/third_party/base64/base64.h"
 
 #include "SessionSink.h"
 #include "VideoScaler.h"
@@ -24,6 +25,7 @@
    (static_cast<uint32_t>(c) << 16) | (static_cast<uint32_t>(d) << 24))
 
 const uint32_t FOURCC_VP9 = FOURCC('V','P','9', 0);
+const uint32_t FOURCC_H265 = FOURCC('H','2','6','5');
 #undef FOURCC
 
 class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public webrtc::DecodedImageCallback {
@@ -59,6 +61,22 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
         int width() { return m_scaler.width();  }
         int height() { return m_scaler.height();  }
 
+        static std::vector<uint8_t> extractParameters(const std::string & buffer)
+        {
+            std::vector<uint8_t> binary;
+            std::string value(buffer);
+            size_t pos = value.find_first_of(" ;\r\n");
+            if (pos != std::string::npos)
+            {
+                value.erase(pos);
+            }
+            rtc::Base64::DecodeFromArray(value.data(), value.size(), rtc::Base64::DO_STRICT, &binary, nullptr);
+            binary.insert(binary.begin(), H26X_marker, H26X_marker+sizeof(H26X_marker));
+
+            return binary;
+        }
+
+
         std::vector< std::vector<uint8_t> > getInitFrames(const std::string & codec, const char* sdp) {
             std::vector< std::vector<uint8_t> > frames;
 
@@ -91,7 +109,27 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
                         RTC_LOG(LS_WARNING) << "Cannot decode SPS:" << sprop;
                     }
                 }
+            } else if (codec == "H265") {
+                const char* pattern="sprop-vps=";
+                const char* spropvps=strstr(sdp, pattern);
+                const char* spropsps=strstr(sdp, "sprop-sps=");
+                const char* sproppps=strstr(sdp, "sprop-pps=");
+                if (spropvps && spropsps && sproppps)
+                {
+                    std::string vpsstr(spropvps+strlen(pattern));
+                    std::vector<uint8_t> vps = extractParameters(vpsstr);
+                    frames.push_back(vps);
+
+                    std::string spsstr(spropsps+strlen(pattern));
+                    std::vector<uint8_t> sps = extractParameters(spsstr);
+                    frames.push_back(sps);
+
+                    std::string ppsstr(spropvps+strlen(pattern));
+                    std::vector<uint8_t> pps = extractParameters(ppsstr);
+                    frames.push_back(pps);
+                }
             }
+
 
             return frames;
         }
@@ -164,6 +202,9 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
             if (format.fourcc == cricket::FOURCC_H264) {
                 m_decoder=m_factory->CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kH264CodecName));
                 settings.set_codec_type(webrtc::VideoCodecType::kVideoCodecH264);
+            } else if (format.fourcc == FOURCC_H265) {
+                m_decoder=m_factory->CreateVideoDecoder(webrtc::SdpVideoFormat("H265"));
+                settings.set_codec_type(webrtc::VideoCodecType::kVideoCodecGeneric);
             } else if (format.fourcc == FOURCC_VP9) {
                 m_decoder=m_factory->CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kVp9CodecName));
                 settings.set_codec_type(webrtc::VideoCodecType::kVideoCodecVP9);	                
