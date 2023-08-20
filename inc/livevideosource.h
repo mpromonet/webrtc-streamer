@@ -26,9 +26,11 @@
 #include "media/base/video_broadcaster.h"
 #include "media/engine/internal_decoder_factory.h"
 
+#include "common_video/h265/h265_common.h"
+#include "common_video/h265/h265_sps_parser.h"
+
 #include "common_video/h264/h264_common.h"
 #include "common_video/h264/sps_parser.h"
-#include "modules/video_coding/h264_sprop_parameter_sets.h"
 
 #include "api/video_codecs/video_decoder.h"
 
@@ -75,6 +77,7 @@ public:
             RTC_LOG(LS_INFO) << "LiveVideoSource::onNewSession id:"<< id << " media:" << media << "/" << codec << " sdp:" << sdp;
 
             if ( (strcmp(codec, "H264") == 0)
+               || (strcmp(codec, "H265") == 0)              
                || (strcmp(codec, "JPEG") == 0)
                || (strcmp(codec, "VP9") == 0) )
             {
@@ -97,7 +100,7 @@ public:
         }
         return success;
     }
-
+    
     virtual bool onData(const char *id, unsigned char *buffer, ssize_t size, struct timeval presentationTime)
     {
         int64_t ts = presentationTime.tv_sec;
@@ -123,14 +126,12 @@ public:
                     if (!sps)
                     {
                         RTC_LOG(LS_ERROR) << "cannot parse sps";
-                        res = -1;
+                        m_decoder.postFormat(codec, 0, 0);
                     }
                     else
                     {
-                        int fps = 25;
-                        RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
-                        cricket::VideoFormat videoFormat(sps->width, sps->height, cricket::VideoFormat::FpsToInterval(fps), cricket::FOURCC_H264);
-                        m_decoder.postFormat(videoFormat);
+                        RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height;
+                        m_decoder.postFormat(codec, sps->width, sps->height);
                     }
                 }
                 else if (nalu_type == webrtc::H264::NaluType::kPps)
@@ -146,6 +147,67 @@ public:
                     webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameDelta;
                     std::vector<uint8_t> content;
                     if (nalu_type == webrtc::H264::NaluType::kIdr)
+                    {
+                        frameType = webrtc::VideoFrameType::kVideoFrameKey;
+                        RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData IDR";
+                        content.insert(content.end(), m_cfg.begin(), m_cfg.end());
+                    }
+                    else
+                    {
+                        RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SLICE NALU:" << nalu_type;
+                    }
+                    if (m_prevTimestamp && ts < m_prevTimestamp && m_decoder.m_decoder && strcmp(m_decoder.m_decoder->ImplementationName(),"FFmpeg")==0) 
+                    {
+                        RTC_LOG(LS_ERROR) << "LiveVideoSource:onData drop frame in past for FFmpeg:" << (m_prevTimestamp-ts);
+
+                    } else {
+                        content.insert(content.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
+                        rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
+                        m_decoder.PostFrame(frame, ts, frameType);
+                    }
+                }
+            }
+        }
+        else if (codec == "H265")
+        {
+            std::vector<webrtc::H265::NaluIndex> indexes = webrtc::H265::FindNaluIndices(buffer,size);
+            RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData nbNalu:" << indexes.size();
+            for (const webrtc::H265::NaluIndex & index : indexes) {
+                webrtc::H265::NaluType nalu_type = webrtc::H265::ParseNaluType(buffer[index.payload_start_offset]);
+                RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData NALU type:" << nalu_type << " payload_size:" << index.payload_size << " payload_start_offset:" << index.payload_start_offset << " start_offset:" << index.start_offset;
+                if (nalu_type == webrtc::H265::NaluType::kVps)
+                {
+                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData VPS";
+                    m_cfg.clear();
+                    m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
+                }
+                else if (nalu_type == webrtc::H265::NaluType::kSps)
+                {
+                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SPS";
+                    m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
+
+                    absl::optional<webrtc::H265SpsParser::SpsState> sps = webrtc::H265SpsParser::ParseSps(buffer + index.payload_start_offset, index.payload_size);
+                    if (!sps)
+                    {
+                        RTC_LOG(LS_ERROR) << "cannot parse sps";
+                        m_decoder.postFormat(codec, 0, 0);
+                    }
+                    else
+                    {
+                        RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height;
+                        m_decoder.postFormat(codec, sps->width, sps->height);
+                    }
+                }
+                else if (nalu_type == webrtc::H265::NaluType::kPps)
+                {
+                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData PPS";
+                    m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
+                }
+                else
+                {
+                    webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameDelta;
+                    std::vector<uint8_t> content;
+                    if ( (nalu_type == webrtc::H265::NaluType::kIdrWRadl) || (nalu_type == webrtc::H265::NaluType::kIdrNLp) )
                     {
                         frameType = webrtc::VideoFrameType::kVideoFrameKey;
                         RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData IDR";
@@ -210,8 +272,7 @@ public:
         }
         else if (codec == "VP9")
         {
-            cricket::VideoFormat videoFormat(0, 0, cricket::VideoFormat::FpsToInterval(0), FOURCC_VP9);
-            m_decoder.postFormat(videoFormat);
+            m_decoder.postFormat(codec, 0, 0);
 
             webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameKey;
             rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(buffer, size);

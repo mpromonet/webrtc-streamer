@@ -48,17 +48,10 @@ class NullEncoder : public webrtc::VideoEncoder {
 		}
 
 		// compute frametype
-		uint8_t* data = (uint8_t*)buffer->GetI420()->DataY();
-		size_t dataSize = buffer->GetI420()->StrideY();
-		webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameDelta;
-		std::vector<webrtc::H264::NaluIndex> naluIndexes = webrtc::H264::FindNaluIndices(data, dataSize);
-		for (webrtc::H264::NaluIndex  index : naluIndexes) {
-			webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(data[index.payload_start_offset]);
-			if (nalu_type ==  webrtc::H264::NaluType::kIdr) {
-				frameType = webrtc::VideoFrameType::kVideoFrameKey;
-				break;
-			}
-		}
+		EncodedVideoI420Buffer* encodedBuffer = (EncodedVideoI420Buffer*)buffer->GetI420();
+		const uint8_t* data = encodedBuffer->DataY();
+		size_t dataSize = encodedBuffer->StrideY();
+		webrtc::VideoFrameType frameType = encodedBuffer->getFrameType();
 
 		// build webrtc::EncodedImage
 		webrtc::EncodedImage encoded_image;
@@ -71,7 +64,9 @@ class NullEncoder : public webrtc::VideoEncoder {
 
 		// forward to callback
 		webrtc::CodecSpecificInfo codec_specific;
-		codec_specific.codecType = webrtc::VideoCodecType::kVideoCodecH264;
+		if (m_format.name == "H264") {
+			codec_specific.codecType = webrtc::VideoCodecType::kVideoCodecH264;
+		} 
         webrtc::EncodedImageCallback::Result result = m_encoded_image_callback->OnEncodedImage(encoded_image, &codec_specific);
         if (result.error == webrtc::EncodedImageCallback::Result::ERROR_SEND_FAILED) {
             RTC_LOG(LS_ERROR) << "Error in parsing EncodedImage" << encoded_image._frameType;

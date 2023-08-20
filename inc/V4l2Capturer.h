@@ -134,7 +134,8 @@ private:
 				}
 
 				int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
-				rtc::scoped_refptr<webrtc::VideoFrameBuffer> frameBuffer = rtc::make_ref_counted<EncodedVideoFrameBuffer>(m_capture->getWidth(), m_capture->getHeight(), encodedData);
+				webrtc::VideoFrameType frameType = idr ? webrtc::VideoFrameType::kVideoFrameKey : webrtc::VideoFrameType::kVideoFrameDelta;
+				rtc::scoped_refptr<webrtc::VideoFrameBuffer> frameBuffer = rtc::make_ref_counted<EncodedVideoFrameBuffer>(m_capture->getWidth(), m_capture->getHeight(), encodedData, frameType);
 				webrtc::VideoFrame frame = webrtc::VideoFrame::Builder()
 					.set_video_frame_buffer(frameBuffer)
 					.set_rotation(webrtc::kVideoRotation_0)

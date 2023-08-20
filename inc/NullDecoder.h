@@ -37,13 +37,17 @@ class NullDecoder : public webrtc::VideoDecoder {
 			return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
 		}
 		rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encodedData = input_image.GetEncodedData();
-		rtc::scoped_refptr<webrtc::VideoFrameBuffer> buffer = rtc::make_ref_counted<EncodedVideoFrameBuffer>(m_settings.max_render_resolution().Width(), m_settings.max_render_resolution().Height(), encodedData);
+		rtc::scoped_refptr<webrtc::VideoFrameBuffer> frameBuffer = rtc::make_ref_counted<EncodedVideoFrameBuffer>(m_settings.max_render_resolution().Width(), m_settings.max_render_resolution().Height(), encodedData, input_image._frameType);
 		
-		webrtc::VideoFrame frame(buffer, webrtc::kVideoRotation_0, render_time_ms * rtc::kNumMicrosecsPerMillisec);
-		frame.set_timestamp(input_image.Timestamp());
-		frame.set_ntp_time_ms(input_image.NtpTimeMs());
+		webrtc::VideoFrame frame = webrtc::VideoFrame::Builder()
+					.set_video_frame_buffer(frameBuffer)
+					.set_rotation(webrtc::kVideoRotation_0)
+					.set_timestamp_rtp(input_image.Timestamp())
+					.set_timestamp_ms(render_time_ms)
+					.set_ntp_time_ms(input_image.NtpTimeMs())
+					.build();
 
-		RTC_LOG(LS_VERBOSE) << "Decode " << frame.id() << " " << input_image._frameType << " " <<  buffer->width() << "x" <<  buffer->height() << " " <<  buffer->GetI420()->StrideY();
+		RTC_LOG(LS_VERBOSE) << "Decode " << frame.id() << " " << input_image._frameType << " " <<  frameBuffer->width() << "x" <<  frameBuffer->height() << " " <<  frameBuffer->GetI420()->StrideY();
 
 		m_decoded_image_callback->Decoded(frame);
 
