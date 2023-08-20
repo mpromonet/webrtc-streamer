@@ -126,12 +126,11 @@ public:
                     if (!sps)
                     {
                         RTC_LOG(LS_ERROR) << "cannot parse sps";
-                        res = -1;
+                        m_decoder.postFormat(codec, 0, 0);
                     }
                     else
                     {
-                        int fps = 25;
-                        RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height << " fps:" << fps;
+                        RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height;
                         m_decoder.postFormat(codec, sps->width, sps->height);
                     }
                 }
@@ -187,7 +186,17 @@ public:
                     RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SPS";
                     m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
 
-                    m_decoder.postFormat(codec, 0, 0);
+                    absl::optional<webrtc::H265SpsParser::SpsState> sps = webrtc::H265SpsParser::ParseSps(buffer + index.payload_start_offset, index.payload_size);
+                    if (!sps)
+                    {
+                        RTC_LOG(LS_ERROR) << "cannot parse sps";
+                        m_decoder.postFormat(codec, 0, 0);
+                    }
+                    else
+                    {
+                        RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height;
+                        m_decoder.postFormat(codec, sps->width, sps->height);
+                    }
                 }
                 else if (nalu_type == webrtc::H265::NaluType::kPps)
                 {
