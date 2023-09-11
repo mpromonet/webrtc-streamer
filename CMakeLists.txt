@@ -149,7 +149,7 @@ target_link_libraries (${CMAKE_PROJECT_NAME} Threads::Threads)
 
 # civetweb
 add_library (civetweb STATIC civetweb/src/civetweb.c civetweb/src/CivetServer.cpp)	
-add_definitions(-DOPENSSL_API_1_1 -DUSE_WEBSOCKET)
+add_definitions(-DOPENSSL_API_3_0 -DUSE_WEBSOCKET)
 target_link_libraries (${CMAKE_PROJECT_NAME} civetweb) 
 target_include_directories(civetweb PUBLIC civetweb/include) 
 
@@ -186,8 +186,6 @@ elseif (APPLE)
     # webrtc
     add_definitions(-DHAVE_SOUND)
     add_definitions(-DWEBRTC_MAC -DWEBRTC_POSIX -fno-rtti)
-    # civetweb
-    add_definitions(-DCRYPTO_LIB="libcrypto.so.1.1" -DSSL_LIB="libssl.so.1.1")
 
     find_library(CORE_FOUNDATION Foundation)
     find_library(APPLICATION_SERVICES ApplicationServices)
@@ -214,7 +212,6 @@ else()
         target_link_libraries (${CMAKE_PROJECT_NAME} X11 Xext Xdamage Xfixes Xcomposite Xrandr Xtst)
     endif()
     # civetweb
-    add_definitions(-DCRYPTO_LIB="libcrypto.so.1.1" -DSSL_LIB="libssl.so.1.1")
     target_link_libraries (${CMAKE_PROJECT_NAME} dl)
     #alsa
     if (ALSA_FOUND)
