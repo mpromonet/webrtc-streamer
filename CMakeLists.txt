@@ -75,6 +75,11 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg COMMAND chromium/scripts/copy_config.sh)
   endif()
 
+  #patch
+  file(READ ${WEBRTCROOT}/src/modules/congestion_controller/goog_cc/loss_based_bwe_v2.cc filecontent)
+  string(REPLACE "config.emplace()" "config.emplace(Config())" filecontent "${filecontent}")
+  file(WRITE ${WEBRTCROOT}/src/modules/congestion_controller/goog_cc/loss_based_bwe_v2.cc "${filecontent}")
+
   # sound support
   if (APPLE)
     set (WEBRTCARGS rtc_include_internal_audio_device=true\n${WEBRTCARGS})
