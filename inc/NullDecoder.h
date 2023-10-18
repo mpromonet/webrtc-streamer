@@ -42,7 +42,7 @@ class NullDecoder : public webrtc::VideoDecoder {
 		webrtc::VideoFrame frame = webrtc::VideoFrame::Builder()
 					.set_video_frame_buffer(frameBuffer)
 					.set_rotation(webrtc::kVideoRotation_0)
-					.set_timestamp_rtp(input_image.Timestamp())
+					.set_timestamp_rtp(input_image.RtpTimestamp())
 					.set_timestamp_ms(render_time_ms)
 					.set_ntp_time_ms(input_image.NtpTimeMs())
 					.build();

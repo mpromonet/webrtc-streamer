@@ -252,9 +252,9 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
                     if (size) {
                         webrtc::EncodedImage input_image;
                         input_image.SetEncodedData(frame.m_content);		
-                        input_image._frameType = frame.m_frameType;
+                        input_image.SetFrameType(frame.m_frameType);
                         input_image.ntp_time_ms_ = frame.m_timestamp_ms;
-                        input_image.SetTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
+                        input_image.SetRtpTimestamp(frame.m_timestamp_ms); // store time in ms that overflow the 32bits
 
                         if (this->hasDecoder()) {
                             int res = m_decoder->Decode(input_image, false, frame.m_timestamp_ms);

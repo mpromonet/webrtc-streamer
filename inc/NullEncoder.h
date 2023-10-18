@@ -57,7 +57,7 @@ class NullEncoder : public webrtc::VideoEncoder {
 		// build webrtc::EncodedImage
 		webrtc::EncodedImage encoded_image;
 		encoded_image.SetEncodedData(webrtc::EncodedImageBuffer::Create(data, dataSize));
-		encoded_image.SetTimestamp(frame.timestamp());
+		encoded_image.SetRtpTimestamp(frame.timestamp());
 		encoded_image.ntp_time_ms_ = frame.ntp_time_ms();
 		encoded_image._frameType = frameType;
 
