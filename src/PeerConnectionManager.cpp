@@ -1261,6 +1261,14 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 		{
 			optcapturer += opts["timeout"];
 		}
+		if (opts.find("width") != opts.end())
+		{
+			optcapturer += opts["width"];
+		}
+		if (opts.find("height") != opts.end())
+		{
+			optcapturer += opts["height"];
+		}
 	}
 
 	// compute stream label removing space because SDP use label
