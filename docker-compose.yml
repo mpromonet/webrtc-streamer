@@ -9,6 +9,7 @@ services:
     image: mpromonet/webrtc-streamer:latest
     ports:
       - 8000:8000
+      - "0-65535:0-65535/udp"
 
   prometheus:
     image: prom/prometheus:v2.1.0
