@@ -31,8 +31,11 @@ WORKDIR /app
 COPY --from=builder /app/ /app/
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libssl-dev libasound2 libgtk-3-0 libxtst6 libpulse0 librtmp1 avahi-utils \
+	&& useradd -M user \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/ \
 	&& ./webrtc-streamer -V
+
+USER user
 
 ENTRYPOINT [ "./webrtc-streamer" ]
 CMD [ "-C", "config.json" ]
