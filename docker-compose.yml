@@ -7,9 +7,13 @@ volumes:
 services:
   webrtc-streamer:
     image: mpromonet/webrtc-streamer:latest
+    command: ["-C", "config.json", "-R", "32768-32771"]
     ports:
       - 8000:8000
-      - "0-65535:0-65535/udp"
+      - 32768:32768/udp
+      - 32769:32769/udp
+      - 32770:32770/udp
+      - 32771:32771/udp
 
   prometheus:
     image: prom/prometheus:v2.1.0
