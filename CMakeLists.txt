@@ -209,7 +209,7 @@ else()
     aux_source_directory(libv4l2cpp/src LIBSRC_FILES)
     include_directories("libv4l2cpp/inc")
     add_library(libv4l2cpp STATIC ${LIBSRC_FILES})
-    target_link_libraries (${PROJECT_NAME} libv4l2cpp) 
+    target_link_libraries (${CMAKE_PROJECT_NAME} libv4l2cpp) 
 
     # webrtc
     add_definitions(-DWEBRTC_POSIX -fno-rtti)
@@ -218,10 +218,11 @@ else()
     endif()
     if (EXISTS ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE}/obj/modules/desktop_capture/desktop_capture.ninja)
         add_definitions(-DUSE_X11)
-        target_link_libraries (${CMAKE_PROJECT_NAME} X11 Xext Xdamage Xfixes Xcomposite Xrandr Xtst)
+        find_package(X11)
+        target_link_libraries(${CMAKE_PROJECT_NAME} ${X11_LIBRARIES} ${X11_Xdamage_LIB} ${X11_Xfixes_LIB} ${X11_Xcomposite_LIB} ${X11_Xrandr_LIB} ${X11_Xtst_LIB})
     endif()
     # civetweb
-    target_link_libraries (${CMAKE_PROJECT_NAME} dl)
+    target_link_libraries(${CMAKE_PROJECT_NAME} dl)
     #alsa
     if (ALSA_FOUND)
         add_definitions(-DHAVE_SOUND)
