@@ -199,8 +199,10 @@ elseif (APPLE)
     find_library(CORE_SERVICES CoreServices)
     find_library(CORE_AUDIO CoreAudio)
     find_library(AUDIO_TOOLBOX AudioToolBox)
+    find_library(IO_SURFACE IOSurface)
+    
     target_link_libraries (${CMAKE_PROJECT_NAME} ${CORE_FOUNDATION} ${APPLICATION_SERVICES} ${CORE_SERVICES}
-                           ${CORE_AUDIO} ${AUDIO_TOOLBOX})
+                           ${CORE_AUDIO} ${AUDIO_TOOLBOX} ${IO_SURFACE})
 else()
     # libv4l2cpp
     add_definitions(-DHAVE_V4L2)
