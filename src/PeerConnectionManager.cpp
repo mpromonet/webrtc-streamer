@@ -205,7 +205,7 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 	  m_task_queue_factory(webrtc::CreateDefaultTaskQueueFactory()),
   	  m_video_decoder_factory(CreateDecoderFactory(useNullCodec)),
 	  m_iceServerList(iceServerList), 
-	  m_config(config), 
+	  m_config(config),
 	  m_publishFilter(publishFilter), 
 	  m_webrtcPortRange(webrtcUdpPortRange),
 	  m_useNullCodec(useNullCodec), 
@@ -1150,31 +1150,15 @@ rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> PeerConnectionManager::Cre
 {
 	RTC_LOG(LS_INFO) << "videourl:" << videourl;
 
-	std::string video = videourl;
-	if (m_config.isMember(video)) {
-		video = m_config[video]["video"].asString();
-	}
-
-	return CapturerFactory::CreateVideoSource(video, opts, m_publishFilter, m_peer_connection_factory, m_video_decoder_factory);
+	return CapturerFactory::CreateVideoSource(videourl, opts, m_publishFilter, m_peer_connection_factory, m_video_decoder_factory);
 }
 
 rtc::scoped_refptr<webrtc::AudioSourceInterface> PeerConnectionManager::CreateAudioSource(const std::string &audiourl, const std::map<std::string, std::string> &opts)
 {
 	RTC_LOG(LS_INFO) << "audiourl:" << audiourl;
 
-	std::string audio = audiourl;
-	if (m_config.isMember(audio)) {
-		audio = m_config[audio]["audio"].asString();
-	}
-
-	std::map<std::string, std::string>::iterator it = m_videoaudiomap.find(audio);
-	if (it != m_videoaudiomap.end())
-	{
-		audio = it->second;
-	}
-
-	return m_workerThread->BlockingCall([this, audio, opts] {
-		return CapturerFactory::CreateAudioSource(audio, opts, m_publishFilter, m_peer_connection_factory, m_audioDecoderfactory, m_audioDeviceModule);
+	return m_workerThread->BlockingCall([this, audiourl, opts] {
+		return CapturerFactory::CreateAudioSource(audiourl, opts, m_publishFilter, m_peer_connection_factory, m_audioDecoderfactory, m_audioDeviceModule);
     });
 }
 
@@ -1228,11 +1212,9 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 		video = m_config[video]["video"].asString();
 	}
 
-	// compute audiourl if not set
-	std::string audio(audiourl);
-	if (audio.empty())
-	{
-		audio = videourl;
+	std::string audio = audiourl;
+	if (m_config.isMember(audio)) {
+		audio = m_config[audio]["audio"].asString();
 	}
 
 	// set bandwidth
