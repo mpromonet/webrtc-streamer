@@ -1032,10 +1032,11 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 							}							
 						}
 
-						Json::Value tracks;
-						tracks[mediaTrack->id()] = track;	
-						std::string streamLabel = localStream->stream_ids()[0];					
-						streams[streamLabel] = tracks;
+						std::string streamLabel = localStream->stream_ids()[0];		
+						if (!streams.isMember(streamLabel)) {
+							streams[streamLabel] = Json::Value(Json::objectValue);
+						}			
+						streams[streamLabel][mediaTrack->id()] = track;
 					}
 				}
 			}
