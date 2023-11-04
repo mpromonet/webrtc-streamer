@@ -401,7 +401,7 @@ std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionMan
 
 	} else {
 		std::string offersdp(in.asString());
-		RTC_LOG(LS_ERROR) << "offer:" << offersdp;
+		RTC_LOG(LS_WARNING) << "offer:" << offersdp;
 		std::unique_ptr<webrtc::SessionDescriptionInterface> desc = this->getAnswer(peerid, offersdp, videourl, audiourl, options, true);
 		if (desc.get()) {
 			desc->ToString(&answersdp);
@@ -413,7 +413,7 @@ std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionMan
 		} else {
 			RTC_LOG(LS_ERROR) << "Failed to create answer - no SDP";
 		}
-		RTC_LOG(LS_INFO) << "anwser:" << answersdp;
+		RTC_LOG(LS_WARNING) << "anwser:" << answersdp;
 
 	}
 	return std::make_tuple(httpcode, headers, answersdp);
