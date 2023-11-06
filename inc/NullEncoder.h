@@ -68,9 +68,12 @@ class NullEncoder : public webrtc::VideoEncoder {
 		if (m_format.name == "H264") {
 			codec_specific.codecType = webrtc::VideoCodecType::kVideoCodecH264;
 		} 
+		else if (m_format.name == "H265") {
+			codec_specific.codecType = webrtc::VideoCodecType::kVideoCodecH265;
+		} 
         webrtc::EncodedImageCallback::Result result = m_encoded_image_callback->OnEncodedImage(encoded_image, &codec_specific);
         if (result.error == webrtc::EncodedImageCallback::Result::ERROR_SEND_FAILED) {
-            RTC_LOG(LS_ERROR) << "Error in parsing EncodedImage" << encoded_image._frameType;
+            RTC_LOG(LS_ERROR) << "Error in parsing EncodedImage " << frame.id() << " " << encoded_image._frameType << " " <<  buffer->width() << "x" <<  buffer->height() << " " <<  buffer->GetI420()->StrideY();
 		}
 		return WEBRTC_VIDEO_CODEC_OK;
 	}
