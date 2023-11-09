@@ -198,7 +198,7 @@ std::string getParam(const char *queryString, const char *paramName) {
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange, bool useNullCodec, bool usePlanB, int maxpc)
+PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange, bool useNullCodec, bool usePlanB, int maxpc, webrtc::PeerConnectionInterface::IceTransportsType transportType)
 	: m_signalingThread(rtc::Thread::Create()),
 	  m_workerThread(rtc::Thread::Create()),
 	  m_audioDecoderfactory(webrtc::CreateBuiltinAudioDecoderFactory()), 
@@ -210,7 +210,8 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 	  m_webrtcPortRange(webrtcUdpPortRange),
 	  m_useNullCodec(useNullCodec), 
 	  m_usePlanB(usePlanB),
-	  m_maxpc(maxpc)
+	  m_maxpc(maxpc),
+	  m_transportType(transportType)
 {
 	m_workerThread->SetName("worker", NULL);
 	m_workerThread->Start();
@@ -543,6 +544,11 @@ const Json::Value PeerConnectionManager::getIceServers(const std::string &client
 
 	Json::Value iceServers;
 	iceServers["iceServers"] = urls;
+	if (m_transportType == webrtc::PeerConnectionInterface::IceTransportsType::kRelay) {
+		iceServers["iceTransportPolicy"] = "relay";
+	} else {
+		iceServers["iceTransportPolicy"] = "all";
+	}
 
 	return iceServers;
 }
@@ -1117,6 +1123,7 @@ PeerConnectionManager::PeerConnectionObserver *PeerConnectionManager::CreatePeer
 		server.password = srv.pass;
 		config.servers.push_back(server);
 	}
+	config.type = m_transportType;
 
 	// Use example From https://soru.site/questions/51578447/api-c-webrtcyi-kullanarak-peerconnection-ve-ucretsiz-baglant-noktasn-serbest-nasl
 	int minPort = 0;
