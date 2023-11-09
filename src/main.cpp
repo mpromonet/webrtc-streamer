@@ -280,6 +280,16 @@ int main(int argc, char* argv[])
 					tcp_server_socket->Bind(server_addr);
 					tcp_server_socket->Listen(5);
 					turnserver->AddInternalServerSocket(tcp_server_socket, cricket::PROTO_TCP);
+				} else {
+					std::cout << "Failed to create TURN TCP server socket" << std::endl;
+				}
+
+				rtc::AsyncUDPSocket* udp_server_socket = rtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
+				if (udp_server_socket) {
+					std::cout << "TURN Listening UDP at " << server_addr.ToString() << std::endl;
+					turnserver->AddInternalSocket(udp_server_socket, cricket::PROTO_UDP);
+				} else {
+					std::cout << "Failed to create TURN UDP server socket" << std::endl;
 				}
 
 				is.str(turnurl);
