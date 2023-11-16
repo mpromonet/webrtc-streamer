@@ -118,7 +118,7 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
                     std::vector<uint8_t> sps = extractParameters(spsstr);
                     frames.push_back(sps);
 
-                    std::string ppsstr(spropvps+strlen(pattern));
+                    std::string ppsstr(sproppps+strlen(pattern));
                     std::vector<uint8_t> pps = extractParameters(ppsstr);
                     frames.push_back(pps);
                 }
