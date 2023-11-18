@@ -50,17 +50,47 @@ bool ignoreInLabel(char c)
 ** -------------------------------------------------------------------------*/
 
 #ifdef WIN32
-std::string getServerIpFromClientIp(int clientip)
-{
-	return "127.0.0.1";
-}
+#include <winsock2.h>
+#include <iphlpapi.h>
+#include <stdio.h>
+#include <stdlib.h>
+#pragma comment(lib, "IPHLPAPI.lib")
+#pragma comment(lib, "ws2_32.lib")
 #else
 #include <net/if.h>
 #include <ifaddrs.h>
+#endif
 std::string getServerIpFromClientIp(int clientip)
 {
 	std::string serverAddress;
-	char host[NI_MAXHOST];
+#ifdef WIN32
+    ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
+    PIP_ADAPTER_INFO pAdapterInfo = (IP_ADAPTER_INFO*)malloc(sizeof(IP_ADAPTER_INFO));
+    if (pAdapterInfo) {
+		if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW) {
+			free(pAdapterInfo);
+			pAdapterInfo = (IP_ADAPTER_INFO*)malloc(ulOutBufLen);
+		}
+    }
+	if (pAdapterInfo) {
+		DWORD dwRetVal = GetAdaptersInfo(pAdapterInfo, &ulOutBufLen);
+		if (dwRetVal == NO_ERROR) {
+			PIP_ADAPTER_INFO pAdapter = pAdapterInfo;
+			while (pAdapter) {
+				struct sockaddr_in addr;
+				inet_pton(AF_INET, pAdapter->IpAddressList.IpAddress.String, &addr);
+				struct sockaddr_in mask;
+				inet_pton(AF_INET, pAdapter->IpAddressList.IpMask.String, &mask);
+				if ((addr.sin_addr.s_addr & mask.sin_addr.s_addr) == (clientip & mask.sin_addr.s_addr)) {
+					serverAddress = pAdapter->IpAddressList.IpAddress.String;
+					break;
+				}
+				pAdapter = pAdapter->Next;
+			}
+		}
+		free(pAdapterInfo);
+	}
+#else
 	struct ifaddrs *ifaddr = NULL;
 	if (getifaddrs(&ifaddr) == 0)
 	{
@@ -72,6 +102,7 @@ std::string getServerIpFromClientIp(int clientip)
 				struct sockaddr_in *mask = (struct sockaddr_in *)ifa->ifa_netmask;
 				if ((addr->sin_addr.s_addr & mask->sin_addr.s_addr) == (clientip & mask->sin_addr.s_addr))
 				{
+					char host[NI_MAXHOST];
 					if (getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), host, sizeof(host), NULL, 0, NI_NUMERICHOST) == 0)
 					{
 						serverAddress = host;
@@ -82,9 +113,9 @@ std::string getServerIpFromClientIp(int clientip)
 		}
 	}
 	freeifaddrs(ifaddr);
+#endif
 	return serverAddress;
 }
-#endif
 
 struct IceServer
 {
