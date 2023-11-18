@@ -84,7 +84,7 @@ std::string getServerIpFromClientIp(long clientip)
                             mask.s_addr = htonl((0xFFFFFFFFU << (32 - pUnicast->OnLinkPrefixLength)) & 0xFFFFFFFFU);
 
                             if ((addr.s_addr & mask.s_addr) == (clientip & mask.s_addr)) {
-                                std::cout << inet_ntoa(addr) << std::endl;
+								serverAddress = inet_ntoa(addr);
                                 break;
                             }
                         }
