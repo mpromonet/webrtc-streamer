@@ -64,29 +64,36 @@ std::string getServerIpFromClientIp(long clientip)
 {
 	std::string serverAddress("127.0.0.1");
 #ifdef WIN32
-    ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
-    PIP_ADAPTER_INFO pAdapterInfo = (IP_ADAPTER_INFO*)malloc(sizeof(IP_ADAPTER_INFO));
-    if ( (pAdapterInfo != NULL) && (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW) ) {
-		free(pAdapterInfo);
-		pAdapterInfo = (IP_ADAPTER_INFO*)malloc(ulOutBufLen);
+    ULONG outBufLen = 0;
+    DWORD dwRetVal = GetAdaptersAddresses(AF_INET, GAA_FLAG_INCLUDE_PREFIX, NULL, NULL, &outBufLen);
+    if (dwRetVal == ERROR_BUFFER_OVERFLOW) {
+        PIP_ADAPTER_ADDRESSES pAddresses = (IP_ADAPTER_ADDRESSES*)malloc(outBufLen);
+        if (pAddresses != NULL) {
+            if (GetAdaptersAddresses(AF_INET, GAA_FLAG_INCLUDE_PREFIX, NULL, pAddresses, &outBufLen) == NO_ERROR) {
+
+                for (PIP_ADAPTER_ADDRESSES pCurrAddresses = pAddresses; pCurrAddresses != NULL; pCurrAddresses = pCurrAddresses->Next) {
+
+                    for (PIP_ADAPTER_UNICAST_ADDRESS pUnicast = pCurrAddresses->FirstUnicastAddress; pUnicast != NULL; pUnicast = pUnicast->Next) {
+                        sockaddr* sa = pUnicast->Address.lpSockaddr;
+
+                        if (sa->sa_family == AF_INET) {
+                            struct sockaddr_in* ipv4 = (struct sockaddr_in*)sa;
+                            struct in_addr addr = ipv4->sin_addr;
+
+                            struct in_addr mask;
+                            mask.s_addr = htonl((0xFFFFFFFFU << (32 - pUnicast->OnLinkPrefixLength)) & 0xFFFFFFFFU);
+
+                            if ((addr.s_addr & mask.s_addr) == (clientip & mask.s_addr)) {
+                                std::cout << inet_ntoa(addr) << std::endl;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        free(pAddresses);
     }
-	if (pAdapterInfo != NULL) {
-		DWORD dwRetVal = GetAdaptersInfo(pAdapterInfo, &ulOutBufLen);
-		if (dwRetVal == NO_ERROR) {
-			for (PIP_ADAPTER_INFO pAdapter = pAdapterInfo; pAdapter != NULL; pAdapter = pAdapter->Next) {
-				struct in_addr addr;
-				inet_pton(AF_INET, pAdapter->IpAddressList.IpAddress.String, &addr);
-				struct in_addr mask;
-				inet_pton(AF_INET, pAdapter->IpAddressList.IpMask.String, &mask);
-				std::cout << std::hex << addr.s_addr << " " << mask.s_addr << " " << clientip << std::endl;
-				if ((mask.s_addr != INADDR_ANY) && (addr.s_addr & mask.s_addr) == (clientip & mask.s_addr)) {
-					serverAddress = pAdapter->IpAddressList.IpAddress.String;
-					break;
-				}
-			}
-		}
-		free(pAdapterInfo);
-	}
 #else
 	struct ifaddrs *ifaddr = NULL;
 	if (getifaddrs(&ifaddr) == 0)
