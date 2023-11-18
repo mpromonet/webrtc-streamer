@@ -62,7 +62,7 @@ bool ignoreInLabel(char c)
 #endif
 std::string getServerIpFromClientIp(long clientip)
 {
-	std::string serverAddress;
+	std::string serverAddress("127.0.0.1");
 #ifdef WIN32
     ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
     PIP_ADAPTER_INFO pAdapterInfo = (IP_ADAPTER_INFO*)malloc(sizeof(IP_ADAPTER_INFO));
@@ -79,7 +79,7 @@ std::string getServerIpFromClientIp(long clientip)
 				struct in_addr mask;
 				inet_pton(AF_INET, pAdapter->IpAddressList.IpMask.String, &mask);
 				std::cout << std::hex << addr.s_addr << " " << mask.s_addr << " " << clientip << std::endl;
-				if ((addr.s_addr & mask.s_addr) == (clientip & mask.s_addr)) {
+				if ((mask.s_addr != INADDR_ANY) && (addr.s_addr & mask.s_addr) == (clientip & mask.s_addr)) {
 					serverAddress = pAdapter->IpAddressList.IpAddress.String;
 					break;
 				}
