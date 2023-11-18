@@ -60,32 +60,29 @@ bool ignoreInLabel(char c)
 #include <net/if.h>
 #include <ifaddrs.h>
 #endif
-std::string getServerIpFromClientIp(int clientip)
+std::string getServerIpFromClientIp(long clientip)
 {
 	std::string serverAddress;
 #ifdef WIN32
     ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
     PIP_ADAPTER_INFO pAdapterInfo = (IP_ADAPTER_INFO*)malloc(sizeof(IP_ADAPTER_INFO));
-    if (pAdapterInfo) {
-		if (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW) {
-			free(pAdapterInfo);
-			pAdapterInfo = (IP_ADAPTER_INFO*)malloc(ulOutBufLen);
-		}
+    if ( (pAdapterInfo != NULL) && (GetAdaptersInfo(pAdapterInfo, &ulOutBufLen) == ERROR_BUFFER_OVERFLOW) ) {
+		free(pAdapterInfo);
+		pAdapterInfo = (IP_ADAPTER_INFO*)malloc(ulOutBufLen);
     }
-	if (pAdapterInfo) {
+	if (pAdapterInfo != NULL) {
 		DWORD dwRetVal = GetAdaptersInfo(pAdapterInfo, &ulOutBufLen);
 		if (dwRetVal == NO_ERROR) {
-			PIP_ADAPTER_INFO pAdapter = pAdapterInfo;
-			while (pAdapter) {
-				struct sockaddr_in addr;
+			for (PIP_ADAPTER_INFO pAdapter = pAdapterInfo; pAdapter != NULL; pAdapter = pAdapter->Next) {
+				struct in_addr addr;
 				inet_pton(AF_INET, pAdapter->IpAddressList.IpAddress.String, &addr);
-				struct sockaddr_in mask;
+				struct in_addr mask;
 				inet_pton(AF_INET, pAdapter->IpAddressList.IpMask.String, &mask);
-				if ((addr.sin_addr.s_addr & mask.sin_addr.s_addr) == (clientip & mask.sin_addr.s_addr)) {
+				std::cout << std::hex << addr.s_addr << " " << mask.s_addr << " " << clientip << std::endl;
+				if ((addr.s_addr & mask.s_addr) == (clientip & mask.s_addr)) {
 					serverAddress = pAdapter->IpAddressList.IpAddress.String;
 					break;
 				}
-				pAdapter = pAdapter->Next;
 			}
 		}
 		free(pAdapterInfo);
