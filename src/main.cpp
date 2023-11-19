@@ -38,6 +38,13 @@ void sighandler(int n)
 	rtc::Thread::Current()->Quit(); 
 }
 
+class TurnAuth : public cricket::TurnAuthInterface {
+	public:
+		virtual bool GetKey(absl::string_view username,absl::string_view realm, std::string* key) { 
+			return cricket::ComputeStunCredentialHash(std::string(username), std::string(realm), std::string(username), key); 
+		}
+};
+
 /* ---------------------------------------------------------------------------
 **  main
 ** -------------------------------------------------------------------------*/
@@ -66,6 +73,7 @@ int main(int argc, char* argv[])
 	int         maxpc = 0;
 	webrtc::PeerConnectionInterface::IceTransportsType transportType = webrtc::PeerConnectionInterface::IceTransportsType::kAll;
 	std::string webrtcTrialsFields = "WebRTC-FrameDropper/Disabled/";
+	TurnAuth 	turnAuth;
 
 	std::string httpAddress("0.0.0.0:");
 	std::string httpPort = "8000";
@@ -275,6 +283,7 @@ int main(int argc, char* argv[])
 				rtc::SocketAddress server_addr;
 				server_addr.FromString(addr);
 				turnserver.reset(new cricket::TurnServer(rtc::Thread::Current()));
+				turnserver->set_auth_hook(&turnAuth);
 
 				rtc::Socket* tcp_server_socket = thread->socketserver()->CreateSocket(AF_INET, SOCK_STREAM);
 				if (tcp_server_socket) {
