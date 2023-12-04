@@ -20,6 +20,7 @@
 #include "api/task_queue/default_task_queue_factory.h"
 #include "media/engine/webrtc_media_engine.h"
 #include "modules/audio_device/include/fake_audio_device.h"
+#include "api/enable_media.h"
 
 #include "PeerConnectionManager.h"
 #include "V4l2AlsaMap.h"
@@ -200,22 +201,18 @@ webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencie
 	dependencies.network_thread = NULL;
 	dependencies.worker_thread = workerThread;
 	dependencies.signaling_thread = signalingThread;
-	dependencies.call_factory = webrtc::CreateCallFactory();
 	dependencies.task_queue_factory = webrtc::CreateDefaultTaskQueueFactory();
 	dependencies.event_log_factory = absl::make_unique<webrtc::RtcEventLogFactory>(dependencies.task_queue_factory.get());
 
-	cricket::MediaEngineDependencies mediaDependencies;
-	mediaDependencies.task_queue_factory = dependencies.task_queue_factory.get();
+	dependencies.adm = std::move(audioDeviceModule);
+	dependencies.audio_encoder_factory = webrtc::CreateBuiltinAudioEncoderFactory();
+	dependencies.audio_decoder_factory = std::move(audioDecoderfactory);
+	dependencies.audio_processing = webrtc::AudioProcessingBuilder().Create();
 
-	mediaDependencies.adm = std::move(audioDeviceModule);
-	mediaDependencies.audio_encoder_factory = webrtc::CreateBuiltinAudioEncoderFactory();
-	mediaDependencies.audio_decoder_factory = std::move(audioDecoderfactory);
-	mediaDependencies.audio_processing = webrtc::AudioProcessingBuilder().Create();
+	dependencies.video_encoder_factory = CreateEncoderFactory(useNullCodec);
+	dependencies.video_decoder_factory = CreateDecoderFactory(useNullCodec);
 
-	mediaDependencies.video_encoder_factory = CreateEncoderFactory(useNullCodec);
-	mediaDependencies.video_decoder_factory = CreateDecoderFactory(useNullCodec);
-
-	dependencies.media_engine = cricket::CreateMediaEngine(std::move(mediaDependencies));
+	webrtc::EnableMedia(dependencies);
 
 	return dependencies;
 }
