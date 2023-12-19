@@ -199,8 +199,6 @@ class PeerConnectionManager {
 			PeerConnectionObserver(PeerConnectionManager* peerConnectionManager, const std::string& peerid, const webrtc::PeerConnectionInterface::RTCConfiguration & config)
 			: m_peerConnectionManager(peerConnectionManager)
 			, m_peerid(peerid)
-			, m_localChannel(NULL)
-			, m_remoteChannel(NULL)
 			, m_iceCandidateList(Json::arrayValue)
 			, m_deleting(false)
 			, m_creationTime(rtc::TimeMicros()) {
@@ -214,7 +212,7 @@ class PeerConnectionManager {
 
 					webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::DataChannelInterface>>  errorOrChannel = m_pc->CreateDataChannelOrError("ServerDataChannel", NULL);
 					if (errorOrChannel.ok()) {
-						m_localChannel = new DataChannelObserver(errorOrChannel.MoveValue());
+						m_localChannel.reset(new DataChannelObserver(errorOrChannel.MoveValue()));
 					} else {
 						RTC_LOG(LS_ERROR) << __FUNCTION__ << "CreateDataChannel peerid:" << peerid << " error:" << errorOrChannel.error().message();
 					}
@@ -229,8 +227,6 @@ class PeerConnectionManager {
 
 			virtual ~PeerConnectionObserver() {
 				RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__;
-				delete m_localChannel;
-				delete m_remoteChannel;
 				if (m_pc.get()) {
 					// warning: pc->close call OnIceConnectionChange
 					m_deleting = true;
@@ -272,7 +268,7 @@ class PeerConnectionManager {
 			}
 			virtual void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
 				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__;
-				m_remoteChannel = new DataChannelObserver(channel);
+				m_remoteChannel.reset(new DataChannelObserver(channel));
 			}
 			virtual void OnRenegotiationNeeded()                              {
 				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " peerid:" << m_peerid;;
@@ -310,8 +306,8 @@ class PeerConnectionManager {
 			PeerConnectionManager*                                   m_peerConnectionManager;
 			const std::string                                        m_peerid;
 			rtc::scoped_refptr<webrtc::PeerConnectionInterface>      m_pc;
-			DataChannelObserver*                                     m_localChannel;
-			DataChannelObserver*                                     m_remoteChannel;
+			std::unique_ptr<DataChannelObserver>                     m_localChannel;
+			std::unique_ptr<DataChannelObserver>                     m_remoteChannel;
 			Json::Value                                              m_iceCandidateList;
 			rtc::scoped_refptr<PeerConnectionStatsCollectorCallback> m_statsCallback;
 			std::unique_ptr<VideoSink>                               m_videosink;
