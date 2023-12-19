@@ -122,17 +122,10 @@ std::string getServerIpFromClientIp(long clientip)
 	return serverAddress;
 }
 
-struct IceServer
+webrtc::PeerConnectionInterface::IceServer getIceServerFromUrl(const std::string &url, const std::string &clientIp = "")
 {
-	std::string url;
-	std::string user;
-	std::string pass;
-};
-
-IceServer getIceServerFromUrl(const std::string &url, const std::string &clientIp = "")
-{
-	IceServer srv;
-	srv.url = url;
+	webrtc::PeerConnectionInterface::IceServer srv;
+	srv.uri = url;
 
 	std::size_t pos = url.find_first_of(':');
 	if (pos != std::string::npos)
@@ -155,19 +148,19 @@ IceServer getIceServerFromUrl(const std::string &url, const std::string &clientI
 			clienturl += uri.substr(uri.find_first_of(':'));
 			uri = clienturl;
 		}
-		srv.url = protocol + ":" + uri;
+		srv.uri = protocol + ":" + uri;
 
 		if (!credentials.empty())
 		{
 			pos = credentials.find(':');
 			if (pos == std::string::npos)
 			{
-				srv.user = credentials;
+				srv.username = credentials;
 			}
 			else
 			{
-				srv.user = credentials.substr(0, pos);
-				srv.pass = credentials.substr(pos + 1);
+				srv.username = credentials.substr(0, pos);
+				srv.password = credentials.substr(pos + 1);
 			}
 		}
 	}
@@ -563,14 +556,14 @@ const Json::Value PeerConnectionManager::getIceServers(const std::string &client
 	{
 		Json::Value server;
 		Json::Value urlList(Json::arrayValue);
-		IceServer srv = getIceServerFromUrl(iceServer, clientIp);
-		RTC_LOG(LS_INFO) << "ICE URL:" << srv.url;
-		urlList.append(srv.url);
+		webrtc::PeerConnectionInterface::IceServer srv = getIceServerFromUrl(iceServer, clientIp);
+		RTC_LOG(LS_INFO) << "ICE URL:" << srv.uri;
+		urlList.append(srv.uri);
 		server["urls"] = urlList;
-		if (srv.user.length() > 0)
-			server["username"] = srv.user;
-		if (srv.pass.length() > 0)
-			server["credential"] = srv.pass;
+		if (srv.username.length() > 0)
+			server["username"] = srv.username;
+		if (srv.password.length() > 0)
+			server["credential"] = srv.password;
 		urls.append(server);
 	}
 
@@ -1148,11 +1141,7 @@ PeerConnectionManager::PeerConnectionObserver *PeerConnectionManager::CreatePeer
 	}
 	for (auto iceServer : m_iceServerList)
 	{
-		webrtc::PeerConnectionInterface::IceServer server;
-		IceServer srv = getIceServerFromUrl(iceServer);
-		server.uri = srv.url;
-		server.username = srv.user;
-		server.password = srv.pass;
+		webrtc::PeerConnectionInterface::IceServer server = getIceServerFromUrl(iceServer);
 		config.servers.push_back(server);
 	}
 	config.type = m_transportType;
