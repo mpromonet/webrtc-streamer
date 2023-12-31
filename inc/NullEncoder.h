@@ -49,7 +49,7 @@ class NullEncoder : public webrtc::VideoEncoder {
 		}
 
 		// get webrtc::EncodedImage
-		EncodedVideoI420Buffer* encodedBuffer = (EncodedVideoI420Buffer*)buffer->GetI420();
+		EncodedVideoFrameBuffer* encodedBuffer = (EncodedVideoFrameBuffer*)buffer.get();
 		webrtc::EncodedImage encoded_image = encodedBuffer->getEncodedImage(frame.timestamp(), frame.ntp_time_ms());
 
 		RTC_LOG(LS_VERBOSE) << "EncodedImage " << frame.id() << " " << encoded_image.FrameType() << " " <<  buffer->width() << "x" <<  buffer->height();
