@@ -48,20 +48,11 @@ class NullEncoder : public webrtc::VideoEncoder {
 			return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;		
 		}
 
-		// compute frametype
+		// get webrtc::EncodedImage
 		EncodedVideoI420Buffer* encodedBuffer = (EncodedVideoI420Buffer*)buffer->GetI420();
-		const uint8_t* data = encodedBuffer->DataY();
-		size_t dataSize = encodedBuffer->StrideY();
-		webrtc::VideoFrameType frameType = encodedBuffer->getFrameType();
+		webrtc::EncodedImage encoded_image = encodedBuffer->getEncodedImage(frame.timestamp(), frame.ntp_time_ms());
 
-		// build webrtc::EncodedImage
-		webrtc::EncodedImage encoded_image;
-		encoded_image.SetEncodedData(webrtc::EncodedImageBuffer::Create(data, dataSize));
-		encoded_image.SetRtpTimestamp(frame.timestamp());
-		encoded_image.ntp_time_ms_ = frame.ntp_time_ms();
-		encoded_image._frameType = frameType;
-
-		RTC_LOG(LS_VERBOSE) << "EncodedImage " << frame.id() << " " << encoded_image._frameType << " " <<  buffer->width() << "x" <<  buffer->height() << " " <<  buffer->GetI420()->StrideY();
+		RTC_LOG(LS_VERBOSE) << "EncodedImage " << frame.id() << " " << encoded_image.FrameType() << " " <<  buffer->width() << "x" <<  buffer->height();
 
 		// forward to callback
 		webrtc::CodecSpecificInfo codec_specific;
@@ -73,7 +64,7 @@ class NullEncoder : public webrtc::VideoEncoder {
 		} 
         webrtc::EncodedImageCallback::Result result = m_encoded_image_callback->OnEncodedImage(encoded_image, &codec_specific);
         if (result.error == webrtc::EncodedImageCallback::Result::ERROR_SEND_FAILED) {
-            RTC_LOG(LS_ERROR) << "Error in parsing EncodedImage " << frame.id() << " " << encoded_image._frameType << " " <<  buffer->width() << "x" <<  buffer->height() << " " <<  buffer->GetI420()->StrideY();
+            RTC_LOG(LS_ERROR) << "Error in parsing EncodedImage " << frame.id() << " " << encoded_image._frameType << " " <<  buffer->width() << "x" <<  buffer->height();
 		}
 		return WEBRTC_VIDEO_CODEC_OK;
 	}
