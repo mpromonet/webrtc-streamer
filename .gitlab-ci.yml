@@ -20,6 +20,8 @@ build_windows:
   - shared-windows
   - windows
   - windows-1809
+  before_script:
+    - Start-Service -Name "docker"  
   stage: build
   script:
     - docker build -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_REF_SLUG}-windows -f Dockerfile.windows .
