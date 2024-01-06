@@ -114,38 +114,40 @@ private:
 
         if (codecId == CODEC_ID_AVC) {
             if (frameType == 1 && body[1] == 0) {
-                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession SPS/PPS";
-                webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(body[13]);
-                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession NALU type:" << nalu_type;
+                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H264 SPS/PPS";
+                int start_sps = 11;
+                int spssize = (body[start_sps]<<8) + body[start_sps+1];
+                webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(body[start_sps+2]);
+                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H264 NALU type:" << nalu_type;
                 if (nalu_type == webrtc::H264::NaluType::kSps)
                 {
                     m_cfg.clear();
-                    int spssize = (body[11]<<8) + body[12];
-                    RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession SPS size:" << spssize;
-                    absl::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps((const unsigned char*)(&body[14]), spssize);
+                    RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H264 SPS size:" << spssize;
+                    absl::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps((const unsigned char*)(&body[start_sps+3]), spssize);
                     if (!sps)
                     {
-                        RTC_LOG(LS_ERROR) << "cannot parse sps";
+                        RTC_LOG(LS_ERROR) << "cannot parse H264 sps";
                     } else {
                         RTC_LOG(LS_ERROR) << "sps " << sps->width << "x" << sps->height;
-                        RTC_LOG(LS_INFO) << "RtmpVideoSource:onData SPS set format " << sps->width << "x" << sps->height;
+                        RTC_LOG(LS_INFO) << "RtmpVideoSource:onData H264 SPS set format " << sps->width << "x" << sps->height;
                         m_decoder.postFormat("H264", sps->width, sps->height);
                         
                         m_cfg.insert(m_cfg.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
-                        m_cfg.insert(m_cfg.end(), &body[13], &body[13 + spssize + 1]);
+                        m_cfg.insert(m_cfg.end(), &body[start_sps+2], &body[start_sps+2 + spssize + 1]);
 
-                        nalu_type = webrtc::H264::ParseNaluType(body[16+spssize]);
-                        RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession NALU type:" << nalu_type;
-                        int ppssize = (body[14+spssize]<<8) + body[15+spssize];
-                        RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession PPS size:" << ppssize;
+                        int start_pps = start_sps + spssize + 3;
+                        int ppssize = (body[start_pps]<<8) + body[start_pps+1];
+                        nalu_type = webrtc::H264::ParseNaluType(body[start_pps+2]);
+                        RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H264 NALU type:" << nalu_type;
+                        RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H264 PPS size:" << ppssize;
 
                         m_cfg.insert(m_cfg.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
-                        m_cfg.insert(m_cfg.end(), &body[16+spssize], &body[16 + spssize  + ppssize + 1]);
+                        m_cfg.insert(m_cfg.end(), &body[start_pps+2], &body[start_pps + 2  + ppssize + 1]);
                     }                                
                 } 
             } else if (frameType == 1 && body[1] == 1) {
                 webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(body[9]);
-                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession IDR type:" << nalu_type;
+                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H264 IDR NALU type:" << nalu_type;
 
                 std::vector<uint8_t> content;
                 content.insert(content.end(), m_cfg.begin(), m_cfg.end());
@@ -156,7 +158,7 @@ private:
             }
             else if (frameType == 2) {
                 webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(body[9]);
-                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession Slice NALU type:" << nalu_type;                            
+                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H264 Slice NALU type:" << nalu_type;                            
                 std::vector<uint8_t> content;
                 content.insert(content.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
                 content.insert(content.end(), &body[9], &body[size]);
@@ -166,47 +168,52 @@ private:
         }
         else if (codecId == CODEC_ID_HEVC) {
             if (frameType == 1 && body[1] == 0) {
-                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession VPS/SPS/PPS";
-                webrtc::H265::NaluType nalu_type = webrtc::H265::ParseNaluType(body[13]);
-                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession NALU type:" << nalu_type;
+                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H265 VPS/SPS/PPS";
+            
+                int start_vps = 31;
+                int vpssize = (body[start_vps]<<8) + body[start_vps+1];
+                webrtc::H265::NaluType nalu_type = webrtc::H265::ParseNaluType(body[start_vps+2]);
+                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H265 NALU type:" << nalu_type;
                 if (nalu_type == webrtc::H265::NaluType::kVps)
                 {
                     m_cfg.clear();
-                    int vpssize = (body[11]<<8) + body[12];
-                    RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession VPS size:" << vpssize;
+                    RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H265 VPS size:" << vpssize;
                     m_cfg.insert(m_cfg.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
-                    m_cfg.insert(m_cfg.end(), &body[13], &body[13 + vpssize + 1]);
+                    m_cfg.insert(m_cfg.end(), &body[start_vps+2], &body[start_vps+2 + vpssize + 1]);
 
-                    nalu_type = webrtc::H265::ParseNaluType(body[16+vpssize]);
+                    int start_sps = start_vps + vpssize + 3;
+                    int spssize = (body[start_sps]<<8) + body[start_sps+1];
+                    nalu_type = webrtc::H265::ParseNaluType(body[start_sps+2]);
+                    RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H265 NALU type:" << nalu_type;
                     if (nalu_type == webrtc::H265::NaluType::kSps)
                     {
-                        int spssize = (body[14+vpssize]<<8) + body[15+vpssize];
-                        RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession SPS size:" << spssize;
-                        absl::optional<webrtc::H265SpsParser::SpsState> sps = webrtc::H265SpsParser::ParseSps((const unsigned char*)(&body[17+vpssize]), spssize);
+                        RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H265 SPS size:" << spssize;
+                        absl::optional<webrtc::H265SpsParser::SpsState> sps = webrtc::H265SpsParser::ParseSps((const unsigned char*)(&body[start_sps+3]), spssize);
                         if (!sps)
                         {
-                            RTC_LOG(LS_ERROR) << "cannot parse sps";
+                            RTC_LOG(LS_ERROR) << "cannot parse H265 sps";
                         } else {
                             RTC_LOG(LS_ERROR) << "sps " << sps->width << "x" << sps->height;
-                            RTC_LOG(LS_INFO) << "RtmpVideoSource:onData SPS set format " << sps->width << "x" << sps->height;
+                            RTC_LOG(LS_INFO) << "RtmpVideoSource:onData H265 SPS set format " << sps->width << "x" << sps->height;
                             m_decoder.postFormat("H265", sps->width, sps->height);
                             
                             m_cfg.insert(m_cfg.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
-                            m_cfg.insert(m_cfg.end(), &body[16+vpssize], &body[16 + vpssize  + spssize + 1]);
+                            m_cfg.insert(m_cfg.end(), &body[start_sps+2], &body[start_sps+2  + spssize + 1]);
 
-                            nalu_type = webrtc::H265::ParseNaluType(body[19 + vpssize  + spssize]);
-                            RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession NALU type:" << nalu_type;
-                            int ppssize = (body[17 + vpssize  + spssize]<<8) + body[18 + vpssize  + spssize];
-                            RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession PPS size:" << ppssize;
+                            int start_pps = start_sps + spssize + 3;
+                            int ppssize = (body[start_pps]<<8) + body[start_pps+1];
+                            nalu_type = webrtc::H265::ParseNaluType(body[start_pps+2]);
+                            RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H265 NALU type:" << nalu_type;
+                            RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H265 PPS size:" << ppssize;
 
                             m_cfg.insert(m_cfg.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
-                            m_cfg.insert(m_cfg.end(), &body[19 + vpssize  + spssize], &body[19 +vpssize + spssize  + ppssize + 1]);
+                            m_cfg.insert(m_cfg.end(), &body[start_pps+2], &body[start_pps+2  + ppssize + 1]);
                         }                               
                     } 
                 } 
             } else if (frameType == 1 && body[1] == 1) {
                 webrtc::H265::NaluType nalu_type = webrtc::H265::ParseNaluType(body[9]);
-                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession IDR type:" << nalu_type;
+                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H265 IDR type:" << nalu_type;
 
                 std::vector<uint8_t> content;
                 content.insert(content.end(), m_cfg.begin(), m_cfg.end());
@@ -217,7 +224,7 @@ private:
             }
             else if (frameType == 2) {
                 webrtc::H265::NaluType nalu_type = webrtc::H265::ParseNaluType(body[9]);
-                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession Slice NALU type:" << nalu_type;                            
+                RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H265 Slice NALU type:" << nalu_type;                            
                 std::vector<uint8_t> content;
                 content.insert(content.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
                 content.insert(content.end(), &body[9], &body[size]);
