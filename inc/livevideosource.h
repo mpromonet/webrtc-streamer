@@ -68,7 +68,7 @@ public:
         m_env.mainloop();
     }
 
-    // overide T::Callback
+    // overide T::onNewSession
     virtual bool onNewSession(const char *id, const char *media, const char *codec, const char *sdp)
     {
         bool success = false;
@@ -100,7 +100,170 @@ public:
         }
         return success;
     }
-    
+
+    void onH264Data(unsigned char *buffer, ssize_t size, int64_t ts, const std::string & codec) {
+        std::vector<webrtc::H264::NaluIndex> indexes = webrtc::H264::FindNaluIndices(buffer,size);
+        RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData nbNalu:" << indexes.size();
+        for (const webrtc::H264::NaluIndex & index : indexes) {
+            webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[index.payload_start_offset]);
+            RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData NALU type:" << nalu_type << " payload_size:" << index.payload_size << " payload_start_offset:" << index.payload_start_offset << " start_offset:" << index.start_offset;
+            if (nalu_type == webrtc::H264::NaluType::kSps)
+            {
+                RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SPS";
+                m_cfg.clear();
+                m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
+
+                absl::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(buffer + index.payload_start_offset, index.payload_size);
+                if (!sps)
+                {
+                    RTC_LOG(LS_ERROR) << "cannot parse sps";
+                    m_decoder.postFormat(codec, 0, 0);
+                }
+                else
+                {
+                    RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height;
+                    m_decoder.postFormat(codec, sps->width, sps->height);
+                }
+            }
+            else if (nalu_type == webrtc::H264::NaluType::kPps)
+            {
+                RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData PPS";
+                m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
+            }
+            else if (nalu_type == webrtc::H264::NaluType::kSei) 
+            {
+            }            
+            else
+            {
+                webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameDelta;
+                std::vector<uint8_t> content;
+                if (nalu_type == webrtc::H264::NaluType::kIdr)
+                {
+                    frameType = webrtc::VideoFrameType::kVideoFrameKey;
+                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData IDR";
+                    content.insert(content.end(), m_cfg.begin(), m_cfg.end());
+                }
+                else
+                {
+                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SLICE NALU:" << nalu_type;
+                }
+                if (m_prevTimestamp && ts < m_prevTimestamp && m_decoder.m_decoder && strcmp(m_decoder.m_decoder->ImplementationName(),"FFmpeg")==0) 
+                {
+                    RTC_LOG(LS_ERROR) << "LiveVideoSource:onData drop frame in past for FFmpeg:" << (m_prevTimestamp-ts);
+
+                } else {
+                    content.insert(content.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
+                    rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
+                    m_decoder.PostFrame(frame, ts, frameType);
+                }
+            }
+        }
+    }
+
+    void onH265Data(unsigned char *buffer, ssize_t size, int64_t ts, const std::string & codec) {
+        std::vector<webrtc::H265::NaluIndex> indexes = webrtc::H265::FindNaluIndices(buffer,size);
+        RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData nbNalu:" << indexes.size();
+        for (const webrtc::H265::NaluIndex & index : indexes) {
+            webrtc::H265::NaluType nalu_type = webrtc::H265::ParseNaluType(buffer[index.payload_start_offset]);
+            RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData NALU type:" << nalu_type << " payload_size:" << index.payload_size << " payload_start_offset:" << index.payload_start_offset << " start_offset:" << index.start_offset;
+            if (nalu_type == webrtc::H265::NaluType::kVps)
+            {
+                RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData VPS";
+                m_cfg.clear();
+                m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
+            }
+            else if (nalu_type == webrtc::H265::NaluType::kSps)
+            {
+                RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SPS";
+                m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
+
+                absl::optional<webrtc::H265SpsParser::SpsState> sps = webrtc::H265SpsParser::ParseSps(buffer + index.payload_start_offset, index.payload_size);
+                if (!sps)
+                {
+                    RTC_LOG(LS_ERROR) << "cannot parse sps";
+                    m_decoder.postFormat(codec, 0, 0);
+                }
+                else
+                {
+                    RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height;
+                    m_decoder.postFormat(codec, sps->width, sps->height);
+                }
+            }
+            else if (nalu_type == webrtc::H265::NaluType::kPps)
+            {
+                RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData PPS";
+                m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
+            }
+            else
+            {
+                webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameDelta;
+                std::vector<uint8_t> content;
+                if ( (nalu_type == webrtc::H265::NaluType::kIdrWRadl) || (nalu_type == webrtc::H265::NaluType::kIdrNLp) )
+                {
+                    frameType = webrtc::VideoFrameType::kVideoFrameKey;
+                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData IDR";
+                    content.insert(content.end(), m_cfg.begin(), m_cfg.end());
+                }
+                else
+                {
+                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SLICE NALU:" << nalu_type;
+                }
+                if (m_prevTimestamp && ts < m_prevTimestamp && m_decoder.m_decoder && strcmp(m_decoder.m_decoder->ImplementationName(),"FFmpeg")==0) 
+                {
+                    RTC_LOG(LS_ERROR) << "LiveVideoSource:onData drop frame in past for FFmpeg:" << (m_prevTimestamp-ts);
+
+                } else {
+                    content.insert(content.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
+                    rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
+                    m_decoder.PostFrame(frame, ts, frameType);
+                }
+            }
+        }
+    }
+
+    int onJPEGData(unsigned char *buffer, ssize_t size, int64_t ts, const std::string & codec) {
+        int res = 0;
+        int32_t width = 0;
+        int32_t height = 0;
+        if (libyuv::MJPGSize(buffer, size, &width, &height) == 0)
+        {
+            int stride_y = width;
+            int stride_uv = (width + 1) / 2;
+
+            rtc::scoped_refptr<webrtc::I420Buffer> I420buffer = webrtc::I420Buffer::Create(width, height, stride_y, stride_uv, stride_uv);
+            const int conversionResult = libyuv::ConvertToI420((const uint8_t *)buffer, size,
+                                                                I420buffer->MutableDataY(), I420buffer->StrideY(),
+                                                                I420buffer->MutableDataU(), I420buffer->StrideU(),
+                                                                I420buffer->MutableDataV(), I420buffer->StrideV(),
+                                                                0, 0,
+                                                                width, height,
+                                                                width, height,
+                                                                libyuv::kRotate0, ::libyuv::FOURCC_MJPG);
+
+            if (conversionResult >= 0)
+            {
+                webrtc::VideoFrame frame = webrtc::VideoFrame::Builder()
+                    .set_video_frame_buffer(I420buffer)
+                    .set_rotation(webrtc::kVideoRotation_0)
+                    .set_timestamp_ms(ts)
+                    .set_id(ts)
+                    .build();
+                m_decoder.Decoded(frame);
+            }
+            else
+            {
+                RTC_LOG(LS_ERROR) << "LiveVideoSource:onData decoder error:" << conversionResult;
+                res = -1;
+            }
+        }
+        else
+        {
+            RTC_LOG(LS_ERROR) << "LiveVideoSource:onData cannot JPEG dimension";
+            res = -1;
+        }
+        return res;
+    }
+
     virtual bool onData(const char *id, unsigned char *buffer, ssize_t size, struct timeval presentationTime)
     {
         int64_t ts = presentationTime.tv_sec;
@@ -111,164 +274,15 @@ public:
         std::string codec = m_codec[id];
         if (codec == "H264")
         {
-            std::vector<webrtc::H264::NaluIndex> indexes = webrtc::H264::FindNaluIndices(buffer,size);
-            RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData nbNalu:" << indexes.size();
-            for (const webrtc::H264::NaluIndex & index : indexes) {
-                webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[index.payload_start_offset]);
-                RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData NALU type:" << nalu_type << " payload_size:" << index.payload_size << " payload_start_offset:" << index.payload_start_offset << " start_offset:" << index.start_offset;
-                if (nalu_type == webrtc::H264::NaluType::kSps)
-                {
-                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SPS";
-                    m_cfg.clear();
-                    m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
-
-                    absl::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(buffer + index.payload_start_offset, index.payload_size);
-                    if (!sps)
-                    {
-                        RTC_LOG(LS_ERROR) << "cannot parse sps";
-                        m_decoder.postFormat(codec, 0, 0);
-                    }
-                    else
-                    {
-                        RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height;
-                        m_decoder.postFormat(codec, sps->width, sps->height);
-                    }
-                }
-                else if (nalu_type == webrtc::H264::NaluType::kPps)
-                {
-                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData PPS";
-                    m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
-                }
-                else if (nalu_type == webrtc::H264::NaluType::kSei) 
-                {
-                }            
-                else
-                {
-                    webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameDelta;
-                    std::vector<uint8_t> content;
-                    if (nalu_type == webrtc::H264::NaluType::kIdr)
-                    {
-                        frameType = webrtc::VideoFrameType::kVideoFrameKey;
-                        RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData IDR";
-                        content.insert(content.end(), m_cfg.begin(), m_cfg.end());
-                    }
-                    else
-                    {
-                        RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SLICE NALU:" << nalu_type;
-                    }
-                    if (m_prevTimestamp && ts < m_prevTimestamp && m_decoder.m_decoder && strcmp(m_decoder.m_decoder->ImplementationName(),"FFmpeg")==0) 
-                    {
-                        RTC_LOG(LS_ERROR) << "LiveVideoSource:onData drop frame in past for FFmpeg:" << (m_prevTimestamp-ts);
-
-                    } else {
-                        content.insert(content.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
-                        rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
-                        m_decoder.PostFrame(frame, ts, frameType);
-                    }
-                }
-            }
+            onH264Data(buffer, size, ts, codec);
         }
         else if (codec == "H265")
         {
-            std::vector<webrtc::H265::NaluIndex> indexes = webrtc::H265::FindNaluIndices(buffer,size);
-            RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData nbNalu:" << indexes.size();
-            for (const webrtc::H265::NaluIndex & index : indexes) {
-                webrtc::H265::NaluType nalu_type = webrtc::H265::ParseNaluType(buffer[index.payload_start_offset]);
-                RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData NALU type:" << nalu_type << " payload_size:" << index.payload_size << " payload_start_offset:" << index.payload_start_offset << " start_offset:" << index.start_offset;
-                if (nalu_type == webrtc::H265::NaluType::kVps)
-                {
-                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData VPS";
-                    m_cfg.clear();
-                    m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
-                }
-                else if (nalu_type == webrtc::H265::NaluType::kSps)
-                {
-                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SPS";
-                    m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
-
-                    absl::optional<webrtc::H265SpsParser::SpsState> sps = webrtc::H265SpsParser::ParseSps(buffer + index.payload_start_offset, index.payload_size);
-                    if (!sps)
-                    {
-                        RTC_LOG(LS_ERROR) << "cannot parse sps";
-                        m_decoder.postFormat(codec, 0, 0);
-                    }
-                    else
-                    {
-                        RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height;
-                        m_decoder.postFormat(codec, sps->width, sps->height);
-                    }
-                }
-                else if (nalu_type == webrtc::H265::NaluType::kPps)
-                {
-                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData PPS";
-                    m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
-                }
-                else
-                {
-                    webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameDelta;
-                    std::vector<uint8_t> content;
-                    if ( (nalu_type == webrtc::H265::NaluType::kIdrWRadl) || (nalu_type == webrtc::H265::NaluType::kIdrNLp) )
-                    {
-                        frameType = webrtc::VideoFrameType::kVideoFrameKey;
-                        RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData IDR";
-                        content.insert(content.end(), m_cfg.begin(), m_cfg.end());
-                    }
-                    else
-                    {
-                        RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SLICE NALU:" << nalu_type;
-                    }
-                    if (m_prevTimestamp && ts < m_prevTimestamp && m_decoder.m_decoder && strcmp(m_decoder.m_decoder->ImplementationName(),"FFmpeg")==0) 
-                    {
-                        RTC_LOG(LS_ERROR) << "LiveVideoSource:onData drop frame in past for FFmpeg:" << (m_prevTimestamp-ts);
-
-                    } else {
-                        content.insert(content.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
-                        rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
-                        m_decoder.PostFrame(frame, ts, frameType);
-                    }
-                }
-            }
+            onH265Data(buffer, size, ts, codec);
         }
         else if (codec == "JPEG")
         {
-            int32_t width = 0;
-            int32_t height = 0;
-            if (libyuv::MJPGSize(buffer, size, &width, &height) == 0)
-            {
-                int stride_y = width;
-                int stride_uv = (width + 1) / 2;
-
-                rtc::scoped_refptr<webrtc::I420Buffer> I420buffer = webrtc::I420Buffer::Create(width, height, stride_y, stride_uv, stride_uv);
-                const int conversionResult = libyuv::ConvertToI420((const uint8_t *)buffer, size,
-                                                                   I420buffer->MutableDataY(), I420buffer->StrideY(),
-                                                                   I420buffer->MutableDataU(), I420buffer->StrideU(),
-                                                                   I420buffer->MutableDataV(), I420buffer->StrideV(),
-                                                                   0, 0,
-                                                                   width, height,
-                                                                   width, height,
-                                                                   libyuv::kRotate0, ::libyuv::FOURCC_MJPG);
-
-                if (conversionResult >= 0)
-                {
-                    webrtc::VideoFrame frame = webrtc::VideoFrame::Builder()
-                        .set_video_frame_buffer(I420buffer)
-                        .set_rotation(webrtc::kVideoRotation_0)
-                        .set_timestamp_ms(ts)
-                        .set_id(ts)
-                        .build();
-                    m_decoder.Decoded(frame);
-                }
-                else
-                {
-                    RTC_LOG(LS_ERROR) << "LiveVideoSource:onData decoder error:" << conversionResult;
-                    res = -1;
-                }
-            }
-            else
-            {
-                RTC_LOG(LS_ERROR) << "LiveVideoSource:onData cannot JPEG dimension";
-                res = -1;
-            }
+            res = onJPEGData(buffer, size, ts, codec);
         }
         else if (codec == "VP9")
         {
