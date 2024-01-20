@@ -158,8 +158,8 @@ class PeerConnectionManager {
 			virtual void OnStatsDelivered(const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
 				for (const webrtc::RTCStats& stats : *report) {
 					Json::Value statsMembers;
-					for (const webrtc::RTCStatsMemberInterface* member : stats.Members()) {
-						statsMembers[member->name()] = member->ValueToString();
+					for (auto & attribute : stats.Attributes()) {
+						statsMembers[attribute.name()] = attribute.ValueToString();
 					}
 					m_report[stats.id()] = statsMembers;
 				}

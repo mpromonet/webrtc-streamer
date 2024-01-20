@@ -45,6 +45,17 @@ class TurnAuth : public cricket::TurnAuthInterface {
 		}
 };
 
+class TurnRedirector : public cricket::TurnRedirectInterface
+{
+public:
+	explicit TurnRedirector() {}
+
+	virtual bool ShouldRedirect(const rtc::SocketAddress &, rtc::SocketAddress *out)
+	{
+		return true;
+	}
+};
+
 /* ---------------------------------------------------------------------------
 **  main
 ** -------------------------------------------------------------------------*/
@@ -74,6 +85,7 @@ int main(int argc, char* argv[])
 	webrtc::PeerConnectionInterface::IceTransportsType transportType = webrtc::PeerConnectionInterface::IceTransportsType::kAll;
 	std::string webrtcTrialsFields = "WebRTC-FrameDropper/Disabled/";
 	TurnAuth 	turnAuth;
+	TurnRedirector turnRedirector;
 
 	std::string httpAddress("0.0.0.0:");
 	std::string httpPort = "8000";
@@ -284,6 +296,7 @@ int main(int argc, char* argv[])
 				server_addr.FromString(addr);
 				turnserver.reset(new cricket::TurnServer(rtc::Thread::Current()));
 				turnserver->set_auth_hook(&turnAuth);
+				turnserver->set_redirect_hook(&turnRedirector);
 
 				rtc::Socket* tcp_server_socket = thread->socketserver()->CreateSocket(AF_INET, SOCK_STREAM);
 				if (tcp_server_socket) {

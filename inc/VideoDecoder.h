@@ -165,7 +165,7 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
                     std::this_thread::sleep_for(std::chrono::milliseconds(delayms));			
                 }
             } else {
-                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }                        
 
             m_scaler.OnFrame(decodedImage);
