@@ -180,6 +180,7 @@ int main(int argc, char* argv[])
 				std::cout << "\t -T[username:password@]turn_address : start embeded TURN server (default:disabled)"				                         << std::endl;
 				std::cout << "\t -R Udp_port_min:Udp_port_min       : Set the webrtc udp port range (default:" << localWebrtcUdpPortRange << ")"         << std::endl;
 				std::cout << "\t -W webrtc_trials_fields            : Set the webrtc trials fields (default:" << webrtcTrialsFields << ")"               << std::endl;
+				std::cout << "\t -I icetransport                    : Set ice transport type (default:" << transportType << ")"                          << std::endl;
 #ifdef HAVE_SOUND				
 				std::cout << "\t -a[audio layer]                    : spefify audio capture layer to use (default:" << audioLayer << ")"                 << std::endl;
 #endif				
@@ -316,8 +317,8 @@ int main(int argc, char* argv[])
 					std::cout << "Failed to create TURN UDP server socket" << std::endl;
 				}
 
-				is.str(turnurl);
 				is.clear();
+				is.str(turnurl);
 				std::getline(is, addr, '@');
 				std::getline(is, addr, '@');
 				rtc::SocketAddress external_server_addr;

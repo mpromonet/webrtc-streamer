@@ -159,7 +159,7 @@ class PeerConnectionManager {
 				for (const webrtc::RTCStats& stats : *report) {
 					Json::Value statsMembers;
 					for (auto & attribute : stats.Attributes()) {
-						statsMembers[attribute.name()] = attribute.ValueToString();
+						statsMembers[attribute.name()] = attribute.ToString();
 					}
 					m_report[stats.id()] = statsMembers;
 				}
