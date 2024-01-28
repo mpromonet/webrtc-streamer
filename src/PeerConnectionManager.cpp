@@ -558,7 +558,12 @@ const Json::Value PeerConnectionManager::getIceServers(const std::string &client
 		Json::Value urlList(Json::arrayValue);
 		webrtc::PeerConnectionInterface::IceServer srv = getIceServerFromUrl(iceServer, clientIp);
 		RTC_LOG(LS_INFO) << "ICE URL:" << srv.uri;
-		urlList.append(srv.uri);
+		if (srv.uri.find("turn:") == 0) {
+			urlList.append(srv.uri+"?transport=udp");
+			urlList.append(srv.uri+"?transport=tcp");
+		} else {
+			urlList.append(srv.uri);
+		}
 		server["urls"] = urlList;
 		if (srv.username.length() > 0)
 			server["username"] = srv.username;
