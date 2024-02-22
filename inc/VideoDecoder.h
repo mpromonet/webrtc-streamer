@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "api/video/i420_buffer.h"
+#include "api/environment/environment_factory.h"
 #include "modules/video_coding/include/video_error_codes.h"
 #include "modules/video_coding/h264_sprop_parameter_sets.h"
 #include "rtc_base/third_party/base64/base64.h"
@@ -40,6 +41,7 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
     public:
         VideoDecoder(const std::map<std::string,std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory, bool wait = false) : 
                 m_scaler(opts),
+                m_env(webrtc::CreateEnvironment()),
                 m_factory(videoDecoderFactory),
                 m_stop(false),
                 m_wait(wait),
@@ -194,13 +196,13 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
             webrtc::RenderResolution resolution(width, height);
             settings.set_max_render_resolution(resolution);
             if (format == "H264") {
-                m_decoder=m_factory->CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kH264CodecName));
+                m_decoder=m_factory->Create(m_env,webrtc::SdpVideoFormat(cricket::kH264CodecName));
                 settings.set_codec_type(webrtc::VideoCodecType::kVideoCodecH264);
             } else if (format == "H265") {
-                m_decoder=m_factory->CreateVideoDecoder(webrtc::SdpVideoFormat(format));
+                m_decoder=m_factory->Create(m_env,webrtc::SdpVideoFormat(format));
                 settings.set_codec_type(webrtc::VideoCodecType::kVideoCodecH265);
             } else if (format == "VP9") {
-                m_decoder=m_factory->CreateVideoDecoder(webrtc::SdpVideoFormat(cricket::kVp9CodecName));
+                m_decoder=m_factory->Create(m_env,webrtc::SdpVideoFormat(cricket::kVp9CodecName));
                 settings.set_codec_type(webrtc::VideoCodecType::kVideoCodecVP9);	                
             }
             if (m_decoder.get() != NULL) {
@@ -294,6 +296,7 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
 
     protected:
         VideoScaler                                   m_scaler;
+        const webrtc::Environment                     m_env;
         std::unique_ptr<webrtc::VideoDecoderFactory>& m_factory;
 
         std::string                          m_format;
