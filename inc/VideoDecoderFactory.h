@@ -19,7 +19,7 @@ class VideoDecoderFactory : public webrtc::VideoDecoderFactory {
     }
     virtual ~VideoDecoderFactory() override {}
 
-    std::unique_ptr<webrtc::VideoDecoder> CreateVideoDecoder(const webrtc::SdpVideoFormat& format) override {
+    std::unique_ptr<webrtc::VideoDecoder> Create(const webrtc::Environment& env, const webrtc::SdpVideoFormat& format) override {
    		RTC_LOG(LS_INFO) << "Create Null Decoder format:" << format.ToString();
     	return std::make_unique<NullDecoder>(format);
 	}
