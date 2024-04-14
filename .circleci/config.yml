@@ -197,86 +197,6 @@ jobs:
           name: "Deploy to Github"
           command: $HOME/go/bin/ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME $CIRCLE_TAG /distrib
 
-  # -------------------------------------
-  # publish docker amd64
-  # -------------------------------------
-  publish_docker_linuxamd64:
-    <<: *defaults
-
-    steps:
-      - checkout  
-      - run: git submodule update --init
-      - setup_remote_docker:
-          version: 20.10.12
-      - run:
-          command: |
-            export TAG=${CIRCLE_TAG:-circle-latest}
-            docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
-            docker build --pull -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-amd64 -f Dockerfile .
-            docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-amd64
-          no_output_timeout: 30m
-
-  # -------------------------------------
-  # publish docker arm
-  # -------------------------------------
-  publish_docker_linuxarm32v7:
-    <<: *defaults
-
-    environment:
-      CROSSCOMPILER: https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%202%2C%203/cross-gcc-10.2.0-pi_2-3.tar.gz
-    steps:
-      - checkout  
-      - run: git submodule update --init
-      - setup_remote_docker:
-          version: 20.10.12
-      - run:
-          command: |
-            export TAG=${CIRCLE_TAG:-circle-latest}
-            docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
-            docker build --build-arg ARCH=armv7l --build-arg CROSSCOMPILER=${CROSSCOMPILER} --build-arg IMAGE=balenalib/raspberry-pi2 --pull -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v7 -f Dockerfile.rpi .
-            docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v7
-          no_output_timeout: 30m
-
-  # -------------------------------------
-  # publish docker arm
-  # -------------------------------------
-  publish_docker_linuxarm32v6:
-    <<: *defaults
-
-    steps:
-      - checkout  
-      - run: git submodule update --init
-      - setup_remote_docker:
-          version: 20.10.12
-      - run:
-          command: |
-            export TAG=${CIRCLE_TAG:-circle-latest}
-            docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
-            docker build --pull -t $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v6 -f Dockerfile.rpi . 
-            docker push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v6
-          no_output_timeout: 30m
-
-  # -------------------------------------
-  # publish docker manifest
-  # -------------------------------------
-  publish_docker_multiarch:
-    <<: *defaults
-
-    steps:
-      - setup_remote_docker:
-          version: 20.10.12
-      - run:
-          command: |
-            mkdir $HOME/.docker
-            sh -c 'echo "{ \"experimental\": \"enabled\" }" >> $HOME/.docker/config.json'
-            #
-            docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
-            export TAG=${CIRCLE_TAG:-circle-latest}
-            docker manifest create --amend $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG} $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-amd64 $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v7 $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v6
-            docker manifest annotate $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG} $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v7 --os linux --arch arm --variant v7
-            docker manifest annotate $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG} $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG}-arm32v6 --os linux --arch arm --variant v6
-            docker manifest push $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME:${TAG} -p
-
 workflows:
   version: 2
   build:
@@ -338,26 +258,4 @@ workflows:
               ignore: /.*/
             tags:
               only: /.*/
-  docker:
-    jobs:
-      - publish_docker_linuxamd64:
-          filters:
-            tags:
-              only: /.*/            
-      - publish_docker_linuxarm32v6:
-          filters:
-            tags:
-              only: /.*/            
-      - publish_docker_linuxarm32v7:
-          filters:
-            tags:
-              only: /.*/            
-      - publish_docker_multiarch:
-          requires:
-            - publish_docker_linuxamd64
-            - publish_docker_linuxarm32v6
-            - publish_docker_linuxarm32v7
-          filters:
-            tags:
-              only: /.*/            
-              
+ 
