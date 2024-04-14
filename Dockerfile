@@ -1,5 +1,5 @@
 # build
-FROM ubuntu:22.04 as builder
+FROM ubuntu:24.04 as builder
 LABEL maintainer=michel.promonet@free.fr
 ARG USERNAME=dev
 WORKDIR /webrtc-streamer
@@ -25,7 +25,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 	&& apt-get clean && rm -rf /var/lib/apt/lists/ 
 
 # run
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 WORKDIR /app
 COPY --from=builder /app/ /app/
