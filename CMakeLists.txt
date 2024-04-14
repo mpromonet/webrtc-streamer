@@ -69,10 +69,8 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg COMMAND ./configure ${CONFIGURE_ARGS})
 
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/config.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/)
-    file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/config.asm DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/)
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/config_components.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/)
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavutil/avconfig.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavutil/)
-    file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavutil/ffversion.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavutil/)
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavfilter/filter_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavutil/)
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/codec_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavcodec/)
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/parser_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavcodec/)
