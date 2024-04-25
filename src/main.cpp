@@ -70,6 +70,7 @@ int main(int argc, char* argv[])
 	std::string localWebrtcUdpPortRange = "0:65535";
 	int logLevel              = rtc::LS_NONE;
 	const char* webroot       = "./html";
+	std::string basePath;
 	std::string sslCertificate;
 	webrtc::AudioDeviceModule::AudioLayer audioLayer = webrtc::AudioDeviceModule::kPlatformDefaultAudio;
 	std::string nbthreads;
@@ -98,7 +99,7 @@ int main(int argc, char* argv[])
 
 	std::string streamName;
 	int c = 0;
-	while ((c = getopt (argc, argv, "hVv::C:" "c:H:w:N:A:D:Xm:I:" "T::t:S::s::R:W:" "a::q:ob" "n:u:U:")) != -1)
+	while ((c = getopt (argc, argv, "hVv::C:" "c:H:w:N:A:D:XB:" "m:I:" "T::t:S::s::R:W:" "a::q:ob" "n:u:U:")) != -1)
 	{
 		switch (c)
 		{
@@ -109,6 +110,8 @@ int main(int argc, char* argv[])
 			case 'A': passwdFile = optarg;         break;
 			case 'D': authDomain = optarg;         break;
 			case 'X': disableXframeOptions = true; break;
+			case 'B': basePath = optarg;           break;
+
 			case 'm': maxpc = atoi(optarg);        break;
 			case 'I': transportType = (webrtc::PeerConnectionInterface::IceTransportsType)atoi(optarg);break;
 
@@ -224,7 +227,7 @@ int main(int argc, char* argv[])
 	// init trials fields
 	webrtc::field_trial::InitFieldTrialsFromString(webrtcTrialsFields.c_str());
 
-	webRtcServer = new PeerConnectionManager(iceServerList, config["urls"], audioLayer, publishFilter, localWebrtcUdpPortRange, useNullCodec, usePlanB, maxpc, transportType);
+	webRtcServer = new PeerConnectionManager(iceServerList, config["urls"], audioLayer, publishFilter, localWebrtcUdpPortRange, useNullCodec, usePlanB, maxpc, transportType, basePath);
 	if (!webRtcServer->InitializePeerConnection())
 	{
 		std::cout << "Cannot Initialize WebRTC server" << std::endl;

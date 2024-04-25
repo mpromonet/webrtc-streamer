@@ -223,7 +223,7 @@ std::string getParam(const char *queryString, const char *paramName) {
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange, bool useNullCodec, bool usePlanB, int maxpc, webrtc::PeerConnectionInterface::IceTransportsType transportType)
+PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange, bool useNullCodec, bool usePlanB, int maxpc, webrtc::PeerConnectionInterface::IceTransportsType transportType, const std::string & basePath)
 	: m_signalingThread(rtc::Thread::Create()),
 	  m_workerThread(rtc::Thread::Create()),
 	  m_audioDecoderfactory(webrtc::CreateBuiltinAudioDecoderFactory()), 
@@ -253,27 +253,27 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 	m_videoaudiomap = getV4l2AlsaMap();
 
 	// register api in http server
-	m_func["/api/getMediaList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+	m_func[basePath + "/api/getMediaList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->getMediaList());
 	};
 
-	m_func["/api/getVideoDeviceList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+	m_func[basePath + "/api/getVideoDeviceList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->getVideoDeviceList());
 	};
 
-	m_func["/api/getAudioDeviceList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+	m_func[basePath + "/api/getAudioDeviceList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->getAudioDeviceList());
 	};
 
-	m_func["/api/getAudioPlayoutList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+	m_func[basePath + "/api/getAudioPlayoutList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->getAudioPlayoutList());
 	};
 
-	m_func["/api/getIceServers"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+	m_func[basePath + "/api/getIceServers"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->getIceServers(req_info->remote_addr));
 	};
 
-	m_func["/api/call"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {	
+	m_func[basePath + "/api/call"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {	
 		std::string peerid   = getParam(req_info->query_string, "peerid");
 		std::string url      = getParam(req_info->query_string, "url");
 		std::string audiourl = getParam(req_info->query_string, "audiourl");
@@ -281,7 +281,7 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->call(peerid, url, audiourl, options, in));
 	};
 
-	m_func["/api/whep"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+	m_func[basePath + "/api/whep"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		std::string peerid   = getParam(req_info->query_string, "peerid");
 		std::string videourl      = getParam(req_info->query_string, "url");
 		std::string audiourl = getParam(req_info->query_string, "audiourl");
@@ -291,46 +291,46 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 		return this->whep(req_info->request_method, url, peerid, videourl, audiourl, options, in);	
 	};
 
-	m_func["/api/hangup"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+	m_func[basePath + "/api/hangup"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		std::string peerid   = getParam(req_info->query_string, "peerid");
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->hangUp(peerid));
 	};
 
-	m_func["/api/createOffer"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+	m_func[basePath + "/api/createOffer"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		std::string peerid   = getParam(req_info->query_string, "peerid");
 		std::string url      = getParam(req_info->query_string, "url");
 		std::string audiourl = getParam(req_info->query_string, "audiourl");
 		std::string options  = getParam(req_info->query_string, "options");
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->createOffer(peerid, url, audiourl, options));
 	};
-	m_func["/api/setAnswer"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+	m_func[basePath + "/api/setAnswer"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		std::string peerid   = getParam(req_info->query_string, "peerid");
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->setAnswer(peerid, in));
 	};
 
-	m_func["/api/getIceCandidate"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+	m_func[basePath + "/api/getIceCandidate"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		std::string peerid   = getParam(req_info->query_string, "peerid");
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->getIceCandidateList(peerid));
 	};
 
-	m_func["/api/addIceCandidate"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+	m_func[basePath + "/api/addIceCandidate"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		std::string peerid   = getParam(req_info->query_string, "peerid");
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->addIceCandidate(peerid, in));
 	};
 
-	m_func["/api/getPeerConnectionList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+	m_func[basePath + "/api/getPeerConnectionList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->getPeerConnectionList());
 	};
 
-	m_func["/api/getStreamList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+	m_func[basePath + "/api/getStreamList"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->getStreamList());
 	};
 
-	m_func["/api/version"] = [](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+	m_func[basePath + "/api/version"] = [](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		Json::Value answer(VERSION);
 		return std::make_tuple(200, std::map<std::string,std::string>(), answer);
 	};
-	m_func["/api/log"] = [](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+	m_func[basePath + "/api/log"] = [](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		std::string loglevel   = getParam(req_info->query_string, "level");
 		if (!loglevel.empty())
 		{
@@ -339,7 +339,7 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 		Json::Value answer(rtc::LogMessage::GetLogToDebug());
 		return std::make_tuple(200, std::map<std::string,std::string>(), answer);
 	};
-	m_func["/api/help"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
+	m_func[basePath + "/api/help"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
 		Json::Value answer(Json::ValueType::arrayValue);
 		for (auto it : m_func) {
 			answer.append(it.first);
