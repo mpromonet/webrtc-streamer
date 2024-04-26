@@ -179,9 +179,9 @@ if (RTMP_FOUND)
   add_definitions(-DHAVE_RTMP)
   target_include_directories (${CMAKE_PROJECT_NAME} PUBLIC ${RTMP_INCLUDE_DIRS}) 
   target_link_directories (${CMAKE_PROJECT_NAME} PUBLIC ${RTMP_LIBRARY_DIRS})
-  list(REMOVE_ITEM RTMP_LIBRARIES "ssl") # remove ssl from rtmp libraries because we replace it with boringssl
-  MESSAGE("RTMP_LIBRARIES=${RTMP_LIBRARIES}")
-  target_link_libraries (${CMAKE_PROJECT_NAME} ${RTMP_LIBRARIES}) 
+  find_library(RTMP_LIB rtmp)
+  MESSAGE("RTMP_LIB=${RTMP_LIB}")
+  target_link_libraries (${CMAKE_PROJECT_NAME} ${RTMP_LIB}) 
 endif()
 
 # compiler specific
@@ -202,6 +202,7 @@ if (WIN32)
     add_definitions(-DUSE_X11 -DHAVE_SOUND -D_WINSOCKAPI_)
     target_link_libraries (${CMAKE_PROJECT_NAME} secur32 dmoguids wmcodecdspuuid strmiids msdmo winmm dxgi d3d11 iphlpapi dwmapi shcore)
 elseif (APPLE)
+    # live555
     add_definitions(-DNEED_XLOCALE_H=1)
     # webrtc
     add_definitions(-DHAVE_SOUND)
