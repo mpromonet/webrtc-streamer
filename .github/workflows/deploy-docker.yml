@@ -26,8 +26,8 @@ jobs:
         context: .
         push: true
         target: builder
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:cache
+        cache-to: type=registry,ref=ghcr.io/${{ github.repository }}:cache,mode=max
         tags: ghcr.io/${{ github.repository }}:dev 
 
     - name: Build and push
@@ -35,8 +35,7 @@ jobs:
       with:
         context: .
         push: true
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+        cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:cache
         tags: ghcr.io/${{ github.repository }}:latest 
 
     - name: Log in to Azure
@@ -45,7 +44,7 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Build and deploy Container App
-      uses: azure/container-apps-deploy-action@v0
+      uses: azure/container-apps-deploy-action@v1
       with:
         imageToDeploy: ghcr.io/${{ github.repository }}:latest
         containerAppName: webrtcstreamer
