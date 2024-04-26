@@ -8,7 +8,7 @@ jobs:
       matrix:
         buildtype: [Debug, Release]  
 
-    runs-on: macos-latest
+    runs-on: macos-latest-large
     
     steps:
     - uses: actions/checkout@v4
