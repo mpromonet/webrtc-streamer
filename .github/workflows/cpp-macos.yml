@@ -14,7 +14,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: pkg
-      run: brew install cmake p7zip gcc openssl rtmpdump
+      run: brew install cmake p7zip gcc openssl rtmpdump && brew link --force openssl
 
     - name: depot_tools
       run: |
@@ -33,7 +33,7 @@ jobs:
     - name: build
       run: |
           export PATH=$(pwd)/webrtc/src/third_party/llvm-build/Release+Asserts/bin:$PATH
-          cmake -DWEBRTCROOT=$(pwd)/webrtc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DDETECT_OPENSSL=OFF .
+          cmake -DWEBRTCROOT=$(pwd)/webrtc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_AR=llvm-ar -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DDETECT_OPENSSL=OFF .
           make VERBOSE=1
 
     - name: cpack 
