@@ -26,8 +26,6 @@ jobs:
         context: .
         push: true
         target: builder
-        cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:cache
-        cache-to: type=registry,ref=ghcr.io/${{ github.repository }}:cache,mode=max
         tags: ghcr.io/${{ github.repository }}:dev 
 
     - name: Build and push
@@ -35,7 +33,6 @@ jobs:
       with:
         context: .
         push: true
-        cache-from: type=registry,ref=ghcr.io/${{ github.repository }}:cache
         tags: ghcr.io/${{ github.repository }}:latest 
 
     - name: Log in to Azure
