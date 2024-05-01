@@ -84,10 +84,6 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   file(READ ${WEBRTCROOT}/src/modules/congestion_controller/goog_cc/loss_based_bwe_v2.cc filecontent)
   string(REPLACE "config.emplace()" "config.emplace(Config())" filecontent "${filecontent}")
   file(WRITE ${WEBRTCROOT}/src/modules/congestion_controller/goog_cc/loss_based_bwe_v2.cc "${filecontent}")
-  file(READ ${WEBRTCROOT}/src/build_overrides/build.gni filecontent)
-  string(REPLACE "enable_safe_libcxx = true\n" "enable_safe_libcxx = true\nenable_safe_libstdcxx=true\n" filecontent "${filecontent}")
-  file(WRITE ${WEBRTCROOT}/src/build_overrides/build.gni "${filecontent}")
-
   
   
 

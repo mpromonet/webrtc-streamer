@@ -50,47 +50,24 @@ public:
     }
 
     // overide RTSPConnection::Callback
-    virtual bool onNewSession(const char *id, const char *media, const char *codec, const char *sdp) override
+    virtual bool onNewSession(const char *id, const char *media, const char *codec, const char *sdp, unsigned int rtpfrequency, unsigned int channels) override
     {
         bool success = false;
         if (strcmp(media, "audio") == 0)
         {
             RTC_LOG(LS_INFO) << "LiveAudioSource::onNewSession " << media << "/" << codec << " " << sdp;
 
-            // parse sdp to extract freq and channel
-            std::string fmt(sdp);
-            std::transform(fmt.begin(), fmt.end(), fmt.begin(), [](unsigned char c) { return std::tolower(c); });
-            std::string codecstr(codec);
-            std::transform(codecstr.begin(), codecstr.end(), codecstr.begin(), [](unsigned char c) { return std::tolower(c); });
-            size_t pos = fmt.find(codecstr);
-            if (pos != std::string::npos)
-            {
-                fmt.erase(0, pos + strlen(codec));
-                fmt.erase(fmt.find_first_of(" \r\n"));
-                std::istringstream is(fmt);
-                std::string dummy;
-                std::getline(is, dummy, '/');
-                std::string freq;
-                std::getline(is, freq, '/');
-                if (!freq.empty())
-                {
-                    m_freq = std::stoi(freq);
-                }
-                std::string channel;
-                std::getline(is, channel, '/');
-                if (!channel.empty())
-                {
-                    m_channel = std::stoi(channel);
-                }
-            }
-            RTC_LOG(LS_INFO) << "LiveAudioSource::onNewSession codec:" << codecstr << " freq:" << m_freq << " channel:" << m_channel;
+            m_freq = rtpfrequency;
+            m_channel = channels;
+
+            RTC_LOG(LS_INFO) << "LiveAudioSource::onNewSession codec:" << " freq:" << m_freq << " channel:" << m_channel;
             std::map<std::string, std::string> params;
             if (m_channel == 2)
             {
                 params["stereo"] = "1";
             }
 
-            webrtc::SdpAudioFormat format = webrtc::SdpAudioFormat(codecstr, m_freq, m_channel, std::move(params));
+            webrtc::SdpAudioFormat format = webrtc::SdpAudioFormat(codec, m_freq, m_channel, std::move(params));
             if (m_factory->IsSupportedDecoder(format))
             {
                 m_decoder = m_factory->MakeAudioDecoder(format, absl::optional<webrtc::AudioCodecPairId>());
