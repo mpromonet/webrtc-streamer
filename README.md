@@ -324,15 +324,15 @@ A short sample to publish WebRTC streams to a Jitsi Video Room could be:
 
 [Live Demo](https://webrtc-streamer-mpromonet.cloud.okteto.net/xmppvideoroom.html)
 
-## Build
-
-### Dependencies
+## Dependencies
 
 This package depends on the following packages:
 
-- [WebRTC Native Code Package](http://www.webrtc.org) for WebRTC
-- [civetweb HTTP server](https://github.com/civetweb/civetweb) for HTTP server
-- [live555](http://www.live555.com/liveMedia) for RTSP/MKV source
+- [WebRTC Native Code Package](http://www.webrtc.org) for WebRTC (see license https://webrtc.github.io/webrtc-org/license)
+- [civetweb HTTP server](https://github.com/civetweb/civetweb) for HTTP server (see license https://github.com/civetweb/civetweb/blob/master/LICENSE.md)
+- [live555](http://www.live555.com/liveMedia) for RTSP/MKV source (see license http://www.live555.com/liveMedia/faq.html#copyright-and-license)
+
+## Build
 
 The following steps are required to build the project, and will install the
 dependencies above:
