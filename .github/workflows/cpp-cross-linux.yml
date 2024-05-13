@@ -1,4 +1,4 @@
-name: C/C++ CI linux cross compilation arm64
+name: C/C++ CI linux cross arm64
 
 on: [push]
 
@@ -36,7 +36,8 @@ jobs:
 
     - name: build
       run: |
-          cmake -DWEBRTCROOT=$(pwd)/webrtc -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DCMAKE_SYSTEM_PROCESSOR=arm64 -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF .
+          export PATH=$(pwd)/webrtc/src/third_party/llvm-build/Release+Asserts/bin:$PATH
+          cmake -DWEBRTCROOT=$(pwd)/webrtc -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF .
           make
 
     - name: cpack 
