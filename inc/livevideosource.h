@@ -114,7 +114,7 @@ public:
                 m_cfg.clear();
                 m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
 
-                absl::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(buffer + index.payload_start_offset, index.payload_size);
+                absl::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(buffer + index.payload_start_offset + webrtc::H264::kNaluTypeSize, index.payload_size - webrtc::H264::kNaluTypeSize);
                 if (!sps)
                 {
                     RTC_LOG(LS_ERROR) << "cannot parse sps";
@@ -178,7 +178,7 @@ public:
                 RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SPS";
                 m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
 
-                absl::optional<webrtc::H265SpsParser::SpsState> sps = webrtc::H265SpsParser::ParseSps(buffer + index.payload_start_offset, index.payload_size);
+                absl::optional<webrtc::H265SpsParser::SpsState> sps = webrtc::H265SpsParser::ParseSps(buffer + index.payload_start_offset + webrtc::H265::kNaluHeaderSize, index.payload_size - webrtc::H265::kNaluHeaderSize);
                 if (!sps)
                 {
                     RTC_LOG(LS_ERROR) << "cannot parse sps";
