@@ -3,6 +3,8 @@ project (webrtc-streamer)
 
 set (WEBRTCROOT "${CMAKE_CURRENT_SOURCE_DIR}/../webrtc" CACHE STRING "WEBRTC root directory")
 set (WEBRTCDESKTOPCAPTURE "ON" CACHE STRING "WEBRTC Desktop capture")
+set (WEBRTCCHROMEBRANDED "ON" CACHE STRING "WEBRTC Chrome branded")
+
 if(NOT CMAKE_BUILD_TYPE)
 set (CMAKE_BUILD_TYPE "Release")
 endif()
@@ -60,7 +62,11 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   endif()
 
   # enable H264 support
-  set (WEBRTCARGS is_chrome_branded=true\n${WEBRTCARGS})
+  if (WEBRTCCHROMEBRANDED STREQUAL "ON")
+    set (WEBRTCARGS is_chrome_branded=true\n${WEBRTCARGS})
+  else()
+    set (WEBRTCARGS rtc_use_h264=true\nrtc_use_h265=true\n${WEBRTCARGS})
+  endif()
   if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
     set(ENV{PATH} "${WEBRTCROOT}/src/third_party/llvm-build/Release+Asserts/bin:$ENV{PATH}")
 
