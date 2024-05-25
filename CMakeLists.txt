@@ -145,10 +145,8 @@ endif()
 
 
 FILE(GLOB_RECURSE WEBRTJSONCPPCOBJS ${WEBRTCOBJS}/third_party/jsoncpp/jsoncpp/*${CMAKE_C_OUTPUT_EXTENSION} ${WEBRTCOBJS}/rtc_base/rtc_json/*${CMAKE_C_OUTPUT_EXTENSION})
-FILE(GLOB_RECURSE WEBRTVPXOBJS ${WEBRTCOBJS}/third_party/lib*/*${CMAKE_C_OUTPUT_EXTENSION})
 FILE(GLOB_RECURSE WEBRTP2POBJ ${WEBRTCOBJS}/p2p/p2p_server_utils/*${CMAKE_C_OUTPUT_EXTENSION})
-FILE(GLOB_RECURSE WEBRTCCOMOBJ ${WEBRTCOBJS}/modules/*${CMAKE_C_OUTPUT_EXTENSION} ${WEBRTCOBJS}/api/*${CMAKE_C_OUTPUT_EXTENSION})
-SET (WEBRTCEXTRAOBJS ${WEBRTJSONCPPCOBJS} ${WEBRTP2POBJ} ${WEBRTVPXOBJS} ${WEBRTCCOMOBJ})	
+SET (WEBRTCEXTRAOBJS ${WEBRTJSONCPPCOBJS} ${WEBRTP2POBJ} ${WEBRTCCOMOBJ})	
 
 # project target
 FILE(GLOB SOURCE src/*.cpp)
@@ -158,7 +156,9 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc)
 # webrtc 
 set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
-target_link_libraries (${CMAKE_PROJECT_NAME} ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX} ${WEBRTCOBJS}/media/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_internal_video_codecs${CMAKE_STATIC_LIBRARY_SUFFIX} ${WEBRTCOBJS}/media/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_simulcast_encoder_adapter${CMAKE_STATIC_LIBRARY_SUFFIX}) 
+target_link_libraries(${CMAKE_PROJECT_NAME} ${WEBRTCOBJS}/api/video_codecs/libbuiltin_video_encoder_factory.a ${WEBRTCOBJS}/api/video_codecs/libbuiltin_video_decoder_factory.a)
+target_link_libraries(${CMAKE_PROJECT_NAME} ${WEBRTCOBJS}/media/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_internal_video_codecs${CMAKE_STATIC_LIBRARY_SUFFIX} ${WEBRTCOBJS}/media/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_simulcast_encoder_adapter${CMAKE_STATIC_LIBRARY_SUFFIX}) 
+target_link_libraries(${CMAKE_PROJECT_NAME} ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX})
 add_definitions(-DHAVE_JPEG)
 
 # thread
@@ -239,8 +239,6 @@ else()
         find_package(X11)
         target_link_libraries(${CMAKE_PROJECT_NAME} ${X11_LIBRARIES} ${X11_Xdamage_LIB} ${X11_Xfixes_LIB} ${X11_Xcomposite_LIB} ${X11_Xrandr_LIB} ${X11_Xtst_LIB})
     endif()
-    # civetweb
-    target_link_libraries(${CMAKE_PROJECT_NAME} dl)
     #alsa
     if (ALSA_FOUND)
         add_definitions(-DHAVE_SOUND)
