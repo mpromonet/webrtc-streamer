@@ -37,11 +37,9 @@ if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
   set (CMAKE_FIND_ROOT_PATH ${WEBRTCROOT}/src/build/linux/debian_bullseye_arm-sysroot)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
   set (CMAKE_FIND_ROOT_PATH ${WEBRTCROOT}/src/build/linux/debian_bullseye_arm64-sysroot)
-endif()
-MESSAGE("CMAKE_FIND_ROOT_PATH = ${CMAKE_FIND_ROOT_PATH}")
-if (DEFINED CMAKE_FIND_ROOT_PATH)
   add_compile_options(--sysroot=${CMAKE_FIND_ROOT_PATH})
 endif()
+MESSAGE("CMAKE_FIND_ROOT_PATH = ${CMAKE_FIND_ROOT_PATH}")
 
 # alsa ?
 find_package(ALSA QUIET)
