@@ -239,6 +239,8 @@ else()
         find_package(X11)
         target_link_libraries(${CMAKE_PROJECT_NAME} ${X11_LIBRARIES} ${X11_Xdamage_LIB} ${X11_Xfixes_LIB} ${X11_Xcomposite_LIB} ${X11_Xrandr_LIB} ${X11_Xtst_LIB})
     endif()
+    # civetweb
+    target_link_libraries(${CMAKE_PROJECT_NAME} dl)    
     #alsa
     if (ALSA_FOUND)
         add_definitions(-DHAVE_SOUND)
