@@ -36,7 +36,7 @@ jobs:
           cmake -DWEBRTCROOT=$(pwd)/webrtc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DDETECT_OPENSSL=OFF .
           file $(pwd)/webrtc/src/out/${{ matrix.buildtype }}/obj/api/video_codecs/libbuiltin_video_encoder_factory.a
           file $(pwd)/webrtc/src/out/${{ matrix.buildtype }}/obj/libwebrtc.a
-          ar tv $(pwd)/webrtc/src/out/${{ matrix.buildtype }}/obj/api/video_codecs/libbuiltin_video_encoder_factory.a
+          ar -t $(pwd)/webrtc/src/out/${{ matrix.buildtype }}/obj/api/video_codecs/libbuiltin_video_encoder_factory.a
           ar tv $(pwd)/webrtc/src/out/${{ matrix.buildtype }}/obj/libwebrtc.a
           make VERBOSE=1
 
