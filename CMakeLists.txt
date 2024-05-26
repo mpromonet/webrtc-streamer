@@ -156,7 +156,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc)
 # webrtc 
 set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
-target_link_libraries(${CMAKE_PROJECT_NAME} ${WEBRTCOBJS}/api/video_codecs/libbuiltin_video_encoder_factory.a ${WEBRTCOBJS}/api/video_codecs/libbuiltin_video_decoder_factory.a)
+target_link_libraries(${CMAKE_PROJECT_NAME} ${WEBRTCOBJS}/api/video_codecs/${CMAKE_STATIC_LIBRARY_PREFIX}builtin_video_encoder_factory${CMAKE_STATIC_LIBRARY_SUFFIX} ${WEBRTCOBJS}/api/video_codecs/${CMAKE_STATIC_LIBRARY_PREFIX}builtin_video_decoder_factory${CMAKE_STATIC_LIBRARY_SUFFIX})
 target_link_libraries(${CMAKE_PROJECT_NAME} ${WEBRTCOBJS}/media/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_internal_video_codecs${CMAKE_STATIC_LIBRARY_SUFFIX} ${WEBRTCOBJS}/media/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_simulcast_encoder_adapter${CMAKE_STATIC_LIBRARY_SUFFIX}) 
 target_link_libraries(${CMAKE_PROJECT_NAME} ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX})
 add_definitions(-DHAVE_JPEG)
