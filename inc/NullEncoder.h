@@ -12,6 +12,7 @@
 #include "api/video_codecs/builtin_video_encoder_factory.h"
 #include "modules/video_coding/codecs/h264/include/h264.h"
 #include "common_video/h264/h264_common.h"
+#include "modules/video_coding/include/video_codec_interface.h"
 
 #include "EncodedVideoFrameBuffer.h"
 
