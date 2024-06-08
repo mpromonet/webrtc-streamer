@@ -6,9 +6,6 @@ defaults: &defaults
     
 version: 2.1
 
-orbs:
-  heroku: circleci/heroku@1.2.6
-
 jobs:
   # -------------------------------------
   # dowload common tools 

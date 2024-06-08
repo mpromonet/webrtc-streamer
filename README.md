@@ -236,6 +236,20 @@ It allow to stream using draft standard [WHEP](https://www.ietf.org/archive/id/d
 
 [WebRTC player](https://github.com/Eyevinn/webrtc-player) can display WebRTC stream from webrtc-streamer.
 
+A minimal example:
+```html
+<html>
+<head>
+    <script src="https://unpkg.com/@eyevinn/whep-video-component@latest/dist/whep-video.component.js"></script>
+</head>
+<body>
+    <whep-video id="video" muted autoplay></whep-video>
+    <script>
+        video.setAttribute('src', `${location.origin}/api/whep?url=Asahi&options=rtptransport%3dtcp%26timeout%3d60`);
+    </script>
+</body>
+</html>
+```
 [Live Demo](https://webrtc-streamer-whep.pages.dev/)
 
 
