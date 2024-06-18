@@ -5,7 +5,7 @@
   "main": "joinjanusvideoroom.js",
   "dependencies": {
     "jquery": "^3.3.1",
-    "jsdom": "^16.2.2",
+    "jsdom": "^17.0.0",
     "node-fetch": "^2.6.1",
     "strophe.jingle": "0.0.9",
     "strophe.js": "^1.2.15",
