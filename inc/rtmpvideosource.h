@@ -37,7 +37,7 @@
 #define CODEC_ID_AVC 7
 #define CODEC_ID_HEVC 12
 
-class RtmpVideoSource : public VideoSourceWithDecoder
+class RtmpVideoSource : public VideoDecoder
 {
 public:
     static RtmpVideoSource *Create(const std::string &url, const std::map<std::string, std::string> &opts, std::unique_ptr<webrtc::VideoDecoderFactory> &videoDecoderFactory)
@@ -55,7 +55,7 @@ private:
     RtmpVideoSource(const std::string &uri, const std::map<std::string, std::string> &opts, std::unique_ptr<webrtc::VideoDecoderFactory> &videoDecoderFactory) : 
         m_stop(false),
         m_url(uri),
-        VideoSourceWithDecoder(opts, videoDecoderFactory)
+        VideoDecoder(opts, videoDecoderFactory)
     {
         RTMP_Init(&m_rtmp);
         RTMP_LogSetOutput(stderr);

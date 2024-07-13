@@ -37,11 +37,11 @@
 #include "VideoDecoder.h"
 
 template <typename T>
-class LiveVideoSource : public VideoSourceWithDecoder, public T::Callback
+class LiveVideoSource : public VideoDecoder, public T::Callback
 {
 public:
     LiveVideoSource(const std::string &uri, const std::map<std::string, std::string> &opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory, bool wait) :
-	    VideoSourceWithDecoder(opts, videoDecoderFactory, wait),
+	    VideoDecoder(opts, videoDecoderFactory, wait),
         m_env(m_stop),
 	    m_liveclient(m_env, this, uri.c_str(), opts, rtc::LogMessage::GetLogToDebug()<=2) {
             m_liveclient.start();
@@ -92,7 +92,7 @@ public:
                 struct timeval presentationTime;
                 timerclear(&presentationTime);
 
-                std::vector<std::vector<uint8_t>> initFrames = m_decoder.getInitFrames(codec, sdp);
+                std::vector<std::vector<uint8_t>> initFrames = getInitFrames(codec, sdp);
                 for (auto frame : initFrames)
                 {
                     onData(id, frame.data(), frame.size(), presentationTime);
@@ -118,12 +118,12 @@ public:
                 if (!sps)
                 {
                     RTC_LOG(LS_ERROR) << "cannot parse sps";
-                    m_decoder.postFormat(codec, 0, 0);
+                    postFormat(codec, 0, 0);
                 }
                 else
                 {
                     RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height;
-                    m_decoder.postFormat(codec, sps->width, sps->height);
+                    postFormat(codec, sps->width, sps->height);
                 }
             }
             else if (nalu_type == webrtc::H264::NaluType::kPps)
@@ -148,14 +148,14 @@ public:
                 {
                     RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SLICE NALU:" << nalu_type;
                 }
-                if (m_prevTimestamp && ts < m_prevTimestamp && m_decoder.m_decoder && strcmp(m_decoder.m_decoder->ImplementationName(),"FFmpeg")==0) 
+                if (m_prevTimestamp && ts < m_prevTimestamp && m_decoder && strcmp(m_decoder->ImplementationName(),"FFmpeg")==0) 
                 {
                     RTC_LOG(LS_ERROR) << "LiveVideoSource:onData drop frame in past for FFmpeg:" << (m_prevTimestamp-ts);
 
                 } else {
                     content.insert(content.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
                     rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
-                    m_decoder.PostFrame(frame, ts, frameType);
+                    PostFrame(frame, ts, frameType);
                 }
             }
         }
@@ -182,12 +182,12 @@ public:
                 if (!sps)
                 {
                     RTC_LOG(LS_ERROR) << "cannot parse sps";
-                    m_decoder.postFormat(codec, 0, 0);
+                    postFormat(codec, 0, 0);
                 }
                 else
                 {
                     RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height;
-                    m_decoder.postFormat(codec, sps->width, sps->height);
+                    postFormat(codec, sps->width, sps->height);
                 }
             }
             else if (nalu_type == webrtc::H265::NaluType::kPps)
@@ -209,14 +209,14 @@ public:
                 {
                     RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SLICE NALU:" << nalu_type;
                 }
-                if (m_prevTimestamp && ts < m_prevTimestamp && m_decoder.m_decoder && strcmp(m_decoder.m_decoder->ImplementationName(),"FFmpeg")==0) 
+                if (m_prevTimestamp && ts < m_prevTimestamp && m_decoder && strcmp(m_decoder->ImplementationName(),"FFmpeg")==0) 
                 {
                     RTC_LOG(LS_ERROR) << "LiveVideoSource:onData drop frame in past for FFmpeg:" << (m_prevTimestamp-ts);
 
                 } else {
                     content.insert(content.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
                     rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
-                    m_decoder.PostFrame(frame, ts, frameType);
+                    PostFrame(frame, ts, frameType);
                 }
             }
         }
@@ -249,7 +249,7 @@ public:
                     .set_timestamp_ms(ts)
                     .set_id(ts)
                     .build();
-                m_decoder.Decoded(frame);
+                Decoded(frame);
             }
             else
             {
@@ -287,11 +287,11 @@ public:
         }
         else if (codec == "VP9")
         {
-            m_decoder.postFormat(codec, 0, 0);
+            postFormat(codec, 0, 0);
 
             webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameKey;
             rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(buffer, size);
-            m_decoder.PostFrame(frame, ts, frameType);
+            PostFrame(frame, ts, frameType);
         }
 
         m_prevTimestamp = ts;
