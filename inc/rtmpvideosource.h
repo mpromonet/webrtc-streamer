@@ -131,7 +131,7 @@ private:
                     } else {
                         RTC_LOG(LS_ERROR) << "sps " << sps->width << "x" << sps->height;
                         RTC_LOG(LS_INFO) << "RtmpVideoSource:onData H264 SPS set format " << sps->width << "x" << sps->height;
-                        m_decoder.postFormat("H264", sps->width, sps->height);
+                        postFormat("H264", sps->width, sps->height);
                         
                         m_cfg.insert(m_cfg.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
                         m_cfg.insert(m_cfg.end(), &body[start_sps+2], &body[start_sps+2 + spssize + 1]);
@@ -155,7 +155,7 @@ private:
                 content.insert(content.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
                 content.insert(content.end(), &body[9], &body[size]);
                 rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
-                m_decoder.PostFrame(frame, ts, webrtc::VideoFrameType::kVideoFrameKey);
+                PostFrame(frame, ts, webrtc::VideoFrameType::kVideoFrameKey);
             }
             else if (frameType == 2) {
                 webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(body[9]);
@@ -164,7 +164,7 @@ private:
                 content.insert(content.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
                 content.insert(content.end(), &body[9], &body[size]);
                 rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
-                m_decoder.PostFrame(frame, ts, webrtc::VideoFrameType::kVideoFrameDelta);
+                PostFrame(frame, ts, webrtc::VideoFrameType::kVideoFrameDelta);
             }
         }
         else if (codecId == CODEC_ID_HEVC) {
@@ -196,7 +196,7 @@ private:
                         } else {
                             RTC_LOG(LS_ERROR) << "sps " << sps->width << "x" << sps->height;
                             RTC_LOG(LS_INFO) << "RtmpVideoSource:onData H265 SPS set format " << sps->width << "x" << sps->height;
-                            m_decoder.postFormat("H265", sps->width, sps->height);
+                            postFormat("H265", sps->width, sps->height);
                         }                               
                         m_cfg.insert(m_cfg.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
                         m_cfg.insert(m_cfg.end(), &body[start_sps+2], &body[start_sps+2  + spssize + 1]);
@@ -220,7 +220,7 @@ private:
                 content.insert(content.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
                 content.insert(content.end(), &body[9], &body[size]);
                 rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
-                m_decoder.PostFrame(frame, ts, webrtc::VideoFrameType::kVideoFrameKey);
+                PostFrame(frame, ts, webrtc::VideoFrameType::kVideoFrameKey);
             }
             else if (frameType == 2) {
                 webrtc::H265::NaluType nalu_type = webrtc::H265::ParseNaluType(body[9]);
@@ -229,7 +229,7 @@ private:
                 content.insert(content.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
                 content.insert(content.end(), &body[9], &body[size]);
                 rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
-                m_decoder.PostFrame(frame, ts, webrtc::VideoFrameType::kVideoFrameDelta);
+                PostFrame(frame, ts, webrtc::VideoFrameType::kVideoFrameDelta);
             }            
         }
     }
