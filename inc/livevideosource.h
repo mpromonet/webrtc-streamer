@@ -59,6 +59,7 @@ public:
     void Stop()
     {
         RTC_LOG(LS_INFO) << "LiveVideoSource::stop";
+        m_liveclient.stop();
         m_env.stop();
         m_capturethread.join();
     }
