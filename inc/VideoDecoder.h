@@ -158,7 +158,7 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
 
             // waiting 
             if ( (m_wait) && (m_prevts != 0) ) {
-                int64_t periodSource = decodedImage.timestamp() - m_previmagets;
+                int64_t periodSource = decodedImage.timestamp_ms() - m_previmagets;
                 int64_t periodDecode = ts-m_prevts;
                     
                 RTC_LOG(LS_VERBOSE) << "VideoDecoder::Decoded interframe decode:" << periodDecode << " source:" << periodSource;
@@ -172,7 +172,7 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
 
             m_scaler.OnFrame(decodedImage);
 
-	        m_previmagets = decodedImage.timestamp();
+	        m_previmagets = decodedImage.timestamp_ms();
 	        m_prevts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
                        
             return 1;

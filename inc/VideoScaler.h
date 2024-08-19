@@ -155,9 +155,9 @@ public:
             webrtc::VideoFrame scaledFrame = webrtc::VideoFrame::Builder()
                 .set_video_frame_buffer(scaled_buffer)
                 .set_rotation(m_rotation)
-                .set_timestamp_rtp(frame.timestamp())
+                .set_timestamp_rtp(frame.rtp_timestamp())
                 .set_timestamp_ms(frame.render_time_ms())
-                .set_id(frame.timestamp())
+                .set_id(frame.timestamp_us())
                 .build();
 
             m_broadcaster.OnFrame(scaledFrame);
