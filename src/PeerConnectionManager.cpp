@@ -770,11 +770,11 @@ const Json::Value PeerConnectionManager::setAnswer(const std::string &peerid, co
 
 std::unique_ptr<webrtc::SessionDescriptionInterface> PeerConnectionManager::getAnswer(const std::string & peerid, const std::string& sdpoffer, const std::string & videourl, const std::string & audiourl, const std::string & options, bool waitgatheringcompletion) {
 	std::unique_ptr<webrtc::SessionDescriptionInterface> answer;
-	webrtc::SessionDescriptionInterface *session_description(webrtc::CreateSessionDescription(webrtc::SdpType::kOffer, sdpoffer, NULL));
+	std::unique_ptr<webrtc::SessionDescriptionInterface> session_description(webrtc::CreateSessionDescription(webrtc::SdpType::kOffer, sdpoffer, NULL));
 	if (!session_description) {
 		RTC_LOG(LS_WARNING) << "Can't parse received session description message.";
 	} else {
-		answer = this->getAnswer(peerid, session_description, videourl, audiourl, options, waitgatheringcompletion);
+		answer = this->getAnswer(peerid, session_description.get(), videourl, audiourl, options, waitgatheringcompletion);
 	}
 	return answer;
 }
