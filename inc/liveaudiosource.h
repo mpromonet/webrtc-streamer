@@ -22,6 +22,7 @@
 #include "environment.h"
 
 #include "pc/local_audio_source.h"
+#include "api/environment/environment_factory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 
 template <typename T>
@@ -70,7 +71,7 @@ public:
             webrtc::SdpAudioFormat format = webrtc::SdpAudioFormat(codec, m_freq, m_channel, std::move(params));
             if (m_factory->IsSupportedDecoder(format))
             {
-                m_decoder = m_factory->MakeAudioDecoder(format, absl::optional<webrtc::AudioCodecPairId>());
+                m_decoder = m_factory->Create(m_webrtcenv, format, std::optional<webrtc::AudioCodecPairId>());
                 m_codec[id] = codec;
                 success = true;
             }
@@ -164,6 +165,7 @@ protected:
     LiveAudioSource(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string &uri, const std::map<std::string, std::string> &opts, bool wait)
         : m_env(m_stop)
         , m_connection(m_env, this, uri.c_str(), opts, rtc::LogMessage::GetLogToDebug() <= 2)
+        , m_webrtcenv(webrtc::CreateEnvironment())
         , m_factory(audioDecoderFactory)
         , m_freq(8000)
         , m_channel(1)
@@ -185,6 +187,7 @@ private:
 
 private:
     T m_connection;
+    const webrtc::Environment                     m_webrtcenv;
     std::thread m_capturethread;
     rtc::scoped_refptr<webrtc::AudioDecoderFactory> m_factory;
     std::unique_ptr<webrtc::AudioDecoder> m_decoder;

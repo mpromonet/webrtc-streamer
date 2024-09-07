@@ -28,7 +28,6 @@ public:
   	webrtc::EncodedImage encoded_image;
 		encoded_image.SetEncodedData(webrtc::EncodedImageBuffer::Create(m_encoded_data->data(), m_encoded_data->size()));
 		encoded_image._frameType = m_frameType;
-    encoded_image.SetAtTargetQuality(true);
 		encoded_image.SetRtpTimestamp(rtptime);
 		encoded_image.ntp_time_ms_ = ntptime;
     return encoded_image;
