@@ -737,7 +737,7 @@ const Json::Value PeerConnectionManager::setAnswer(const std::string &peerid, co
 			{
 				std::promise<const webrtc::SessionDescriptionInterface *> remotepromise;
 				rtc::scoped_refptr<SetSessionDescriptionObserver> remoteSessionObserver(SetSessionDescriptionObserver::Create(peerConnection, remotepromise));
-				peerConnection->SetRemoteDescription(remoteSessionObserver.get(), session_description.get());
+				peerConnection->SetRemoteDescription(remoteSessionObserver.get(), session_description.release());
 				// waiting for remote description
 				std::future<const webrtc::SessionDescriptionInterface *> remotefuture = remotepromise.get_future();
 				if (remotefuture.wait_for(std::chrono::milliseconds(5000)) == std::future_status::ready)
@@ -774,7 +774,7 @@ std::unique_ptr<webrtc::SessionDescriptionInterface> PeerConnectionManager::getA
 	if (!session_description) {
 		RTC_LOG(LS_WARNING) << "Can't parse received session description message.";
 	} else {
-		answer = this->getAnswer(peerid, session_description.get(), videourl, audiourl, options, waitgatheringcompletion);
+		answer = this->getAnswer(peerid, session_description.release(), videourl, audiourl, options, waitgatheringcompletion);
 	}
 	return answer;
 }
