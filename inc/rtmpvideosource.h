@@ -124,7 +124,7 @@ private:
                 {
                     m_cfg.clear();
                     RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H264 SPS size:" << spssize;
-                    absl::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps((const unsigned char*)(&body[start_sps+3]), spssize);
+                    std::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps((const unsigned char*)(&body[start_sps+3]), spssize);
                     if (!sps)
                     {
                         RTC_LOG(LS_ERROR) << "cannot parse H264 sps";
@@ -189,7 +189,7 @@ private:
                     RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H265 SPS size:" << spssize;
                     if (nalu_type == webrtc::H265::NaluType::kSps)
                     {
-                        absl::optional<webrtc::H265SpsParser::SpsState> sps = webrtc::H265SpsParser::ParseSps((const unsigned char*)(&body[start_sps+3]), spssize);
+                        std::optional<webrtc::H265SpsParser::SpsState> sps = webrtc::H265SpsParser::ParseSps((const unsigned char*)(&body[start_sps+3]), spssize);
                         if (!sps)
                         {
                             RTC_LOG(LS_ERROR) << "cannot parse H265 sps";
