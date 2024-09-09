@@ -10,6 +10,11 @@ ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
        PYTHONIOENCODING=UTF-8 \
        MSVC_PATH="C:\Program Files\Microsoft Visual Studio\2022\Community" 
 
+
+# Install Windows 10 SDK
+RUN powershell -c "Invoke-WebRequest -Uri 'https://go.microsoft.com/fwlink/?linkid=2272610' -OutFile winsdksetup.exe -UseBasicParsing ;"
+RUN winsdksetup.exe /features OptionId.WindowsDesktopDebuggers /q /norestart
+
 # Install Chocolatey & packages 
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin" 
 
