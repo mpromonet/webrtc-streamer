@@ -1,7 +1,7 @@
 ARG IMAGE=arm64v8/ubuntu
 
 # build
-FROM ubuntu:24.04 as builder
+FROM ubuntu:24.04 AS builder
 LABEL maintainer=michel.promonet@free.fr
 
 WORKDIR /webrtc-streamer

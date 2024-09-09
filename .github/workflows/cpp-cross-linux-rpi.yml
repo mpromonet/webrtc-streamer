@@ -1,4 +1,4 @@
-name: C/C++ CI linux cross armv6
+name: C/C++ CI linux cross armv6/armv7
 
 on: [push]
 
@@ -6,6 +6,7 @@ jobs:
   build:
     strategy:
       matrix:
+        include:
         - buildtype: Debug
           arch: armv6l
           crosscompiler: https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%201%2C%20Zero/cross-gcc-10.2.0-pi_0-1.tar.gz
@@ -13,9 +14,11 @@ jobs:
           arch: armv6l
           crosscompiler: https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%201%2C%20Zero/cross-gcc-10.2.0-pi_0-1.tar.gz
         - buildtype: Debug
-          arch: armv7
+          arch: armv7l
           crosscompiler: https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%202%2C%203/cross-gcc-10.2.0-pi_2-3.tar.gz
-                
+        - buildtype: Release
+          arch: armv7l
+          crosscompiler: https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%202%2C%203/cross-gcc-10.2.0-pi_2-3.tar.gz                
 
     runs-on: ubuntu-latest
     

@@ -179,21 +179,7 @@ jobs:
       - store_artifacts:
           path: /distrib
           
-  # -------------------------------------
-  # publish artifact on github
-  # -------------------------------------
-  github_release:
-    <<: *defaults
-    
-    steps:
-      - attach_workspace:
-          at: /
-      - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates golang git
-      - run: go get github.com/tcnksm/ghr
-      - deploy:
-          name: "Deploy to Github"
-          command: $HOME/go/bin/ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME $CIRCLE_TAG /distrib
-
+  
 workflows:
   version: 2
   build:
@@ -247,12 +233,4 @@ workflows:
           filters:
             tags:
               only: /.*/            
-      - github_release:
-          requires:
-            - store_artifact
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /.*/
  
