@@ -1,5 +1,5 @@
 # build
-FROM mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2019 AS builder
+FROM mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2022 AS builder
 LABEL maintainer=michel.promonet@free.fr
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
@@ -44,7 +44,7 @@ RUN git config --global core.autocrlf false \
        && time /t 
 
 # run
-FROM mcr.microsoft.com/windows:1809
+FROM mcr.microsoft.com/windows/server:ltsc2022
 
 WORKDIR /app
 COPY --from=builder /app/ /app/
