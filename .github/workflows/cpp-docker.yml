@@ -13,6 +13,7 @@ jobs:
         - os: ubuntu-latest
           dockerfile: Dockerfile.arm64
           arch: arm64
+          image: arm64v8/ubuntu
         - os: ubuntu-latest
           dockerfile: Dockerfile.rpi
           arch: armv6l
