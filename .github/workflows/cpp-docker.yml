@@ -31,4 +31,4 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Build an image from Dockerfile
-      run: docker build -t docker.io/${{ github.repository }}:${{ matrix.arch }} -f ${{ matrix.dockerfile }} --build-arg CROSSCOMPILE=${{ matrix.crosscompiler }} --build-arg ARCH=${{ matrix.label }} .
+      run: docker build -t docker.io/${{ github.repository }}:${{ matrix.arch }} -f ${{ matrix.dockerfile }} --build-arg CROSSCOMPILE=${{ matrix.crosscompiler }} --build-arg ARCH=${{ matrix.arch }} .
