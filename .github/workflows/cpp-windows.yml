@@ -39,7 +39,6 @@ jobs:
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
         CLANG_VERSION: ToT
         PYTHONIOENCODING: UTF-8
-        GYP_MSVS_VERSION: 2019
 
     - name: build
       shell: cmd
@@ -55,7 +54,6 @@ jobs:
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
         CLANG_VERSION: ToT
         PYTHONIOENCODING: UTF-8
-        GYP_MSVS_VERSION: 2019
 
     - name: cpack
       shell: bash

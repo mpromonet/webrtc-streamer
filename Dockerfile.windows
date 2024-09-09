@@ -15,7 +15,7 @@ RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command
 
 RUN choco install --no-progress -y 7zip git curl sed
 RUN choco install --no-progress -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
-RUN choco install --ignoredetectedreboot --no-progress -y visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%" || IF "%ERRORLEVEL%"=="3010" EXIT 0
+RUN choco install --ignoredetectedreboot --no-progress -y visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --includeOptional --nocache --installPath %MSVC_PATH%" || IF "%ERRORLEVEL%"=="3010" EXIT 0
        
 RUN git config --global core.autocrlf false \
        && git config --global core.filemode false \
