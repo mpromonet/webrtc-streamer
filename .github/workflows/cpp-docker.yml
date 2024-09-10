@@ -35,8 +35,7 @@ jobs:
 
     - name: Build an image from Dockerfile
       run: |
-        export TAG=${{ github.base_ref || github.ref_name }}
-        docker build -t docker.io/${{ github.repository }}:${TAG}-${{ matrix.arch }} -f ${{ matrix.dockerfile }} --build-arg CROSSCOMPILER=${{ matrix.crosscompiler }} --build-arg ARCH=${{ matrix.arch }} --build-arg IMAGE=${{ matrix.image }} .
+        docker build -t docker.io/${{ github.repository }}:${{ github.base_ref || github.ref_name }}-${{ matrix.arch }} -f ${{ matrix.dockerfile }} --build-arg CROSSCOMPILER=${{ matrix.crosscompiler }} --build-arg ARCH=${{ matrix.arch }} --build-arg IMAGE=${{ matrix.image }} .
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
@@ -46,8 +45,7 @@ jobs:
 
     - name: Push to Container Registry
       run: |
-        export TAG=${{ github.base_ref || github.ref_name }}
-        docker push docker.io/${{ github.repository }}:${TAG}-${{ matrix.arch }} 
+        docker push docker.io/${{ github.repository }}:${{ github.base_ref || github.ref_name }}-${{ matrix.arch }} 
 
   multiarch:
     needs: build
