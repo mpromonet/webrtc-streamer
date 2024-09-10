@@ -41,7 +41,9 @@ RUN git config --global core.autocrlf false \
        && ninja \
        && mkdir c:\app && copy webrtc-streamer.exe c:\app && copy config.json c:\app && xcopy /E html c:\app\html\ \
        && del /f /s /q c:\webrtc > nul && rmdir /s /q c:\webrtc \
-       && time /t 
+       && time /t
+
+RUN powershell -c "sleep -Seconds 60" && time /t
 
 # run
 FROM mcr.microsoft.com/windows/server:ltsc2022
