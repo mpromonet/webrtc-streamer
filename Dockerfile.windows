@@ -41,7 +41,8 @@ RUN git config --global core.autocrlf false \
        && ninja \
        && mkdir c:\app && copy webrtc-streamer.exe c:\app && copy config.json c:\app && xcopy /E html c:\app\html\ \
        && del /f /s /q c:\webrtc > nul && rmdir /s /q c:\webrtc \
-       && time /t 
+       && time /t \
+       && webrtc-streamer.exe -V
 
 # run
 FROM mcr.microsoft.com/windows/server:ltsc2022
@@ -49,7 +50,7 @@ FROM mcr.microsoft.com/windows/server:ltsc2022
 WORKDIR /app
 COPY --from=builder /app/ /app/
 
-RUN  webrtc-streamer.exe -V
+RUN  ls -l && webrtc-streamer.exe -V
 
 ENTRYPOINT [ "webrtc-streamer.exe" ]
 CMD [ "-a", "-C", "config.json" ]
