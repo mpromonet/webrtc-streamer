@@ -16,7 +16,7 @@ jobs:
     - name: pkg
       run: | 
         sudo apt-get update 
-        sudo apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils libasound2-dev libpulse-dev libgtk-3-dev cmake p7zip-full
+        sudo apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils cmake p7zip-full
         sudo apt-get install -y --no-install-recommends gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
 
     - name: depot_tools
