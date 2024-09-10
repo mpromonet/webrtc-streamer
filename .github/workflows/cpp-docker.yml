@@ -60,6 +60,6 @@ jobs:
         export MANIFEST=${TAG}
         [ "$TAG" == "master" ] && export MANIFEST=latest 
         docker manifest create --amend docker.io/${{ github.repository }}:${MANIFEST} docker.io/${{ github.repository }}:${TAG}-amd64 docker.io/${{ github.repository }}:${TAG}-armv7l docker.io/${{ github.repository }}:${TAG}-armv6l docker.io/${{ github.repository }}:${TAG}-windows docker.io/${{ github.repository }}:${TAG}-arm64
-        docker manifest annotate docker.io/${{ github.repository }}:${TAG}-armv7l --os linux --arch arm --variant v7
-        docker manifest annotate docker.io/${{ github.repository }}:${TAG}-armv6l --os linux --arch arm --variant v6l
+        docker manifest annotate docker.io/${{ github.repository }}:${MANIFEST} docker.io/${{ github.repository }}:${TAG}-armv7l --os linux --arch arm --variant v7
+        docker manifest annotate docker.io/${{ github.repository }}:${MANIFEST} docker.io/${{ github.repository }}:${TAG}-armv6l --os linux --arch arm --variant v6l
         docker manifest push docker.io/${{ github.repository }}:${MANIFEST} -p
