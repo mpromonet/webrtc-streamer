@@ -1,5 +1,5 @@
 # build
-FROM ubuntu:24.04 as builder
+FROM ubuntu:24.04 AS builder
 LABEL maintainer=michel.promonet@free.fr
 ARG USERNAME=dev
 WORKDIR /webrtc-streamer

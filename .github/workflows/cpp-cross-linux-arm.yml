@@ -1,0 +1,95 @@
+name: C/C++ CI linux cross armv6/armv7/arm64
+
+on: [push]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+        - buildtype: Debug
+          archtype: arm
+          arch: armv6l
+          crosscompiler: https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%201%2C%20Zero/cross-gcc-10.2.0-pi_0-1.tar.gz
+          prefix: arm-linux-gnueabihf
+
+        - buildtype: Release
+          archtype: arm
+          arch: armv6l
+          crosscompiler: https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%201%2C%20Zero/cross-gcc-10.2.0-pi_0-1.tar.gz
+          prefix: arm-linux-gnueabihf
+
+        - buildtype: Debug
+          archtype: arm
+          arch: armv7l
+          crosscompiler: https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%202%2C%203/cross-gcc-10.2.0-pi_2-3.tar.gz
+          prefix: arm-linux-gnueabihf
+
+        - buildtype: Release
+          archtype: arm
+          arch: armv7l
+          crosscompiler: https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%202%2C%203/cross-gcc-10.2.0-pi_2-3.tar.gz                
+          prefix: arm-linux-gnueabihf
+
+        - buildtype: Debug
+          archtype: arm64
+          arch: arm64
+          prefix: aarch64-linux-gnu
+
+        - buildtype: Release
+          archtype: arm64
+          arch: arm64
+          prefix: aarch64-linux-gnu
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: pkg
+      run: | 
+        sudo apt-get update 
+        sudo apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils cmake p7zip-full
+        if [ -z "${{ matrix.crosscompiler }}" ]; then
+          sudo apt-get install -y --no-install-recommends gcc-${{ matrix.prefix }} g++-${{ matrix.prefix }}
+        else
+          wget -qO- ${{ matrix.crosscompiler }} | tar xz
+          echo "$(pwd)/$(ls -d cross-pi-gcc-*)/bin" >> $GITHUB_PATH
+        fi
+
+    - name: depot_tools
+      run: |
+          git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          echo "$(pwd)/depot_tools" >> $GITHUB_PATH
+
+    - name: fetch webrtc
+      run: |
+          mkdir webrtc
+          pushd webrtc
+          fetch --no-history --nohooks webrtc
+          ./src/build/linux/sysroot_scripts/install-sysroot.py --arch=${{ matrix.archtype }}
+          sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS 
+          gclient sync 
+          popd
+
+    - name: build
+      run: |
+          cmake -DWEBRTCROOT=$(pwd)/webrtc -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }} -DCMAKE_LIBRARY_ARCHITECTURE=${{ matrix.prefix }} -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=${{ matrix.prefix }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.prefix }}-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF .
+          make
+
+    - name: cpack 
+      run: | 
+          rm -f *.tar.gz
+          cpack
+          echo "artifactPath=$(ls *.tar.gz)" >> $GITHUB_ENV
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.artifactPath }}
+        path: ${{ env.artifactPath }}   
+
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: ${{ env.artifactPath }}

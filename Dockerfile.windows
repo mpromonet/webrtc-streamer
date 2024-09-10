@@ -1,5 +1,5 @@
 # build
-FROM mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2022 as builder
+FROM mcr.microsoft.com/dotnet/framework/sdk:4.8-windowsservercore-ltsc2022 AS builder
 LABEL maintainer=michel.promonet@free.fr
 WORKDIR /webrtc-streamer
 COPY . /webrtc-streamer
@@ -8,14 +8,19 @@ SHELL ["cmd", "/S", "/C"]
 ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
        CLANG_VERSION=ToT \
        PYTHONIOENCODING=UTF-8 \
-       MSVC_PATH="C:\Program Files (x86)\Microsoft Visual Studio\2019\Community" 
+       MSVC_PATH="C:\Program Files\Microsoft Visual Studio\2022\Community" 
+
+
+# Install Windows 10 SDK
+RUN powershell -c "Invoke-WebRequest -Uri 'https://go.microsoft.com/fwlink/?linkid=2272610' -OutFile winsdksetup.exe -UseBasicParsing ;"
+RUN winsdksetup.exe /features OptionId.WindowsDesktopDebuggers /q /norestart
 
 # Install Chocolatey & packages 
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin" 
 
-RUN choco install --no-progress -y 7zip git curl sed windows-sdk-11-version-22h2-all
+RUN choco install --no-progress -y 7zip git curl sed
 RUN choco install --no-progress -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
-RUN choco install --ignoredetectedreboot --no-progress -y visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%" || IF "%ERRORLEVEL%"=="3010" EXIT 0
+RUN choco install --ignoredetectedreboot --no-progress -y visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%" || IF "%ERRORLEVEL%"=="3010" EXIT 0
        
 RUN git config --global core.autocrlf false \
        && git config --global core.filemode false \
@@ -39,12 +44,13 @@ RUN git config --global core.autocrlf false \
        && time /t 
 
 # run
-FROM mcr.microsoft.com/windows:1809
+FROM mcr.microsoft.com/windows/server:ltsc2022
 
 WORKDIR /app
 COPY --from=builder /app/ /app/
 
-RUN  webrtc-streamer.exe -V
+RUN dir /w && set
+RUN webrtc-streamer.exe -V
 
 ENTRYPOINT [ "webrtc-streamer.exe" ]
 CMD [ "-a", "-C", "config.json" ]
