@@ -13,15 +13,15 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 	&& echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
 	&& chmod 0440 /etc/sudoers.d/$USERNAME \
 	&& git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools \
-	&& mkdir /webrtc \
-	&& cd /webrtc \
+	&& mkdir ../webrtc \
+	&& cd ../webrtc \
 	&& fetch --no-history --nohooks webrtc \
 	&& sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
 	&& gclient sync \
-	&& cd /build/webrtc-streamer \
+	&& cd ../webrtc-streamer \
 	&& cmake -DCMAKE_INSTALL_PREFIX=/app . && make \
 	&& make install \
-	&& rm -rf /webrtc/src/out \
+	&& rm -rf ../webrtc/src/out \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/ 
 
 # run
