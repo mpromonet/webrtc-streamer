@@ -12,8 +12,7 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-tags: true
+    - run: git fetch --prune --unshallow --tags
 
     - name: pkg
       shell: cmd

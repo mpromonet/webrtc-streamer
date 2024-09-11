@@ -12,8 +12,7 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-tags: true
+    - run: git fetch --prune --unshallow --tags
 
     - name: pkg
       run: sudo apt-get update && sudo apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils libasound2-dev libpulse-dev libgtk-3-dev cmake p7zip-full

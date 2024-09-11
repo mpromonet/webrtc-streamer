@@ -12,9 +12,7 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-tags: true
-
+    - run: git fetch --prune --unshallow --tags
 
     - name: pkg
       run: brew install cmake p7zip gcc openssl rtmpdump && brew link --force openssl
