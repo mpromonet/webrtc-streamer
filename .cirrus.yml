@@ -17,7 +17,7 @@ linux_docker_builder:
     [ "$TAG" == "master" ] && export TAG=latest
     docker build -t $CIRRUS_REPO_FULL_NAME:${TAG}-amd64 . -f Dockerfile
     docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS 
-    docker push $CIRRUS_REPO_FULL_NAME:${TAG}-amd64
+    #docker push $CIRRUS_REPO_FULL_NAME:${TAG}-amd64
 
 linuxarmv7_docker_builder:    
   timeout_in: 120m
@@ -39,7 +39,7 @@ linuxarmv7_docker_builder:
     [ "$TAG" == "master" ] && export TAG=latest
     docker build -t $CIRRUS_REPO_FULL_NAME:${TAG}-armv7 . -f Dockerfile.rpi --build-arg ARCH=armv7l --build-arg CROSSCOMPILER=https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%202%2C%203/cross-gcc-10.2.0-pi_2-3.tar.gz --build-arg IMAGE=balenalib/raspberry-pi2
     docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS 
-    docker push $CIRRUS_REPO_FULL_NAME:${TAG}-armv7
+    #docker push $CIRRUS_REPO_FULL_NAME:${TAG}-armv7
 
 linuxarmv6_docker_builder:    
   timeout_in: 120m
@@ -61,7 +61,7 @@ linuxarmv6_docker_builder:
     [ "$TAG" == "master" ] && export TAG=latest
     docker build -t $CIRRUS_REPO_FULL_NAME:${TAG}-armv6 . -f Dockerfile.rpi
     docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS 
-    docker push $CIRRUS_REPO_FULL_NAME:${TAG}-armv6
+    #docker push $CIRRUS_REPO_FULL_NAME:${TAG}-armv6
 
 linuxarm64_docker_builder:
   env:
@@ -82,7 +82,7 @@ linuxarm64_docker_builder:
     [ "$TAG" == "master" ] && export TAG=latest
     docker build -t $CIRRUS_REPO_FULL_NAME:${TAG}-arm64 . -f Dockerfile.arm64 
     docker login --username=$DOCKERHUB_USER --password=$DOCKERHUB_PASS
-    docker push $CIRRUS_REPO_FULL_NAME:${TAG}-arm64
+    #docker push $CIRRUS_REPO_FULL_NAME:${TAG}-arm64
 
     
 publish_docker_builder:
@@ -102,4 +102,4 @@ publish_docker_builder:
     docker manifest create --amend $CIRRUS_REPO_FULL_NAME:${TAG} $CIRRUS_REPO_FULL_NAME:${TAG}-amd64 $CIRRUS_REPO_FULL_NAME:${TAG}-armv7 $CIRRUS_REPO_FULL_NAME:${TAG}-armv6 $CIRRUS_REPO_FULL_NAME:${TAG}-arm64
     docker manifest annotate $CIRRUS_REPO_FULL_NAME:${TAG} $CIRRUS_REPO_FULL_NAME:${TAG}-armv7 --os linux --arch arm --variant v7
     docker manifest annotate $CIRRUS_REPO_FULL_NAME:${TAG} $CIRRUS_REPO_FULL_NAME:${TAG}-armv6 --os linux --arch arm --variant v6l
-    docker manifest push $CIRRUS_REPO_FULL_NAME:${TAG} -p
+    #docker manifest push $CIRRUS_REPO_FULL_NAME:${TAG} -p
