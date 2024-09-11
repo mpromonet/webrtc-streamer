@@ -45,6 +45,7 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
+    - run: git fetch --prune --unshallow --tags
 
     - name: pkg
       run: | 

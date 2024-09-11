@@ -2,8 +2,9 @@
 FROM ubuntu:24.04 AS builder
 LABEL maintainer=michel.promonet@free.fr
 ARG USERNAME=dev
-WORKDIR /webrtc-streamer
-COPY . /webrtc-streamer
+WORKDIR /build/webrtc-streamer
+
+COPY . .
 
 ENV PATH /depot_tools:$PATH
 
@@ -12,22 +13,22 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 	&& echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
 	&& chmod 0440 /etc/sudoers.d/$USERNAME \
 	&& git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools \
-	&& mkdir /webrtc \
-	&& cd /webrtc \
+	&& mkdir ../webrtc \
+	&& cd ../webrtc \
 	&& fetch --no-history --nohooks webrtc \
 	&& sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
 	&& gclient sync \
-	&& cd /webrtc-streamer \
-	&& cmake . && make \
-	&& cpack \
-	&& mkdir /app && tar xvzf webrtc-streamer*.tar.gz --strip=1 -C /app/ && rm webrtc-streamer*.tar.gz \
-	&& rm -rf /webrtc/src/out \
+	&& cd ../webrtc-streamer \
+	&& cmake -DCMAKE_INSTALL_PREFIX=/app . && make \
+	&& make install \
+	&& rm -rf ../webrtc/src/out \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/ 
 
 # run
 FROM ubuntu:24.04
 
-WORKDIR /app
+WORKDIR /app/webrtc-streamer
+
 COPY --from=builder /app/ /app/
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libssl-dev libasound2-dev libgtk-3-0 libxtst6 libpulse0 librtmp1 avahi-utils \
