@@ -36,10 +36,10 @@ RUN git config --global core.autocrlf false \
        && gclient sync \
        && time /t \
        && cd C:\webrtc-streamer \
-       && cmake -G Ninja -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_MAKE_PROGRAM=ninja.bat . \
+       && cmake -G Ninja -DCMAKE_INSTALL_PREFIX=/app -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_MAKE_PROGRAM=ninja.bat . \
        && time /t \
        && ninja \
-       && mkdir c:\app && copy webrtc-streamer.exe c:\app && copy config.json c:\app && xcopy /E html c:\app\html\ \
+       && ninja install \
        && del /f /s /q c:\webrtc > nul && rmdir /s /q c:\webrtc \
        && time /t
 
@@ -48,7 +48,8 @@ RUN powershell -c "sleep -Seconds 60" && time /t
 # run
 FROM mcr.microsoft.com/windows/server:ltsc2022
 
-WORKDIR /app
+WORKDIR /app/webrtc-streamer
+
 COPY --from=builder /app/ /app/
 
 RUN dir /w && set
