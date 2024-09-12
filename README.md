@@ -14,10 +14,10 @@
 [![Download](https://img.shields.io/github/downloads/mpromonet/webrtc-streamer/total.svg)](https://github.com/mpromonet/webrtc-streamer/releases/latest)
 [![Docker Pulls](https://img.shields.io/docker/pulls/mpromonet/webrtc-streamer.svg)](https://hub.docker.com/r/mpromonet/webrtc-streamer/)
 
-[![Demo](https://img.shields.io/badge/okteto-livedemo-green)](https://webrtc-streamer-mpromonet.cloud.okteto.net/)
+[![Demo](https://img.shields.io/badge/azure-livedemo-green)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mpromonet/webrtc-streamer)
 
-Experimentation to stream WebRTC media sources like capture devices, screen capture, mkv files and RMTP/RTSP sources using simple signaling mechanism (see [api](docs/api.md)).  
+Experimentation to stream WebRTC media sources like capture devices, screen capture, mkv files and RMTP/RTSP sources using simple signaling mechanism (see [api](docs/api.md)). It is also compatible with [WHEP](https://datatracker.ietf.org/doc/html/draft-ietf-wish-whep-01) interface.
 
 ## Artefacts
 
@@ -91,22 +91,22 @@ Options for the WebRTC stream name:
 ./webrtc-streamer -C config.json
 ```
 
-[![Screenshot](images/snapshot.png)](https://webrtc-streamer-mpromonet.cloud.okteto.net/)
+[![Screenshot](images/snapshot.png)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/)
 
-[Live Demo](https://webrtc-streamer-mpromonet.cloud.okteto.net/)
+[Live Demo](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/)
 
 We can access to the WebRTC stream using
 [webrtcstreamer.html](https://github.com/mpromonet/webrtc-streamer-html/blob/master/webrtcstreamer.html).
 For instance:
 
-- [webrtcstreamer.html?rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov](https://webrtc-streamer-mpromonet.cloud.okteto.net/webrtcstreamer.html?rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov)
-- [webrtcstreamer.html?Bunny](https://webrtc-streamer-mpromonet.cloud.okteto.net/webrtcstreamer.html?Bunny)
+- [webrtcstreamer.html?rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/webrtcstreamer.html?rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov)
+- [webrtcstreamer.html?Bunny](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/webrtcstreamer.html?Bunny)
 
 An example displaying grid of WebRTC Streams is available using option
 `layout=<lines>x<columns>`
-[![Screenshot](images/layout2x4.png)](https://webrtc-streamer-mpromonet.cloud.okteto.net/?layout=2x4)
+[![Screenshot](images/layout2x4.png)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/?layout=2x4)
 
-[Live Demo](https://webrtc-streamer-mpromonet.cloud.okteto.net/?layout=2x4)
+[Live Demo](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/?layout=2x4)
 
 ## Using docker image
 
@@ -216,23 +216,23 @@ display a WebRTC stream in an HTML page. For example:
 </html>
 ```
 
-[Live Demo](https://webrtc-streamer-mpromonet.cloud.okteto.net/Bunny.html)
+[Live Demo](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/Bunny.html)
 
 Using the webcomponent with a stream selector:
 
-[![Screenshot](images/wc-selector.jpg)](https://webrtc-streamer-mpromonet.cloud.okteto.net/webrtc-streamer-element.html)
+[![Screenshot](images/wc-selector.jpg)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/webrtc-streamer-element.html)
 
-[Live Demo](https://webrtc-streamer-mpromonet.cloud.okteto.net/webrtc-streamer-element.html)
+[Live Demo](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/webrtc-streamer-element.html)
 
 Using the webcomponent over google map:
 
-[![Screenshot](images/wc-map.jpg)](https://webrtc-streamer-mpromonet.cloud.okteto.net/map.html)
+[![Screenshot](images/wc-map.jpg)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/map.html)
 
-[Live Demo](https://webrtc-streamer-mpromonet.cloud.okteto.net/map.html)
+[Live Demo](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/map.html)
 
 ## Using WHEP
 
-It allow to stream using draft standard [WHEP](https://www.ietf.org/archive/id/draft-murillo-whep-02.txt)
+It allow to stream using draft standard [WHEP](https://datatracker.ietf.org/doc/html/draft-ietf-wish-whep-01)
 
 [WebRTC player](https://github.com/Eyevinn/webrtc-player) can display WebRTC stream from webrtc-streamer.
 
@@ -255,9 +255,9 @@ A minimal example:
 
 ## Object detection using tensorflow.js
 
-[![Screenshot](images/tensorflow.jpg)](https://webrtc-streamer-mpromonet.cloud.okteto.net/tensorflow.html)
+[![Screenshot](images/tensorflow.jpg)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/tensorflow.html)
 
-[Live Demo](https://webrtc-streamer-mpromonet.cloud.okteto.net/tensorflow.html)
+[Live Demo](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/tensorflow.html)
 
 ## Connect to Janus Gateway Video Room
 
@@ -285,13 +285,13 @@ A short sample to publish WebRTC streams to Janus Video Room could be:
 </html>
 ```
 
-[![Screenshot](images/janusvideoroom.png)](https://webrtc-streamer-mpromonet.cloud.okteto.net/janusvideoroom.html)
+[![Screenshot](images/janusvideoroom.png)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/janusvideoroom.html)
 
-[Live Demo](https://webrtc-streamer-mpromonet.cloud.okteto.net/janusvideoroom.html)
+[Live Demo](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/janusvideoroom.html)
 
 This way the communication between
 [Janus API](https://janus.conf.meetecho.com/docs/JS.html) and
-[WebRTC Streamer API](https://webrtc-streamer-mpromonet.cloud.okteto.net/help)
+[WebRTC Streamer API](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/help)
 is implemented in Javascript running in browser.
 
 The same logic could be implemented in NodeJS using the same JS API:
@@ -336,7 +336,7 @@ A short sample to publish WebRTC streams to a Jitsi Video Room could be:
 </html>
 ```
 
-[Live Demo](https://webrtc-streamer-mpromonet.cloud.okteto.net/xmppvideoroom.html)
+[Live Demo](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/xmppvideoroom.html)
 
 ## Dependencies
 
