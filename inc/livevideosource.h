@@ -104,7 +104,8 @@ public:
     }
 
     void onH264Data(unsigned char *buffer, ssize_t size, int64_t ts, const std::string & codec) {
-        std::vector<webrtc::H264::NaluIndex> indexes = webrtc::H264::FindNaluIndices(buffer,size);
+        rtc::ArrayView<const uint8_t> data(buffer, size);
+        std::vector<webrtc::H264::NaluIndex> indexes = webrtc::H264::FindNaluIndices(data);
         RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData nbNalu:" << indexes.size();
         for (const webrtc::H264::NaluIndex & index : indexes) {
             webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[index.payload_start_offset]);
@@ -115,7 +116,8 @@ public:
                 m_cfg.clear();
                 m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
 
-                std::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(buffer + index.payload_start_offset + webrtc::H264::kNaluTypeSize, index.payload_size - webrtc::H264::kNaluTypeSize);
+        	    rtc::ArrayView<const uint8_t> spsBuffer(buffer + index.payload_start_offset + webrtc::H264::kNaluTypeSize, index.payload_size - webrtc::H264::kNaluTypeSize);
+                std::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(spsBuffer);
                 if (!sps)
                 {
                     RTC_LOG(LS_ERROR) << "cannot parse sps";
