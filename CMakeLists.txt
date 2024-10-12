@@ -88,10 +88,12 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   endif()
 
   #patch
-  file(READ ${WEBRTCROOT}/src/modules/congestion_controller/goog_cc/loss_based_bwe_v2.cc filecontent)
-  string(REPLACE "config.emplace()" "config.emplace(Config())" filecontent "${filecontent}")
-  file(WRITE ${WEBRTCROOT}/src/modules/congestion_controller/goog_cc/loss_based_bwe_v2.cc "${filecontent}")
-  
+  file(READ ${WEBRTCROOT}/src/media/engine/webrtc_video_engine.cc filecontent)
+  string(REPLACE "stream_config.rtx.emplace()" "stream_config.rtx.emplace(webrtc::RtpStreamConfig::Rtx())" filecontent "${filecontent}")
+  file(WRITE ${WEBRTCROOT}/src/media/engine/webrtc_video_engine.cc "${filecontent}")
+  file(READ ${WEBRTCROOT}/src/rtc_base/ssl_stream_adapter.h filecontent)
+  string(REPLACE "#include <vector>" "#include <vector>\n#include <optional>" filecontent "${filecontent}")
+  file(WRITE ${WEBRTCROOT}/src/rtc_base/ssl_stream_adapter.h "${filecontent}")
   
 
   # sound support
