@@ -24,6 +24,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 
 # run
 FROM --platform=arm64 ubuntu:24.04
+LABEL maintainer=michel.promonet@free.fr
 
 WORKDIR /app/webrtc-streamer
 

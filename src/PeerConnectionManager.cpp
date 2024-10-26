@@ -30,13 +30,6 @@
 #include "VideoDecoderFactory.h"
 
 
-
-// ugly workaound to define template belongs to webrtc
-namespace rtc {
-	template <> std::string ToString(bool b) { return b ? "true" : "false"; }
-}
-
-
 // Names used for a IceCandidate JSON object.
 const char kCandidateSdpMidName[] = "sdpMid";
 const char kCandidateSdpMlineIndexName[] = "sdpMLineIndex";

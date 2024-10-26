@@ -47,6 +47,7 @@ RUN powershell -c "sleep -Seconds 60" && time /t
 
 # run
 FROM mcr.microsoft.com/windows/server:ltsc2022
+LABEL maintainer=michel.promonet@free.fr
 
 WORKDIR /app/webrtc-streamer
 
