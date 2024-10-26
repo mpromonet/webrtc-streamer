@@ -32,7 +32,7 @@ WORKDIR /app/webrtc-streamer
 
 COPY --from=builder /app/ /app/
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libssl-dev libasound2-dev libgtk-3-0 libxtst6 libpulse0 librtmp1 avahi-utils \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libssl-dev libasound2-dev libgtk-3-0 libxtst6 libsm6 libpulse0 librtmp1 avahi-utils \
 	&& useradd -m user -G video,audio \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/ \
 	&& ./webrtc-streamer -V
