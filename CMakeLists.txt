@@ -54,7 +54,7 @@ set (WEBRTCOBJS ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE}/obj)
 
 if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX})
   set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nrtc_enable_libevent=false\nrtc_build_libevent=false\nuse_glib=false\nuse_lld=false\n)
-  set (WEBRTCARGS use_custom_libcxx=false\n${WEBRTCARGS})
+  set (WEBRTCARGS use_custom_libcxx=false\nlibyuv_use_sme=false\n${WEBRTCARGS})
   # debug/release
   if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set (WEBRTCARGS is_debug=false\n${WEBRTCARGS})
@@ -88,9 +88,6 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   endif()
 
   #patch
-  file(READ ${WEBRTCROOT}/src/media/engine/webrtc_video_engine.cc filecontent)
-  string(REPLACE "stream_config.rtx.emplace()" "stream_config.rtx.emplace(webrtc::RtpStreamConfig::Rtx())" filecontent "${filecontent}")
-  file(WRITE ${WEBRTCROOT}/src/media/engine/webrtc_video_engine.cc "${filecontent}")
   file(READ ${WEBRTCROOT}/src/rtc_base/ssl_stream_adapter.h filecontent)
   string(REPLACE "#include <vector>" "#include <vector>\n#include <optional>" filecontent "${filecontent}")
   file(WRITE ${WEBRTCROOT}/src/rtc_base/ssl_stream_adapter.h "${filecontent}")
@@ -235,8 +232,6 @@ else()
     add_definitions(-DWEBRTC_POSIX -fno-rtti)
     if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
         add_definitions(-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard)
-    elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
-        add_definitions(-march=armv9-a+sme)
     endif()
     if (EXISTS ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE}/obj/modules/desktop_capture/desktop_capture.ninja)
         add_definitions(-DUSE_X11)
