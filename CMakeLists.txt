@@ -247,7 +247,7 @@ else()
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    message(STATUS "Compiler is Clang")
+    message(STATUS "Compiler is Clang CMAKE_LIBRARY_ARCHITECTURE:${CMAKE_LIBRARY_ARCHITECTURE} CMAKE_SYSTEM_PROCESSOR:${CMAKE_SYSTEM_PROCESSOR}")
     add_definitions(-target ${CMAKE_LIBRARY_ARCHITECTURE})
 endif()
 
