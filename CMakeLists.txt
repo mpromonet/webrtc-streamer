@@ -246,6 +246,11 @@ else()
     endif()
 endif()
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    message(STATUS "Compiler is Clang")
+    add_definitions(--target ${CMAKE_LIBRARY_ARCHITECTURE})
+endif()
+
 # prometheus 
 include(GenerateExportHeader)
 include(GNUInstallDirs)
