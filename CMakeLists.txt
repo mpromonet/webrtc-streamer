@@ -248,7 +248,11 @@ endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     message(STATUS "Compiler is Clang CMAKE_LIBRARY_ARCHITECTURE:${CMAKE_LIBRARY_ARCHITECTURE} CMAKE_SYSTEM_PROCESSOR:${CMAKE_SYSTEM_PROCESSOR}")
-    add_definitions(-target ${CMAKE_LIBRARY_ARCHITECTURE})
+    if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
+      add_definitions(-target arm-linux-gnueabihf)
+    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+      add_definitions(-target aarch64-linux-gnu)
+    endif()
 endif()
 
 # prometheus 
