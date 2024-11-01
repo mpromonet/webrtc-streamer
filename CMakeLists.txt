@@ -91,6 +91,10 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   file(READ ${WEBRTCROOT}/src/rtc_base/ssl_stream_adapter.h filecontent)
   string(REPLACE "#include <vector>" "#include <vector>\n#include <optional>" filecontent "${filecontent}")
   file(WRITE ${WEBRTCROOT}/src/rtc_base/ssl_stream_adapter.h "${filecontent}")
+
+  file(READ ${WEBRTCROOT}/src/media/base/media_channel.h filecontent)
+  string(REGEX REPLACE "ost << ToStringIfSet[^;]*;" "" filecontent "${filecontent}")
+  file(WRITE ${WEBRTCROOT}/src/media/base/media_channel.h "${filecontent}")
   
 
   # sound support
