@@ -11,7 +11,6 @@
 
 #ifdef HAVE_V4L2
 #include <string>
-#include <format>
 #include <cstring>
 #include <map>
 #include <filesystem>
@@ -43,7 +42,9 @@ std::map<int,int> videoDev2Idx() {
   struct v4l2_capability cap;
 
   for (int devId = 0; devId < 64; devId++) {
-	std::string device = std::format("/dev/video{}", devId);
+    std::ostringstream ss;
+    ss << "/dev/video" << devId;
+    std::string device = ss.str();
     if ((fd = open(device.c_str(), O_RDONLY)) != -1) {
       if (ioctl(fd, VIDIOC_QUERYCAP, &cap) < 0 ||
           !(cap.device_caps & V4L2_CAP_VIDEO_CAPTURE)) {

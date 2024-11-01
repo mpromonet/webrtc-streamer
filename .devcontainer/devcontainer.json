@@ -12,11 +12,11 @@
 	},
 	"mounts": [
 		"source=profile,target=/home/dev,type=volume",
-		"source=webrtc,target=/webrtc/src/out,type=volume",
+		"source=webrtc,target=/build/webrtc/src/out,type=volume",
 		"target=/home/dev/.vscode-server,type=volume"
 	],
 	"remoteUser": "dev",
-	"workspaceFolder": "/webrtc-streamer",
-	"workspaceMount": "source=${localWorkspaceFolder},target=/webrtc-streamer,type=bind",  
+	"workspaceFolder": "/build/webrtc-streamer",
+	"workspaceMount": "source=${localWorkspaceFolder},target=/build/webrtc-streamer,type=bind",  
 	"forwardPorts": [8000]
 }
