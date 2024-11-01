@@ -11,6 +11,7 @@
 
 #ifdef HAVE_V4L2
 #include <string>
+#include <format>
 #include <cstring>
 #include <map>
 #include <filesystem>
@@ -38,13 +39,12 @@ std::string getDeviceId(const std::string& devicePath) {
 std::map<int,int> videoDev2Idx() {
   std::map<int,int> dev2idx;
   uint32_t count = 0;
-  char device[20];
   int fd = -1;
   struct v4l2_capability cap;
 
   for (int devId = 0; devId < 64; devId++) {
-    snprintf(device, sizeof(device), "/dev/video%d", devId);
-    if ((fd = open(device, O_RDONLY)) != -1) {
+	std::string device = std::format("/dev/video{}", devId);
+    if ((fd = open(device.c_str(), O_RDONLY)) != -1) {
       if (ioctl(fd, VIDIOC_QUERYCAP, &cap) < 0 ||
           !(cap.device_caps & V4L2_CAP_VIDEO_CAPTURE)) {
         close(fd);

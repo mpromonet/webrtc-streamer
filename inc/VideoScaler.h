@@ -156,7 +156,7 @@ public:
                 .set_video_frame_buffer(scaled_buffer)
                 .set_rotation(m_rotation)
                 .set_timestamp_rtp(frame.rtp_timestamp())
-                .set_timestamp_ms(frame.render_time_ms())
+                .set_timestamp_us(frame.timestamp_us())
                 .set_id(frame.timestamp_us())
                 .build();
 

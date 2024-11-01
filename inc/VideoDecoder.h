@@ -153,12 +153,17 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
             int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
 
             RTC_LOG(LS_VERBOSE) << "VideoDecoder::Decoded size:" << decodedImage.size() 
-                        << " decode ts:" << decodedImage.ntp_time_ms()
+                        << " decode rtptime:" << decodedImage.rtp_timestamp()
+                        << " decode ts:" << decodedImage.timestamp_us()/1000
                         << " source ts:" << ts;
+
+            if (decodedImage.timestamp_us() == 0) {
+                decodedImage.set_timestamp_us(decodedImage.rtp_timestamp()*1000);
+            }
 
             // waiting 
             if ( (m_wait) && (m_prevts != 0) ) {
-                int64_t periodSource = decodedImage.ntp_time_ms() - m_previmagets;
+                int64_t periodSource = decodedImage.timestamp_us()/1000 - m_previmagets;
                 int64_t periodDecode = ts-m_prevts;
                     
                 RTC_LOG(LS_VERBOSE) << "VideoDecoder::Decoded interframe decode:" << periodDecode << " source:" << periodSource;
@@ -172,7 +177,7 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
 
             m_scaler.OnFrame(decodedImage);
 
-	        m_previmagets = decodedImage.ntp_time_ms();
+	        m_previmagets = decodedImage.timestamp_us()/1000;
 	        m_prevts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
                        
             return 1;
