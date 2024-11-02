@@ -24,7 +24,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 	&& rm -rf ../webrtc/src/out \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/ 
 
-USER user
+USER $USERNAME
 
 # run
 FROM ubuntu:24.04
