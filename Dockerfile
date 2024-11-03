@@ -23,7 +23,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 	&& cmake -DCMAKE_INSTALL_PREFIX=/app -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ . && make \
 	&& make install \
 	&& git clean -xfd \
-	&& find ../webrtc -name .git -exec rm -rf {} \; \
+	&& find ../webrtc/src -type d -name .git -exec rm -rf {} \; || true \
 	&& rm -rf ../webrtc/src/out \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/ 
 
