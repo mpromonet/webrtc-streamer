@@ -2,6 +2,7 @@
 FROM ubuntu:24.04 AS builder
 LABEL maintainer=michel.promonet@free.fr
 ARG USERNAME=dev
+ARG USERID=10000
 WORKDIR /build/webrtc-streamer
 
 COPY . .
@@ -9,7 +10,7 @@ COPY . .
 ENV PATH /depot_tools:/build/webrtc/src/third_party/llvm-build/Release+Asserts/bin:$PATH
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python3 python3-pkg-resources g++ autoconf automake libtool xz-utils libpulse-dev libasound2-dev libgtk-3-dev libxtst-dev libssl-dev librtmp-dev cmake make pkg-config p7zip-full sudo \
-	&& useradd -m -s /bin/bash $USERNAME \
+	&& groupadd --gid $USERID $USERNAME && useradd --uid $USERID --gid $USERNAME -m -s /bin/bash $USERNAME \
 	&& echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
 	&& chmod 0440 /etc/sudoers.d/$USERNAME \
 	&& git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools \
