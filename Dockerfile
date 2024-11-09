@@ -25,7 +25,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 	&& git clean -xfd \
 	&& find ../webrtc/src -type d -name .git -exec rm -rf {} \; || true \
 	&& rm -rf ../webrtc/src/out \
-	&& apt-get clean && rm -rf /var/lib/apt/lists/ 
+	&& apt-get clean && rm -rf /var/lib/apt/lists/ \
+	&& chown -R $USERNAME:$USERNAME ../webrtc
 
 USER $USERNAME
 
