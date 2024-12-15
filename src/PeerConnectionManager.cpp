@@ -199,7 +199,6 @@ webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencie
 	dependencies.adm = std::move(audioDeviceModule);
 	dependencies.audio_encoder_factory = webrtc::CreateBuiltinAudioEncoderFactory();
 	dependencies.audio_decoder_factory = std::move(audioDecoderfactory);
-	dependencies.audio_processing = webrtc::AudioProcessingBuilder().Create();
 
 	dependencies.video_encoder_factory = CreateEncoderFactory(useNullCodec);
 	dependencies.video_decoder_factory = CreateDecoderFactory(useNullCodec);
