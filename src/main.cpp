@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
 	bool        usePlanB = false;
 	int         maxpc = 0;
 	webrtc::PeerConnectionInterface::IceTransportsType transportType = webrtc::PeerConnectionInterface::IceTransportsType::kAll;
-	std::string webrtcTrialsFields = "WebRTC-FrameDropper/Disabled/";
+	std::string webrtcTrialsFields = "WebRTC-FrameDropper/Disabled/WebRTC-Video-H26xPacketBuffer/Enabled/";
 	TurnAuth 	turnAuth;
 	TurnRedirector turnRedirector;
 
