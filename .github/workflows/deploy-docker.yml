@@ -6,8 +6,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: AutoModality/action-clean@v1      
-    
+    - name: Maximize build space
+      uses: easimon/maximize-build-space@master
+      with:
+        remove-dotnet: 'true'
+        remove-android: 'true'
+          
     - uses: actions/checkout@v4
     - run: git fetch --prune --unshallow --tags
 
