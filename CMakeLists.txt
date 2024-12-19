@@ -44,7 +44,6 @@ set (WEBRTCOBJS ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE}/obj)
 if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX})
   if(GIT_FOUND)
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND ${GIT_EXECUTABLE} status)
-    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND ${GIT_EXECUTABLE} fetch)
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND ${GIT_EXECUTABLE} checkout ${WEBRTCVERSION})
   endif()
 
@@ -204,9 +203,16 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc)
 # webrtc 
 set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
-target_link_libraries(${CMAKE_PROJECT_NAME} ${WEBRTCOBJS}/api/video_codecs/${CMAKE_STATIC_LIBRARY_PREFIX}builtin_video_encoder_factory${CMAKE_STATIC_LIBRARY_SUFFIX} ${WEBRTCOBJS}/api/video_codecs/${CMAKE_STATIC_LIBRARY_PREFIX}builtin_video_decoder_factory${CMAKE_STATIC_LIBRARY_SUFFIX})
-target_link_libraries(${CMAKE_PROJECT_NAME} ${WEBRTCOBJS}/media/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_internal_video_codecs${CMAKE_STATIC_LIBRARY_SUFFIX} ${WEBRTCOBJS}/media/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_simulcast_encoder_adapter${CMAKE_STATIC_LIBRARY_SUFFIX}) 
-target_link_libraries(${CMAKE_PROJECT_NAME} ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX})
+set(WEBRTC_LIBS_INFO
+    "${WEBRTCOBJS}/api/video_codecs/${CMAKE_STATIC_LIBRARY_PREFIX}builtin_video_encoder_factory${CMAKE_STATIC_LIBRARY_SUFFIX}"
+    "${WEBRTCOBJS}/api/video_codecs/${CMAKE_STATIC_LIBRARY_PREFIX}builtin_video_decoder_factory${CMAKE_STATIC_LIBRARY_SUFFIX}"
+    "${WEBRTCOBJS}/media/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_internal_video_codecs${CMAKE_STATIC_LIBRARY_SUFFIX}"
+    "${WEBRTCOBJS}/media/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_simulcast_encoder_adapter${CMAKE_STATIC_LIBRARY_SUFFIX}"
+    "${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX}"
+)
+foreach(LIB ${WEBRTC_LIBS_INFO})
+    target_link_libraries(${CMAKE_PROJECT_NAME} ${LIB})
+endforeach()
 add_definitions(-DHAVE_JPEG)
 
 # thread
