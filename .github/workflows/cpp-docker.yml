@@ -36,6 +36,7 @@ jobs:
     
     steps:
     - name: Remove unnecessary directories to free up space
+      if: runner.os != 'Windows'
       run: |
         sudo rm -rf /opt/hostedtoolcache/CodeQL
         sudo rm -rf /usr/local/lib/android/sdk/ndk
