@@ -4,6 +4,7 @@ project (webrtc-streamer)
 set (WEBRTCROOT "${CMAKE_CURRENT_SOURCE_DIR}/../webrtc" CACHE STRING "WEBRTC root directory")
 set (WEBRTCDESKTOPCAPTURE "ON" CACHE STRING "WEBRTC Desktop capture")
 set (WEBRTCCHROMEBRANDED "ON" CACHE STRING "WEBRTC Chrome branded")
+set (WEBRTCVERSION "c23fe2f" CACHE STRING "WEBRTC version")
 
 if(NOT CMAKE_BUILD_TYPE)
 set (CMAKE_BUILD_TYPE "Release")
@@ -14,23 +15,6 @@ set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_EXTENSIONS OFF)
 
-# build version identifier
-find_package(Git)
-if(GIT_FOUND)
-    EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} submodule update --init)
-    EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} describe --tags --always --dirty OUTPUT_VARIABLE PROJECTVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
-    set (VERSION "${PROJECTVERSION}/${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
-    
-    EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} -C civetweb describe --tags --always --dirty OUTPUT_VARIABLE CIVETVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
-    set (VERSION "${VERSION} civetweb@${CIVETVERSION}")
-
-    EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} -C ${WEBRTCROOT}/src describe --tags --always --dirty OUTPUT_VARIABLE WEBRTCVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
-    set (VERSION "${VERSION} webrtc@${WEBRTCVERSION}")
-
-    EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} -C live555helper describe --tags --always --dirty OUTPUT_VARIABLE LIVEVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
-    set (VERSION "${VERSION} live555helper@${LIVEVERSION}")
-endif()
-add_definitions(-DVERSION=\"${VERSION}\")
 
 # set CMAKE_FIND_ROOT_PATH to search package in WebRTC sysroot
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
@@ -53,6 +37,20 @@ MESSAGE("PulseAudio_FOUND = ${PulseAudio_FOUND}")
 set (WEBRTCOBJS ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE}/obj)
 
 if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX})
+  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND git checkout ${WEBRTCVERSION})
+
+  file(READ ${WEBRTCROOT}/src/DEPS filecontent)
+  string(REPLACE "'src/resources'],$" "'src/resources'],'condition':'rtc_include_tests==true'," filecontent "${filecontent}")
+  file(WRITE ${WEBRTCROOT}/src/DEPS "${filecontent}")
+
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
+    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/build/linux/sysroot_scripts COMMAND install-sysroot.py --arch=arm)
+  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/build/linux/sysroot_scripts COMMAND install-sysroot.py --arch=arm64)
+  endif()
+
+  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND gclient sync)
+
   set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nenable_js_protobuf=false\nuse_glib=false\nuse_lld=false\n)
   set (WEBRTCARGS use_custom_libcxx=false\nlibyuv_use_sme=false\n${WEBRTCARGS})
   # debug/release
@@ -150,6 +148,25 @@ endif()
 FILE(GLOB_RECURSE WEBRTJSONCPPCOBJS ${WEBRTCOBJS}/third_party/jsoncpp/jsoncpp/*${CMAKE_C_OUTPUT_EXTENSION} ${WEBRTCOBJS}/rtc_base/rtc_json/*${CMAKE_C_OUTPUT_EXTENSION})
 FILE(GLOB_RECURSE WEBRTP2POBJ ${WEBRTCOBJS}/p2p/p2p_server_utils/*${CMAKE_C_OUTPUT_EXTENSION})
 SET (WEBRTCEXTRAOBJS ${WEBRTJSONCPPCOBJS} ${WEBRTP2POBJ} ${WEBRTCCOMOBJ})	
+
+# build version identifier
+find_package(Git)
+if(GIT_FOUND)
+    EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} submodule update --init)
+    EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} describe --tags --always --dirty OUTPUT_VARIABLE PROJECTVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+    set (VERSION "${PROJECTVERSION}/${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+    
+    EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} -C civetweb describe --tags --always --dirty OUTPUT_VARIABLE CIVETVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+    set (VERSION "${VERSION} civetweb@${CIVETVERSION}")
+
+    EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} -C ${WEBRTCROOT}/src describe --tags --always --dirty OUTPUT_VARIABLE WEBRTCVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+    set (VERSION "${VERSION} webrtc@${WEBRTCVERSION}")
+
+    EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} -C live555helper describe --tags --always --dirty OUTPUT_VARIABLE LIVEVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+    set (VERSION "${VERSION} live555helper@${LIVEVERSION}")
+endif()
+add_definitions(-DVERSION=\"${VERSION}\")
+MESSAGE("VERSION = ${VERSION}")
 
 # project target
 FILE(GLOB SOURCE src/*.cpp)

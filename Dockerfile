@@ -17,8 +17,6 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 	&& mkdir ../webrtc \
 	&& cd ../webrtc \
 	&& fetch --no-history --nohooks webrtc \
-	&& sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS \
-	&& gclient sync \
 	&& cd ../webrtc-streamer \
 	&& cmake -DCMAKE_INSTALL_PREFIX=/app -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ . && make \
 	&& make install \

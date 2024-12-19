@@ -27,8 +27,6 @@
         mkdir -p /webrtc
         cd /webrtc
         fetch --no-history --nohooks webrtc
-        sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS
-        gclient sync
       build-environment:
       - PATH: $SNAPCRAFT_PART_SRC:$PATH        
       build-packages:

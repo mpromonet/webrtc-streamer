@@ -50,7 +50,6 @@ jobs:
       - checkout
       - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python3 python3-pkg-resources autoconf automake libtool git cmake make g++ xz-utils libgtk-3-dev libxtst-dev libasound2-dev libpulse-dev
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
-      - run: cd ${WEBRTCROOT} && gclient sync 
       
       - run: cmake -DCMAKE_BUILD_TYPE=<< parameters.buildtype >> . && make && cpack 
 
@@ -84,8 +83,6 @@ jobs:
             apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python3 python3-pkg-resources autoconf automake libtool git make cmake g++ xz-utils pkg-config
             wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
             export PATH=$(ls -d /opt/cross-pi-gcc-*/bin):/depot_tools:$PATH
-            ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
-            pushd ${WEBRTCROOT} && gclient sync && popd 
             cmake -DCMAKE_BUILD_TYPE=<< parameters.buildtype >> -DCMAKE_SYSTEM_PROCESSOR=armv7l -DCMAKE_LIBRARY_ARCHITECTURE=arm-linux-gnueabihf -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY . && make 
             cpack
           no_output_timeout: 1h
@@ -120,8 +117,6 @@ jobs:
             apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python3 python3-pkg-resources autoconf automake libtool git cmake make g++ xz-utils pkg-config
             wget -qO- ${CROSSCOMPILER} | tar xz -C /opt 
             export PATH=$(ls -d /opt/cross-pi-gcc-*/bin):/depot_tools:$PATH
-            ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm
-            pushd ${WEBRTCROOT} && gclient sync && popd 
             cmake -DCMAKE_BUILD_TYPE=<< parameters.buildtype >> -DCMAKE_SYSTEM_PROCESSOR=armv6l -DCMAKE_LIBRARY_ARCHITECTURE=arm-linux-gnueabihf -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY . && make 
             cpack
 
@@ -155,8 +150,6 @@ jobs:
           command: |
             apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python3 python3-pkg-resources autoconf automake libtool git cmake make g++ xz-utils pkg-config gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
             export PATH=/depot_tools:$PATH
-            ${WEBRTCROOT}/src/build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
-            pushd ${WEBRTCROOT} && gclient sync && popd 
             cmake -DCMAKE_BUILD_TYPE=<< parameters.buildtype >> -DCMAKE_SYSTEM_PROCESSOR=arm64 -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF . && make 
             cpack
           no_output_timeout: 1h
