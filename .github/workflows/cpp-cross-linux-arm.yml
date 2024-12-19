@@ -44,11 +44,12 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Maximize build space
-      uses: easimon/maximize-build-space@master
-      with:
-        remove-dotnet: 'true'
-        remove-android: 'true'
+    - name: Remove unnecessary directories to free up space
+      run: |
+        sudo rm -rf /opt/hostedtoolcache/CodeQL
+        sudo rm -rf /usr/local/lib/android/sdk/ndk
+        sudo rm -rf /usr/share/dotnet
+
 
     - uses: actions/checkout@v4
     - run: git fetch --prune --unshallow --tags

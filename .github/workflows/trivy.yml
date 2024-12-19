@@ -9,12 +9,13 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        with:
-          remove-dotnet: 'true'
-          remove-android: 'true'      
-          
+      - name: Remove unnecessary directories to free up space
+        run: |
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          sudo rm -rf /usr/local/lib/android/sdk/ndk
+          sudo rm -rf /usr/share/dotnet
+     
+
       - name: Checkout code
         uses: actions/checkout@v4
       

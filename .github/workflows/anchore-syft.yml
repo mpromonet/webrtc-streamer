@@ -26,18 +26,18 @@ jobs:
       contents: write # required to upload to the Dependency submission API
     runs-on: ubuntu-latest
     steps:
-    - name: Maximize build space
-      uses: easimon/maximize-build-space@master
-      with:
-        remove-dotnet: 'true'
-        remove-android: 'true'      
+    - name: Remove unnecessary directories to free up space
+      run: |
+        sudo rm -rf /opt/hostedtoolcache/CodeQL
+        sudo rm -rf /usr/local/lib/android/sdk/ndk
+        sudo rm -rf /usr/share/dotnet
 
     - name: Checkout the code
       uses: actions/checkout@v4
 
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag localbuild/testimage:latest
-      
+
     - name: Scan the image and upload dependency results
       uses: anchore/sbom-action@v0
       with:
