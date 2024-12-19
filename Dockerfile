@@ -18,7 +18,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 	&& cd ../webrtc \
 	&& fetch --no-history --nohooks webrtc \
 	&& cd ../webrtc-streamer \
-	&& cmake -DCMAKE_INSTALL_PREFIX=/app -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ . && make \
+	&& cmake -DCMAKE_INSTALL_PREFIX=/app . && make \
 	&& make install \
 	&& git clean -xfd \
 	&& find ../webrtc/src -type d -name .git -exec rm -rf {} \; || true \

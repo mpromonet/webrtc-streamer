@@ -9,7 +9,7 @@ set (WEBRTCVERSION "c23fe2f" CACHE STRING "WEBRTC version")
 if(NOT CMAKE_BUILD_TYPE)
 set (CMAKE_BUILD_TYPE "Release")
 endif()
-MESSAGE("CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}\nWEBRTCROOT = ${WEBRTCROOT}\nWEBRTCDESKTOPCAPTURE= ${WEBRTCDESKTOPCAPTURE}\nCMAKE_CXX_COMPILER_ID=${CMAKE_CXX_COMPILER_ID}")
+MESSAGE("CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}\nWEBRTCROOT = ${WEBRTCROOT}\nWEBRTCDESKTOPCAPTURE= ${WEBRTCDESKTOPCAPTURE}\nCMAKE_CXX_COMPILER_ID=${CMAKE_CXX_COMPILER_ID}\nWEBRTCVERSION=${WEBRTCVERSION}")
 
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 set (CMAKE_CXX_STANDARD 20)
@@ -33,6 +33,9 @@ MESSAGE("ALSA_FOUND = ${ALSA_FOUND}")
 find_package(PulseAudio QUIET)
 MESSAGE("PulseAudio_FOUND = ${PulseAudio_FOUND}")
 
+set(ENV{PATH} "${WEBRTCROOT}/src/third_party/llvm-build/Release+Asserts/bin:$ENV{PATH}")
+MESSAGE("PATH = $ENV{PATH}")
+
 # webrtc build
 set (WEBRTCOBJS ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE}/obj)
 
@@ -43,13 +46,14 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   string(REPLACE "'src/resources'],$" "'src/resources'],'condition':'rtc_include_tests==true'," filecontent "${filecontent}")
   file(WRITE ${WEBRTCROOT}/src/DEPS "${filecontent}")
 
+  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND gclient sync)
+
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/build/linux/sysroot_scripts COMMAND install-sysroot.py --arch=arm)
   elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/build/linux/sysroot_scripts COMMAND install-sysroot.py --arch=arm64)
   endif()
 
-  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND gclient sync)
 
   set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nenable_js_protobuf=false\nuse_glib=false\nuse_lld=false\n)
   set (WEBRTCARGS use_custom_libcxx=false\nlibyuv_use_sme=false\n${WEBRTCARGS})
@@ -67,8 +71,6 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
     set (WEBRTCARGS rtc_use_h264=true\nrtc_use_h265=true\n${WEBRTCARGS})
   endif()
   if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
-    set(ENV{PATH} "${WEBRTCROOT}/src/third_party/llvm-build/Release+Asserts/bin:$ENV{PATH}")
-
     set (CONFIGURE_ARGS --disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-avcodec --enable-avformat --enable-avutil --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-iconv --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --disable-error-resilience --enable-decoder=vorbis,libopus,flac --enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3 --enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw --enable-demuxer=ogg,matroska,wav,flac,mp3,mov --enable-parser=opus,vorbis,flac,mpegaudio,vp9 --extra-cflags=-I${WEBRTCROOT}/src/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags="-O2" --arch=arm --enable-armv6 --disable-armv6t2 --enable-vfp --disable-thumb --extra-cflags=-march=armv6 --enable-cross-compile --target-os=linux --extra-cflags=--target=arm-linux-gnueabihf --extra-ldflags=--target=arm-linux-gnueabihf --sysroot=${WEBRTCROOT}/src/build/linux/debian_bullseye_armhf-sysroot --extra-cflags=-mtune=cortex-a8 --extra-cflags=-mfloat-abi=hard --extra-cflags=-O2 --disable-neon --extra-cflags=-mfpu=vfpv3-d16 --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags=-fuse-ld=lld --enable-decoder=aac,h264 --enable-demuxer=aac --enable-parser=aac,h264)
     MESSAGE("CONFIGURE_ARGS = ${CONFIGURE_ARGS}")
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg COMMAND ./configure ${CONFIGURE_ARGS})
@@ -145,10 +147,6 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
 endif() 
 
 
-FILE(GLOB_RECURSE WEBRTJSONCPPCOBJS ${WEBRTCOBJS}/third_party/jsoncpp/jsoncpp/*${CMAKE_C_OUTPUT_EXTENSION} ${WEBRTCOBJS}/rtc_base/rtc_json/*${CMAKE_C_OUTPUT_EXTENSION})
-FILE(GLOB_RECURSE WEBRTP2POBJ ${WEBRTCOBJS}/p2p/p2p_server_utils/*${CMAKE_C_OUTPUT_EXTENSION})
-SET (WEBRTCEXTRAOBJS ${WEBRTJSONCPPCOBJS} ${WEBRTP2POBJ} ${WEBRTCCOMOBJ})	
-
 # build version identifier
 find_package(Git)
 if(GIT_FOUND)
@@ -169,6 +167,9 @@ add_definitions(-DVERSION=\"${VERSION}\")
 MESSAGE("VERSION = ${VERSION}")
 
 # project target
+FILE(GLOB_RECURSE WEBRTJSONCPPCOBJS ${WEBRTCOBJS}/third_party/jsoncpp/jsoncpp/*${CMAKE_C_OUTPUT_EXTENSION} ${WEBRTCOBJS}/rtc_base/rtc_json/*${CMAKE_C_OUTPUT_EXTENSION})
+FILE(GLOB_RECURSE WEBRTP2POBJ ${WEBRTCOBJS}/p2p/p2p_server_utils/*${CMAKE_C_OUTPUT_EXTENSION})
+SET (WEBRTCEXTRAOBJS ${WEBRTJSONCPPCOBJS} ${WEBRTP2POBJ} ${WEBRTCCOMOBJ})	
 FILE(GLOB SOURCE src/*.cpp)
 add_executable (${CMAKE_PROJECT_NAME} ${SOURCE} ${WEBRTCEXTRAOBJS})
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc) 
