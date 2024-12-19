@@ -4,7 +4,7 @@ project (webrtc-streamer)
 set (WEBRTCROOT "${CMAKE_CURRENT_SOURCE_DIR}/../webrtc" CACHE STRING "WEBRTC root directory")
 set (WEBRTCDESKTOPCAPTURE "ON" CACHE STRING "WEBRTC Desktop capture")
 set (WEBRTCCHROMEBRANDED "ON" CACHE STRING "WEBRTC Chrome branded")
-set (WEBRTCVERSION "c23fe2f" CACHE STRING "WEBRTC version")
+set (WEBRTCVERSION "b00c469cad" CACHE STRING "WEBRTC version")
 
 if(NOT CMAKE_BUILD_TYPE)
 set (CMAKE_BUILD_TYPE "Release")
@@ -36,11 +36,16 @@ MESSAGE("PulseAudio_FOUND = ${PulseAudio_FOUND}")
 set(ENV{PATH} "${WEBRTCROOT}/src/third_party/llvm-build/Release+Asserts/bin:$ENV{PATH}")
 MESSAGE("PATH = $ENV{PATH}")
 
+find_package(Git)
+
 # webrtc build
 set (WEBRTCOBJS ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE}/obj)
 
 if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX})
-  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND git checkout ${WEBRTCVERSION})
+  if(GIT_FOUND)
+    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND ${GIT_EXECUTABLE} fetch)
+    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND ${GIT_EXECUTABLE} checkout ${WEBRTCVERSION})
+  endif()
 
   file(READ ${WEBRTCROOT}/src/DEPS filecontent)
   string(REPLACE "'src/resources'],$" "'src/resources'],'condition':'rtc_include_tests==true'," filecontent "${filecontent}")
@@ -74,7 +79,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
     else()
       message("install-sysroot.py succeeded ${SYSROOT_OUTPUT}")
     endif()
-endif()
+  endif()
 
 
   set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nenable_js_protobuf=false\nuse_glib=false\nuse_lld=false\n)
@@ -170,7 +175,6 @@ endif()
 
 
 # build version identifier
-find_package(Git)
 if(GIT_FOUND)
     EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} submodule update --init)
     EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} describe --tags --always --dirty OUTPUT_VARIABLE PROJECTVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
