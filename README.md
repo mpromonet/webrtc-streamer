@@ -364,7 +364,7 @@ dependencies above:
    ```sh
    mkdir ../webrtc
    pushd ../webrtc
-   fetch --no-history webrtc 
+   fetch webrtc 
    popd
    ```
 

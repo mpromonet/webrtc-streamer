@@ -16,7 +16,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 	&& git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools \
 	&& mkdir ../webrtc \
 	&& cd ../webrtc \
-	&& fetch --no-history --nohooks webrtc \
+	&& fetch --nohooks webrtc \
 	&& cd ../webrtc-streamer \
 	&& cmake -DCMAKE_INSTALL_PREFIX=/app . && make \
 	&& make install \

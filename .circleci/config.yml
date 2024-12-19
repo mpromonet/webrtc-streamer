@@ -21,8 +21,7 @@ jobs:
       - run: apt-get update; DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget python3 autoconf automake libtool git make g++ xz-utils
       - run: git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git /depot_tools
       - run: echo 'export PATH=/depot_tools:$PATH' >> $BASH_ENV
-      - run: mkdir ${WEBRTCROOT} && cd ${WEBRTCROOT} && fetch --no-history --nohooks webrtc 
-      - run: cd ${WEBRTCROOT} && sed -i -e "s|'src/resources'],|'src/resources'],'condition':'rtc_include_tests==true',|" src/DEPS 
+      - run: mkdir ${WEBRTCROOT} && cd ${WEBRTCROOT} && fetch --nohooks webrtc 
 
       - persist_to_workspace:
           root: /

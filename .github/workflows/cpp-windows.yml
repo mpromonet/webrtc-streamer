@@ -34,7 +34,7 @@ jobs:
           set "PATH=%GITHUB_WORKSPACE%\depot_tools;%PATH%"
           mkdir %GITHUB_WORKSPACE%\..\webrtc
           cd /d %GITHUB_WORKSPACE%\..\webrtc
-          fetch --no-history webrtc
+          fetch webrtc
       env:
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
         CLANG_VERSION: ToT
