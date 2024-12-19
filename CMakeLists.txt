@@ -49,10 +49,28 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND gclient sync)
 
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
-    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/build/linux/sysroot_scripts COMMAND install-sysroot.py --arch=arm)
+    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/build/linux/sysroot_scripts 
+                    COMMAND ./install-sysroot.py --arch=arm 
+                    RESULT_VARIABLE SYSROOT_RESULT
+                    OUTPUT_VARIABLE SYSROOT_OUTPUT
+                    ERROR_VARIABLE SYSROOT_ERROR
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+                    ERROR_STRIP_TRAILING_WHITESPACE)
+    if(NOT SYSROOT_RESULT EQUAL 0)
+      message(FATAL_ERROR "install-sysroot.py failed with exit code ${SYSROOT_RESULT}\nOutput:\n${SYSROOT_OUTPUT}\nError:\n${SYSROOT_ERROR}")
+    endif()
   elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
-    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/build/linux/sysroot_scripts COMMAND install-sysroot.py --arch=arm64)
-  endif()
+    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/build/linux/sysroot_scripts 
+                    COMMAND ./install-sysroot.py --arch=arm 
+                    RESULT_VARIABLE SYSROOT_RESULT
+                    OUTPUT_VARIABLE SYSROOT_OUTPUT
+                    ERROR_VARIABLE SYSROOT_ERROR
+                    OUTPUT_STRIP_TRAILING_WHITESPACE
+                    ERROR_STRIP_TRAILING_WHITESPACE)
+    if(NOT SYSROOT_RESULT EQUAL 0)
+      message(FATAL_ERROR "install-sysroot.py failed with exit code ${SYSROOT_RESULT}\nOutput:\n${SYSROOT_OUTPUT}\nError:\n${SYSROOT_ERROR}")
+    endif()
+endif()
 
 
   set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nenable_js_protobuf=false\nuse_glib=false\nuse_lld=false\n)
