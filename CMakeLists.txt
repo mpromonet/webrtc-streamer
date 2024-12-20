@@ -66,7 +66,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
     else()
       message("install-sysroot.py succeeded ${SYSROOT_OUTPUT}")
     endif()
-  else(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+  elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src 
                     COMMAND build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
                     RESULT_VARIABLE SYSROOT_RESULT

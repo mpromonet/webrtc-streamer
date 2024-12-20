@@ -31,7 +31,7 @@ RUN git config --global core.autocrlf false \
        && set \
        && time /t \
        && mkdir c:\webrtc && cd c:\webrtc \
-       && fetch --nohooks webrtc \
+       && fetch webrtc \
        && time /t \
        && cd C:\webrtc-streamer \
        && cmake -G Ninja -DCMAKE_INSTALL_PREFIX=/app -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_MAKE_PROGRAM=ninja.bat . \
