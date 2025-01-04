@@ -115,17 +115,13 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   endif()
 
   #patch
-#  file(READ ${WEBRTCROOT}/src/rtc_base/ssl_stream_adapter.h filecontent)
-#  string(REPLACE "#include <vector>" "#include <vector>\n#include <optional>" filecontent "${filecontent}")
-#  file(WRITE ${WEBRTCROOT}/src/rtc_base/ssl_stream_adapter.h "${filecontent}")
-
   file(READ ${WEBRTCROOT}/src/third_party/perfetto/include/perfetto/tracing/track.h filecontent)
   string(REPLACE "#include <map>" "#include <map>\n#include <optional>" filecontent "${filecontent}")
   file(WRITE ${WEBRTCROOT}/src/third_party/perfetto/include/perfetto/tracing/track.h  "${filecontent}")
 
-#  file(READ ${WEBRTCROOT}/src/media/base/media_channel.h filecontent)
-#  string(REGEX REPLACE "ost << ToStringIfSet[^;]*;" "" filecontent "${filecontent}")
-#  file(WRITE ${WEBRTCROOT}/src/media/base/media_channel.h "${filecontent}")
+  file(READ ${WEBRTCROOT}/src/media/base/media_channel.h filecontent)
+  string(REGEX REPLACE "ost << ToStringIfSet[^;]*;" "" filecontent "${filecontent}")
+  file(WRITE ${WEBRTCROOT}/src/media/base/media_channel.h "${filecontent}")
   
 
   # sound support
@@ -262,6 +258,9 @@ if (WIN32)
     add_definitions(-DUSE_X11 -DHAVE_SOUND -D_WINSOCKAPI_)
     target_link_libraries (${CMAKE_PROJECT_NAME} secur32 dmoguids wmcodecdspuuid strmiids msdmo winmm dxgi d3d11 iphlpapi dwmapi shcore)
 elseif (APPLE)
+    # use lld to link
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld -B${WEBRTCROOT}/src/third_party/llvm-build/Release+Asserts/bin")
+
     # live555
     add_definitions(-DNEED_XLOCALE_H=1)
     # webrtc
