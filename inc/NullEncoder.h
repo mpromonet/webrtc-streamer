@@ -39,18 +39,26 @@ class NullEncoder : public webrtc::VideoEncoder {
 
     int32_t Encode(const webrtc::VideoFrame& frame, const std::vector<webrtc::VideoFrameType>* frame_types) override {
 	    if (!m_encoded_image_callback) {
-			RTC_LOG(LS_WARNING) << "RegisterEncodeCompleteCallback() not called";
+			RTC_LOG(LS_ERROR) << "RegisterEncodeCompleteCallback() not called";
 			return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
 		}
 
 		rtc::scoped_refptr<webrtc::VideoFrameBuffer> buffer = frame.video_frame_buffer();
 		if (buffer->type() != webrtc::VideoFrameBuffer::Type::kNative) {
-			RTC_LOG(LS_WARNING) << "buffer type must be kNative";
+			RTC_LOG(LS_ERROR) << "buffer type must be kNative";
+			return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;		
+		}
+
+		EncodedVideoFrameBuffer* encodedBuffer = (EncodedVideoFrameBuffer*)buffer.get();
+
+		// check format is consistent
+		webrtc::SdpVideoFormat format = encodedBuffer->getFormat();
+		if (format.name != m_format.name) {
+			RTC_LOG(LS_ERROR) << "format name must be " << m_format.name << " not " << format.name;
 			return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;		
 		}
 
 		// get webrtc::EncodedImage
-		EncodedVideoFrameBuffer* encodedBuffer = (EncodedVideoFrameBuffer*)buffer.get();
 		webrtc::EncodedImage encoded_image = encodedBuffer->getEncodedImage(frame.rtp_timestamp(), frame.ntp_time_ms());
 
 		RTC_LOG(LS_VERBOSE) << "EncodedImage " << frame.id() << " " << encoded_image.FrameType() << " " <<  buffer->width() << "x" <<  buffer->height();

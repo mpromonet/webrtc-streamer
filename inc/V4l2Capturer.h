@@ -28,6 +28,7 @@ public:
 		size_t width = 0;
 		size_t height = 0;
 		size_t fps = 0;
+		std::string format = "H264";
 		if (opts.find("width") != opts.end())
 		{
 			width = std::stoi(opts.at("width"));
@@ -40,9 +41,13 @@ public:
 		{
 			fps = std::stoi(opts.at("fps"));
 		}
+		if (opts.find("format") != opts.end())
+		{
+			format = opts.at("format");
+		}
 
 		std::unique_ptr<V4l2Capturer> capturer(new V4l2Capturer());
-		if (!capturer->Init(width, height, fps, videourl))
+		if (!capturer->Init(format, width, height, fps, videourl))
 		{
 			RTC_LOG(LS_WARNING) << "Failed to create V4l2Capturer(w = " << width
 								<< ", h = " << height << ", fps = " << fps
@@ -62,19 +67,23 @@ public:
 private:
 	V4l2Capturer() : m_stop(false) {}
 
-	bool Init(size_t width,
+	bool Init(const std::string &format,
+			  size_t width,
 			  size_t height,
 			  size_t fps,
 			  const std::string &videourl)
 	{
+		m_format = format;
 		m_width = width;
 		m_height = height;
+		
 
 		std::string device = "/dev/video0";
 		if (videourl.find("v4l2://") == 0) {
 			device = videourl.substr(strlen("v4l2://"));
 		}		
-		V4L2DeviceParameters param(device.c_str(), V4L2_PIX_FMT_H264, width, height, fps);
+
+		V4L2DeviceParameters param(device.c_str(), V4l2Device::fourcc(format.c_str()), width, height, fps);
 		m_capture.reset(V4l2Capture::create(param));
 
 		bool ret = false;
@@ -136,7 +145,7 @@ private:
 
 				int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
 				webrtc::VideoFrameType frameType = idr ? webrtc::VideoFrameType::kVideoFrameKey : webrtc::VideoFrameType::kVideoFrameDelta;
-				rtc::scoped_refptr<webrtc::VideoFrameBuffer> frameBuffer = rtc::make_ref_counted<EncodedVideoFrameBuffer>(m_capture->getWidth(), m_capture->getHeight(), encodedData, frameType);
+				rtc::scoped_refptr<webrtc::VideoFrameBuffer> frameBuffer = rtc::make_ref_counted<EncodedVideoFrameBuffer>(m_capture->getWidth(), m_capture->getHeight(), encodedData, frameType, webrtc::SdpVideoFormat(m_format));
 				webrtc::VideoFrame frame = webrtc::VideoFrame::Builder()
 					.set_video_frame_buffer(frameBuffer)
 					.set_rotation(webrtc::kVideoRotation_0)
@@ -164,6 +173,7 @@ private:
 	std::unique_ptr<V4l2Capture>                            m_capture;
 	rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> m_sps;
 	rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> m_pps;
+	std::string											    m_format;
 	int                                                     m_width;		
  	int                                                     m_height;	
 };

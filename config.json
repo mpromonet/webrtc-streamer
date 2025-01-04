@@ -13,7 +13,6 @@
 
         "Bedford Hills": {"video": "rtsp://73.114.177.111/axis-media/media.amp"},
         "Pocapaglia": {"video": "rtsp://176.65.94.105/axis-media/media.amp"},
-        "Norwich": {"video": "rtsp://37.157.51.30/axis-media/media.amp"},
 
         "Great Falls": {"video": "rtsp://76.75.8.116/axis-media/media.amp", "position":"47.551039,-111.539400"},
         "Western Cape": {"video":"rtsp://196.21.92.82/axis-media/media.amp", "position":"-33.925840,18.423220"},
