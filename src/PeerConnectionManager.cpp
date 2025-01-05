@@ -939,38 +939,37 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 			RTC_LOG(LS_ERROR) << "Remove PeerConnection peerid:" << peerid;
 			m_peer_connectionobs_map.erase(it);
 		}
+	}
+	if (pcObserver)
+	{
+		rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = pcObserver->getPeerConnection();
 
-		if (pcObserver)
+		std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> localstreams = peerConnection->GetSenders();
+		for (auto stream : localstreams)
 		{
-			rtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = pcObserver->getPeerConnection();
-
-			std::vector<rtc::scoped_refptr<webrtc::RtpSenderInterface>> localstreams = peerConnection->GetSenders();
-			for (auto stream : localstreams)
-			{
-				std::vector<std::string> streamVector = stream->stream_ids();
-				if (streamVector.size() > 0) {
-					std::string streamLabel = streamVector[0];
-					bool stillUsed = this->streamStillUsed(streamLabel);
-					if (!stillUsed)
+			std::vector<std::string> streamVector = stream->stream_ids();
+			if (streamVector.size() > 0) {
+				std::string streamLabel = streamVector[0];
+				bool stillUsed = this->streamStillUsed(streamLabel);
+				if (!stillUsed)
+				{
+					RTC_LOG(LS_ERROR) << "hangUp stream is no more used " << streamLabel;
+					std::lock_guard<std::mutex> mlock(m_streamMapMutex);
+					std::map<std::string, std::pair<rtc::scoped_refptr<webrtc::VideoTrackSourceInterface>, rtc::scoped_refptr<webrtc::AudioSourceInterface>>>::iterator it = m_stream_map.find(streamLabel);
+					if (it != m_stream_map.end())
 					{
-						RTC_LOG(LS_ERROR) << "hangUp stream is no more used " << streamLabel;
-						std::lock_guard<std::mutex> mlock(m_streamMapMutex);
-						std::map<std::string, std::pair<rtc::scoped_refptr<webrtc::VideoTrackSourceInterface>, rtc::scoped_refptr<webrtc::AudioSourceInterface>>>::iterator it = m_stream_map.find(streamLabel);
-						if (it != m_stream_map.end())
-						{
-							m_stream_map.erase(it);
-						}
-
-						RTC_LOG(LS_ERROR) << "hangUp stream closed " << streamLabel;
+						m_stream_map.erase(it);
 					}
 
-					peerConnection->RemoveTrackOrError(stream);
+					RTC_LOG(LS_ERROR) << "hangUp stream closed " << streamLabel;
 				}
-			}
 
-			delete pcObserver;
-			result = true;
+				peerConnection->RemoveTrackOrError(stream);
+			}
 		}
+
+		delete pcObserver;
+		result = true;
 	}
 	Json::Value answer;
 	if (result)

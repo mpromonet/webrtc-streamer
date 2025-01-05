@@ -53,7 +53,7 @@ jobs:
     - name: Build and deploy Container App
       uses: azure/container-apps-deploy-action@v1
       with:
-        imageToDeploy: ${{ steps.meta.outputs.tags }}
+        imageToDeploy: ${{ fromJSON(steps.meta.outputs.tags)[0] }}
         containerAppName: webrtcstreamer
         resourceGroup: deploy
         targetPort: 8000
