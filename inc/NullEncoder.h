@@ -22,7 +22,7 @@ class NullEncoder : public webrtc::VideoEncoder {
     virtual ~NullEncoder() override {}
 
     int32_t InitEncode(const webrtc::VideoCodec* codec_settings, const webrtc::VideoEncoder::Settings& settings) override {
-		RTC_LOG(LS_WARNING) << "InitEncode";
+		RTC_LOG(LS_ERROR) << "InitEncode format:" << m_format.name;
 		return WEBRTC_VIDEO_CODEC_OK;
 	}
     int32_t Release() override {

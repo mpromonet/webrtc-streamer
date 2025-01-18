@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/webrtc-streamer",
-            "args": ["-C", "config.json", "-a"],
+            "args": ["-C", "config.json", "-o"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

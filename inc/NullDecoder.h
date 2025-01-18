@@ -13,11 +13,12 @@
 #pragma once
 
 class NullDecoder : public webrtc::VideoDecoder {
-   public:
+public:
  	NullDecoder(const webrtc::SdpVideoFormat& format) : m_format(format) {}
     virtual ~NullDecoder() override {}
 
 	bool Configure(const webrtc::VideoDecoder::Settings& settings) override { 
+		RTC_LOG(LS_ERROR) << "Configure format:" << m_format.name;
 		m_settings = settings;
 		return true; 
 	}
@@ -56,6 +57,7 @@ class NullDecoder : public webrtc::VideoDecoder {
 
     const char* ImplementationName() const override { return "NullDecoder"; }
 
+private:
 	webrtc::DecodedImageCallback* m_decoded_image_callback;
 	webrtc::VideoDecoder::Settings m_settings;
 	webrtc::SdpVideoFormat m_format;	
