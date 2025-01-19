@@ -17,6 +17,7 @@
 [![Demo](https://img.shields.io/badge/azure-livedemo-green)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/)
 [![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/mpromonet/webrtc-streamer)
 
+
 Experimentation to stream WebRTC media sources like capture devices, screen capture, mkv files and RMTP/RTSP sources using simple signaling mechanism (see [api](docs/api.md)). It is also compatible with [WHEP](https://datatracker.ietf.org/doc/html/draft-ietf-wish-whep-01) interface.
 
 ## Artefacts
@@ -395,3 +396,8 @@ following architectures:
 - arm64 crosscompiled
 - Windows x64 build with clang
 - MacOS
+
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=mpromonet/webrtc-streamer&type=Date)](https://star-history.com/#mpromonet/webrtc-streamer&Date)
