@@ -112,7 +112,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/demuxer_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavformat/)
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/muxer_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavformat/)
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/protocol_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavformat/)
-    
+
   endif()
 
   #patch
@@ -357,8 +357,8 @@ endif()
 
 #cpack
 install (TARGETS ${CMAKE_PROJECT_NAME} RUNTIME DESTINATION bin)
-install (DIRECTORY html DESTINATION share/${PROJECT_NAME})
-install (FILES config.json DESTINATION share/${PROJECT_NAME})
+install (DIRECTORY html DESTINATION share/${CMAKE_PROJECT_NAME})
+install (FILES config.json DESTINATION share/${CMAKE_PROJECT_NAME})
 SET(CPACK_GENERATOR "TGZ")
 SET(CPACK_SYSTEM_NAME ${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_BUILD_TYPE})
 SET(CPACK_PACKAGE_CONTACT "michel.promonet@free.fr") 
