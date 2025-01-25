@@ -4,7 +4,7 @@ project (webrtc-streamer)
 set (WEBRTCROOT "${CMAKE_CURRENT_SOURCE_DIR}/../webrtc" CACHE STRING "WEBRTC root directory")
 set (WEBRTCDESKTOPCAPTURE "ON" CACHE STRING "WEBRTC Desktop capture")
 set (WEBRTCCHROMEBRANDED "ON" CACHE STRING "WEBRTC Chrome branded")
-set (WEBRTCVERSION "a85040ffd9eb53d59c6bdb273e69963fae3e94cc" CACHE STRING "WEBRTC version")
+set (WEBRTCVERSION "7b8b0f665e046ede671cba9aa1cdf8e6ad78f3a3" CACHE STRING "WEBRTC version")
 
 if(NOT CMAKE_BUILD_TYPE)
 set (CMAKE_BUILD_TYPE "Release")
@@ -102,32 +102,27 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
     MESSAGE("CONFIGURE_ARGS = ${CONFIGURE_ARGS}")
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/third_party/ffmpeg COMMAND ./configure ${CONFIGURE_ARGS})
 
-    set(FILES_TO_COPY
-        config.h
-        config_components.h
-        libavutil/avconfig.h
-        libavfilter/filter_list.c
-        libavcodec/codec_list.c
-        libavcodec/parser_list.c
-        libavcodec/bsf_list.c
-        libavformat/demuxer_list.c
-        libavformat/muxer_list.c
-        libavformat/protocol_list.c
-    )
-
-    foreach(FILE ${FILES_TO_COPY})
-        file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/${FILE} DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/${FILE})
-    endforeach()
+    file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/config.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/)
+    file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/config_components.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/)
+    file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavutil/avconfig.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavutil/)
+    file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavfilter/filter_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavutil/)
+    file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/codec_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavcodec/)
+    file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/parser_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavcodec/)
+    file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/bsf_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavcodec/)
+    file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/demuxer_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavformat/)
+    file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/muxer_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavformat/)
+    file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/protocol_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavformat/)
+    
   endif()
 
   #patch
-  file(READ ${WEBRTCROOT}/src/third_party/perfetto/include/perfetto/tracing/track.h filecontent)
-  string(REPLACE "#include <map>" "#include <map>\n#include <optional>" filecontent "${filecontent}")
-  file(WRITE ${WEBRTCROOT}/src/third_party/perfetto/include/perfetto/tracing/track.h  "${filecontent}")
-
   file(READ ${WEBRTCROOT}/src/media/base/media_channel.h filecontent)
   string(REGEX REPLACE "ost << ToStringIfSet[^;]*;" "" filecontent "${filecontent}")
   file(WRITE ${WEBRTCROOT}/src/media/base/media_channel.h "${filecontent}")
+
+  file(READ ${WEBRTCROOT}/src/call/rtp_config.cc filecontent)
+  string(REGEX REPLACE "stream_config.rtx.emplace\\(\\)" "stream_config.rtx.emplace(RtpStreamConfig::Rtx())" filecontent "${filecontent}")
+  file(WRITE ${WEBRTCROOT}/src/call/rtp_config.cc "${filecontent}")
   
 
   # sound support
