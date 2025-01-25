@@ -137,7 +137,7 @@ The container entry point is the webrtc-streamer application, then you can:
 - run the container giving config.json file:
 
   ```sh
-  docker run -p 8000:8000 -v $PWD/config.json:/app/config.json mpromonet/webrtc-streamer
+  docker run -p 8000:8000 -v $PWD/config.json:/usr/local/share/webrtc-streamer/config.json mpromonet/webrtc-streamer
   ```
 
 ## Using embedded STUN/TURN server behind a NAT
