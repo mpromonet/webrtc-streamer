@@ -47,12 +47,12 @@ RUN powershell -c "sleep -Seconds 60" && time /t
 FROM mcr.microsoft.com/windows/server:ltsc2022
 LABEL maintainer=michel.promonet@free.fr
 
-WORKDIR /app/webrtc-streamer
+WORKDIR /app/share/webrtc-streamer
 
 COPY --from=builder /app/ /app/
 
 RUN dir /w && set
-RUN webrtc-streamer.exe -V
+RUN /app/bin/webrtc-streamer.exe -V
 
-ENTRYPOINT [ "webrtc-streamer.exe" ]
+ENTRYPOINT [ "/app/bin/webrtc-streamer.exe" ]
 CMD [ "-a", "-C", "config.json" ]

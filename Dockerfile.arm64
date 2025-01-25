@@ -14,7 +14,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 	&& cd ../webrtc \
 	&& fetch --nohooks webrtc \
 	&& cd ../webrtc-streamer \
-	&& cmake -DCMAKE_INSTALL_PREFIX=/app -DCMAKE_SYSTEM_PROCESSOR=arm64 -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF . && make \
+	&& cmake -DCMAKE_SYSTEM_PROCESSOR=arm64 -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF . && make \
 	&& make install \
 	&& rm -rf ../webrtc && rm -f *.a && rm -f src/*.o \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/
@@ -23,9 +23,10 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 FROM --platform=arm64 ubuntu:24.04
 LABEL maintainer=michel.promonet@free.fr
 
-WORKDIR /app/webrtc-streamer
+WORKDIR /usr/local/share/webrtc-streamer
 
-COPY --from=builder /app/ /app/
+COPY --from=builder /usr/local/bin/webrtc-streamer /usr/local/bin/
+COPY --from=builder /usr/local/share/webrtc-streamer/ /usr/local/share/webrtc-streamer/
 
-ENTRYPOINT [ "./webrtc-streamer" ]
+ENTRYPOINT [ "webrtc-streamer" ]
 CMD [ "-a", "-C", "config.json" ]
