@@ -4,7 +4,7 @@ project (webrtc-streamer)
 set (WEBRTCROOT "${CMAKE_CURRENT_SOURCE_DIR}/../webrtc" CACHE STRING "WEBRTC root directory")
 set (WEBRTCDESKTOPCAPTURE "ON" CACHE STRING "WEBRTC Desktop capture")
 set (WEBRTCCHROMEBRANDED "ON" CACHE STRING "WEBRTC Chrome branded")
-set (WEBRTCVERSION "7b8b0f665e046ede671cba9aa1cdf8e6ad78f3a3" CACHE STRING "WEBRTC version")
+set (WEBRTCVERSION "df532ba1db7e67dcffe36890dbaf907d1678ffdf" CACHE STRING "WEBRTC version")
 
 if(NOT CMAKE_BUILD_TYPE)
 set (CMAKE_BUILD_TYPE "Release")
