@@ -89,7 +89,7 @@ jobs:
           cpack
           echo "artifactPath=$(ls *.tar.gz)" >> $GITHUB_ENV
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: ${{ env.artifactPath }}
         path: ${{ env.artifactPath }}   
