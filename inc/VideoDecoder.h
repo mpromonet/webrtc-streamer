@@ -11,6 +11,7 @@
 
 #include <string.h>
 #include <vector>
+#include <chrono>
 
 #include "api/video/i420_buffer.h"
 #include "api/environment/environment_factory.h"

@@ -115,6 +115,11 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
 
   endif()  
 
+  #patch
+  file(READ ${WEBRTCROOT}/src/media/base/media_channel.h filecontent)
+  string(REGEX REPLACE "ost << ToStringIfSet[^;]*;" "" filecontent "${filecontent}")
+  file(WRITE ${WEBRTCROOT}/src/media/base/media_channel.h "${filecontent}")
+
   # sound support
   if (APPLE)
     set (WEBRTCARGS rtc_include_internal_audio_device=true\n${WEBRTCARGS})
