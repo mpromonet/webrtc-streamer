@@ -71,7 +71,7 @@ public:
     }
 
     // overide T::onNewSession
-    virtual bool onNewSession(const char *id, const char *media, const char *codec, const char *sdp, unsigned int rtpfrequency, unsigned int channels) override
+    bool onNewSession(const char *id, const char *media, const char *codec, const char *sdp, unsigned int rtpfrequency, unsigned int channels) override
     {
         bool success = false;
         if (strcmp(media, "video") == 0)
@@ -268,7 +268,7 @@ public:
         return res;
     }
 
-    virtual bool onData(const char *id, unsigned char *buffer, ssize_t size, struct timeval presentationTime) override
+    bool onData(const char *id, unsigned char *buffer, ssize_t size, struct timeval presentationTime) override
     {
         int64_t ts = presentationTime.tv_sec;
         ts = ts * 1000 + presentationTime.tv_usec / 1000;

@@ -52,7 +52,7 @@ public:
     }
 
     // overide RTSPConnection::Callback
-    virtual bool onNewSession(const char *id, const char *media, const char *codec, const char *sdp, unsigned int rtpfrequency, unsigned int channels) override
+    bool onNewSession(const char *id, const char *media, const char *codec, const char *sdp, unsigned int rtpfrequency, unsigned int channels) override
     {
         bool success = false;
         if (strcmp(media, "audio") == 0)
@@ -83,7 +83,7 @@ public:
         }
         return success;
     }
-    virtual bool onData(const char *id, unsigned char *buffer, ssize_t size, struct timeval presentationTime) override
+    bool onData(const char *id, unsigned char *buffer, ssize_t size, struct timeval presentationTime) override
     {
         bool success = false;
         int segmentLength = m_freq / 100;
@@ -165,7 +165,7 @@ public:
 protected:
     LiveAudioSource(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string &uri, const std::map<std::string, std::string> &opts, bool wait)
         : m_env(m_stop)
-        , m_connection(m_env, this, uri.c_str(), opts, rtc::LogMessage::GetLogToDebug() <= 2)
+        , m_liveclient(m_env, this, uri.c_str(), opts, rtc::LogMessage::GetLogToDebug() <= 2)
         , m_webrtcenv(webrtc::CreateEnvironment())
         , m_factory(audioDecoderFactory)
         , m_freq(8000)
@@ -174,10 +174,12 @@ protected:
         , m_previmagets(0)
         , m_prevts(0)
     {
+        m_liveclient.start();
         m_capturethread = std::thread(&LiveAudioSource::CaptureThread, this);
     }
     virtual ~LiveAudioSource()
     {
+        m_liveclient.stop();
         m_env.stop();
         m_capturethread.join();
     }
@@ -187,20 +189,20 @@ private:
     Environment m_env;
 
 private:
-    T m_connection;
-    const webrtc::Environment                     m_webrtcenv;
-    std::thread m_capturethread;
+    T                                               m_liveclient;
+    const webrtc::Environment                       m_webrtcenv;
+    std::thread                                     m_capturethread;
     rtc::scoped_refptr<webrtc::AudioDecoderFactory> m_factory;
-    std::unique_ptr<webrtc::AudioDecoder> m_decoder;
-    int m_freq;
-    int m_channel;
-    std::queue<uint16_t> m_buffer;
-    std::list<webrtc::AudioTrackSinkInterface *> m_sinks;
-    std::mutex m_sink_lock;
+    std::unique_ptr<webrtc::AudioDecoder>           m_decoder;
+    int                                             m_freq;
+    int                                             m_channel;
+    std::queue<uint16_t>                            m_buffer;
+    std::list<webrtc::AudioTrackSinkInterface *>    m_sinks;
+    std::mutex                                      m_sink_lock;
 
-    std::map<std::string, std::string> m_codec;
+    std::map<std::string, std::string>              m_codec;
 
-    bool m_wait;
-    int64_t m_previmagets;
-    int64_t m_prevts;
+    bool                                            m_wait;
+    int64_t                                         m_previmagets;
+    int64_t                                         m_prevts;
 };
