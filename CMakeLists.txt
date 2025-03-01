@@ -4,7 +4,7 @@ project (webrtc-streamer)
 set (WEBRTCROOT "${CMAKE_CURRENT_SOURCE_DIR}/../webrtc" CACHE STRING "WEBRTC root directory")
 set (WEBRTCDESKTOPCAPTURE "ON" CACHE STRING "WEBRTC Desktop capture")
 set (WEBRTCCHROMEBRANDED "ON" CACHE STRING "WEBRTC Chrome branded")
-set (WEBRTCVERSION "f6902aff958cab549c3d138305bc7f9ed7983ebd" CACHE STRING "WEBRTC version")
+set (WEBRTCVERSION "4030180fc54091af5c79a7a3b42664b225c4bd02" CACHE STRING "WEBRTC version")
 
 if(NOT CMAKE_BUILD_TYPE)
 set (CMAKE_BUILD_TYPE "Release")
@@ -119,6 +119,9 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   file(READ ${WEBRTCROOT}/src/media/base/media_channel.h filecontent)
   string(REGEX REPLACE "ost << ToStringIfSet[^;]*;" "" filecontent "${filecontent}")
   file(WRITE ${WEBRTCROOT}/src/media/base/media_channel.h "${filecontent}")
+  file(READ ${WEBRTCROOT}/src/call/rtp_config.cc filecontent)
+  string(REGEX REPLACE "stream_config.rtx.emplace\\(\\)" "stream_config.rtx.emplace(RtpStreamConfig::Rtx())" filecontent "${filecontent}")
+  file(WRITE ${WEBRTCROOT}/src/call/rtp_config.cc "${filecontent}")  
 
   # sound support
   if (APPLE)

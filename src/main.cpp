@@ -14,9 +14,9 @@
 
 #include "rtc_base/ssl_adapter.h"
 #include "rtc_base/thread.h"
-#include "p2p/base/stun_server.h"
+#include "p2p/test/stun_server.h"
 #include "p2p/base/basic_packet_socket_factory.h"
-#include "p2p/base/turn_server.h"
+#include "p2p/test/turn_server.h"
 
 #include "system_wrappers/include/field_trial.h"
 
