@@ -20,6 +20,8 @@
 
 Experimentation to stream WebRTC media sources like capture devices, screen capture, mkv files and RMTP/RTSP sources using simple signaling mechanism (see [api](docs/api.md)). It is also compatible with [WHEP](https://datatracker.ietf.org/doc/html/draft-ietf-wish-whep-01) interface.
 
+*** Notice *** Live demo are stopped till I migrate to a european web hosting.
+
 ## Artefacts
 
 * packages are available from https://github.com/mpromonet/webrtc-streamer/releases/latest
