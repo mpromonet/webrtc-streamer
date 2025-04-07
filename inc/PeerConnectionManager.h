@@ -24,6 +24,7 @@
 
 #include "rtc_base/logging.h"
 #include "rtc_base/strings/json.h"
+#include "rtc_base/time_utils.h"
 
 #include "HttpServerRequestHandler.h"
 
@@ -201,7 +202,7 @@ class PeerConnectionManager {
 			, m_peerid(peerid)
 			, m_iceCandidateList(Json::arrayValue)
 			, m_deleting(false)
-			, m_creationTime(rtc::TimeMicros()) {
+			, m_creationTime(webrtc::TimeMicros()) {
 
 				RTC_LOG(LS_INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
 				webrtc::PeerConnectionDependencies dependencies(this);

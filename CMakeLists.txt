@@ -4,7 +4,7 @@ project (webrtc-streamer)
 set (WEBRTCROOT "${CMAKE_CURRENT_SOURCE_DIR}/../webrtc" CACHE STRING "WEBRTC root directory")
 set (WEBRTCDESKTOPCAPTURE "ON" CACHE STRING "WEBRTC Desktop capture")
 set (WEBRTCCHROMEBRANDED "ON" CACHE STRING "WEBRTC Chrome branded")
-set (WEBRTCVERSION "6b4c78d4781c904a2e3fc88a98ef8548c553ba03" CACHE STRING "WEBRTC version")
+set (WEBRTCVERSION "f87125bc405686d96c853d79d78ffb37f8dd75df" CACHE STRING "WEBRTC version")
 
 if(NOT CMAKE_BUILD_TYPE)
 set (CMAKE_BUILD_TYPE "Release")
@@ -292,7 +292,7 @@ else()
     target_link_libraries (${CMAKE_PROJECT_NAME} libv4l2cpp) 
 
     # webrtc
-    add_definitions(-DWEBRTC_POSIX -fno-rtti)
+    add_definitions(-DWEBRTC_POSIX -fno-rtti -Wno-changes-meaning)
     if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
         add_definitions(-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard)
     endif()
