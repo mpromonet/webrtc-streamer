@@ -191,13 +191,13 @@ A short sample HTML page using webrtc-streamer running locally on port 8000:
 	var webRtcServer      = null;
 	window.onload         = function() { 
 		webRtcServer      = new WebRtcStreamer("video",location.protocol+"//"+location.hostname+":8000");
-		webRtcServer.connect("rtsp://wowzaec2demo.streamlock.net/vod/mp4:BigBuckBunny_115k.mov");
+		webRtcServer.connect("rtsp://196.21.92.82/axis-media/media.amp","", "rtptransport=tcp&timeout=60");
 	}
 	window.onbeforeunload = function() { webRtcServer.disconnect(); }
 </script>
 </head>
 <body> 
-	<video id="video" />
+	<video id="video" muted playsinline />
 </body>
 </html>
 ```
