@@ -15,7 +15,7 @@
 
 #include "VideoSource.h"
 
-class VideoScaler :  public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public VideoSource 
+class VideoScaler :  public webrtc::VideoSinkInterface<webrtc::VideoFrame>,  public VideoSource 
 {
 public:
 
@@ -83,7 +83,7 @@ public:
     {
     }
 
-    rtc::scoped_refptr<webrtc::I420Buffer> createOutputBuffer() {
+    webrtc::scoped_refptr<webrtc::I420Buffer> createOutputBuffer() {
         int height = m_height;
         int width = m_width;
         if ( (height == 0) && (width == 0) )
@@ -140,7 +140,7 @@ public:
         }
         else
         {
-            rtc::scoped_refptr<webrtc::I420Buffer> scaled_buffer = this->createOutputBuffer();
+            webrtc::scoped_refptr<webrtc::I420Buffer> scaled_buffer = this->createOutputBuffer();
             if (m_roi_width != frame.width() || m_roi_height != frame.height())
             {
                 RTC_LOG(LS_VERBOSE) << "crop:" << m_roi_x << "x" << m_roi_y << " " << m_roi_width << "x" << m_roi_height << " scale: " << scaled_buffer->width() << "x" << scaled_buffer->height();

@@ -43,7 +43,7 @@ public:
     LiveVideoSource(const std::string &uri, const std::map<std::string, std::string> &opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory, bool wait) :
 	    VideoDecoder(opts, videoDecoderFactory, wait),
         m_env(m_stop),
-	    m_liveclient(m_env, this, uri.c_str(), opts, rtc::LogMessage::GetLogToDebug()<=2) {
+	    m_liveclient(m_env, this, uri.c_str(), opts, webrtc::LogMessage::GetLogToDebug()<=2) {
             m_liveclient.start();
             this->Start();
     }
@@ -104,7 +104,7 @@ public:
     }
 
     void onH264Data(unsigned char *buffer, ssize_t size, int64_t ts, const std::string & codec) {
-        rtc::ArrayView<const uint8_t> data(buffer, size);
+        webrtc::ArrayView<const uint8_t> data(buffer, size);
         std::vector<webrtc::H264::NaluIndex> indexes = webrtc::H264::FindNaluIndices(data);
         RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData nbNalu:" << indexes.size();
         for (const webrtc::H264::NaluIndex & index : indexes) {
@@ -116,7 +116,7 @@ public:
                 m_cfg.clear();
                 m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
 
-        	    rtc::ArrayView<const uint8_t> spsBuffer(buffer + index.payload_start_offset + webrtc::H264::kNaluTypeSize, index.payload_size - webrtc::H264::kNaluTypeSize);
+        	    webrtc::ArrayView<const uint8_t> spsBuffer(buffer + index.payload_start_offset + webrtc::H264::kNaluTypeSize, index.payload_size - webrtc::H264::kNaluTypeSize);
                 std::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(spsBuffer);
                 if (!sps)
                 {
@@ -157,7 +157,7 @@ public:
 
                 } else {
                     content.insert(content.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
-                    rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
+                    webrtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
                     PostFrame(frame, ts, frameType);
                 }
             }
@@ -218,7 +218,7 @@ public:
 
                 } else {
                     content.insert(content.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
-                    rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
+                    webrtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
                     PostFrame(frame, ts, frameType);
                 }
             }
@@ -234,7 +234,7 @@ public:
             int stride_y = width;
             int stride_uv = (width + 1) / 2;
 
-            rtc::scoped_refptr<webrtc::I420Buffer> I420buffer = webrtc::I420Buffer::Create(width, height, stride_y, stride_uv, stride_uv);
+            webrtc::scoped_refptr<webrtc::I420Buffer> I420buffer = webrtc::I420Buffer::Create(width, height, stride_y, stride_uv, stride_uv);
             const int conversionResult = libyuv::ConvertToI420((const uint8_t *)buffer, size,
                                                                 I420buffer->MutableDataY(), I420buffer->StrideY(),
                                                                 I420buffer->MutableDataU(), I420buffer->StrideU(),
@@ -293,7 +293,7 @@ public:
             postFormat(codec, 0, 0);
 
             webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameKey;
-            rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(buffer, size);
+            webrtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(buffer, size);
             PostFrame(frame, ts, frameType);
         }
 

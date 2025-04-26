@@ -35,22 +35,22 @@ void sighandler(int n)
 	// delete need thread still running
 	delete webRtcServer;
 	webRtcServer = NULL;
-	rtc::Thread::Current()->Quit(); 
+	webrtc::Thread::Current()->Quit(); 
 }
 
-class TurnAuth : public cricket::TurnAuthInterface {
+class TurnAuth : public webrtc::TurnAuthInterface {
 	public:
 		virtual bool GetKey(absl::string_view username,absl::string_view realm, std::string* key) { 
-			return cricket::ComputeStunCredentialHash(std::string(username), std::string(realm), std::string(username), key); 
+			return webrtc::ComputeStunCredentialHash(std::string(username), std::string(realm), std::string(username), key); 
 		}
 };
 
-class TurnRedirector : public cricket::TurnRedirectInterface
+class TurnRedirector : public webrtc::TurnRedirectInterface
 {
 public:
 	explicit TurnRedirector() {}
 
-	virtual bool ShouldRedirect(const rtc::SocketAddress &, rtc::SocketAddress *out)
+	virtual bool ShouldRedirect(const webrtc::SocketAddress &, webrtc::SocketAddress *out)
 	{
 		return true;
 	}
@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 	const char* localturnurl  = NULL;
 	const char* stunurl       = "stun.l.google.com:19302";
 	std::string localWebrtcUdpPortRange = "0:65535";
-	int logLevel              = rtc::LS_NONE;
+	int logLevel              = webrtc::LS_NONE;
 	const char* webroot       = "./html";
 	std::string basePath;
 	std::string sslCertificate;
@@ -206,14 +206,14 @@ int main(int argc, char* argv[])
 
 	std::cout  << config;
 
-	rtc::LogMessage::LogToDebug((rtc::LoggingSeverity)logLevel);
-	rtc::LogMessage::LogTimestamps();
-	rtc::LogMessage::LogThreads();
-	std::cout << "Logger level:" <<  rtc::LogMessage::GetLogToDebug() << std::endl;
+	webrtc::LogMessage::LogToDebug((webrtc::LoggingSeverity)logLevel);
+	webrtc::LogMessage::LogTimestamps();
+	webrtc::LogMessage::LogThreads();
+	std::cout << "Logger level:" <<  webrtc::LogMessage::GetLogToDebug() << std::endl;
 
-	rtc::ThreadManager::Instance()->WrapCurrentThread();
-	rtc::Thread* thread = rtc::Thread::Current();
-	rtc::InitializeSSL();
+	webrtc::ThreadManager::Instance()->WrapCurrentThread();
+	webrtc::Thread* thread = webrtc::Thread::Current();
+	webrtc::InitializeSSL();
 
 	// webrtc server
 	std::list<std::string> iceServerList;
@@ -275,47 +275,47 @@ int main(int argc, char* argv[])
 			HttpServerRequestHandler httpServer(func, options);
 
 			// start STUN server if needed
-			std::unique_ptr<cricket::StunServer> stunserver;
+			std::unique_ptr<webrtc::StunServer> stunserver;
 			if (localstunurl != NULL)
 			{
-				rtc::SocketAddress server_addr;
+				webrtc::SocketAddress server_addr;
 				server_addr.FromString(localstunurl);
-				rtc::AsyncUDPSocket* server_socket = rtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
+				webrtc::AsyncUDPSocket* server_socket = webrtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
 				if (server_socket)
 				{
-					stunserver.reset(new cricket::StunServer(server_socket));
+					stunserver.reset(new webrtc::StunServer(server_socket));
 					std::cout << "STUN Listening at " << server_addr.ToString() << std::endl;
 				}
 			}
 
 			// start TRUN server if needed
-			std::unique_ptr<cricket::TurnServer> turnserver;
+			std::unique_ptr<webrtc::TurnServer> turnserver;
 			if (localturnurl != NULL)
 			{
 				std::istringstream is(localturnurl);
 				std::string addr;
 				std::getline(is, addr, '@');
 				std::getline(is, addr, '@');
-				rtc::SocketAddress server_addr;
+				webrtc::SocketAddress server_addr;
 				server_addr.FromString(addr);
-				turnserver.reset(new cricket::TurnServer(rtc::Thread::Current()));
+				turnserver.reset(new webrtc::TurnServer(webrtc::Thread::Current()));
 				turnserver->set_auth_hook(&turnAuth);
 				turnserver->set_redirect_hook(&turnRedirector);
 
-				rtc::Socket* tcp_server_socket = thread->socketserver()->CreateSocket(AF_INET, SOCK_STREAM);
+				webrtc::Socket* tcp_server_socket = thread->socketserver()->CreateSocket(AF_INET, SOCK_STREAM);
 				if (tcp_server_socket) {
 					std::cout << "TURN Listening TCP at " << server_addr.ToString() << std::endl;
 					tcp_server_socket->Bind(server_addr);
 					tcp_server_socket->Listen(5);
-					turnserver->AddInternalServerSocket(tcp_server_socket, cricket::PROTO_TCP);
+					turnserver->AddInternalServerSocket(tcp_server_socket, webrtc::PROTO_TCP);
 				} else {
 					std::cout << "Failed to create TURN TCP server socket" << std::endl;
 				}
 
-				rtc::AsyncUDPSocket* udp_server_socket = rtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
+				webrtc::AsyncUDPSocket* udp_server_socket = webrtc::AsyncUDPSocket::Create(thread->socketserver(), server_addr);
 				if (udp_server_socket) {
 					std::cout << "TURN Listening UDP at " << server_addr.ToString() << std::endl;
-					turnserver->AddInternalSocket(udp_server_socket, cricket::PROTO_UDP);
+					turnserver->AddInternalSocket(udp_server_socket, webrtc::PROTO_UDP);
 				} else {
 					std::cout << "Failed to create TURN UDP server socket" << std::endl;
 				}
@@ -324,10 +324,10 @@ int main(int argc, char* argv[])
 				is.str(turnurl);
 				std::getline(is, addr, '@');
 				std::getline(is, addr, '@');
-				rtc::SocketAddress external_server_addr;
+				webrtc::SocketAddress external_server_addr;
 				external_server_addr.FromString(addr);		
 				std::cout << "TURN external addr:" << external_server_addr.ToString() << std::endl;			
-				turnserver->SetExternalSocketFactory(new rtc::BasicPacketSocketFactory(thread->socketserver()), rtc::SocketAddress(external_server_addr.ipaddr(), 0));
+				turnserver->SetExternalSocketFactory(new webrtc::BasicPacketSocketFactory(thread->socketserver()), webrtc::SocketAddress(external_server_addr.ipaddr(), 0));
 			}
 			
 			// mainloop
@@ -339,7 +339,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	rtc::CleanupSSL();
+	webrtc::CleanupSSL();
 	std::cout << "Exit" << std::endl;
 	return 0;
 }

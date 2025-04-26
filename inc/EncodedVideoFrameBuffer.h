@@ -17,10 +17,10 @@
 class EncodedVideoFrameBuffer : public webrtc::VideoFrameBuffer
 {
 public:
-  EncodedVideoFrameBuffer(int width, int height, const rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> &encoded_data, webrtc::VideoFrameType frameType, const webrtc::SdpVideoFormat& format)
+  EncodedVideoFrameBuffer(int width, int height, const webrtc::scoped_refptr<webrtc::EncodedImageBufferInterface> &encoded_data, webrtc::VideoFrameType frameType, const webrtc::SdpVideoFormat& format)
     : m_width(width), m_height(height), m_encoded_data(encoded_data), m_frameType(frameType), m_format(format) {}
   virtual Type type() const { return webrtc::VideoFrameBuffer::Type::kNative; }
-  virtual rtc::scoped_refptr<webrtc::I420BufferInterface> ToI420() { return nullptr; }
+  virtual webrtc::scoped_refptr<webrtc::I420BufferInterface> ToI420() { return nullptr; }
   virtual int width() const { return m_width; }
   virtual int height() const { return m_height; }
 
@@ -38,7 +38,7 @@ public:
 private:
   const int m_width;
   const int m_height;
-  rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> m_encoded_data;
+  webrtc::scoped_refptr<webrtc::EncodedImageBufferInterface> m_encoded_data;
   webrtc::VideoFrameType m_frameType;
   webrtc::SdpVideoFormat m_format;
 };

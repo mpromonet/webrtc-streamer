@@ -43,7 +43,7 @@ class NullEncoder : public webrtc::VideoEncoder {
 			return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
 		}
 
-		rtc::scoped_refptr<webrtc::VideoFrameBuffer> buffer = frame.video_frame_buffer();
+		webrtc::scoped_refptr<webrtc::VideoFrameBuffer> buffer = frame.video_frame_buffer();
 		if (buffer->type() != webrtc::VideoFrameBuffer::Type::kNative) {
 			RTC_LOG(LS_ERROR) << "buffer type must be kNative";
 			return WEBRTC_VIDEO_CODEC_ERR_PARAMETER;		

@@ -40,12 +40,12 @@
 template<class T>
 class TrackSource : public webrtc::VideoTrackSource {
 public:
-	static rtc::scoped_refptr<TrackSource> Create(const std::string & videourl, const std::map<std::string, std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
+	static webrtc::scoped_refptr<TrackSource> Create(const std::string & videourl, const std::map<std::string, std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
 		std::unique_ptr<T> capturer = absl::WrapUnique(T::Create(videourl, opts, videoDecoderFactory));
 		if (!capturer) {
 			return nullptr;
 		}
-		return rtc::make_ref_counted<TrackSource>(std::move(capturer));
+		return webrtc::make_ref_counted<TrackSource>(std::move(capturer));
 	}
 
 	virtual bool GetStats(Stats* stats) override {
@@ -69,7 +69,7 @@ protected:
    	}
 
 private:
-	rtc::VideoSourceInterface<webrtc::VideoFrame>* source() override {
+	webrtc::VideoSourceInterface<webrtc::VideoFrame>* source() override {
 		return m_capturer.get();
 	}
 	std::unique_ptr<T> m_capturer;
@@ -166,8 +166,8 @@ class CapturerFactory {
 		return videoList;
 	}
 
-	static rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(const std::string & videourl, const std::map<std::string,std::string> & opts, const std::regex & publishFilter, rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
-		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource;
+	static webrtc::scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(const std::string & videourl, const std::map<std::string,std::string> & opts, const std::regex & publishFilter, webrtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
+		webrtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource;
 		if ( ((videourl.find("rtsp://") == 0) || (videourl.find("rtsps://") == 0) )  && (std::regex_match("rtsp://", publishFilter))) {
 #ifdef HAVE_LIVE555
 			videoSource = TrackSource<RTSPVideoCapturer>::Create(videourl,opts, videoDecoderFactory);
@@ -213,7 +213,7 @@ class CapturerFactory {
 		return videoSource;
 	}
 
-	static const std::list<std::string> GetAudioCaptureDeviceList(const std::regex & publishFilter, rtc::scoped_refptr<webrtc::AudioDeviceModule>   audioDeviceModule) {
+	static const std::list<std::string> GetAudioCaptureDeviceList(const std::regex & publishFilter, webrtc::scoped_refptr<webrtc::AudioDeviceModule>   audioDeviceModule) {
 		std::list<std::string> audioList;
 		if (std::regex_match("audiocap://", publishFilter))
 		{
@@ -237,7 +237,7 @@ class CapturerFactory {
 		return audioList;
 	}
 
-	static const std::list<std::string> GetAudioPlayoutDeviceList(const std::regex & publishFilter, rtc::scoped_refptr<webrtc::AudioDeviceModule>   audioDeviceModule) {
+	static const std::list<std::string> GetAudioPlayoutDeviceList(const std::regex & publishFilter, webrtc::scoped_refptr<webrtc::AudioDeviceModule>   audioDeviceModule) {
 		std::list<std::string> audioList;
 		if (std::regex_match("audioplay://", publishFilter))
 		{
@@ -261,13 +261,13 @@ class CapturerFactory {
 		return audioList;
 	}
 
-	static rtc::scoped_refptr<webrtc::AudioSourceInterface> CreateAudioSource(const std::string & audiourl, 
+	static webrtc::scoped_refptr<webrtc::AudioSourceInterface> CreateAudioSource(const std::string & audiourl, 
 							const std::map<std::string,std::string> & opts, 
 							const std::regex & publishFilter, 
-							rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory,
-							rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderfactory,
-							rtc::scoped_refptr<webrtc::AudioDeviceModule>   audioDeviceModule) {
-		rtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource;
+							webrtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peer_connection_factory,
+							webrtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderfactory,
+							webrtc::scoped_refptr<webrtc::AudioDeviceModule>   audioDeviceModule) {
+		webrtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource;
 
 		if ( (audiourl.find("rtsp://") == 0) && (std::regex_match("rtsp://",publishFilter)) )
 		{
@@ -302,7 +302,7 @@ class CapturerFactory {
 			if ( (idx_audioDevice >= 0) && (idx_audioDevice < num_audioDevices) )
 			{
 				audioDeviceModule->SetRecordingDevice(idx_audioDevice);
-				cricket::AudioOptions opt;
+				webrtc::AudioOptions opt;
 				audioSource = peer_connection_factory->CreateAudioSource(opt);
 			}
 		}

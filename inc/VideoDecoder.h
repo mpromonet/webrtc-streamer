@@ -22,16 +22,16 @@
 #include "SessionSink.h"
 #include "VideoScaler.h"
 
-class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, public webrtc::DecodedImageCallback {
+class VideoDecoder : public webrtc::VideoSourceInterface<webrtc::VideoFrame>, public webrtc::DecodedImageCallback {
     private:
         class Frame
         {
             public:
                 Frame(): m_timestamp_ms(0) {}
-                Frame(const rtc::scoped_refptr<webrtc::EncodedImageBuffer> & content, uint64_t timestamp_ms, webrtc::VideoFrameType frameType) : m_content(content), m_timestamp_ms(timestamp_ms), m_frameType(frameType) {}
+                Frame(const webrtc::scoped_refptr<webrtc::EncodedImageBuffer> & content, uint64_t timestamp_ms, webrtc::VideoFrameType frameType) : m_content(content), m_timestamp_ms(timestamp_ms), m_frameType(frameType) {}
                 Frame(const std::string & format, int width, int height) : m_format(format), m_width(width), m_height(height) {}
             
-                rtc::scoped_refptr<webrtc::EncodedImageBuffer>   m_content;
+                webrtc::scoped_refptr<webrtc::EncodedImageBuffer>   m_content;
                 uint64_t                                         m_timestamp_ms;
                 webrtc::VideoFrameType                           m_frameType;
                 std::string                                      m_format;
@@ -67,7 +67,7 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
             {
                 value.erase(pos);
             }
-            rtc::Base64::DecodeFromArray(value.data(), value.size(), rtc::Base64::DO_STRICT, &binary, nullptr);
+            webrtc::Base64::DecodeFromArray(value.data(), value.size(), webrtc::Base64::DO_STRICT, &binary, nullptr);
             binary.insert(binary.begin(), H26X_marker, H26X_marker+sizeof(H26X_marker));
 
             return binary;
@@ -140,7 +140,7 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
 			m_queuecond.notify_all();
         }
 
-        void PostFrame(const rtc::scoped_refptr<webrtc::EncodedImageBuffer>& content, uint64_t ts, webrtc::VideoFrameType frameType) {
+        void PostFrame(const webrtc::scoped_refptr<webrtc::EncodedImageBuffer>& content, uint64_t ts, webrtc::VideoFrameType frameType) {
 			Frame frame(content, ts, frameType);			
 			{
 				std::unique_lock<std::mutex> lock(m_queuemutex);
@@ -184,11 +184,11 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
             return 1;
         }
 
-        void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink, const rtc::VideoSinkWants &wants) override {
+        void AddOrUpdateSink(webrtc::VideoSinkInterface<webrtc::VideoFrame> *sink, const webrtc::VideoSinkWants &wants) override {
             m_scaler.AddOrUpdateSink(sink, wants);
         }
 
-        void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame> *sink) override {
+        void RemoveSink(webrtc::VideoSinkInterface<webrtc::VideoFrame> *sink) override {
             m_scaler.RemoveSink(sink);
         }
 
@@ -202,13 +202,13 @@ class VideoDecoder : public rtc::VideoSourceInterface<webrtc::VideoFrame>, publi
             webrtc::RenderResolution resolution(width, height);
             settings.set_max_render_resolution(resolution);
             if (format == "H264") {
-                m_decoder=m_factory->Create(m_env,webrtc::SdpVideoFormat(cricket::kH264CodecName));
+                m_decoder=m_factory->Create(m_env,webrtc::SdpVideoFormat(webrtc::kH264CodecName));
                 settings.set_codec_type(webrtc::VideoCodecType::kVideoCodecH264);
             } else if (format == "H265") {
                 m_decoder=m_factory->Create(m_env,webrtc::SdpVideoFormat(format));
                 settings.set_codec_type(webrtc::VideoCodecType::kVideoCodecH265);
             } else if (format == "VP9") {
-                m_decoder=m_factory->Create(m_env,webrtc::SdpVideoFormat(cricket::kVp9CodecName));
+                m_decoder=m_factory->Create(m_env,webrtc::SdpVideoFormat(webrtc::kVp9CodecName));
                 settings.set_codec_type(webrtc::VideoCodecType::kVideoCodecVP9);	                
             }
             if (m_decoder.get() != NULL) {

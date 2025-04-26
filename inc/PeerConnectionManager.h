@@ -29,11 +29,11 @@
 #include "HttpServerRequestHandler.h"
 
 class PeerConnectionManager {
-	class VideoSink : public rtc::VideoSinkInterface<webrtc::VideoFrame> {
+	class VideoSink : public webrtc::VideoSinkInterface<webrtc::VideoFrame> {
 		public:
-			VideoSink(const rtc::scoped_refptr<webrtc::VideoTrackInterface> & track): m_track(track) {
+			VideoSink(const webrtc::scoped_refptr<webrtc::VideoTrackInterface> & track): m_track(track) {
 				RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " videotrack:" << m_track->id();
-				m_track->AddOrUpdateSink(this, rtc::VideoSinkWants());
+				m_track->AddOrUpdateSink(this, webrtc::VideoSinkWants());
 			}
 			virtual ~VideoSink() {
 				RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " videotrack:" << m_track->id();
@@ -42,17 +42,17 @@ class PeerConnectionManager {
 
 			// VideoSinkInterface implementation
 			virtual void OnFrame(const webrtc::VideoFrame& video_frame) {
-				rtc::scoped_refptr<webrtc::I420BufferInterface> buffer(video_frame.video_frame_buffer()->ToI420());
+				webrtc::scoped_refptr<webrtc::I420BufferInterface> buffer(video_frame.video_frame_buffer()->ToI420());
 				RTC_LOG(LS_VERBOSE) << __PRETTY_FUNCTION__ << " frame:" << buffer->width() << "x" << buffer->height();
 			}
 
 		protected:
-			rtc::scoped_refptr<webrtc::VideoTrackInterface> m_track;
+			webrtc::scoped_refptr<webrtc::VideoTrackInterface> m_track;
 	};
 
 	class AudioSink : public webrtc::AudioTrackSinkInterface {
 		public:
-			AudioSink(const rtc::scoped_refptr<webrtc::AudioTrackInterface> & track): m_track(track) {
+			AudioSink(const webrtc::scoped_refptr<webrtc::AudioTrackInterface> & track): m_track(track) {
 				RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " audiotrack:" << m_track->id();
 				m_track->AddSink(this);
 			}
@@ -70,14 +70,14 @@ class PeerConnectionManager {
 			}
 
 		protected:
-			rtc::scoped_refptr<webrtc::AudioTrackInterface> m_track;
+			webrtc::scoped_refptr<webrtc::AudioTrackInterface> m_track;
 	};
 	
 	class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver {
 		public:
-			static SetSessionDescriptionObserver* Create(const rtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise)
+			static SetSessionDescriptionObserver* Create(const webrtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise)
 			{
-				return  new rtc::RefCountedObject<SetSessionDescriptionObserver>(pc, promise);
+				return  new webrtc::RefCountedObject<SetSessionDescriptionObserver>(pc, promise);
 			}
 			virtual void OnSuccess()
 			{
@@ -108,19 +108,19 @@ class PeerConnectionManager {
 				m_cancelled = true;
 			}			
 		protected:
-			SetSessionDescriptionObserver(const rtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise) : m_pc(pc), m_promise(promise), m_cancelled(false) {};
+			SetSessionDescriptionObserver(const webrtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise) : m_pc(pc), m_promise(promise), m_cancelled(false) {};
 
 		private:
-			rtc::scoped_refptr<webrtc::PeerConnectionInterface>        m_pc;
+			webrtc::scoped_refptr<webrtc::PeerConnectionInterface>        m_pc;
 			std::promise<const webrtc::SessionDescriptionInterface*> & m_promise;	
 			bool                                                       m_cancelled;				
 	};
 
 	class CreateSessionDescriptionObserver : public webrtc::CreateSessionDescriptionObserver {
 		public:
-			static CreateSessionDescriptionObserver* Create(const rtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise)
+			static CreateSessionDescriptionObserver* Create(const webrtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise)
 			{
-				return new rtc::RefCountedObject<CreateSessionDescriptionObserver>(pc,promise);
+				return new webrtc::RefCountedObject<CreateSessionDescriptionObserver>(pc,promise);
 			}
 			virtual void OnSuccess(webrtc::SessionDescriptionInterface* desc)
 			{
@@ -141,10 +141,10 @@ class PeerConnectionManager {
 				m_cancelled = true;
 			}
 		protected:
-			CreateSessionDescriptionObserver(const rtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise) : m_pc(pc), m_promise(promise), m_cancelled(false) {};
+			CreateSessionDescriptionObserver(const webrtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise) : m_pc(pc), m_promise(promise), m_cancelled(false) {};
 
 		private:
-			rtc::scoped_refptr<webrtc::PeerConnectionInterface>        m_pc;
+			webrtc::scoped_refptr<webrtc::PeerConnectionInterface>        m_pc;
 			std::promise<const webrtc::SessionDescriptionInterface*> & m_promise;
 			bool                                                       m_cancelled;
 	};
@@ -156,7 +156,7 @@ class PeerConnectionManager {
 			Json::Value getReport() { return m_report; }
 
 		protected:
-			virtual void OnStatsDelivered(const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
+			virtual void OnStatsDelivered(const webrtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
 				for (const webrtc::RTCStats& stats : *report) {
 					Json::Value statsMembers;
 					for (auto & attribute : stats.Attributes()) {
@@ -171,7 +171,7 @@ class PeerConnectionManager {
 
 	class DataChannelObserver : public webrtc::DataChannelObserver  {
 		public:
-			DataChannelObserver(rtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel): m_dataChannel(dataChannel) {
+			DataChannelObserver(webrtc::scoped_refptr<webrtc::DataChannelInterface> dataChannel): m_dataChannel(dataChannel) {
 				m_dataChannel->RegisterObserver(this);
 			
 			}
@@ -192,7 +192,7 @@ class PeerConnectionManager {
 			}
 
 		protected:
-			rtc::scoped_refptr<webrtc::DataChannelInterface>    m_dataChannel;
+			webrtc::scoped_refptr<webrtc::DataChannelInterface>    m_dataChannel;
 	};
 
 	class PeerConnectionObserver : public webrtc::PeerConnectionObserver {
@@ -207,11 +207,11 @@ class PeerConnectionManager {
 				RTC_LOG(LS_INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
 				webrtc::PeerConnectionDependencies dependencies(this);
 
-				webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::PeerConnectionInterface>> result = m_peerConnectionManager->m_peer_connection_factory->CreatePeerConnectionOrError(config, std::move(dependencies));
+				webrtc::RTCErrorOr<webrtc::scoped_refptr<webrtc::PeerConnectionInterface>> result = m_peerConnectionManager->m_peer_connection_factory->CreatePeerConnectionOrError(config, std::move(dependencies));
 				if (result.ok()) {
 					m_pc = result.MoveValue();
 
-					webrtc::RTCErrorOr<rtc::scoped_refptr<webrtc::DataChannelInterface>>  errorOrChannel = m_pc->CreateDataChannelOrError("ServerDataChannel", NULL);
+					webrtc::RTCErrorOr<webrtc::scoped_refptr<webrtc::DataChannelInterface>>  errorOrChannel = m_pc->CreateDataChannelOrError("ServerDataChannel", NULL);
 					if (errorOrChannel.ok()) {
 						m_localChannel.reset(new DataChannelObserver(errorOrChannel.MoveValue()));
 					} else {
@@ -222,7 +222,7 @@ class PeerConnectionManager {
 					RTC_LOG(LS_ERROR) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid << " error:" << result.error().message();
 				}
 
-				m_statsCallback = new rtc::RefCountedObject<PeerConnectionStatsCollectorCallback>();
+				m_statsCallback = new webrtc::RefCountedObject<PeerConnectionStatsCollectorCallback>();
 				RTC_LOG(LS_INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid;
 			};
 
@@ -247,10 +247,10 @@ class PeerConnectionManager {
 				return Json::Value(m_statsCallback->getReport());
 			};
 
-			rtc::scoped_refptr<webrtc::PeerConnectionInterface> getPeerConnection() { return m_pc; };
+			webrtc::scoped_refptr<webrtc::PeerConnectionInterface> getPeerConnection() { return m_pc; };
 
 			// PeerConnectionObserver interface
-			virtual void OnAddStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream)    {
+			virtual void OnAddStream(webrtc::scoped_refptr<webrtc::MediaStreamInterface> stream)    {
 				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " nb video tracks:" << stream->GetVideoTracks().size();
 				webrtc::VideoTrackVector videoTracks = stream->GetVideoTracks();
 				if (videoTracks.size()>0) {					
@@ -262,12 +262,12 @@ class PeerConnectionManager {
 					m_audiosink.reset(new AudioSink(audioTracks.at(0)));
 				}
 			}
-			virtual void OnRemoveStream(rtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
+			virtual void OnRemoveStream(webrtc::scoped_refptr<webrtc::MediaStreamInterface> stream) {
 				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__;
 				m_videosink.reset();
 				m_audiosink.reset();
 			}
-			virtual void OnDataChannel(rtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
+			virtual void OnDataChannel(webrtc::scoped_refptr<webrtc::DataChannelInterface> channel) {
 				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__;
 				m_remoteChannel.reset(new DataChannelObserver(channel));
 			}
@@ -306,11 +306,11 @@ class PeerConnectionManager {
 		private:
 			PeerConnectionManager*                                   m_peerConnectionManager;
 			const std::string                                        m_peerid;
-			rtc::scoped_refptr<webrtc::PeerConnectionInterface>      m_pc;
+			webrtc::scoped_refptr<webrtc::PeerConnectionInterface>      m_pc;
 			std::unique_ptr<DataChannelObserver>                     m_localChannel;
 			std::unique_ptr<DataChannelObserver>                     m_remoteChannel;
 			Json::Value                                              m_iceCandidateList;
-			rtc::scoped_refptr<PeerConnectionStatsCollectorCallback> m_statsCallback;
+			webrtc::scoped_refptr<PeerConnectionStatsCollectorCallback> m_statsCallback;
 			std::unique_ptr<VideoSink>                               m_videosink;
 			std::unique_ptr<AudioSink>                               m_audiosink;
 			bool                                                     m_deleting;
@@ -344,11 +344,11 @@ class PeerConnectionManager {
 	protected:
 		PeerConnectionObserver*                               CreatePeerConnection(const std::string& peerid);
 		bool                                                  AddStreams(webrtc::PeerConnectionInterface* peer_connection, const std::string & videourl, const std::string & audiourl, const std::string & options);
-		rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(const std::string & videourl, const std::map<std::string,std::string> & opts);
-		rtc::scoped_refptr<webrtc::AudioSourceInterface>      CreateAudioSource(const std::string & audiourl, const std::map<std::string,std::string> & opts);
+		webrtc::scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(const std::string & videourl, const std::map<std::string,std::string> & opts);
+		webrtc::scoped_refptr<webrtc::AudioSourceInterface>      CreateAudioSource(const std::string & audiourl, const std::map<std::string,std::string> & opts);
 		bool                                                  streamStillUsed(const std::string & streamLabel);
 		const std::list<std::string>                          getVideoCaptureDeviceList();
-		rtc::scoped_refptr<webrtc::PeerConnectionInterface>   getPeerConnection(const std::string& peerid);
+		webrtc::scoped_refptr<webrtc::PeerConnectionInterface>   getPeerConnection(const std::string& peerid);
 		const std::string                                     sanitizeLabel(const std::string &label);
 		void                                                  createAudioModule(webrtc::AudioDeviceModule::AudioLayer audioLayer);
 		std::unique_ptr<webrtc::SessionDescriptionInterface>  getAnswer(const std::string & peerid, const std::string & sdpoffer, const std::string & videourl, const std::string & audiourl, const std::string & options, bool waitgatheringcompletion = false);
@@ -357,15 +357,15 @@ class PeerConnectionManager {
 
 
 	protected:
-		std::unique_ptr<rtc::Thread>                                              m_signalingThread;
-		std::unique_ptr<rtc::Thread>                                              m_workerThread;
-		std::unique_ptr<rtc::Thread>                                              m_networkThread;
-		typedef std::pair< rtc::scoped_refptr<webrtc::VideoTrackSourceInterface>, rtc::scoped_refptr<webrtc::AudioSourceInterface>> AudioVideoPair;
-		rtc::scoped_refptr<webrtc::AudioDecoderFactory>                           m_audioDecoderfactory;
+		std::unique_ptr<webrtc::Thread>                                              m_signalingThread;
+		std::unique_ptr<webrtc::Thread>                                              m_workerThread;
+		std::unique_ptr<webrtc::Thread>                                              m_networkThread;
+		typedef std::pair< webrtc::scoped_refptr<webrtc::VideoTrackSourceInterface>, webrtc::scoped_refptr<webrtc::AudioSourceInterface>> AudioVideoPair;
+		webrtc::scoped_refptr<webrtc::AudioDecoderFactory>                           m_audioDecoderfactory;
 		std::unique_ptr<webrtc::TaskQueueFactory>                                 m_task_queue_factory;
-		rtc::scoped_refptr<webrtc::AudioDeviceModule>                             m_audioDeviceModule;
+		webrtc::scoped_refptr<webrtc::AudioDeviceModule>                             m_audioDeviceModule;
   		std::unique_ptr<webrtc::VideoDecoderFactory>                              m_video_decoder_factory;
-		rtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>                m_peer_connection_factory;
+		webrtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>                m_peer_connection_factory;
 		std::mutex                                                                m_peerMapMutex;
 		std::map<std::string, PeerConnectionObserver* >                           m_peer_connectionobs_map;
 		std::map<std::string, AudioVideoPair>                                     m_stream_map;

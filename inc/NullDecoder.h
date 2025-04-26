@@ -37,8 +37,8 @@ public:
 			RTC_LOG(LS_WARNING) << "RegisterDecodeCompleteCallback() not called";
 			return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
 		}
-		rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encodedData = input_image.GetEncodedData();
-		rtc::scoped_refptr<webrtc::VideoFrameBuffer> frameBuffer = rtc::make_ref_counted<EncodedVideoFrameBuffer>(m_settings.max_render_resolution().Width(), m_settings.max_render_resolution().Height(), encodedData, input_image.FrameType(), m_format);
+		webrtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encodedData = input_image.GetEncodedData();
+		webrtc::scoped_refptr<webrtc::VideoFrameBuffer> frameBuffer = webrtc::make_ref_counted<EncodedVideoFrameBuffer>(m_settings.max_render_resolution().Width(), m_settings.max_render_resolution().Height(), encodedData, input_image.FrameType(), m_format);
 		
 		webrtc::VideoFrame frame = webrtc::VideoFrame::Builder()
 					.set_video_frame_buffer(frameBuffer)

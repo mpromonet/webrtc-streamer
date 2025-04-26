@@ -124,7 +124,7 @@ private:
                 {
                     m_cfg.clear();
                     RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H264 SPS size:" << spssize;
-		    rtc::ArrayView<const uint8_t> spsBuffer((const unsigned char*)(&body[start_sps+3]), spssize);
+		    webrtc::ArrayView<const uint8_t> spsBuffer((const unsigned char*)(&body[start_sps+3]), spssize);
                     std::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(spsBuffer);
                     if (!sps)
                     {
@@ -155,7 +155,7 @@ private:
                 content.insert(content.end(), m_cfg.begin(), m_cfg.end());
                 content.insert(content.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
                 content.insert(content.end(), &body[9], &body[size]);
-                rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
+                webrtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
                 PostFrame(frame, ts, webrtc::VideoFrameType::kVideoFrameKey);
             }
             else if (frameType == 2) {
@@ -164,7 +164,7 @@ private:
                 std::vector<uint8_t> content;
                 content.insert(content.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
                 content.insert(content.end(), &body[9], &body[size]);
-                rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
+                webrtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
                 PostFrame(frame, ts, webrtc::VideoFrameType::kVideoFrameDelta);
             }
         }
@@ -220,7 +220,7 @@ private:
                 content.insert(content.end(), m_cfg.begin(), m_cfg.end());
                 content.insert(content.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
                 content.insert(content.end(), &body[9], &body[size]);
-                rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
+                webrtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
                 PostFrame(frame, ts, webrtc::VideoFrameType::kVideoFrameKey);
             }
             else if (frameType == 2) {
@@ -229,7 +229,7 @@ private:
                 std::vector<uint8_t> content;
                 content.insert(content.end(), H26X_marker, H26X_marker+sizeof(H26X_marker));
                 content.insert(content.end(), &body[9], &body[size]);
-                rtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
+                webrtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(content.data(), content.size());
                 PostFrame(frame, ts, webrtc::VideoFrameType::kVideoFrameDelta);
             }            
         }

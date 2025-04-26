@@ -114,7 +114,7 @@ private:
 
 				bool idr = false;
 				int cfg = 0;
-				rtc::ArrayView<const uint8_t> data((const uint8_t*)buffer, frameSize);
+				webrtc::ArrayView<const uint8_t> data((const uint8_t*)buffer, frameSize);
 				std::vector<webrtc::H264::NaluIndex> naluIndexes = webrtc::H264::FindNaluIndices(data);
 				for (webrtc::H264::NaluIndex  index : naluIndexes) {
 					webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[index.payload_start_offset]);
@@ -133,7 +133,7 @@ private:
 				}
 				RTC_LOG(LS_VERBOSE) << __FUNCTION__ << " idr:" << idr << " cfg:" << cfg << " " << m_sps->size() << " " << m_pps->size() << " " << frameSize;
 				
-				rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encodedData = webrtc::EncodedImageBuffer::Create((uint8_t*)buffer, frameSize);
+				webrtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encodedData = webrtc::EncodedImageBuffer::Create((uint8_t*)buffer, frameSize);
 				delete [] buffer;			
 				// add last SPS/PPS if not present before an IDR
 				if (idr && (cfg == 0) && (m_sps->size() != 0) && (m_pps->size() != 0) ) {
@@ -147,7 +147,7 @@ private:
 
 				int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
 				webrtc::VideoFrameType frameType = idr ? webrtc::VideoFrameType::kVideoFrameKey : webrtc::VideoFrameType::kVideoFrameDelta;
-				rtc::scoped_refptr<webrtc::VideoFrameBuffer> frameBuffer = rtc::make_ref_counted<EncodedVideoFrameBuffer>(m_capture->getWidth(), m_capture->getHeight(), encodedData, frameType, webrtc::SdpVideoFormat(m_format));
+				webrtc::scoped_refptr<webrtc::VideoFrameBuffer> frameBuffer = webrtc::make_ref_counted<EncodedVideoFrameBuffer>(m_capture->getWidth(), m_capture->getHeight(), encodedData, frameType, webrtc::SdpVideoFormat(m_format));
 				webrtc::VideoFrame frame = webrtc::VideoFrame::Builder()
 					.set_video_frame_buffer(frameBuffer)
 					.set_rotation(webrtc::kVideoRotation_0)
@@ -173,8 +173,8 @@ private:
 	bool                                                    m_stop;
 	std::thread                                             m_capturethread;
 	std::unique_ptr<V4l2Capture>                            m_capture;
-	rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> m_sps;
-	rtc::scoped_refptr<webrtc::EncodedImageBufferInterface> m_pps;
+	webrtc::scoped_refptr<webrtc::EncodedImageBufferInterface> m_sps;
+	webrtc::scoped_refptr<webrtc::EncodedImageBufferInterface> m_pps;
 	std::string											    m_format;
 	int                                                     m_width;		
  	int                                                     m_height;	

@@ -16,13 +16,13 @@
 
 class FileAudioSource : public LiveAudioSource<MKVClient> {
 	public:
-		static rtc::scoped_refptr<FileAudioSource> Create(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri, const std::map<std::string,std::string> & opts) {
-			rtc::scoped_refptr<FileAudioSource> source(new rtc::FinalRefCountedObject<FileAudioSource>(audioDecoderFactory, uri, opts));
+		static webrtc::scoped_refptr<FileAudioSource> Create(webrtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri, const std::map<std::string,std::string> & opts) {
+			webrtc::scoped_refptr<FileAudioSource> source(new webrtc::FinalRefCountedObject<FileAudioSource>(audioDecoderFactory, uri, opts));
 			return source;
 		}
 	
 	protected:
-		FileAudioSource(rtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri, const std::map<std::string,std::string> & opts); 
+		FileAudioSource(webrtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string & uri, const std::map<std::string,std::string> & opts); 
 		virtual ~FileAudioSource();
 };
 

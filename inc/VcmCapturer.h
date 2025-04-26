@@ -12,7 +12,7 @@
 #include "modules/video_capture/video_capture_factory.h"
 #include "VideoSource.h"
 
-class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public VideoSource {
+class VcmCapturer : public webrtc::VideoSinkInterface<webrtc::VideoFrame>,  public VideoSource {
  public:
 	static VcmCapturer* Create(const std::string & videourl, const std::map<std::string, std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
 		std::unique_ptr<VcmCapturer> vcm_capturer(new VcmCapturer());
@@ -111,5 +111,5 @@ class VcmCapturer : public rtc::VideoSinkInterface<webrtc::VideoFrame>,  public 
 
 	int                                            m_width;		
  	int                                            m_height;
-	rtc::scoped_refptr<webrtc::VideoCaptureModule> m_vcm;
+	webrtc::scoped_refptr<webrtc::VideoCaptureModule> m_vcm;
 };

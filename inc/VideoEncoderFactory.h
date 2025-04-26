@@ -18,7 +18,7 @@
 class VideoEncoderFactory : public webrtc::VideoEncoderFactory {
    public:
     VideoEncoderFactory(): supported_formats_(webrtc::SupportedH264Codecs()) {
-      supported_formats_.push_back(webrtc::SdpVideoFormat(cricket::kH265CodecName));
+      supported_formats_.push_back(webrtc::SdpVideoFormat(webrtc::kH265CodecName));
     }
     virtual ~VideoEncoderFactory() override {}
 
