@@ -33,7 +33,7 @@ void DesktopCapturer::OnCaptureResult(webrtc::DesktopCapturer::Result result, st
 			libyuv::kRotate0, ::libyuv::FOURCC_ARGB);									
 				
 		if (conversionResult >= 0) {
-			webrtc::VideoFrame videoFrame(I420buffer, webrtc::VideoRotation::kVideoRotation_0, rtc::TimeMicros());
+			webrtc::VideoFrame videoFrame(I420buffer, webrtc::VideoRotation::kVideoRotation_0, webrtc::TimeMicros());
 			if ( (m_height == 0) && (m_width == 0) ) {
 				m_broadcaster.OnFrame(videoFrame);	
 
@@ -54,7 +54,7 @@ void DesktopCapturer::OnCaptureResult(webrtc::DesktopCapturer::Result result, st
 	            webrtc::VideoFrame frame = webrtc::VideoFrame::Builder()
 					.set_video_frame_buffer(scaled_buffer)
 					.set_rotation(webrtc::kVideoRotation_0)
-					.set_timestamp_us(rtc::TimeMicros())
+					.set_timestamp_us(webrtc::TimeMicros())
 					.build();
 				
 						
