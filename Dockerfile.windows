@@ -13,7 +13,7 @@ ENV    DEPOT_TOOLS_WIN_TOOLCHAIN=0 \
 
 # Install Windows 10 SDK
 RUN powershell -c "Invoke-WebRequest -Uri 'https://go.microsoft.com/fwlink/?linkid=2313119' -OutFile winsdksetup.exe -UseBasicParsing ;"
-RUN winsdksetup.exe /features OptionId.WindowsDesktopDebuggers /q /norestart
+RUN winsdksetup.exe /features OptionId.WindowsDesktopDebuggers OptionId.DesktopCPPx64 /q /norestart
 
 # Install Chocolatey & packages 
 RUN powershell.exe -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SETX PATH "%PATH%;%ALLUSERSPROFILE%\chocolatey\bin" 
