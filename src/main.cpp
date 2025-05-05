@@ -62,16 +62,17 @@ public:
 
 std::string GetExeDir(const char* argv0) {
 	std::string exeDir;
-	char resolvedPath[PATH_MAX];
 #ifdef _WIN32
+	char resolvedPath[MAX_PATH];
 	if (GetModuleFileNameA(NULL, resolvedPath, MAX_PATH)) {
 		std::string fullPath(resolvedPath);
-		size_t pos = fullPathStr.find_last_of("\\/");
+		size_t pos = fullPath.find_last_of("\\/");
 		if (pos != std::string::npos) {
-			exeDir = fullPathStr.substr(0, pos + 1);
+			exeDir = fullPath.substr(0, pos + 1);
 		}
 	}
 #else
+	char resolvedPath[PATH_MAX];
     if (realpath(argv0, resolvedPath)) {
         std::string fullPath(resolvedPath);
         exeDir = dirname(resolvedPath);
