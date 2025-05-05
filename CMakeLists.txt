@@ -48,7 +48,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   endif()
 
   file(READ ${WEBRTCROOT}/src/DEPS filecontent)
-  string(REPLACE "'src/resources'],$" "'src/resources'],'condition':'rtc_include_tests==true'," filecontent "${filecontent}")
+  string(REGEX REPLACE "'src/resources'],[^']" "'src/resources'],'condition':'rtc_include_tests==true'," filecontent "${filecontent}")
   file(WRITE ${WEBRTCROOT}/src/DEPS "${filecontent}")
 
   EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND gclient sync)
