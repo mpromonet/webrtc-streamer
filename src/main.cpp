@@ -8,7 +8,10 @@
 ** -------------------------------------------------------------------------*/
 
 #include <signal.h>
+
+#ifndef _WIN32
 #include <libgen.h> 
+#endif
 
 #include <iostream>
 #include <fstream>
@@ -57,16 +60,33 @@ public:
 	}
 };
 
-std::string GetDefaultRessourceDir(const char* argv0) {
-    char resolvedPath[PATH_MAX];
+std::string GetExeDir(const char* argv0) {
 	std::string exeDir;
+	char resolvedPath[PATH_MAX];
+#ifdef _WIN32
+	if (GetModuleFileNameA(NULL, resolvedPath, MAX_PATH)) {
+		std::string fullPath(resolvedPath);
+		size_t pos = fullPathStr.find_last_of("\\/");
+		if (pos != std::string::npos) {
+			exeDir = fullPathStr.substr(0, pos + 1);
+		}
+	}
+#else
     if (realpath(argv0, resolvedPath)) {
         std::string fullPath(resolvedPath);
         exeDir = dirname(resolvedPath);
 		exeDir += "/";
     }
+#endif	
+	return exeDir;
+}
+
+
+std::string GetDefaultRessourceDir(const char* argv0) {
+   
 	std::string ressourceDir(WEBRTCSTREAMERRESSOURCE);
 	if (ressourceDir[0] != '/') {
+		std::string exeDir = GetExeDir(argv0);
 		ressourceDir = exeDir + ressourceDir;
 	}
 	
