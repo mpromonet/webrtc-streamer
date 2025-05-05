@@ -27,6 +27,7 @@
         mkdir -p /webrtc
         cd /webrtc
         fetch --nohooks webrtc
+        update_depot_tools
       build-environment:
       - PATH: $SNAPCRAFT_PART_SRC:$PATH        
       build-packages:
