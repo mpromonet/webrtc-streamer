@@ -4,7 +4,7 @@ project (webrtc-streamer)
 set (WEBRTCROOT "${CMAKE_CURRENT_SOURCE_DIR}/../webrtc" CACHE STRING "WEBRTC root directory")
 set (WEBRTCDESKTOPCAPTURE "ON" CACHE STRING "WEBRTC Desktop capture")
 set (WEBRTCCHROMEBRANDED "ON" CACHE STRING "WEBRTC Chrome branded")
-set (WEBRTCVERSION "c92ab3befff2e0595efed43e586c8ef8fda8148b" CACHE STRING "WEBRTC version")
+set (WEBRTCVERSION "d66b2f9f60329e08046c0c9e021f0bc967e9a3bd" CACHE STRING "WEBRTC version")
 set (WEBRTCSTREAMERRESSOURCE "./html" CACHE STRING "WEBRTC ressource directory")
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -209,6 +209,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc)
 set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
 set(WEBRTC_LIBS_INFO
+    "${WEBRTCOBJS}/api/video_codecs/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_software_fallback_wrappers${CMAKE_STATIC_LIBRARY_SUFFIX}"
     "${WEBRTCOBJS}/api/video_codecs/${CMAKE_STATIC_LIBRARY_PREFIX}builtin_video_encoder_factory${CMAKE_STATIC_LIBRARY_SUFFIX}"
     "${WEBRTCOBJS}/api/video_codecs/${CMAKE_STATIC_LIBRARY_PREFIX}builtin_video_decoder_factory${CMAKE_STATIC_LIBRARY_SUFFIX}"
     "${WEBRTCOBJS}/media/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_internal_video_codecs${CMAKE_STATIC_LIBRARY_SUFFIX}"
