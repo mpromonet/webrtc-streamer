@@ -15,7 +15,9 @@ jobs:
     - run: git fetch --prune --unshallow --tags
 
     - name: Install Xcode CLI tools
-      run: xcode-select --install
+      run: |
+        sudo rm -rf /Library/Developer/CommandLineTools
+        sudo xcode-select --install
         
     - name: pkg
       run: brew install p7zip openssl rtmpdump && brew link --force openssl
