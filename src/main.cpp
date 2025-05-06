@@ -9,6 +9,10 @@
 
 #include <signal.h>
 
+#ifndef _WIN32
+#include <libgen.h> 
+#endif
+
 #include <iostream>
 #include <fstream>
 
@@ -56,6 +60,40 @@ public:
 	}
 };
 
+std::string GetExeDir(const char* argv0) {
+	std::string exeDir;
+#ifdef _WIN32
+	char resolvedPath[MAX_PATH];
+	if (GetModuleFileNameA(NULL, resolvedPath, MAX_PATH)) {
+		std::string fullPath(resolvedPath);
+		size_t pos = fullPath.find_last_of("\\/");
+		if (pos != std::string::npos) {
+			exeDir = fullPath.substr(0, pos + 1);
+		}
+	}
+#else
+	char resolvedPath[PATH_MAX];
+    if (realpath(argv0, resolvedPath)) {
+        std::string fullPath(resolvedPath);
+        exeDir = dirname(resolvedPath);
+		exeDir += "/";
+    }
+#endif	
+	return exeDir;
+}
+
+
+std::string GetDefaultRessourceDir(const char* argv0) {
+   
+	std::string ressourceDir(WEBRTCSTREAMERRESSOURCE);
+	if (ressourceDir[0] != '/') {
+		std::string exeDir = GetExeDir(argv0);
+		ressourceDir = exeDir + ressourceDir;
+	}
+	
+    return ressourceDir;
+}
+
 /* ---------------------------------------------------------------------------
 **  main
 ** -------------------------------------------------------------------------*/
@@ -69,7 +107,7 @@ int main(int argc, char* argv[])
 	const char* stunurl       = "stun.l.google.com:19302";
 	std::string localWebrtcUdpPortRange = "0:65535";
 	int logLevel              = webrtc::LS_NONE;
-	const char* webroot       = "./html";
+	std::string webroot       = GetDefaultRessourceDir(argv[0]);
 	std::string basePath;
 	std::string sslCertificate;
 	webrtc::AudioDeviceModule::AudioLayer audioLayer = webrtc::AudioDeviceModule::kPlatformDefaultAudio;
@@ -170,7 +208,7 @@ int main(int argc, char* argv[])
 
 				std::cout << std::endl << "  HTTP options" << std::endl;
 				std::cout << "\t -H hostname:port                   : HTTP server binding (default "   << httpAddress    << ")"                         << std::endl;
-				std::cout << "\t -w webroot                         : path to get static files"                                                                << std::endl;
+				std::cout << "\t -w webroot                         : path to get static files (default " << webroot << ")"                             << std::endl;
 				std::cout << "\t -c sslkeycert                      : path to private key and certificate for HTTPS"                                    << std::endl;
 				std::cout << "\t -N nbthreads                       : number of threads for HTTP server"                                                << std::endl;
 				std::cout << "\t -A passwd                          : password file for HTTP server access"                                             << std::endl;
