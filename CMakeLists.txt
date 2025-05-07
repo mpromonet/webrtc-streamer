@@ -52,7 +52,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   string(REGEX REPLACE "'src/resources'],[^']" "'src/resources'],'condition':'rtc_include_tests==true'," filecontent "${filecontent}")
   file(WRITE ${WEBRTCROOT}/src/DEPS "${filecontent}")
 
-  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND gclient sync --nohooks)
+  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND gclient sync)
 
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src
@@ -81,9 +81,6 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
       message("install-sysroot.py succeeded ${SYSROOT_OUTPUT}")
     endif()
   endif()
-
-  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND gclient sync)
-
 
   set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nenable_js_protobuf=false\nuse_glib=false\n)
   set (WEBRTCARGS use_custom_libcxx=false\nlibyuv_use_sme=false\n${WEBRTCARGS})
@@ -127,12 +124,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   file(WRITE ${WEBRTCROOT}/src/call/rtp_config.cc "${filecontent}")  
 
   # sound support
-  if (APPLE)
-    set (WEBRTCARGS rtc_include_internal_audio_device=true\n${WEBRTCARGS})
-    set (WEBRTCARGS rtc_include_pulse_audio=true\n${WEBRTCARGS})
-  elseif (WIN32)
-    set (WEBRTCARGS rtc_include_internal_audio_device=true\n${WEBRTCARGS})
-  else()
+  if (NOT DEFINED CMAKE_FIND_ROOT_PATH)
     if (NOT PulseAudio_FOUND)
       set (WEBRTCARGS rtc_include_pulse_audio=false\n${WEBRTCARGS})
     endif()
