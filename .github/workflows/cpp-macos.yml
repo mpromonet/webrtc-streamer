@@ -15,7 +15,8 @@ jobs:
     - run: git fetch --prune --unshallow --tags
 
     - name: pkg
-      run: brew install cmake@3.31.6 p7zip gcc openssl rtmpdump && brew link --force openssl
+      run: | 
+          brew install p7zip openssl rtmpdump && brew link --force openssl
 
     - name: depot_tools
       run: |
