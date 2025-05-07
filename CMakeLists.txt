@@ -124,7 +124,12 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   file(WRITE ${WEBRTCROOT}/src/call/rtp_config.cc "${filecontent}")  
 
   # sound support
-  if (NOT DEFINED CMAKE_FIND_ROOT_PATH)
+  if (APPLE)
+    set (WEBRTCARGS rtc_include_internal_audio_device=true\n${WEBRTCARGS})
+    set (WEBRTCARGS rtc_include_pulse_audio=true\n${WEBRTCARGS})
+  elseif (WIN32)
+    set (WEBRTCARGS rtc_include_internal_audio_device=true\n${WEBRTCARGS})
+  elseif (NOT DEFINED CMAKE_FIND_ROOT_PATH)
     if (NOT PulseAudio_FOUND)
       set (WEBRTCARGS rtc_include_pulse_audio=false\n${WEBRTCARGS})
     endif()
