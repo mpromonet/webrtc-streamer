@@ -52,7 +52,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   string(REGEX REPLACE "'src/resources'],[^']" "'src/resources'],'condition':'rtc_include_tests==true'," filecontent "${filecontent}")
   file(WRITE ${WEBRTCROOT}/src/DEPS "${filecontent}")
 
-  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND gclient sync)
+  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND gclient sync --nohooks)
 
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src
@@ -81,6 +81,8 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
       message("install-sysroot.py succeeded ${SYSROOT_OUTPUT}")
     endif()
   endif()
+
+  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND gclient sync)
 
 
   set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nenable_js_protobuf=false\nuse_glib=false\n)
