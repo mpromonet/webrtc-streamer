@@ -116,6 +116,12 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   endif()  
 
   #patch
+  if (APPLE)
+    file(READ ${WEBRTCROOT}/src/third_party/protobuf/src/google/protobuf/port_def.inc filecontent)
+    string(REGEX REPLACE "define PROTOBUF_CONSTINIT constinit" "define PROTOBUF_CONSTINIT " filecontent "${filecontent}")
+    file(WRITE ${WEBRTCROOT}/src/third_party/protobuf/src/google/protobuf/port_def.inc "${filecontent}")
+  endif()
+
   file(READ ${WEBRTCROOT}/src/media/base/media_channel.h filecontent)
   string(REGEX REPLACE "ost << ToStringIfSet[^;]*;" "" filecontent "${filecontent}")
   file(WRITE ${WEBRTCROOT}/src/media/base/media_channel.h "${filecontent}")
