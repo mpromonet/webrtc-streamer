@@ -17,7 +17,7 @@
 #include "api/environment/environment_factory.h"
 #include "modules/video_coding/include/video_error_codes.h"
 #include "modules/video_coding/h264_sprop_parameter_sets.h"
-#include "rtc_base/third_party/base64/base64.h"
+#include "rtc_base/base64.h"
 
 #include "SessionSink.h"
 #include "VideoScaler.h"
@@ -67,8 +67,14 @@ class VideoDecoder : public webrtc::VideoSourceInterface<webrtc::VideoFrame>, pu
             {
                 value.erase(pos);
             }
-            webrtc::Base64::DecodeFromArray(value.data(), value.size(), webrtc::Base64::DO_STRICT, &binary, nullptr);
-            binary.insert(binary.begin(), H26X_marker, H26X_marker+sizeof(H26X_marker));
+            std::optional<std::string> binaryResult = webrtc::Base64Decode(value);
+            if (!binaryResult) {
+                RTC_LOG(LS_ERROR) << "Cannot decode:" << value;
+            } else {
+                const std::string& decodedString = binaryResult.value();
+                binary.assign(decodedString.begin(), decodedString.end());        
+                binary.insert(binary.begin(), H26X_marker, H26X_marker+sizeof(H26X_marker));
+            }
 
             return binary;
         }
