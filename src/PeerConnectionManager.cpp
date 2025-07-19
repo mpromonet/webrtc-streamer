@@ -21,6 +21,7 @@
 #include "media/engine/webrtc_media_engine.h"
 #include "modules/audio_device/include/fake_audio_device.h"
 #include "api/enable_media.h"
+#include "api/audio/create_audio_device_module.h"
 
 #include "PeerConnectionManager.h"
 #include "V4l2AlsaMap.h"
@@ -193,8 +194,7 @@ webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencie
 	dependencies.network_thread = NULL;
 	dependencies.worker_thread = workerThread;
 	dependencies.signaling_thread = signalingThread;
-	dependencies.task_queue_factory = webrtc::CreateDefaultTaskQueueFactory();
-	dependencies.event_log_factory = absl::make_unique<webrtc::RtcEventLogFactory>(dependencies.task_queue_factory.get());
+	dependencies.event_log_factory = absl::make_unique<webrtc::RtcEventLogFactory>();
 
 	dependencies.adm = std::move(audioDeviceModule);
 	dependencies.audio_encoder_factory = webrtc::CreateBuiltinAudioEncoderFactory();
@@ -222,10 +222,10 @@ std::string getParam(const char *queryString, const char *paramName) {
 **  Constructor
 ** -------------------------------------------------------------------------*/
 PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange, bool useNullCodec, bool usePlanB, int maxpc, webrtc::PeerConnectionInterface::IceTransportsType transportType, const std::string & basePath)
-	: m_signalingThread(webrtc::Thread::Create()),
+	: m_webrtcenv(webrtc::CreateEnvironment()),
+	  m_signalingThread(webrtc::Thread::Create()),
 	  m_workerThread(webrtc::Thread::Create()),
 	  m_audioDecoderfactory(webrtc::CreateBuiltinAudioDecoderFactory()), 
-	  m_task_queue_factory(webrtc::CreateDefaultTaskQueueFactory()),
   	  m_video_decoder_factory(CreateDecoderFactory(useNullCodec)),
 	  m_iceServerList(iceServerList), 
 	  m_config(config),
@@ -445,7 +445,7 @@ std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionMan
 
 void PeerConnectionManager::createAudioModule(webrtc::AudioDeviceModule::AudioLayer audioLayer) {
 #ifdef HAVE_SOUND
-	m_audioDeviceModule = webrtc::AudioDeviceModule::Create(audioLayer, m_task_queue_factory.get());
+	m_audioDeviceModule = webrtc::CreateAudioDeviceModule(m_webrtcenv, audioLayer);
 	if (m_audioDeviceModule->Init() != 0) {
 		RTC_LOG(LS_WARNING) << "audio init fails -> disable audio capture";
 		m_audioDeviceModule = new webrtc::FakeAudioDeviceModule();
@@ -1360,23 +1360,16 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 /* ---------------------------------------------------------------------------
 **  ICE callback
 ** -------------------------------------------------------------------------*/
-void PeerConnectionManager::PeerConnectionObserver::OnIceCandidate(const webrtc::IceCandidateInterface *candidate)
+void PeerConnectionManager::PeerConnectionObserver::OnIceCandidate(const webrtc::IceCandidate *candidate)
 {
 	RTC_LOG(LS_INFO) << __FUNCTION__ << " " << candidate->sdp_mline_index();
 
-	std::string sdp;
-	if (!candidate->ToString(&sdp))
-	{
-		RTC_LOG(LS_ERROR) << "Failed to serialize candidate";
-	}
-	else
-	{
-		RTC_LOG(LS_INFO) << sdp;
+	const std::string sdp = candidate->ToString();
+	RTC_LOG(LS_INFO) << sdp;
 
-		Json::Value jmessage;
-		jmessage[kCandidateSdpMidName] = candidate->sdp_mid();
-		jmessage[kCandidateSdpMlineIndexName] = candidate->sdp_mline_index();
-		jmessage[kCandidateSdpName] = sdp;
-		m_iceCandidateList.append(jmessage);
-	}
+	Json::Value jmessage;
+	jmessage[kCandidateSdpMidName] = candidate->sdp_mid();
+	jmessage[kCandidateSdpMlineIndexName] = candidate->sdp_mline_index();
+	jmessage[kCandidateSdpName] = sdp;
+	m_iceCandidateList.append(jmessage);
 }

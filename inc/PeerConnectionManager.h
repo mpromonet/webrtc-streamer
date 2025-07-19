@@ -275,7 +275,7 @@ class PeerConnectionManager {
 				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " peerid:" << m_peerid;;
 			}
 
-			virtual void OnIceCandidate(const webrtc::IceCandidateInterface* candidate);
+			virtual void OnIceCandidate(const webrtc::IceCandidate* candidate);
 			
 			virtual void OnSignalingChange(webrtc::PeerConnectionInterface::SignalingState state) {
 				RTC_LOG(LS_WARNING) << __PRETTY_FUNCTION__ << " state:" << webrtc::PeerConnectionInterface::AsString(state) << " peerid:" << m_peerid;				
@@ -357,28 +357,28 @@ class PeerConnectionManager {
 
 
 	protected:
+		const webrtc::Environment                                                    m_webrtcenv;	
 		std::unique_ptr<webrtc::Thread>                                              m_signalingThread;
 		std::unique_ptr<webrtc::Thread>                                              m_workerThread;
 		std::unique_ptr<webrtc::Thread>                                              m_networkThread;
 		typedef std::pair< webrtc::scoped_refptr<webrtc::VideoTrackSourceInterface>, webrtc::scoped_refptr<webrtc::AudioSourceInterface>> AudioVideoPair;
 		webrtc::scoped_refptr<webrtc::AudioDecoderFactory>                           m_audioDecoderfactory;
-		std::unique_ptr<webrtc::TaskQueueFactory>                                 m_task_queue_factory;
 		webrtc::scoped_refptr<webrtc::AudioDeviceModule>                             m_audioDeviceModule;
-  		std::unique_ptr<webrtc::VideoDecoderFactory>                              m_video_decoder_factory;
+  		std::unique_ptr<webrtc::VideoDecoderFactory>                                 m_video_decoder_factory;
 		webrtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>                m_peer_connection_factory;
-		std::mutex                                                                m_peerMapMutex;
-		std::map<std::string, PeerConnectionObserver* >                           m_peer_connectionobs_map;
-		std::map<std::string, AudioVideoPair>                                     m_stream_map;
-		std::mutex                                                                m_streamMapMutex;
-		std::list<std::string>                                                    m_iceServerList;
-		const Json::Value                                                         m_config;
-		std::map<std::string,std::string>                                         m_videoaudiomap;
-		const std::regex                                                          m_publishFilter;
-		std::map<std::string,HttpServerRequestHandler::httpFunction>              m_func;
-		std::string																  m_webrtcPortRange;
-		bool                                                                      m_useNullCodec;
-		bool                                                                      m_usePlanB;
-		int                                                                       m_maxpc;
-		webrtc::PeerConnectionInterface::IceTransportsType                        m_transportType;
+		std::mutex                                                                   m_peerMapMutex;
+		std::map<std::string, PeerConnectionObserver* >                              m_peer_connectionobs_map;
+		std::map<std::string, AudioVideoPair>                                        m_stream_map;
+		std::mutex                                                                   m_streamMapMutex;
+		std::list<std::string>                                                       m_iceServerList;
+		const Json::Value                                                            m_config;
+		std::map<std::string,std::string>                                            m_videoaudiomap;
+		const std::regex                                                             m_publishFilter;
+		std::map<std::string,HttpServerRequestHandler::httpFunction>                 m_func;
+		std::string																     m_webrtcPortRange;
+		bool                                                                         m_useNullCodec;
+		bool                                                                         m_usePlanB;
+		int                                                                          m_maxpc;
+		webrtc::PeerConnectionInterface::IceTransportsType                           m_transportType;
 };
 
