@@ -9,10 +9,6 @@
 
 #pragma once
 
-#ifdef WIN32
-#include "base/win/wincrypt_shim.h"
-#endif
-
 #include <iostream>
 #include <thread>
 #include <mutex>
