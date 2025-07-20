@@ -22,6 +22,7 @@
 #include "modules/audio_device/include/fake_audio_device.h"
 #include "api/enable_media.h"
 #include "api/audio/create_audio_device_module.h"
+#include "api/create_peerconnection_factory.h"
 
 #include "PeerConnectionManager.h"
 #include "V4l2AlsaMap.h"
@@ -188,25 +189,6 @@ std::unique_ptr<webrtc::VideoDecoderFactory> CreateDecoderFactory(bool nullCodec
 	return factory;
 }
 
-webrtc::PeerConnectionFactoryDependencies CreatePeerConnectionFactoryDependencies(webrtc::Thread* signalingThread, webrtc::Thread* workerThread, webrtc::scoped_refptr<webrtc::AudioDeviceModule> audioDeviceModule, webrtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderfactory, bool useNullCodec)
-{
-	webrtc::PeerConnectionFactoryDependencies dependencies;
-	dependencies.network_thread = NULL;
-	dependencies.worker_thread = workerThread;
-	dependencies.signaling_thread = signalingThread;
-	dependencies.event_log_factory = absl::make_unique<webrtc::RtcEventLogFactory>();
-
-	dependencies.adm = std::move(audioDeviceModule);
-	dependencies.audio_encoder_factory = webrtc::CreateBuiltinAudioEncoderFactory();
-	dependencies.audio_decoder_factory = std::move(audioDecoderfactory);
-
-	dependencies.video_encoder_factory = CreateEncoderFactory(useNullCodec);
-	dependencies.video_decoder_factory = CreateDecoderFactory(useNullCodec);
-
-	webrtc::EnableMedia(dependencies);
-
-	return dependencies;
-}
 
 
 std::string getParam(const char *queryString, const char *paramName) {
@@ -245,7 +227,10 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 		
 	m_signalingThread->SetName("signaling", NULL);
 	m_signalingThread->Start();
-	m_peer_connection_factory = webrtc::CreateModularPeerConnectionFactory(CreatePeerConnectionFactoryDependencies(m_signalingThread.get(), m_workerThread.get(), m_audioDeviceModule, m_audioDecoderfactory, useNullCodec));
+	m_peer_connection_factory = webrtc::CreatePeerConnectionFactory(NULL,  m_workerThread.get(), m_signalingThread.get(), 
+																	m_audioDeviceModule, webrtc::CreateBuiltinAudioEncoderFactory(), m_audioDecoderfactory,
+																	CreateEncoderFactory(useNullCodec), CreateDecoderFactory(useNullCodec),
+																	NULL, NULL);
 
 	// build video audio map
 	m_videoaudiomap = getV4l2AlsaMap();
