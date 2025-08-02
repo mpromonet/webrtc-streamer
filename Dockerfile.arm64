@@ -1,5 +1,5 @@
 # build
-FROM ubuntu:24.04 AS builder
+FROM ubuntu:24.10 AS builder
 LABEL maintainer=michel.promonet@free.fr
 
 WORKDIR /build/webrtc-streamer
@@ -20,7 +20,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 	&& apt-get clean && rm -rf /var/lib/apt/lists/
 
 # run
-FROM --platform=arm64 ubuntu:24.04
+FROM --platform=arm64 ubuntu:24.10
 LABEL maintainer=michel.promonet@free.fr
 
 WORKDIR /usr/local/share/webrtc-streamer
