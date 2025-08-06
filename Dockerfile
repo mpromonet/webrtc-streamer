@@ -1,5 +1,5 @@
 # build
-FROM ubuntu:24.04 AS builder
+FROM ubuntu:24.10 AS builder
 LABEL maintainer=michel.promonet@free.fr
 ARG USERNAME=dev
 ARG USERID=10000
@@ -29,7 +29,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 USER $USERNAME
 
 # run
-FROM ubuntu:24.04
+FROM ubuntu:24.10
 LABEL maintainer=michel.promonet@free.fr
 
 WORKDIR /usr/local/share/webrtc-streamer
