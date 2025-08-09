@@ -22,8 +22,6 @@
 #include "p2p/base/basic_packet_socket_factory.h"
 #include "p2p/test/turn_server.h"
 
-#include "system_wrappers/include/field_trial.h"
-
 #include "PeerConnectionManager.h"
 #include "HttpServerRequestHandler.h"
 
@@ -262,10 +260,7 @@ int main(int argc, char* argv[])
 		iceServerList.push_back(std::string("turn:")+turnurl);
 	}
 
-	// init trials fields
-	webrtc::field_trial::InitFieldTrialsFromString(webrtcTrialsFields.c_str());
-
-	webRtcServer = new PeerConnectionManager(iceServerList, config["urls"], audioLayer, publishFilter, localWebrtcUdpPortRange, useNullCodec, usePlanB, maxpc, transportType, basePath);
+	webRtcServer = new PeerConnectionManager(iceServerList, config["urls"], audioLayer, publishFilter, localWebrtcUdpPortRange, useNullCodec, usePlanB, maxpc, transportType, basePath, webrtcTrialsFields);
 	if (!webRtcServer->InitializePeerConnection())
 	{
 		std::cout << "Cannot Initialize WebRTC server" << std::endl;

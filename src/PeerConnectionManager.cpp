@@ -23,6 +23,7 @@
 #include "api/enable_media.h"
 #include "api/audio/create_audio_device_module.h"
 #include "api/create_peerconnection_factory.h"
+#include "api/field_trials.h"
 
 #include "PeerConnectionManager.h"
 #include "V4l2AlsaMap.h"
@@ -203,8 +204,8 @@ std::string getParam(const char *queryString, const char *paramName) {
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange, bool useNullCodec, bool usePlanB, int maxpc, webrtc::PeerConnectionInterface::IceTransportsType transportType, const std::string & basePath)
-	: m_webrtcenv(webrtc::CreateEnvironment()),
+PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange, bool useNullCodec, bool usePlanB, int maxpc, webrtc::PeerConnectionInterface::IceTransportsType transportType, const std::string & basePath, const std::string & webrtcTrialsFields)
+	: m_webrtcenv(webrtc::CreateEnvironment(webrtc::FieldTrials::Create(webrtcTrialsFields))),
 	  m_signalingThread(webrtc::Thread::Create()),
 	  m_workerThread(webrtc::Thread::Create()),
 	  m_audioDecoderfactory(webrtc::CreateBuiltinAudioDecoderFactory()), 
@@ -216,7 +217,8 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 	  m_useNullCodec(useNullCodec), 
 	  m_usePlanB(usePlanB),
 	  m_maxpc(maxpc),
-	  m_transportType(transportType)
+	  m_transportType(transportType),
+	  m_webrtcTrialsFields(webrtcTrialsFields)
 {
 	m_workerThread->SetName("worker", NULL);
 	m_workerThread->Start();
@@ -227,10 +229,12 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 		
 	m_signalingThread->SetName("signaling", NULL);
 	m_signalingThread->Start();
+
+	std::unique_ptr<webrtc::FieldTrialsView> field_trials = webrtc::FieldTrials::Create(webrtcTrialsFields);
 	m_peer_connection_factory = webrtc::CreatePeerConnectionFactory(NULL,  m_workerThread.get(), m_signalingThread.get(), 
 																	m_audioDeviceModule, webrtc::CreateBuiltinAudioEncoderFactory(), m_audioDecoderfactory,
 																	CreateEncoderFactory(useNullCodec), CreateDecoderFactory(useNullCodec),
-																	NULL, NULL);
+																	NULL, NULL, NULL, std::move(field_trials));
 
 	// build video audio map
 	m_videoaudiomap = getV4l2AlsaMap();
