@@ -46,26 +46,33 @@ bool AACDecoder::Init() {
     }
 
     // Find AAC decoder
-    codec_ = avcodec_find_decoder(AV_CODEC_ID_AAC);
-    if (!codec_) {
+    const AVCodec* codec = avcodec_find_decoder(AV_CODEC_ID_AAC);
+    if (!codec) {
         RTC_LOG(LS_ERROR) << "AAC decoder not found in FFmpeg";
         return false;
     }
 
     // Allocate codec context
-    codec_context_ = avcodec_alloc_context3(codec_);
+    codec_context_ = avcodec_alloc_context3(codec);
     if (!codec_context_) {
         RTC_LOG(LS_ERROR) << "Failed to allocate AAC codec context";
         return false;
     }
 
-    // Set codec parameters
+    // Set codec parameters (using new ch_layout API for FFmpeg 5+)
     codec_context_->sample_rate = sample_rate_hz_;
+    
+#if LIBAVCODEC_VERSION_MAJOR >= 59
+    // FFmpeg 5.0+ uses AVChannelLayout
+    av_channel_layout_default(&codec_context_->ch_layout, num_channels_);
+#else
+    // Older FFmpeg versions
     codec_context_->channels = num_channels_;
     codec_context_->channel_layout = (num_channels_ == 2) ? AV_CH_LAYOUT_STEREO : AV_CH_LAYOUT_MONO;
+#endif
 
     // Open codec
-    if (avcodec_open2(codec_context_, codec_, nullptr) < 0) {
+    if (avcodec_open2(codec_context_, codec, nullptr) < 0) {
         RTC_LOG(LS_ERROR) << "Failed to open AAC codec";
         avcodec_free_context(&codec_context_);
         return false;

@@ -42,7 +42,6 @@ private:
     const size_t num_channels_;
     
     AVCodecContext* codec_context_;
-    AVCodec* codec_;
     AVFrame* frame_;
     AVPacket* packet_;
     bool initialized_;
