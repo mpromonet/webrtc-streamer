@@ -13,12 +13,18 @@ This directory contains tests for the AAC audio decoder implementation.
 ### Quick Test
 
 ```bash
-make test
+./build_and_test.sh
 ```
 
 This will:
-1. Compile the test with FFmpeg support (if available)
-2. Run the AAC decoder initialization tests
+1. Check for FFmpeg availability
+2. Compile the test with FFmpeg support (if available)
+3. Run the AAC decoder initialization tests
+
+Alternatively, if you prefer using make:
+```bash
+make test  # if Makefile is present (may be ignored by .gitignore)
+```
 
 ### Manual Build
 
@@ -34,7 +40,7 @@ g++ -std=c++20 test_aac_decoder.cpp -o test_aac_decoder
 ### Clean
 
 ```bash
-make clean
+rm -f test_aac_decoder
 ```
 
 ## Test Coverage
