@@ -17,6 +17,8 @@
 #include "api/audio_codecs/builtin_audio_encoder_factory.h"
 #include "api/audio_codecs/builtin_audio_decoder_factory.h"
 #include "api/rtc_event_log/rtc_event_log_factory.h"
+
+#include "AudioDecoderFactory.h"
 #include "api/task_queue/default_task_queue_factory.h"
 #include "media/engine/webrtc_media_engine.h"
 #include "modules/audio_device/include/fake_audio_device.h"
@@ -208,7 +210,7 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 	: m_webrtcenv(webrtc::CreateEnvironment(webrtc::FieldTrials::Create(webrtcTrialsFields))),
 	  m_signalingThread(webrtc::Thread::Create()),
 	  m_workerThread(webrtc::Thread::Create()),
-	  m_audioDecoderfactory(webrtc::CreateBuiltinAudioDecoderFactory()), 
+	  m_audioDecoderfactory(new webrtc::RefCountedObject<AudioDecoderFactory>()), 
   	  m_video_decoder_factory(CreateDecoderFactory(useNullCodec)),
 	  m_iceServerList(iceServerList), 
 	  m_config(config),

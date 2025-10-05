@@ -34,6 +34,22 @@ MESSAGE("ALSA_FOUND = ${ALSA_FOUND}")
 find_package(PulseAudio QUIET)
 MESSAGE("PulseAudio_FOUND = ${PulseAudio_FOUND}")
 
+# FFmpeg for AAC audio decoding
+find_package(PkgConfig QUIET)
+if(PKG_CONFIG_FOUND)
+    pkg_check_modules(LIBAVCODEC QUIET libavcodec)
+    pkg_check_modules(LIBAVUTIL QUIET libavutil)
+    if(LIBAVCODEC_FOUND AND LIBAVUTIL_FOUND)
+        set(FFMPEG_FOUND TRUE)
+        MESSAGE("FFmpeg found - AAC audio decoding will be enabled")
+    else()
+        MESSAGE("FFmpeg not found - AAC audio decoding will be disabled")
+    endif()
+else()
+    MESSAGE("pkg-config not found - FFmpeg detection skipped")
+endif()
+MESSAGE("FFMPEG_FOUND = ${FFMPEG_FOUND}")
+
 set(ENV{PATH} "${WEBRTCROOT}/src/third_party/llvm-build/Release+Asserts/bin:$ENV{PATH}")
 MESSAGE("PATH = $ENV{PATH}")
 
@@ -213,6 +229,12 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc)
 # webrtc 
 set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
+
+# FFmpeg (if found)
+if(FFMPEG_FOUND)
+    add_definitions(-DHAVE_FFMPEG)
+    target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${LIBAVCODEC_INCLUDE_DIRS} ${LIBAVUTIL_INCLUDE_DIRS})
+endif()
 set(WEBRTC_LIBS_INFO
     "${WEBRTCOBJS}/api/${CMAKE_STATIC_LIBRARY_PREFIX}field_trials${CMAKE_STATIC_LIBRARY_SUFFIX}"
     "${WEBRTCOBJS}/api/video_codecs/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_software_fallback_wrappers${CMAKE_STATIC_LIBRARY_SUFFIX}"
@@ -238,6 +260,13 @@ add_library (civetweb STATIC civetweb/src/civetweb.c civetweb/src/CivetServer.cp
 add_definitions(-DOPENSSL_API_3_0 -DUSE_WEBSOCKET)
 target_link_libraries (${CMAKE_PROJECT_NAME} civetweb) 
 target_include_directories(civetweb PUBLIC civetweb/include) 
+
+# FFmpeg (if found)
+if(FFMPEG_FOUND)
+    target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE ${LIBAVCODEC_LIBRARY_DIRS} ${LIBAVUTIL_LIBRARY_DIRS})
+    target_link_libraries(${CMAKE_PROJECT_NAME} ${LIBAVCODEC_LIBRARIES} ${LIBAVUTIL_LIBRARIES})
+    MESSAGE("Linking FFmpeg libraries: ${LIBAVCODEC_LIBRARIES} ${LIBAVUTIL_LIBRARIES}")
+endif() 
 
 # rtmp ?
 find_package(PkgConfig QUIET)
