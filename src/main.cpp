@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
 		options.add_options("General")
 			("h,help", "Print help")
 			("V,version", "Print version")
-			("v,verbose", "Verbosity level (use multiple times for more verbosity)", cxxopts::value<std::vector<std::string>>()->implicit_value(""))
+			("v,verbose", "Verbosity level (use multiple times for more verbosity)")
 			("C,config", "Load urls from JSON config file", cxxopts::value<std::string>())
 			("n,name", "Register a stream with name", cxxopts::value<std::string>())
 			("u,video", "Video URL for the named stream", cxxopts::value<std::string>())
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
 			("s,stun", "Use an external STUN server", cxxopts::value<std::string>()->implicit_value(defaultlocalstunurl))
 			("R,udp-range", "Set the webrtc udp port range", cxxopts::value<std::string>())
 			("W,trials", "Set the webrtc trials fields", cxxopts::value<std::string>())
-			("a,audio-layer", "Specify audio capture layer to use", cxxopts::value<std::string>()->implicit_value(""))
+			("a,audio-layer", "Specify audio capture layer to use (omit value for dummy audio)", cxxopts::value<std::string>()->implicit_value(""))
 			("q,publish-filter", "Specify publish filter", cxxopts::value<std::string>())
 			("o,null-codec", "Use null codec (keep frame encoded)")
 			("b,plan-b", "Use sdp plan-B (default use unifiedPlan)");
@@ -198,12 +198,7 @@ int main(int argc, char *argv[])
 
 		if (result.count("verbose"))
 		{
-			auto verbosity = result["verbose"].as<std::vector<std::string>>();
-			logLevel -= verbosity.size();
-			for (const auto& v : verbosity)
-			{
-				logLevel -= v.length();
-			}
+			logLevel -= result.count("verbose");
 		}
 
 		if (result.count("config"))
