@@ -103,12 +103,12 @@ std::string GetDefaultRessourceDir(const char *argv0)
 ** -------------------------------------------------------------------------*/
 int main(int argc, char *argv[])
 {
-	const char *turnurl = "";
+	std::string turnurl = "";
 	const char *defaultlocalstunurl = "0.0.0.0:3478";
-	const char *localstunurl = NULL;
+	std::string localstunurl;
 	const char *defaultlocalturnurl = "turn:turn@0.0.0.0:3478";
-	const char *localturnurl = NULL;
-	const char *stunurl = "stun.l.google.com:19302";
+	std::string localturnurl;
+	std::string stunurl = "stun.l.google.com:19302";
 	std::string localWebrtcUdpPortRange = "0:65535";
 	int logLevel = webrtc::LS_NONE;
 	std::string webroot = GetDefaultRessourceDir(argv[0]);
@@ -280,25 +280,24 @@ int main(int argc, char *argv[])
 
 		if (result.count("turn-server"))
 		{
-			localturnurl = result["turn-server"].as<std::string>().c_str();
+			localturnurl = result["turn-server"].as<std::string>();
 			turnurl = localturnurl;
 		}
 
 		if (result.count("turn"))
 		{
-			turnurl = result["turn"].as<std::string>().c_str();
+			turnurl = result["turn"].as<std::string>();
 		}
 
 		if (result.count("stun-server"))
 		{
-			localstunurl = result["stun-server"].as<std::string>().c_str();
+			localstunurl = result["stun-server"].as<std::string>();
 			stunurl = localstunurl;
 		}
 
 		if (result.count("stun"))
 		{
-			std::string stunValue = result["stun"].as<std::string>();
-			stunurl = stunValue.c_str();
+			stunurl = result["stun"].as<std::string>();
 		}
 
 		if (result.count("udp-range"))
@@ -369,11 +368,11 @@ int main(int argc, char *argv[])
 
 	// webrtc server
 	std::list<std::string> iceServerList;
-	if ((strlen(stunurl) != 0) && (strcmp(stunurl, "-") != 0))
+	if (!stunurl.empty() && stunurl != "-")
 	{
 		iceServerList.push_back(std::string("stun:") + stunurl);
 	}
-	if (strlen(turnurl))
+	if (!turnurl.empty())
 	{
 		iceServerList.push_back(std::string("turn:") + turnurl);
 	}
@@ -433,7 +432,7 @@ int main(int argc, char *argv[])
 			webrtc::Environment env(webrtc::CreateEnvironment());
 			// start STUN server if needed
 			std::unique_ptr<webrtc::StunServer> stunserver;
-			if (localstunurl != NULL)
+			if (!localstunurl.empty())
 			{
 				webrtc::SocketAddress server_addr;
 				server_addr.FromString(localstunurl);
@@ -444,7 +443,7 @@ int main(int argc, char *argv[])
 
 			// start TRUN server if needed
 			std::unique_ptr<webrtc::TurnServer> turnserver;
-			if (localturnurl != NULL)
+			if (!localturnurl.empty())
 			{
 				std::istringstream is(localturnurl);
 				std::string addr;
