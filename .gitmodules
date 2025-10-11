@@ -16,3 +16,6 @@
 [submodule "libv4l2cpp"]
 	path = libv4l2cpp
 	url = https://github.com/mpromonet/libv4l2cpp
+[submodule "cxxopts"]
+	path = cxxopts
+	url = https://github.com/jarro2783/cxxopts.git

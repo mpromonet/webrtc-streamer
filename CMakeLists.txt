@@ -213,6 +213,9 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc)
 # webrtc 
 set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
+
+# cxxopts
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE cxxopts/include)
 set(WEBRTC_LIBS_INFO
     "${WEBRTCOBJS}/api/${CMAKE_STATIC_LIBRARY_PREFIX}field_trials${CMAKE_STATIC_LIBRARY_SUFFIX}"
     "${WEBRTCOBJS}/api/video_codecs/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_software_fallback_wrappers${CMAKE_STATIC_LIBRARY_SUFFIX}"
@@ -259,11 +262,6 @@ if (WIN32)
     foreach(CompilerFlag ${CompilerFlags})
       string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
     endforeach()
-
-    # getopt
-    add_library (getopt getopt/getopt.c)
-    target_include_directories(getopt PUBLIC getopt) 
-    target_link_libraries (${CMAKE_PROJECT_NAME} getopt)
 
     # webrtc
     add_definitions(-DWEBRTC_WIN -EHsc -DNOMINMAX -D__PRETTY_FUNCTION__=__FUNCTION__ -D_HAS_ITERATOR_DEBUGGING=0)
