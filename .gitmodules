@@ -7,9 +7,6 @@
 [submodule "html"]
 	path = html
 	url = https://github.com/mpromonet/webrtc-streamer-html
-[submodule "getopt"]
-	path = getopt
-	url = https://github.com/kimgr/getopt_port
 [submodule "prometheus-cpp"]
 	path = prometheus-cpp
 	url = https://github.com/jupp0r/prometheus-cpp
