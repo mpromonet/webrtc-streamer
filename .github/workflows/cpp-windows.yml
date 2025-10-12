@@ -9,17 +9,17 @@ jobs:
         buildtype: [Debug, Release]
 
     runs-on: windows-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - run: git fetch --prune --unshallow --tags
 
     - name: pkg
       shell: cmd
       run: |
         choco install --ignorepackagecodes --no-progress -y visualstudio2022buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --add Microsoft.VisualStudio.Workload.NativeDesktop --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended --nocache --installPath %MSVC_PATH%"
-        git config --global core.autocrlf false 
-        git config --global core.filemode false 
+        git config --global core.autocrlf false
+        git config --global core.filemode false
       env:
         MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Community"
 
@@ -44,11 +44,11 @@ jobs:
       shell: cmd
       run: |
           dir /b /s "C:\Program Files (x86)\vcvars64.bat"
-          call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat" 
+          call "%MSVC_PATH%\VC\Auxiliary\Build\vcvars64.bat"
           set "PATH=%GITHUB_WORKSPACE%\..\webrtc\src\third_party\llvm-build\Release+Asserts\bin;%GITHUB_WORKSPACE%\..\webrtc\src\third_party\ninja;%GITHUB_WORKSPACE%\depot_tools;%PATH%"
           set
           cmake -G Ninja -DWEBRTCSTREAMERRESSOURCE=../share/webrtc-streamer/html -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DCMAKE_MAKE_PROGRAM=ninja.bat -DDETECT_OPENSSL=OFF .
-          ninja 
+          ninja
       env:
         MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Community"
         DEPOT_TOOLS_WIN_TOOLCHAIN: 0
@@ -57,7 +57,7 @@ jobs:
 
     - name: cpack
       shell: bash
-      run: | 
+      run: |
           rm -f *.tar.gz
           cpack
           echo "artifactPath=$(ls *.tar.gz)" >> $GITHUB_ENV

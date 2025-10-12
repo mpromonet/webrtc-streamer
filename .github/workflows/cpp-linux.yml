@@ -9,7 +9,7 @@ jobs:
         buildtype: [Debug, Release]
 
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Remove unnecessary directories to free up space
       run: |
@@ -17,7 +17,7 @@ jobs:
         sudo rm -rf /usr/local/lib/android/sdk/ndk
         sudo rm -rf /usr/share/dotnet
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - run: git fetch --prune --unshallow --tags
 
     - name: pkg
@@ -41,8 +41,8 @@ jobs:
           cmake -DWEBRTCROOT=$(pwd)/webrtc -DWEBRTCSTREAMERRESSOURCE=../share/webrtc-streamer/html -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} .
           make
 
-    - name: cpack 
-      run: | 
+    - name: cpack
+      run: |
           rm -f *.tar.gz
           cpack
           echo "artifactPath=$(ls *.tar.gz)" >> $GITHUB_ENV
@@ -50,7 +50,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: ${{ env.artifactPath }}
-        path: ${{ env.artifactPath }}   
+        path: ${{ env.artifactPath }}
 
     - name: Release
       uses: softprops/action-gh-release@v2

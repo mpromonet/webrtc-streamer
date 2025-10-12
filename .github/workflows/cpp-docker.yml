@@ -27,13 +27,13 @@ jobs:
           arch: armv7l
           crosscompiler: https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Buster/GCC%2010.2.0/Raspberry%20Pi%202%2C%203/cross-gcc-10.2.0-pi_2-3.tar.gz                
           image: balenalib/raspberry-pi2
-          
+
         - os: ubuntu-latest
           dockerfile: Dockerfile
           arch: amd64
 
     runs-on: ${{ matrix.os }}
-    
+
     steps:
     - name: Remove unnecessary directories to free up space
       if: runner.os != 'Windows'
@@ -43,7 +43,7 @@ jobs:
         sudo rm -rf /usr/share/dotnet
 
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - run: git fetch --prune --unshallow --tags
 
     - name: Build an image from Dockerfile
@@ -65,7 +65,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-    
+
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v3
       with:
@@ -75,11 +75,11 @@ jobs:
     - name: Publish multiarch image
       env:
         DOCKER_CLI_EXPERIMENTAL: enabled
-      run: | 
+      run: |
         docker info
         export TAG=${{ github.base_ref || github.ref_name }}
         export MANIFEST=${TAG}
-        [ "$TAG" == "master" ] && export MANIFEST=latest 
+        [ "$TAG" == "master" ] && export MANIFEST=latest
         docker manifest create --amend docker.io/${{ github.repository }}:${MANIFEST} docker.io/${{ github.repository }}:${TAG}-amd64 docker.io/${{ github.repository }}:${TAG}-armv7l docker.io/${{ github.repository }}:${TAG}-armv6l docker.io/${{ github.repository }}:${TAG}-windows docker.io/${{ github.repository }}:${TAG}-arm64
         docker manifest annotate docker.io/${{ github.repository }}:${MANIFEST} docker.io/${{ github.repository }}:${TAG}-armv7l --os linux --arch arm --variant v7
         docker manifest annotate docker.io/${{ github.repository }}:${MANIFEST} docker.io/${{ github.repository }}:${TAG}-armv6l --os linux --arch arm --variant v6l

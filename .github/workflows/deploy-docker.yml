@@ -11,8 +11,8 @@ jobs:
         sudo rm -rf /opt/hostedtoolcache/CodeQL
         sudo rm -rf /usr/local/lib/android/sdk/ndk
         sudo rm -rf /usr/share/dotnet
-       
-    - uses: actions/checkout@v4
+
+    - uses: actions/checkout@v5
     - run: git fetch --prune --unshallow --tags
 
     - name: Extract metadata (tags, labels) for Docker
@@ -35,7 +35,7 @@ jobs:
         push: true
         target: builder
         platforms: linux/amd64
-        tags: ${{ steps.meta.outputs.tags }}-dev 
+        tags: ${{ steps.meta.outputs.tags }}-dev
 
     - name: Build and push
       uses: docker/build-push-action@v5
@@ -43,7 +43,7 @@ jobs:
         context: .
         push: true
         platforms: linux/amd64
-        tags: ${{ steps.meta.outputs.tags }} 
+        tags: ${{ steps.meta.outputs.tags }}
 
     - name: Log in to Azure
       uses: azure/login@v2

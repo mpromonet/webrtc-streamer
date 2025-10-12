@@ -42,7 +42,7 @@ jobs:
           prefix: aarch64-linux-gnu
 
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Remove unnecessary directories to free up space
       run: |
@@ -51,12 +51,12 @@ jobs:
         sudo rm -rf /usr/share/dotnet
 
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - run: git fetch --prune --unshallow --tags
 
     - name: pkg
-      run: | 
-        sudo apt-get update 
+      run: |
+        sudo apt-get update
         sudo apt-get install -y --no-install-recommends g++ autoconf automake libtool xz-utils cmake p7zip-full
         if [ -z "${{ matrix.crosscompiler }}" ]; then
           sudo apt-get install -y --no-install-recommends gcc-${{ matrix.prefix }} g++-${{ matrix.prefix }}
@@ -83,8 +83,8 @@ jobs:
           cmake -DWEBRTCROOT=$(pwd)/webrtc -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }} -DCMAKE_LIBRARY_ARCHITECTURE=${{ matrix.prefix }} -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=${{ matrix.prefix }}-gcc -DCMAKE_CXX_COMPILER=${{ matrix.prefix }}-g++ -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY -DWEBRTCDESKTOPCAPTURE=OFF .
           make
 
-    - name: cpack 
-      run: | 
+    - name: cpack
+      run: |
           rm -f *.tar.gz
           cpack
           echo "artifactPath=$(ls *.tar.gz)" >> $GITHUB_ENV
@@ -92,7 +92,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: ${{ env.artifactPath }}
-        path: ${{ env.artifactPath }}   
+        path: ${{ env.artifactPath }}
 
     - name: Release
       uses: softprops/action-gh-release@v2

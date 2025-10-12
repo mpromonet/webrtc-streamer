@@ -6,7 +6,7 @@ jobs:
   publish-npm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: |
               git submodule update --init
               git fetch --prune --unshallow --tags
@@ -22,4 +22,4 @@ jobs:
               npm version $(git describe --tags --always)
               npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}              
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

@@ -6,12 +6,12 @@ jobs:
   build:
     strategy:
       matrix:
-        buildtype: [Debug, Release]  
+        buildtype: [Debug, Release]
 
     runs-on: macos-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - run: git fetch --prune --unshallow --tags
 
     - name: pkg
@@ -35,7 +35,7 @@ jobs:
           cmake -DWEBRTCROOT=$(pwd)/webrtc -DWEBRTCSTREAMERRESSOURCE=../share/webrtc-streamer/html -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DDETECT_OPENSSL=OFF .
           make VERBOSE=1
 
-    - name: cpack 
+    - name: cpack
       run: |
           rm -f *.tar.gz
           cpack

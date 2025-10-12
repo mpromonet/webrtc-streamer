@@ -14,15 +14,15 @@ jobs:
           sudo rm -rf /opt/hostedtoolcache/CodeQL
           sudo rm -rf /usr/local/lib/android/sdk/ndk
           sudo rm -rf /usr/share/dotnet
-     
+
 
       - name: Checkout code
-        uses: actions/checkout@v4
-      
+        uses: actions/checkout@v5
+
       - name: Build an image from Dockerfile
         run: |
           docker build -t docker.io/${{ github.repository }}:latest .
-      
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
