@@ -284,7 +284,7 @@ int main(int argc, char *argv[])
 			std::cout << "\t -T[username:password@]turn_address : start embeded TURN server (default:disabled)" << std::endl;
 			std::cout << "\t -R Udp_port_min:Udp_port_min       : Set the webrtc udp port range (default:" << localWebrtcUdpPortRange << ")" << std::endl;
 			std::cout << "\t -W webrtc_trials_fields            : Set the webrtc trials fields (default:" << webrtcTrialsFields << ")" << std::endl;
-			std::cout << "\t -I icetransport                    : Set ice transport type (default:" << transportType << ")" << std::endl;
+			std::cout << "\t -I icetransport                    : Set ice transport type (0=all,1=relay,2=nohost default:" << transportType << ")" << std::endl;
 #ifdef HAVE_SOUND
 			std::cout << "\t -a[audio layer]                    : spefify audio capture layer to use (default:" << audioLayer << ")" << std::endl;
 #endif
