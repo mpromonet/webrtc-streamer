@@ -51,6 +51,7 @@ Experimentation to stream WebRTC media sources like capture devices, screen capt
 	-s[stun_address]                   : use an external STUN server (default:stun.l.google.com:19302 , -:means no STUN)
 	-T[username:password@]turn_address : start embeded TURN server (default:disabled)
 	-t[username:password@]turn_address : use an external TURN relay server (default:disabled)
+	-I icetransport                    : Set ice transport type (0=all,1=relay,2=nohost default:0)
 	-R [Udp port range min:max]        : Set the webrtc udp port range (default 0:65535)
 	-W webrtc_trials_fields            : Set the webrtc trials fields (default:WebRTC-FrameDropper/Disabled/)		
 	-a[audio layer]                    : spefify audio capture layer to use (default:0)		
@@ -173,6 +174,23 @@ upnpc -r 8000 tcp 3478 tcp 3478 udp
 ```
 
 Adapting with the HTTP port, STUN port, TURN port.
+
+### Forcing TURN relay mode
+
+By default, WebRTC will try to establish a direct peer-to-peer connection and only use TURN relay as a fallback. If you want to force all connections to go through the TURN relay server (for security, network policy, or testing purposes), you can use the `-I 1` option:
+
+```sh
+# Force all connections through TURN relay
+./webrtc-streamer -s- -T0.0.0.0:3478 -tturn:turn@$(curl -s ifconfig.me):3478 -I1
+
+# With external TURN server
+./webrtc-streamer -s- -tturn:turn@turn.example.com:3478 -I1
+```
+
+The `-I` option accepts the following values:
+- `0` - Allow all connection types (default) - tries direct connection first, falls back to TURN
+- `1` - Force relay only - all traffic goes through TURN server
+- `2` - No host - prevents local network connections
 
 ## HTML Embedding
 
