@@ -16,6 +16,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "cxxopts.hpp"
+
 #include "api/environment/environment_factory.h"
 #include "rtc_base/ssl_adapter.h"
 #include "rtc_base/thread.h"
@@ -25,10 +27,6 @@
 
 #include "PeerConnectionManager.h"
 #include "HttpServerRequestHandler.h"
-
-#if WIN32
-#include "getopt.h"
-#endif
 
 PeerConnectionManager *webRtcServer = NULL;
 
@@ -105,12 +103,12 @@ std::string GetDefaultRessourceDir(const char *argv0)
 ** -------------------------------------------------------------------------*/
 int main(int argc, char *argv[])
 {
-	const char *turnurl = "";
+	std::string turnurl = "";
 	const char *defaultlocalstunurl = "0.0.0.0:3478";
-	const char *localstunurl = NULL;
+	std::string localstunurl;
 	const char *defaultlocalturnurl = "turn:turn@0.0.0.0:3478";
-	const char *localturnurl = NULL;
-	const char *stunurl = "stun.l.google.com:19302";
+	std::string localturnurl;
+	std::string stunurl = "stun.l.google.com:19302";
 	std::string localWebrtcUdpPortRange = "0:65535";
 	int logLevel = webrtc::LS_NONE;
 	std::string webroot = GetDefaultRessourceDir(argv[0]);
@@ -142,165 +140,212 @@ int main(int argc, char *argv[])
 	httpAddress.append(httpPort);
 
 	std::string streamName;
-	int c = 0;
-	while ((c = getopt(argc, argv, "hVv::C:"
-								   "c:H:w:N:A:D:XB:"
-								   "m:I:"
-								   "T::t:S::s::R:W:"
-								   "a::q:ob"
-								   "n:u:U:")) != -1)
+
+	try
 	{
-		switch (c)
+		cxxopts::Options options(argv[0], "WebRTC streamer");
+
+		options.add_options("General")
+			("h,help", "Print help")
+			("V,version", "Print version")
+			("v,verbose", "Verbosity level (use multiple times for more verbosity)")
+			("C,config", "Load urls from JSON config file", cxxopts::value<std::string>())
+			("n,name", "Register a stream with name", cxxopts::value<std::string>())
+			("u,video", "Video URL for the named stream", cxxopts::value<std::string>())
+			("U,audio", "Audio URL for the named stream", cxxopts::value<std::string>())
+			("urls", "URLs to register in the source list", cxxopts::value<std::vector<std::string>>());
+
+		options.add_options("HTTP")
+			("H,http", "HTTP server binding (default 0.0.0.0:8000)", cxxopts::value<std::string>())
+			("w,webroot", "Path to get static files", cxxopts::value<std::string>())
+			("c,cert", "Path to private key and certificate for HTTPS", cxxopts::value<std::string>())
+			("N,threads", "Number of threads for HTTP server", cxxopts::value<std::string>())
+			("A,passwd", "Password file for HTTP server access", cxxopts::value<std::string>())
+			("D,domain", "Authentication domain for HTTP server access (default:mydomain.com)", cxxopts::value<std::string>())
+			("X,disable-xframe", "Disable X-Frame-Options header")
+			("B,base-path", "Base path for HTTP server", cxxopts::value<std::string>());
+
+		options.add_options("WebRTC")
+			("m,maxpc", "Maximum number of peer connections", cxxopts::value<int>())
+			("I,ice-transport", "Set ice transport type", cxxopts::value<int>())
+			("T,turn-server", "Start embedded TURN server", cxxopts::value<std::string>()->implicit_value(defaultlocalturnurl))
+			("t,turn", "Use an external TURN relay server", cxxopts::value<std::string>())
+			("S,stun-server", "Start embedded STUN server bind to address", cxxopts::value<std::string>()->implicit_value(defaultlocalstunurl))
+			("s,stun", "Use an external STUN server", cxxopts::value<std::string>()->implicit_value(defaultlocalstunurl))
+			("R,udp-range", "Set the webrtc udp port range", cxxopts::value<std::string>())
+			("W,trials", "Set the webrtc trials fields", cxxopts::value<std::string>())
+			("a,audio-layer", "Specify audio capture layer to use (omit value for dummy audio)", cxxopts::value<std::string>()->implicit_value(""))
+			("q,publish-filter", "Specify publish filter", cxxopts::value<std::string>())
+			("o,null-codec", "Use null codec (keep frame encoded)")
+			("b,plan-b", "Use sdp plan-B (default use unifiedPlan)");
+
+		options.parse_positional({"urls"});
+		options.positional_help("[urls...]");
+
+		auto result = options.parse(argc, argv);
+
+		if (result.count("help"))
 		{
-		case 'H':
-			httpAddress = optarg;
-			break;
-		case 'c':
-			sslCertificate = optarg;
-			break;
-		case 'w':
-			webroot = optarg;
-			break;
-		case 'N':
-			nbthreads = optarg;
-			break;
-		case 'A':
-			passwdFile = optarg;
-			break;
-		case 'D':
-			authDomain = optarg;
-			break;
-		case 'X':
-			disableXframeOptions = true;
-			break;
-		case 'B':
-			basePath = optarg;
-			break;
-
-		case 'm':
-			maxpc = atoi(optarg);
-			break;
-		case 'I':
-			transportType = (webrtc::PeerConnectionInterface::IceTransportsType)atoi(optarg);
-			break;
-
-		case 'T':
-			localturnurl = optarg ? optarg : defaultlocalturnurl;
-			turnurl = localturnurl;
-			break;
-		case 't':
-			turnurl = optarg;
-			break;
-		case 'S':
-			localstunurl = optarg ? optarg : defaultlocalstunurl;
-			stunurl = localstunurl;
-			break;
-		case 's':
-			stunurl = optarg ? optarg : defaultlocalstunurl;
-			break;
-		case 'R':
-			localWebrtcUdpPortRange = optarg;
-			break;
-		case 'W':
-			webrtcTrialsFields = optarg;
-			break;
-
-		case 'a':
-			audioLayer = optarg ? (webrtc::AudioDeviceModule::AudioLayer)atoi(optarg) : webrtc::AudioDeviceModule::kDummyAudio;
-			break;
-		case 'q':
-			publishFilter = optarg;
-			break;
-		case 'o':
-			useNullCodec = true;
-			break;
-		case 'b':
-			usePlanB = true;
-			break;
-
-		case 'C':
-		{
-			std::ifstream stream(optarg);
-			stream >> config;
-			break;
+			std::cout << options.help() << std::endl;
+			exit(0);
 		}
 
-		case 'n':
-			streamName = optarg;
-			break;
-		case 'u':
+		if (result.count("version"))
 		{
-			if (!streamName.empty())
-			{
-				config["urls"][streamName]["video"] = optarg;
-			}
-		}
-		break;
-		case 'U':
-		{
-			if (!streamName.empty())
-			{
-				config["urls"][streamName]["audio"] = optarg;
-			}
-		}
-		break;
-
-		case 'v':
-			logLevel--;
-			if (optarg)
-			{
-				logLevel -= strlen(optarg);
-			}
-			break;
-		case 'V':
 			std::cout << VERSION << std::endl;
 			exit(0);
-			break;
-		case 'h':
-		default:
-			std::cout << argv[0] << std::endl;
+		}
 
-			std::cout << "  General options" << std::endl;
-			std::cout << "\t -v[v[v]]                           : verbosity" << std::endl;
-			std::cout << "\t -V                                 : print version" << std::endl;
-			std::cout << "\t -C config.json                     : load urls from JSON config file" << std::endl;
-			std::cout << "\t -n name -u videourl -U audiourl    : register a stream with name using url" << std::endl;
-			std::cout << "\t [url]                              : url to register in the source list" << std::endl;
+		if (result.count("verbose"))
+		{
+			logLevel -= result.count("verbose");
+		}
 
-			std::cout << std::endl
-					  << "  HTTP options" << std::endl;
-			std::cout << "\t -H hostname:port                   : HTTP server binding (default " << httpAddress << ")" << std::endl;
-			std::cout << "\t -w webroot                         : path to get static files (default " << webroot << ")" << std::endl;
-			std::cout << "\t -c sslkeycert                      : path to private key and certificate for HTTPS" << std::endl;
-			std::cout << "\t -N nbthreads                       : number of threads for HTTP server" << std::endl;
-			std::cout << "\t -A passwd                          : password file for HTTP server access" << std::endl;
-			std::cout << "\t -D authDomain                      : authentication domain for HTTP server access (default:mydomain.com)" << std::endl;
+		if (result.count("config"))
+		{
+			std::string configFile = result["config"].as<std::string>();
+			std::ifstream stream(configFile);
+			stream >> config;
+		}
 
-			std::cout << std::endl
-					  << "  WebRTC options" << std::endl;
-			std::cout << "\t -S[stun_address]                   : start embeded STUN server bind to address (default " << defaultlocalstunurl << ")" << std::endl;
-			std::cout << "\t -s[stun_address]                   : use an external STUN server (default:" << stunurl << " , -:means no STUN)" << std::endl;
-			std::cout << "\t -t[username:password@]turn_address : use an external TURN relay server (default:disabled)" << std::endl;
-			std::cout << "\t -T[username:password@]turn_address : start embeded TURN server (default:disabled)" << std::endl;
-			std::cout << "\t -R Udp_port_min:Udp_port_min       : Set the webrtc udp port range (default:" << localWebrtcUdpPortRange << ")" << std::endl;
-			std::cout << "\t -W webrtc_trials_fields            : Set the webrtc trials fields (default:" << webrtcTrialsFields << ")" << std::endl;
-			std::cout << "\t -I icetransport                    : Set ice transport type (default:" << transportType << ")" << std::endl;
-#ifdef HAVE_SOUND
-			std::cout << "\t -a[audio layer]                    : spefify audio capture layer to use (default:" << audioLayer << ")" << std::endl;
-#endif
-			std::cout << "\t -q[filter]                         : spefify publish filter (default:" << publishFilter << ")" << std::endl;
-			std::cout << "\t -o                                 : use null codec (keep frame encoded)" << std::endl;
-			std::cout << "\t -b                                 : use sdp plan-B (default use unifiedPlan)" << std::endl;
+		if (result.count("name"))
+		{
+			streamName = result["name"].as<std::string>();
+		}
 
-			exit(0);
+		if (result.count("video") && !streamName.empty())
+		{
+			config["urls"][streamName]["video"] = result["video"].as<std::string>();
+		}
+
+		if (result.count("audio") && !streamName.empty())
+		{
+			config["urls"][streamName]["audio"] = result["audio"].as<std::string>();
+		}
+
+		if (result.count("http"))
+		{
+			httpAddress = result["http"].as<std::string>();
+		}
+
+		if (result.count("webroot"))
+		{
+			webroot = result["webroot"].as<std::string>();
+		}
+
+		if (result.count("cert"))
+		{
+			sslCertificate = result["cert"].as<std::string>();
+		}
+
+		if (result.count("threads"))
+		{
+			nbthreads = result["threads"].as<std::string>();
+		}
+
+		if (result.count("passwd"))
+		{
+			passwdFile = result["passwd"].as<std::string>();
+		}
+
+		if (result.count("domain"))
+		{
+			authDomain = result["domain"].as<std::string>();
+		}
+
+		if (result.count("disable-xframe"))
+		{
+			disableXframeOptions = true;
+		}
+
+		if (result.count("base-path"))
+		{
+			basePath = result["base-path"].as<std::string>();
+		}
+
+		if (result.count("maxpc"))
+		{
+			maxpc = result["maxpc"].as<int>();
+		}
+
+		if (result.count("ice-transport"))
+		{
+			transportType = (webrtc::PeerConnectionInterface::IceTransportsType)result["ice-transport"].as<int>();
+		}
+
+		if (result.count("turn-server"))
+		{
+			localturnurl = result["turn-server"].as<std::string>();
+			turnurl = localturnurl;
+		}
+
+		if (result.count("turn"))
+		{
+			turnurl = result["turn"].as<std::string>();
+		}
+
+		if (result.count("stun-server"))
+		{
+			localstunurl = result["stun-server"].as<std::string>();
+			stunurl = localstunurl;
+		}
+
+		if (result.count("stun"))
+		{
+			stunurl = result["stun"].as<std::string>();
+		}
+
+		if (result.count("udp-range"))
+		{
+			localWebrtcUdpPortRange = result["udp-range"].as<std::string>();
+		}
+
+		if (result.count("trials"))
+		{
+			webrtcTrialsFields = result["trials"].as<std::string>();
+		}
+
+		if (result.count("audio-layer"))
+		{
+			std::string audioValue = result["audio-layer"].as<std::string>();
+			if (audioValue.empty())
+			{
+				audioLayer = webrtc::AudioDeviceModule::kDummyAudio;
+			}
+			else
+			{
+				audioLayer = (webrtc::AudioDeviceModule::AudioLayer)atoi(audioValue.c_str());
+			}
+		}
+
+		if (result.count("publish-filter"))
+		{
+			publishFilter = result["publish-filter"].as<std::string>();
+		}
+
+		if (result.count("null-codec"))
+		{
+			useNullCodec = true;
+		}
+
+		if (result.count("plan-b"))
+		{
+			usePlanB = true;
+		}
+
+		if (result.count("urls"))
+		{
+			auto urls = result["urls"].as<std::vector<std::string>>();
+			for (const auto& url : urls)
+			{
+				config["urls"][url]["video"] = url;
+			}
 		}
 	}
-
-	while (optind < argc)
+	catch (const cxxopts::exceptions::exception& e)
 	{
-		std::string url(argv[optind]);
-		config["urls"][url]["video"] = url;
-		optind++;
+		std::cerr << "Error parsing options: " << e.what() << std::endl;
+		exit(1);
 	}
 
 	std::cout << "Version:" << VERSION << std::endl;
@@ -318,11 +363,11 @@ int main(int argc, char *argv[])
 
 	// webrtc server
 	std::list<std::string> iceServerList;
-	if ((strlen(stunurl) != 0) && (strcmp(stunurl, "-") != 0))
+	if (!stunurl.empty() && stunurl != "-")
 	{
 		iceServerList.push_back(std::string("stun:") + stunurl);
 	}
-	if (strlen(turnurl))
+	if (!turnurl.empty())
 	{
 		iceServerList.push_back(std::string("turn:") + turnurl);
 	}
@@ -382,7 +427,7 @@ int main(int argc, char *argv[])
 			webrtc::Environment env(webrtc::CreateEnvironment());
 			// start STUN server if needed
 			std::unique_ptr<webrtc::StunServer> stunserver;
-			if (localstunurl != NULL)
+			if (!localstunurl.empty())
 			{
 				webrtc::SocketAddress server_addr;
 				server_addr.FromString(localstunurl);
@@ -393,7 +438,7 @@ int main(int argc, char *argv[])
 
 			// start TRUN server if needed
 			std::unique_ptr<webrtc::TurnServer> turnserver;
-			if (localturnurl != NULL)
+			if (!localturnurl.empty())
 			{
 				std::istringstream is(localturnurl);
 				std::string addr;

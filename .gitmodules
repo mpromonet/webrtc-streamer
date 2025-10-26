@@ -7,12 +7,12 @@
 [submodule "html"]
 	path = html
 	url = https://github.com/mpromonet/webrtc-streamer-html
-[submodule "getopt"]
-	path = getopt
-	url = https://github.com/kimgr/getopt_port
 [submodule "prometheus-cpp"]
 	path = prometheus-cpp
 	url = https://github.com/jupp0r/prometheus-cpp
 [submodule "libv4l2cpp"]
 	path = libv4l2cpp
 	url = https://github.com/mpromonet/libv4l2cpp
+[submodule "cxxopts"]
+	path = cxxopts
+	url = https://github.com/jarro2783/cxxopts.git

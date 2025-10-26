@@ -105,7 +105,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/config.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/)
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/config_components.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/)
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavutil/avconfig.h DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavutil/)
-    file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavfilter/filter_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavutil/)
+    file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavfilter/filter_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavfilter/)
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/codec_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavcodec/)
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/parser_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavcodec/)
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavcodec/bsf_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavcodec/)
@@ -213,6 +213,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc)
 # webrtc 
 set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
+
 set(WEBRTC_LIBS_INFO
     "${WEBRTCOBJS}/api/${CMAKE_STATIC_LIBRARY_PREFIX}field_trials${CMAKE_STATIC_LIBRARY_SUFFIX}"
     "${WEBRTCOBJS}/api/video_codecs/${CMAKE_STATIC_LIBRARY_PREFIX}rtc_software_fallback_wrappers${CMAKE_STATIC_LIBRARY_SUFFIX}"
@@ -226,6 +227,10 @@ foreach(LIB ${WEBRTC_LIBS_INFO})
     target_link_libraries(${CMAKE_PROJECT_NAME} ${LIB})
 endforeach()
 add_definitions(-DHAVE_JPEG)
+
+# cxxopts
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE cxxopts/include)
+target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE CXXOPTS_NO_RTTI)
 
 # thread
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
@@ -259,11 +264,6 @@ if (WIN32)
     foreach(CompilerFlag ${CompilerFlags})
       string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
     endforeach()
-
-    # getopt
-    add_library (getopt getopt/getopt.c)
-    target_include_directories(getopt PUBLIC getopt) 
-    target_link_libraries (${CMAKE_PROJECT_NAME} getopt)
 
     # webrtc
     add_definitions(-DWEBRTC_WIN -EHsc -DNOMINMAX -D__PRETTY_FUNCTION__=__FUNCTION__ -D_HAS_ITERATOR_DEBUGGING=0)
