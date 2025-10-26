@@ -1,11 +1,14 @@
 /* ---------------------------------------------------------------------------
-** This software is in the public domain, furnished "as is", without technical
-** support, and with no warranty, express or implied, as to its usefulness for
-** any purpose.
-**
-** windowcapturer.h
-**
-** -------------------------------------------------------------------------*/
+ * SPDX-License-Identifier: Unlicense
+ *
+ * This is free and unencumbered software released into the public domain.
+ *
+ * Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
+ * software, either in source code form or as a compiled binary, for any purpose,
+ * commercial or non-commercial, and by any means.
+ *
+ * For more information, please refer to <http://unlicense.org/>
+ * -------------------------------------------------------------------------*/
 
 #pragma once
 
@@ -15,9 +18,9 @@ class WindowCapturer : public DesktopCapturer {
 	public:
 		WindowCapturer(const std::string & url, const std::map<std::string,std::string> & opts) : DesktopCapturer(opts) {
 			const std::string windowprefix("window://");
-			if (url.find(windowprefix) == 0) {	
+			if (url.find(windowprefix) == 0) {
 				m_capturer = webrtc::DesktopCapturer::CreateWindowCapturer(webrtc::DesktopCaptureOptions::CreateDefault());
-			
+
 				if (m_capturer) {
 					webrtc::DesktopCapturer::SourceList sourceList;
 					if (m_capturer->GetSourceList(&sourceList)) {
@@ -31,7 +34,7 @@ class WindowCapturer : public DesktopCapturer {
 						}
 					}
 				}
-			}			
+			}
 		}
 		static WindowCapturer* Create(const std::string & url, const std::map<std::string, std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
 			std::unique_ptr<WindowCapturer> capturer(new WindowCapturer(url, opts));
