@@ -12,7 +12,7 @@ jobs:
         
     steps:
     - name: find
-      run: find /Applications/Xcode_16.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk
+      run: find /Applications/Xcode_16.4.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/
       
     - uses: actions/checkout@v5
     - run: git fetch --prune --unshallow --tags
