@@ -9,8 +9,11 @@ jobs:
         buildtype: [Debug, Release]
 
     runs-on: macos-latest
-
+        
     steps:
+    - name: Set up Xcode
+      run: sudo xcode-select -s /Applications/Xcode_16.4.app
+      
     - uses: actions/checkout@v5
     - run: git fetch --prune --unshallow --tags
 
