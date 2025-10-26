@@ -31,31 +31,46 @@ Experimentation to stream WebRTC media sources like capture devices, screen capt
 ## Usage
 
 ```roff
-./webrtc-streamer [-H http port] [-S[embeded stun address]] -[v[v]]  [urls...]
-./webrtc-streamer [-H http port] [-s[external stun address]] -[v[v]] [urls...]
-./webrtc-streamer -V
-	-v[v[v]]           : verbosity
-	-V                 : print version
-	-C config.json                     : load urls from JSON config file 
-	-n name -u videourl -U audiourl    : register a name for a video url and an audio url
-	[url]                              : url to register in the source list
+Usage:
+  ./webrtc-streamer [OPTION...] [urls...]
 
-	-H [hostname:]port : HTTP server binding (default 0.0.0.0:8000)
-	-w webroot         : path to get files
-	-c sslkeycert      : path to private key and certificate for HTTPS
-	-N nbthreads       : number of threads for HTTP server
-	-A passwd          : password file for HTTP server access
-	-D authDomain      : authentication domain for HTTP server access (default:mydomain.com)
+ General options:
+  -h, --help        Print help
+  -V, --version     Print version
+  -v, --verbose     Verbosity level (use multiple times for more verbosity)
+  -C, --config arg  Load urls from JSON config file
+  -n, --name arg    Register a stream with name
+  -u, --video arg   Video URL for the named stream
+  -U, --audio arg   Audio URL for the named stream
 
-	-S[stun_address]                   : start embeded STUN server bind to address (default 0.0.0.0:3478)
-	-s[stun_address]                   : use an external STUN server (default:stun.l.google.com:19302 , -:means no STUN)
-	-T[username:password@]turn_address : start embeded TURN server (default:disabled)
-	-t[username:password@]turn_address : use an external TURN relay server (default:disabled)
-	-R [Udp port range min:max]        : Set the webrtc udp port range (default 0:65535)
-	-W webrtc_trials_fields            : Set the webrtc trials fields (default:WebRTC-FrameDropper/Disabled/)		
-	-a[audio layer]                    : spefify audio capture layer to use (default:0)		
-	-q[filter]                         : spefify publish filter (default:.*)
-	-o                                 : use null codec (keep frame encoded)
+ HTTP options:
+  -H, --http arg        HTTP server binding (default 0.0.0.0:8000)
+  -w, --webroot arg     Path to get static files
+  -c, --cert arg        Path to private key and certificate for HTTPS
+  -N, --threads arg     Number of threads for HTTP server
+  -A, --passwd arg      Password file for HTTP server access
+  -D, --domain arg      Authentication domain for HTTP server access
+                        (default:mydomain.com)
+  -X, --disable-xframe  Disable X-Frame-Options header
+  -B, --base-path arg   Base path for HTTP server
+
+ WebRTC options:
+  -m, --maxpc arg               Maximum number of peer connections
+  -I, --ice-transport arg       Set ice transport type
+  -T, --turn-server [=arg(=turn:turn@0.0.0.0:3478)]
+                                Start embedded TURN server
+  -t, --turn arg                Use an external TURN relay server
+  -S, --stun-server [=arg(=0.0.0.0:3478)]
+                                Start embedded STUN server bind to address
+  -s, --stun [=arg(=0.0.0.0:3478)]
+                                Use an external STUN server
+  -R, --udp-range arg           Set the webrtc udp port range
+  -W, --trials arg              Set the webrtc trials fields
+  -a, --audio-layer [=arg(=)]   Specify audio capture layer to use (omit
+                                value for dummy audio)
+  -q, --publish-filter arg      Specify publish filter
+  -o, --null-codec              Use null codec (keep frame encoded)
+  -b, --plan-b                  Use sdp plan-B (default use unifiedPlan)
 ```
 
 Arguments of '-H' are forwarded to option
@@ -155,9 +170,9 @@ and [TURN](https://en.wikipedia.org/wiki/Traversal_Using_Relays_around_NAT)
 server and publish its URL:
 
 ```sh
-./webrtc-streamer -S0.0.0.0:3478 -s$(curl -s ifconfig.me):3478
-./webrtc-streamer -s- -T0.0.0.0:3478 -tturn:turn@$(curl -s ifconfig.me):3478
-./webrtc-streamer -S0.0.0.0:3478 -s$(curl -s ifconfig.me):3478 -T0.0.0.0:3479 -tturn:turn@$(curl -s ifconfig.me):3479
+./webrtc-streamer --stun-server=0.0.0.0:3478 --stun=$(curl -s ifconfig.me):3478
+./webrtc-streamer --stun=- --turn-server=0.0.0.0:3478 -tturn:turn@$(curl -s ifconfig.me):3478
+./webrtc-streamer --stun-server=0.0.0.0:3478 --stun=$(curl -s ifconfig.me):3478 --turn-server=0.0.0.0:3479 --turn=turn:turn@$(curl -s ifconfig.me):3479
 ```
 
 The command `curl -s ifconfig.me` is getting the public IP, it could also given
