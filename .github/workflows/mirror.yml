@@ -15,3 +15,9 @@ jobs:
         REMOTE: 'https://codeberg.org/${{ github.repository }}.git'
         GIT_USERNAME: ${{ github.actor }}
         GIT_PASSWORD: ${{ secrets.CODEBERG_TOKEN }}
+
+    - uses: yesolutions/mirror-action@master
+      with:
+        REMOTE: 'https://gitlab.com/${{ github.repository }}.git'
+        GIT_USERNAME: ${{ github.actor }}
+        GIT_PASSWORD: ${{ secrets.GITLAB_TOKEN }}
