@@ -8,6 +8,8 @@ include:
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
+  RUNNER_SCRIPT_TIMEOUT: 2h
+  RUNNER_AFTER_SCRIPT_TIMEOUT: 2h
 
 before_script:
   - docker info
@@ -15,6 +17,8 @@ before_script:
 
 build_x86_64:
   image: docker:stable
+  tags:
+  - saas-linux-medium-amd64
   services:
   - docker:dind
   stage: build
