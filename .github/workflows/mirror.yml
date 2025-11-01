@@ -1,5 +1,6 @@
-on: [push]
+name: Update Codeberg mirror
 
+on: [push]
 
 jobs:
   build:
@@ -11,6 +12,6 @@ jobs:
         fetch-depth: 0
     - uses: yesolutions/mirror-action@master
       with:
-        REMOTE: 'https://codeberg.org/${{ github.actor }}/${{ github.repository }}.git'
+        REMOTE: 'https://codeberg.org/${{ github.repository }}.git'
         GIT_USERNAME: ${{ github.actor }}
         GIT_PASSWORD: ${{ secrets.CODEBERG_TOKEN }}
