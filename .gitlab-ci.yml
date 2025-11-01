@@ -1,3 +1,11 @@
+stages:
+- build
+- test
+include:
+- template: Security/SAST-IaC.latest.gitlab-ci.yml
+- template: Security/SAST.gitlab-ci.yml
+- template: Jobs/Container-Scanning.gitlab-ci.yml
+
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
@@ -19,16 +27,10 @@ build_windows:
   tags:
   - saas-windows-medium-amd64
   before_script:
-    - Start-Service -Name "docker"  
+    - Start-Service -Name "docker"
   stage: build
   script:
     - docker build -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_REF_SLUG}-windows -f Dockerfile.windows .
     - docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_REF_SLUG}-windows
 
 
-stages:
-- test
-include:
-- template: Security/SAST-IaC.latest.gitlab-ci.yml
-- template: Security/SAST.gitlab-ci.yml
-- template: Jobs/Container-Scanning.gitlab-ci.yml
