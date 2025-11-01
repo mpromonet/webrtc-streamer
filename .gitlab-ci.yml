@@ -17,9 +17,7 @@ build_x86_64:
 build_windows:
   image: servercore:ltsc2019
   tags:
-  - shared-windows
-  - windows
-  - windows-1809
+  - saas-windows-medium-amd64
   before_script:
     - Start-Service -Name "docker"  
   stage: build
@@ -27,3 +25,10 @@ build_windows:
     - docker build -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_REF_SLUG}-windows -f Dockerfile.windows .
     - docker push ${CI_REGISTRY}/${CI_PROJECT_PATH}:${CI_COMMIT_REF_SLUG}-windows
 
+
+stages:
+- test
+include:
+- template: Security/SAST-IaC.latest.gitlab-ci.yml
+- template: Security/SAST.gitlab-ci.yml
+- template: Jobs/Container-Scanning.gitlab-ci.yml
