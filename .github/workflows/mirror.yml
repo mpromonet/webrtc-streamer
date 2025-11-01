@@ -1,0 +1,16 @@
+on: [push]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v5
+      with:
+        fetch-depth: 0
+    - uses: yesolutions/mirror-action@master
+      with:
+        REMOTE: 'https://codeberg.org/${{ github.actor }}/${{ github.repository }}.git'
+        GIT_USERNAME: ${{ github.actor }}
+        GIT_PASSWORD: ${{ secrets.CODEBERG_TOKEN }}
