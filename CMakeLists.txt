@@ -56,7 +56,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
 
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src
-                    COMMAND build/linux/sysroot_scripts/install-sysroot.py --arch=arm 
+                    COMMAND build/linux/sysroot_scripts/install-sysroot.py --arch=arm
                     RESULT_VARIABLE SYSROOT_RESULT
                     OUTPUT_VARIABLE SYSROOT_OUTPUT
                     ERROR_VARIABLE SYSROOT_ERROR
@@ -68,7 +68,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
       message("install-sysroot.py succeeded ${SYSROOT_OUTPUT}")
     endif()
   elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
-    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src 
+    EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src
                     COMMAND build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
                     RESULT_VARIABLE SYSROOT_RESULT
                     OUTPUT_VARIABLE SYSROOT_OUTPUT
@@ -83,7 +83,12 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   endif()
 
   set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nenable_js_protobuf=false\nuse_glib=false\n)
-  set (WEBRTCARGS use_custom_libcxx=false\nlibyuv_use_sme=false\n${WEBRTCARGS})
+  set (WEBRTCARGS libyuv_use_sme=false\n${WEBRTCARGS})
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    set (WEBRTCARGS use_custom_libcxx=true\n${WEBRTCARGS})
+  else()
+    set (WEBRTCARGS use_custom_libcxx=false\n${WEBRTCARGS})
+  endif()
   # debug/release
   if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set (WEBRTCARGS is_debug=false\n${WEBRTCARGS})
@@ -97,6 +102,8 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   else()
     set (WEBRTCARGS rtc_use_h264=true\nrtc_use_h265=true\n${WEBRTCARGS})
   endif()
+
+  # configure ffmpeg for armv6
   if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
     set (CONFIGURE_ARGS --disable-everything --disable-all --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-static --enable-avcodec --enable-avformat --enable-avutil --enable-static --enable-libopus --disable-debug --disable-bzlib --disable-iconv --disable-network --disable-schannel --disable-sdl2 --disable-symver --disable-xlib --disable-zlib --disable-securetransport --disable-faan --disable-alsa --disable-autodetect --disable-error-resilience --enable-decoder=vorbis,libopus,flac --enable-decoder=pcm_u8,pcm_s16le,pcm_s24le,pcm_s32le,pcm_f32le,mp3 --enable-decoder=pcm_s16be,pcm_s24be,pcm_mulaw,pcm_alaw --enable-demuxer=ogg,matroska,wav,flac,mp3,mov --enable-parser=opus,vorbis,flac,mpegaudio,vp9 --extra-cflags=-I${WEBRTCROOT}/src/third_party/opus/src/include --disable-linux-perf --x86asmexe=nasm --optflags="-O2" --arch=arm --enable-armv6 --disable-armv6t2 --enable-vfp --disable-thumb --extra-cflags=-march=armv6 --enable-cross-compile --target-os=linux --extra-cflags=--target=arm-linux-gnueabihf --extra-ldflags=--target=arm-linux-gnueabihf --sysroot=${WEBRTCROOT}/src/build/linux/debian_bullseye_armhf-sysroot --extra-cflags=-mtune=cortex-a8 --extra-cflags=-mfloat-abi=hard --extra-cflags=-O2 --disable-neon --extra-cflags=-mfpu=vfpv3-d16 --enable-pic --cc=clang --cxx=clang++ --ld=clang --extra-ldflags=-fuse-ld=lld --enable-decoder=aac,h264 --enable-demuxer=aac --enable-parser=aac,h264)
     MESSAGE("CONFIGURE_ARGS = ${CONFIGURE_ARGS}")
@@ -113,7 +120,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/muxer_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavformat/)
     file(COPY ${WEBRTCROOT}/src/third_party/ffmpeg/libavformat/protocol_list.c DESTINATION ${WEBRTCROOT}/src/third_party/ffmpeg/chromium/config/Chrome/linux/arm/libavformat/)
 
-  endif()  
+  endif()
 
   #patch
   if (APPLE)
@@ -127,7 +134,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   file(WRITE ${WEBRTCROOT}/src/media/base/media_channel.h "${filecontent}")
   file(READ ${WEBRTCROOT}/src/call/rtp_config.cc filecontent)
   string(REGEX REPLACE "stream_config.rtx.emplace\\(\\)" "stream_config.rtx.emplace(RtpStreamConfig::Rtx())" filecontent "${filecontent}")
-  file(WRITE ${WEBRTCROOT}/src/call/rtp_config.cc "${filecontent}")  
+  file(WRITE ${WEBRTCROOT}/src/call/rtp_config.cc "${filecontent}")
 
   # sound support
   if (APPLE)
@@ -173,13 +180,13 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
   if (WIN32)
     SET (SHELLCOMMAND cmd /c )
   endif()
-  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE} COMMAND ${SHELLCOMMAND} gn gen .)  
+  EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE} COMMAND ${SHELLCOMMAND} gn gen .)
 
   SET(NINJA_TARGET webrtc rtc_json builtin_video_decoder_factory builtin_video_encoder_factory p2p_server_utils task_queue default_task_queue_factory field_trials)
   EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE} COMMAND ${SHELLCOMMAND} ninja ${NINJA_TARGET} RESULT_VARIABLE NINJA_RESULT)
   if(NOT NINJA_RESULT EQUAL 0)
     message(FATAL_ERROR "webrtc build failed with exit code ${NINJA_RESULT}")
-  endif()  
+  endif()
 endif()
 
 # build version identifier
@@ -187,7 +194,7 @@ if(GIT_FOUND)
     EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} submodule update --init)
     EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} describe --tags --always --dirty OUTPUT_VARIABLE PROJECTVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
     set (VERSION "${PROJECTVERSION}/${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
-    
+
     EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} -C civetweb describe --tags --always --dirty OUTPUT_VARIABLE CIVETVERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
     set (VERSION "${VERSION} civetweb@${CIVETVERSION}")
 
@@ -205,14 +212,20 @@ MESSAGE("WEBRTCSTREAMERRESSOURCE = ${WEBRTCSTREAMERRESSOURCE}")
 # project target
 FILE(GLOB_RECURSE WEBRTJSONCPPCOBJS ${WEBRTCOBJS}/third_party/jsoncpp/jsoncpp/*${CMAKE_C_OUTPUT_EXTENSION} ${WEBRTCOBJS}/rtc_base/rtc_json/*${CMAKE_C_OUTPUT_EXTENSION})
 FILE(GLOB_RECURSE WEBRTP2POBJ ${WEBRTCOBJS}/p2p/p2p_server_utils/*${CMAKE_C_OUTPUT_EXTENSION})
-SET (WEBRTCEXTRAOBJS ${WEBRTJSONCPPCOBJS} ${WEBRTP2POBJ} ${WEBRTCCOMOBJ})	
+SET (WEBRTCEXTRAOBJS ${WEBRTJSONCPPCOBJS} ${WEBRTP2POBJ} ${WEBRTCCOMOBJ})
 FILE(GLOB SOURCE src/*.cpp)
 add_executable (${CMAKE_PROJECT_NAME} ${SOURCE} ${WEBRTCEXTRAOBJS})
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc) 
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc)
 
-# webrtc 
-set (WEBRTCINCLUDE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCINCLUDE})
+# webrtc
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  message(STATUS "Using Clang: enabling libc++")
+
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${WEBRTCROOT}/src/buildtools/third_party/libc++ -nostdinc++ -isystem${WEBRTCROOT}/src/third_party/libc++/src/include -isystem${WEBRTCROOT}/src/third_party/libc++abi/src/include -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE")
+  target_link_libraries(${CMAKE_PROJECT_NAME} "${WEBRTCOBJS}/buildtools/third_party/libc++/${CMAKE_STATIC_LIBRARY_PREFIX}c++${CMAKE_STATIC_LIBRARY_SUFFIX}" "${WEBRTCOBJS}/buildtools/third_party/libc++abi/${CMAKE_STATIC_LIBRARY_PREFIX}c++abi${CMAKE_STATIC_LIBRARY_SUFFIX}")
+endif()
+
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
 
 set(WEBRTC_LIBS_INFO
     "${WEBRTCOBJS}/api/${CMAKE_STATIC_LIBRARY_PREFIX}field_trials${CMAKE_STATIC_LIBRARY_SUFFIX}"
@@ -236,13 +249,13 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE CXXOPTS_NO_RTTI)
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package (Threads)
-target_link_libraries (${CMAKE_PROJECT_NAME} Threads::Threads) 
+target_link_libraries (${CMAKE_PROJECT_NAME} Threads::Threads)
 
 # civetweb
-add_library (civetweb STATIC civetweb/src/civetweb.c civetweb/src/CivetServer.cpp)	
-add_definitions(-DOPENSSL_API_3_0 -DUSE_WEBSOCKET)
-target_link_libraries (${CMAKE_PROJECT_NAME} civetweb) 
-target_include_directories(civetweb PUBLIC civetweb/include) 
+add_library (civetweb STATIC civetweb/src/civetweb.c civetweb/src/CivetServer.cpp)
+target_compile_definitions(civetweb PUBLIC -DOPENSSL_API_3_0 -DUSE_WEBSOCKET)
+target_link_libraries (${CMAKE_PROJECT_NAME} civetweb)
+target_include_directories(civetweb PUBLIC civetweb/include)
 
 # rtmp ?
 find_package(PkgConfig QUIET)
@@ -250,11 +263,11 @@ pkg_check_modules(RTMP QUIET librtmp)
 MESSAGE("RTMP_FOUND = ${RTMP_FOUND} RTMP_INCLUDE_DIRS=${RTMP_INCLUDE_DIRS} RTMP_LIBRARY_DIRS=${RTMP_LIBRARY_DIRS} RTMP_LIBRARIES=${RTMP_LIBRARIES}")
 if (RTMP_FOUND)
   add_definitions(-DHAVE_RTMP)
-  target_include_directories (${CMAKE_PROJECT_NAME} PUBLIC ${RTMP_INCLUDE_DIRS}) 
+  target_include_directories (${CMAKE_PROJECT_NAME} PUBLIC ${RTMP_INCLUDE_DIRS})
   target_link_directories (${CMAKE_PROJECT_NAME} PUBLIC ${RTMP_LIBRARY_DIRS})
   find_library(RTMP_LIB rtmp)
   MESSAGE("RTMP_LIB=${RTMP_LIB}")
-  target_link_libraries (${CMAKE_PROJECT_NAME} ${RTMP_LIB}) 
+  target_link_libraries (${CMAKE_PROJECT_NAME} ${RTMP_LIB})
 endif()
 
 # compiler specific
@@ -286,8 +299,8 @@ elseif (APPLE)
     find_library(AUDIO_TOOLBOX AudioToolBox)
     find_library(IO_SURFACE IOSurface)
     find_library(APP_KIT AppKit)
-    
-    
+
+
     target_link_libraries (${CMAKE_PROJECT_NAME} ${CORE_FOUNDATION} ${APPLICATION_SERVICES} ${CORE_SERVICES}
                            ${CORE_AUDIO} ${AUDIO_TOOLBOX} ${IO_SURFACE} ${APP_KIT})
 else()
@@ -297,9 +310,9 @@ else()
     # libv4l2cpp
     add_definitions(-DHAVE_V4L2)
     aux_source_directory(libv4l2cpp/src LIBSRC_FILES)
-    include_directories("libv4l2cpp/inc")
     add_library(libv4l2cpp STATIC ${LIBSRC_FILES})
-    target_link_libraries (${CMAKE_PROJECT_NAME} libv4l2cpp) 
+    target_include_directories(libv4l2cpp PUBLIC libv4l2cpp/inc)
+    target_link_libraries (${CMAKE_PROJECT_NAME} libv4l2cpp)
 
     # webrtc
     add_definitions(-DWEBRTC_POSIX -fno-rtti -fpermissive)
@@ -312,7 +325,7 @@ else()
         target_link_libraries(${CMAKE_PROJECT_NAME} ${X11_LIBRARIES} ${X11_Xdamage_LIB} ${X11_Xfixes_LIB} ${X11_Xcomposite_LIB} ${X11_Xrandr_LIB} ${X11_Xtst_LIB})
     endif()
     # civetweb
-    target_link_libraries(${CMAKE_PROJECT_NAME} dl)    
+    target_link_libraries(${CMAKE_PROJECT_NAME} dl)
     #alsa
     if (ALSA_FOUND)
         add_definitions(-DHAVE_SOUND)
@@ -328,21 +341,21 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         add_definitions(-target aarch64-linux-gnu)
       else ()
         add_definitions(-target aarch64-apple-macos)
-      endif()  
+      endif()
     endif()
 endif()
 
-# prometheus 
+# prometheus
 include(GenerateExportHeader)
 include(GNUInstallDirs)
 set(PROJECT_NAME prometheus-cpp)
 add_subdirectory(prometheus-cpp/core EXCLUDE_FROM_ALL)
-target_link_libraries (${CMAKE_PROJECT_NAME} core)  
+target_link_libraries (${CMAKE_PROJECT_NAME} core)
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE prometheus-cpp/core/include)
 
-# live555helper 
-include_directories(${WEBRTCROOT}/src/third_party/boringssl/src/include)
+# live555helper
 add_subdirectory(live555helper EXCLUDE_FROM_ALL)
+target_include_directories(liblive555helper PRIVATE ${WEBRTCROOT}/src/third_party/boringssl/src/include)
 target_link_libraries (${CMAKE_PROJECT_NAME} liblive555helper ${WEBRTCOBJS}/third_party/boringssl/${CMAKE_STATIC_LIBRARY_PREFIX}boringssl${CMAKE_STATIC_LIBRARY_SUFFIX}) 
 add_definitions(-DHAVE_LIVE555)
 
@@ -351,14 +364,14 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
     target_link_libraries (${CMAKE_PROJECT_NAME} -Wl,-Bstatic -latomic -Wl,-Bdynamic)
 endif()
 # static link of stdc++ if available
-if (NOT APPLE)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   include(CheckCXXCompilerFlag)
   CHECK_CXX_COMPILER_FLAG("-static-libgcc" CXX_SUPPORTS_STATIC_LIBGCC)
-  if (CXX_SUPPORTS_STATIC_LIBGCC) 
+  if (CXX_SUPPORTS_STATIC_LIBGCC)
     target_link_libraries (${CMAKE_PROJECT_NAME} -static-libgcc)
-  endif()    
+  endif()
   CHECK_CXX_COMPILER_FLAG("-static-libstdc++" CXX_SUPPORTS_STATIC_LIBSTDCPP)
-  if (CXX_SUPPORTS_STATIC_LIBSTDCPP) 
+  if (CXX_SUPPORTS_STATIC_LIBSTDCPP)
     target_link_libraries (${CMAKE_PROJECT_NAME} -static-libstdc++)
   endif()
 endif()
@@ -369,7 +382,7 @@ install (DIRECTORY html DESTINATION share/${CMAKE_PROJECT_NAME})
 install (FILES config.json DESTINATION share/${CMAKE_PROJECT_NAME})
 SET(CPACK_GENERATOR "TGZ")
 SET(CPACK_SYSTEM_NAME ${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}-${CMAKE_BUILD_TYPE})
-SET(CPACK_PACKAGE_CONTACT "michel.promonet@free.fr") 
+SET(CPACK_PACKAGE_CONTACT "michel.promonet@free.fr")
 if(PROJECTVERSION)
     SET(CPACK_PACKAGE_VERSION "${PROJECTVERSION}")
 endif()
