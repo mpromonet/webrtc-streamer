@@ -222,7 +222,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   message(STATUS "Using Clang: enabling libc++")
 
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${WEBRTCROOT}/src/buildtools/third_party/libc++ -nostdinc++ -isystem${WEBRTCROOT}/src/third_party/libc++/src/include -isystem${WEBRTCROOT}/src/third_party/libc++abi/src/include -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE")
-  target_link_libraries(${CMAKE_PROJECT_NAME} "${WEBRTCOBJS}/buildtools/third_party/libc++/${CMAKE_STATIC_LIBRARY_PREFIX}c++${CMAKE_STATIC_LIBRARY_SUFFIX}" "${WEBRTCOBJS}/buildtools/third_party/libc++abi/${CMAKE_STATIC_LIBRARY_PREFIX}c++abi${CMAKE_STATIC_LIBRARY_SUFFIX}")
+  if (NOT WIN32)
+    target_link_libraries(${CMAKE_PROJECT_NAME} "${WEBRTCOBJS}/buildtools/third_party/libc++/${CMAKE_STATIC_LIBRARY_PREFIX}c++${CMAKE_STATIC_LIBRARY_SUFFIX}" "${WEBRTCOBJS}/buildtools/third_party/libc++abi/${CMAKE_STATIC_LIBRARY_PREFIX}c++abi${CMAKE_STATIC_LIBRARY_SUFFIX}")
+  endif()
 endif()
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
