@@ -7,7 +7,7 @@ WORKDIR /build/webrtc-streamer
 
 COPY . .
 
-ENV PATH /depot_tools:/build/webrtc/src/third_party/llvm-build/Release+Asserts/bin:$PATH
+ENV PATH=/depot_tools:/build/webrtc/src/third_party/llvm-build/Release+Asserts/bin:$PATH
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget git python3 python3-pkg-resources g++ autoconf automake libtool xz-utils libpulse-dev libasound2-dev libgtk-3-dev libxtst-dev libssl-dev librtmp-dev cmake make pkg-config p7zip-full sudo \
 	&& groupadd --gid $USERID $USERNAME && useradd --uid $USERID --gid $USERNAME -m -s /bin/bash $USERNAME \
