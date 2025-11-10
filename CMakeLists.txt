@@ -217,7 +217,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     message(STATUS "Using Clang: enabling libc++")
 
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -nostdinc++")
-    add_compile_definitions(-D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE)
+    add_compile_definitions(_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE)
     add_compile_options(-I${WEBRTCROOT}/src/buildtools/third_party/libc++)
     if (EXISTS ${WEBRTCBUILD}/gen/third_party/libc++/src/include)
       add_compile_options(-isystem${WEBRTCBUILD}/gen/third_party/libc++/src/include)
@@ -232,10 +232,12 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
   message(STATUS "Compiler is Clang CMAKE_LIBRARY_ARCHITECTURE:${CMAKE_LIBRARY_ARCHITECTURE} CMAKE_SYSTEM_PROCESSOR:${CMAKE_SYSTEM_PROCESSOR}")
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
-    add_compile_options(-target arm-linux-gnueabihf -isystem${CMAKE_FIND_ROOT_PATH}/usr/include/arm-linux-gnueabihf)
+    add_compile_options(-isystem${CMAKE_FIND_ROOT_PATH}/usr/include/arm-linux-gnueabihf)
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -target arm-linux-gnueabihf")
   elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
     if (NOT APPLE)
-      add_compile_options(-target aarch64-linux-gnu -isystem${CMAKE_FIND_ROOT_PATH}/usr/include/aarch64-linux-gnu)
+      add_compile_options(-isystem${CMAKE_FIND_ROOT_PATH}/usr/include/aarch64-linux-gnu)
+      set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -target aarch64-linux-gnu")
     else ()
       add_compile_options(-target aarch64-apple-macos)
     endif()
@@ -283,7 +285,7 @@ set(WEBRTC_LIBS_INFO
 foreach(LIB ${WEBRTC_LIBS_INFO})
     target_link_libraries(${CMAKE_PROJECT_NAME} ${LIB})
 endforeach()
-add_definitions(-DHAVE_JPEG)
+target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE HAVE_JPEG)
 
 # compiler specific
 if (WIN32)
@@ -294,8 +296,8 @@ if (WIN32)
     endforeach()
 
     # webrtc
-    add_definitions(-DWEBRTC_WIN -EHsc -DNOMINMAX -D__PRETTY_FUNCTION__=__FUNCTION__ -D_HAS_ITERATOR_DEBUGGING=0)
-    add_definitions(-DUSE_X11 -DHAVE_SOUND -D_WINSOCKAPI_)
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE WEBRTC_WIN EHsc NOMINMAX __PRETTY_FUNCTION__=__FUNCTION__ _HAS_ITERATOR_DEBUGGING=0)
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE USE_X11 HAVE_SOUND _WINSOCKAPI_)
     target_link_libraries (${CMAKE_PROJECT_NAME} secur32 dmoguids wmcodecdspuuid strmiids msdmo winmm dxgi d3d11 iphlpapi dwmapi shcore)
 elseif (APPLE)
     # use lld to link
@@ -303,9 +305,11 @@ elseif (APPLE)
 
     # live555
     add_definitions(-DNEED_XLOCALE_H=1)
+
     # webrtc
-    add_definitions(-DHAVE_SOUND)
-    add_definitions(-DWEBRTC_MAC -DWEBRTC_POSIX -fno-rtti)
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE HAVE_SOUND)
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE WEBRTC_MAC WEBRTC_POSIX)
+    add_definitions(-fno-rtti)
 
     find_library(CORE_FOUNDATION Foundation)
     find_library(APPLICATION_SERVICES ApplicationServices)
@@ -323,19 +327,20 @@ else()
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld -B${WEBRTCROOT}/src/third_party/llvm-build/Release+Asserts/bin")
 
     # libv4l2cpp
-    add_definitions(-DHAVE_V4L2)
     aux_source_directory(libv4l2cpp/src LIBSRC_FILES)
     add_library(libv4l2cpp STATIC ${LIBSRC_FILES})
     target_include_directories(libv4l2cpp PUBLIC libv4l2cpp/inc)
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE HAVE_V4L2)
     target_link_libraries (${CMAKE_PROJECT_NAME} libv4l2cpp)
 
     # webrtc
-    add_definitions(-DWEBRTC_POSIX -fno-rtti -fpermissive)
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE WEBRTC_POSIX)
+    add_definitions(-fno-rtti -fpermissive)
     if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
-        add_compile_options(-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard)
+        add_definitions(-marm -march=armv6 -mfpu=vfp -mfloat-abi=hard)
     endif()
     if (EXISTS ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE}/obj/modules/desktop_capture/desktop_capture.ninja)
-        add_definitions(-DUSE_X11)
+        target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE USE_X11)
         find_package(X11)
         target_link_libraries(${CMAKE_PROJECT_NAME} ${X11_LIBRARIES} ${X11_Xdamage_LIB} ${X11_Xfixes_LIB} ${X11_Xcomposite_LIB} ${X11_Xrandr_LIB} ${X11_Xtst_LIB})
     endif()
@@ -343,14 +348,14 @@ else()
     target_link_libraries(${CMAKE_PROJECT_NAME} dl)
     #alsa
     if (ALSA_FOUND)
-        add_definitions(-DHAVE_SOUND)
+        target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE HAVE_SOUND)
     endif()
 endif()
 
 
 # civetweb
 add_library (civetweb STATIC civetweb/src/civetweb.c civetweb/src/CivetServer.cpp)
-target_compile_definitions(civetweb PUBLIC -DOPENSSL_API_3_0 -DUSE_WEBSOCKET)
+target_compile_definitions(civetweb PUBLIC OPENSSL_API_3_0 USE_WEBSOCKET)
 target_link_libraries (${CMAKE_PROJECT_NAME} civetweb)
 target_include_directories(civetweb PUBLIC civetweb/include)
 
@@ -359,9 +364,9 @@ find_package(PkgConfig QUIET)
 pkg_check_modules(RTMP QUIET librtmp)
 MESSAGE("RTMP_FOUND = ${RTMP_FOUND} RTMP_INCLUDE_DIRS=${RTMP_INCLUDE_DIRS} RTMP_LIBRARY_DIRS=${RTMP_LIBRARY_DIRS} RTMP_LIBRARIES=${RTMP_LIBRARIES}")
 if (RTMP_FOUND)
-  add_definitions(-DHAVE_RTMP)
-  target_include_directories (${CMAKE_PROJECT_NAME} PUBLIC ${RTMP_INCLUDE_DIRS})
-  target_link_directories (${CMAKE_PROJECT_NAME} PUBLIC ${RTMP_LIBRARY_DIRS})
+  target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE HAVE_RTMP)
+  target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${RTMP_INCLUDE_DIRS})
+  target_link_directories(${CMAKE_PROJECT_NAME} PUBLIC ${RTMP_LIBRARY_DIRS})
   find_library(RTMP_LIB rtmp)
   MESSAGE("RTMP_LIB=${RTMP_LIB}")
   target_link_libraries (${CMAKE_PROJECT_NAME} ${RTMP_LIB})
@@ -379,11 +384,11 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE prometheus-cpp/core/inc
 add_subdirectory(live555helper EXCLUDE_FROM_ALL)
 target_include_directories(liblive555helper PRIVATE ${WEBRTCROOT}/src/third_party/boringssl/src/include)
 target_link_libraries (${CMAKE_PROJECT_NAME} liblive555helper ${WEBRTCOBJS}/third_party/boringssl/${CMAKE_STATIC_LIBRARY_PREFIX}boringssl${CMAKE_STATIC_LIBRARY_SUFFIX}) 
-add_definitions(-DHAVE_LIVE555)
+target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE HAVE_LIVE555)
 
 # static link of libatomic on armv6l
 if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
-    target_link_libraries (${CMAKE_PROJECT_NAME} -Wl,-Bstatic -latomic -Wl,-Bdynamic)
+  target_link_libraries (${CMAKE_PROJECT_NAME} -Wl,-Bstatic -latomic -Wl,-Bdynamic)
 endif()
 
 # static link of stdc++ if available
