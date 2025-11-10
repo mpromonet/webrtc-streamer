@@ -19,7 +19,7 @@ set (CMAKE_CXX_EXTENSIONS OFF)
 
 # set CMAKE_FIND_ROOT_PATH to search package in WebRTC sysroot
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
-  set (CMAKE_FIND_ROOT_PATH ${WEBRTCROOT}/src/build/linux/debian_bullseye_arm-sysroot)
+  set (CMAKE_FIND_ROOT_PATH ${WEBRTCROOT}/src/build/linux/debian_bullseye_armhf-sysroot)
   add_compile_options(--sysroot=${CMAKE_FIND_ROOT_PATH})
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
   set (CMAKE_FIND_ROOT_PATH ${WEBRTCROOT}/src/build/linux/debian_bullseye_arm64-sysroot)
@@ -58,7 +58,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
 
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src
-                    COMMAND build/linux/sysroot_scripts/install-sysroot.py --arch=arm
+                    COMMAND build/linux/sysroot_scripts/install-sysroot.py --arch=armhf
                     RESULT_VARIABLE SYSROOT_RESULT
                     OUTPUT_VARIABLE SYSROOT_OUTPUT
                     ERROR_VARIABLE SYSROOT_ERROR
@@ -293,9 +293,12 @@ if (WIN32)
       string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
     endforeach()
 
+    # live555
+    add_definitions(-D_HAS_ITERATOR_DEBUGGING=0 -D_WINSOCKAPI_)
+
     # webrtc
-    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE WEBRTC_WIN EHsc NOMINMAX __PRETTY_FUNCTION__=__FUNCTION__ _HAS_ITERATOR_DEBUGGING=0)
-    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE USE_X11 HAVE_SOUND _WINSOCKAPI_)
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE WEBRTC_WIN EHsc NOMINMAX __PRETTY_FUNCTION__=__FUNCTION__)
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE USE_X11 HAVE_SOUND)
     target_link_libraries (${CMAKE_PROJECT_NAME} secur32 dmoguids wmcodecdspuuid strmiids msdmo winmm dxgi d3d11 iphlpapi dwmapi shcore)
 elseif (APPLE)
     # use lld to link
@@ -305,8 +308,8 @@ elseif (APPLE)
     add_definitions(-DNEED_XLOCALE_H=1)
 
     # webrtc
-    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE HAVE_SOUND)
     target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE WEBRTC_MAC WEBRTC_POSIX)
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE HAVE_SOUND)
     add_definitions(-fno-rtti)
 
     find_library(CORE_FOUNDATION Foundation)
