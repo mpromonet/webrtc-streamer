@@ -19,13 +19,13 @@ jobs:
         - os: ubuntu-latest
           dockerfile: Dockerfile.rpi
           arch: armv6l
-          crosscompiler: https://master.dl.sourceforge.net/project/raspberry-pi-cross-compilers/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Bookworm/GCC%2014.2.0/Raspberry%20Pi%201%2C%20Zero/cross-gcc-14.2.0-pi_0-1.tar.gz
+          crosscompiler: https://downloads.sourceforge.net/project/raspberry-pi-cross-compilers/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Bookworm/GCC%2014.2.0/Raspberry%20Pi%201%2C%20Zero/cross-gcc-14.2.0-pi_0-1.tar.gz
           image: balenalib/raspberry-pi
 
         - os: ubuntu-latest
           dockerfile: Dockerfile.rpi
           arch: armv7l
-          crosscompiler: https://master.dl.sourceforge.net/project/raspberry-pi-cross-compilers/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Bookworm/GCC%2014.2.0/Raspberry%20Pi%202%2C%203/cross-gcc-14.2.0-pi_2-3.tar.gz
+          crosscompiler: https://downloads.sourceforge.net/project/raspberry-pi-cross-compilers/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Bookworm/GCC%2014.2.0/Raspberry%20Pi%202%2C%203/cross-gcc-14.2.0-pi_2-3.tar.gz
           image: balenalib/raspberry-pi2
 
         - os: ubuntu-latest
