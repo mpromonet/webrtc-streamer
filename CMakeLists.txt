@@ -211,6 +211,37 @@ MESSAGE("VERSION = ${VERSION}")
 add_definitions(-DWEBRTCSTREAMERRESSOURCE=\"${WEBRTCSTREAMERRESSOURCE}\")
 MESSAGE("WEBRTCSTREAMERRESSOURCE = ${WEBRTCSTREAMERRESSOURCE}")
 
+# clang custom libc++
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  if (NOT WIN32)
+    message(STATUS "Using Clang: enabling libc++")
+
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -nostdinc++")
+    add_compile_definitions(-D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE)
+    add_compile_options(-I${WEBRTCROOT}/src/buildtools/third_party/libc++)
+    if (EXISTS ${WEBRTCBUILD}/gen/third_party/libc++/src/include)
+      add_compile_options(-isystem${WEBRTCBUILD}/gen/third_party/libc++/src/include)
+    else()
+      add_compile_options(-isystem${WEBRTCROOT}/src/third_party/libc++/src/include)
+    endif()
+    add_compile_options(-isystem${WEBRTCROOT}/src/third_party/libc++abi/src/include)
+    find_library(LIBC++ NAMES c++ HINTS "${WEBRTCOBJS}/buildtools/third_party/libc++" NO_DEFAULT_PATH)
+    find_library(LIBC++ABI NAMES c++abi HINTS "${WEBRTCOBJS}/buildtools/third_party/libc++abi" NO_DEFAULT_PATH)
+    add_compile_options(-Wno-nullability-completeness)
+  endif()
+
+  message(STATUS "Compiler is Clang CMAKE_LIBRARY_ARCHITECTURE:${CMAKE_LIBRARY_ARCHITECTURE} CMAKE_SYSTEM_PROCESSOR:${CMAKE_SYSTEM_PROCESSOR}")
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
+    add_compile_options(-target arm-linux-gnueabihf -isystem${CMAKE_FIND_ROOT_PATH}/usr/include/arm-linux-gnueabihf)
+  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+    if (NOT APPLE)
+      add_compile_options(-target aarch64-linux-gnu -isystem${CMAKE_FIND_ROOT_PATH}/usr/include/aarch64-linux-gnu)
+    else ()
+      add_compile_options(-target aarch64-apple-macos)
+    endif()
+  endif()
+endif()
+
 # project target
 FILE(GLOB_RECURSE WEBRTJSONCPPCOBJS ${WEBRTCOBJS}/third_party/jsoncpp/jsoncpp/*${CMAKE_C_OUTPUT_EXTENSION} ${WEBRTCOBJS}/rtc_base/rtc_json/*${CMAKE_C_OUTPUT_EXTENSION})
 FILE(GLOB_RECURSE WEBRTP2POBJ ${WEBRTCOBJS}/p2p/p2p_server_utils/*${CMAKE_C_OUTPUT_EXTENSION})
@@ -218,30 +249,26 @@ SET (WEBRTCEXTRAOBJS ${WEBRTJSONCPPCOBJS} ${WEBRTP2POBJ} ${WEBRTCCOMOBJ})
 FILE(GLOB SOURCE src/*.cpp)
 add_executable (${CMAKE_PROJECT_NAME} ${SOURCE} ${WEBRTCEXTRAOBJS})
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE inc)
-
-# webrtc
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT WIN32)
-  message(STATUS "Using Clang: enabling libc++")
-
-  if (EXISTS ${WEBRTCBUILD}/gen/third_party/libc++/src/include)
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem${WEBRTCBUILD}/gen/third_party/libc++/src/include")
-  else()
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -isystem${WEBRTCROOT}/src/third_party/libc++/src/include")
-  endif()
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -I${WEBRTCROOT}/src/buildtools/third_party/libc++ -nostdinc++ -isystem${WEBRTCROOT}/src/third_party/libc++abi/src/include -D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE")
-  find_library(LIBC++ NAMES c++ HINTS "${WEBRTCOBJS}/buildtools/third_party/libc++" NO_DEFAULT_PATH)
-  if (LIBC++)
-    message(STATUS "Found libc++ library at ${LIBC++}")
-    target_link_libraries(${CMAKE_PROJECT_NAME} "${LIBC++}")
-  endif()
-  find_library(LIBC++ABI NAMES c++abi HINTS "${WEBRTCOBJS}/buildtools/third_party/libc++abi" NO_DEFAULT_PATH)
-  if (LIBC++ABI)
-    message(STATUS "Found libc++abi library at ${LIBC++ABI}")
-    target_link_libraries(${CMAKE_PROJECT_NAME} "${LIBC++ABI}")
-  endif()
-  target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wno-nullability-completeness)
+if (LIBC++)
+  message(STATUS "Found libc++ library at ${LIBC++}")
+  target_link_libraries(${CMAKE_PROJECT_NAME} "${LIBC++}")
+endif()
+if (LIBC++ABI)
+  message(STATUS "Found libc++abi library at ${LIBC++ABI}")
+  target_link_libraries(${CMAKE_PROJECT_NAME} "${LIBC++ABI}")
 endif()
 
+# cxxopts
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE cxxopts/include)
+target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE CXXOPTS_NO_RTTI)
+
+# thread
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package (Threads)
+target_link_libraries (${CMAKE_PROJECT_NAME} Threads::Threads)
+
+# webrtc
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
 
 set(WEBRTC_LIBS_INFO
@@ -257,35 +284,6 @@ foreach(LIB ${WEBRTC_LIBS_INFO})
     target_link_libraries(${CMAKE_PROJECT_NAME} ${LIB})
 endforeach()
 add_definitions(-DHAVE_JPEG)
-
-# cxxopts
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE cxxopts/include)
-target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE CXXOPTS_NO_RTTI)
-
-# thread
-set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-find_package (Threads)
-target_link_libraries (${CMAKE_PROJECT_NAME} Threads::Threads)
-
-# civetweb
-add_library (civetweb STATIC civetweb/src/civetweb.c civetweb/src/CivetServer.cpp)
-target_compile_definitions(civetweb PUBLIC -DOPENSSL_API_3_0 -DUSE_WEBSOCKET)
-target_link_libraries (${CMAKE_PROJECT_NAME} civetweb)
-target_include_directories(civetweb PUBLIC civetweb/include)
-
-# rtmp ?
-find_package(PkgConfig QUIET)
-pkg_check_modules(RTMP QUIET librtmp)
-MESSAGE("RTMP_FOUND = ${RTMP_FOUND} RTMP_INCLUDE_DIRS=${RTMP_INCLUDE_DIRS} RTMP_LIBRARY_DIRS=${RTMP_LIBRARY_DIRS} RTMP_LIBRARIES=${RTMP_LIBRARIES}")
-if (RTMP_FOUND)
-  add_definitions(-DHAVE_RTMP)
-  target_include_directories (${CMAKE_PROJECT_NAME} PUBLIC ${RTMP_INCLUDE_DIRS})
-  target_link_directories (${CMAKE_PROJECT_NAME} PUBLIC ${RTMP_LIBRARY_DIRS})
-  find_library(RTMP_LIB rtmp)
-  MESSAGE("RTMP_LIB=${RTMP_LIB}")
-  target_link_libraries (${CMAKE_PROJECT_NAME} ${RTMP_LIB})
-endif()
 
 # compiler specific
 if (WIN32)
@@ -349,17 +347,24 @@ else()
     endif()
 endif()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    message(STATUS "Compiler is Clang CMAKE_LIBRARY_ARCHITECTURE:${CMAKE_LIBRARY_ARCHITECTURE} CMAKE_SYSTEM_PROCESSOR:${CMAKE_SYSTEM_PROCESSOR}")
-    if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
-      add_compile_options(-target arm-linux-gnueabihf -isystem${CMAKE_FIND_ROOT_PATH}/usr/include/arm-linux-gnueabihf)
-    elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
-      if (NOT APPLE)
-        add_compile_options(-target aarch64-linux-gnu -isystem${CMAKE_FIND_ROOT_PATH}/usr/include/aarch64-linux-gnu)
-      else ()
-        add_compile_options(-target aarch64-apple-macos)
-      endif()
-    endif()
+
+# civetweb
+add_library (civetweb STATIC civetweb/src/civetweb.c civetweb/src/CivetServer.cpp)
+target_compile_definitions(civetweb PUBLIC -DOPENSSL_API_3_0 -DUSE_WEBSOCKET)
+target_link_libraries (${CMAKE_PROJECT_NAME} civetweb)
+target_include_directories(civetweb PUBLIC civetweb/include)
+
+# rtmp ?
+find_package(PkgConfig QUIET)
+pkg_check_modules(RTMP QUIET librtmp)
+MESSAGE("RTMP_FOUND = ${RTMP_FOUND} RTMP_INCLUDE_DIRS=${RTMP_INCLUDE_DIRS} RTMP_LIBRARY_DIRS=${RTMP_LIBRARY_DIRS} RTMP_LIBRARIES=${RTMP_LIBRARIES}")
+if (RTMP_FOUND)
+  add_definitions(-DHAVE_RTMP)
+  target_include_directories (${CMAKE_PROJECT_NAME} PUBLIC ${RTMP_INCLUDE_DIRS})
+  target_link_directories (${CMAKE_PROJECT_NAME} PUBLIC ${RTMP_LIBRARY_DIRS})
+  find_library(RTMP_LIB rtmp)
+  MESSAGE("RTMP_LIB=${RTMP_LIB}")
+  target_link_libraries (${CMAKE_PROJECT_NAME} ${RTMP_LIB})
 endif()
 
 # prometheus
@@ -380,6 +385,7 @@ add_definitions(-DHAVE_LIVE555)
 if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
     target_link_libraries (${CMAKE_PROJECT_NAME} -Wl,-Bstatic -latomic -Wl,-Bdynamic)
 endif()
+
 # static link of stdc++ if available
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   include(CheckCXXCompilerFlag)
