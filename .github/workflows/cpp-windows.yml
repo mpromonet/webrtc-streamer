@@ -48,6 +48,7 @@ jobs:
           set "PATH=%GITHUB_WORKSPACE%\..\webrtc\src\third_party\llvm-build\Release+Asserts\bin;%GITHUB_WORKSPACE%\..\webrtc\src\third_party\ninja;%GITHUB_WORKSPACE%\depot_tools;%PATH%"
           set
           cmake -G Ninja -DWEBRTCSTREAMERRESSOURCE=../share/webrtc-streamer/html -DCMAKE_C_COMPILER=clang-cl.exe -DCMAKE_CXX_COMPILER=clang-cl.exe -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DCMAKE_MAKE_PROGRAM=ninja.bat -DDETECT_OPENSSL=OFF .
+          dir /b /s *.lib
           ninja
       env:
         MSVC_PATH: "C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\Community"
