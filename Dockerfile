@@ -18,7 +18,8 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
 	&& cd ../webrtc \
 	&& fetch --nohooks webrtc \
 	&& cd ../webrtc-streamer \
-	&& cmake . && make \
+	&& cmake  -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_C_COMPILER=clang . \
+	&& make \
 	&& make install \
 	&& git clean -xfd \
 	&& find ../webrtc/src -type d -name .git -exec rm -rf {} \; || true \
