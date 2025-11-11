@@ -81,7 +81,7 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
     endif()
   endif()
 
-  set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_build_examples=false\nrtc_build_tools=false\ntreat_warnings_as_errors=false\nenable_js_protobuf=false\nuse_glib=false\n)
+  set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_build_examples=false\ntreat_warnings_as_errors=false\nenable_js_protobuf=false\nuse_glib=false\n)
   set (WEBRTCARGS libyuv_use_sme=false\n${WEBRTCARGS})
   if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT WIN32)
     set (WEBRTCARGS use_custom_libcxx=true\n${WEBRTCARGS})
