@@ -20,12 +20,15 @@ set (CMAKE_CXX_EXTENSIONS OFF)
 # set CMAKE_FIND_ROOT_PATH to search package in WebRTC sysroot
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
   set (CMAKE_FIND_ROOT_PATH ${WEBRTCROOT}/src/build/linux/debian_bullseye_armhf-sysroot)
-  add_compile_options(--sysroot=${CMAKE_FIND_ROOT_PATH})
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
   set (CMAKE_FIND_ROOT_PATH ${WEBRTCROOT}/src/build/linux/debian_bullseye_arm64-sysroot)
-  add_compile_options(--sysroot=${CMAKE_FIND_ROOT_PATH})
 endif()
 MESSAGE("CMAKE_FIND_ROOT_PATH = ${CMAKE_FIND_ROOT_PATH}")
+if (DEFINED CMAKE_FIND_ROOT_PATH)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --sysroot=${CMAKE_FIND_ROOT_PATH}")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --sysroot=${CMAKE_FIND_ROOT_PATH}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --sysroot=${CMAKE_FIND_ROOT_PATH}")
+endif()
 
 # alsa ?
 find_package(ALSA QUIET)
@@ -232,11 +235,17 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
   message(STATUS "Compiler is Clang CMAKE_LIBRARY_ARCHITECTURE:${CMAKE_LIBRARY_ARCHITECTURE} CMAKE_SYSTEM_PROCESSOR:${CMAKE_SYSTEM_PROCESSOR}")
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
-    add_compile_options(-isystem${CMAKE_FIND_ROOT_PATH}/usr/include/arm-linux-gnueabihf --target=arm-linux-gnueabihf)
+    if (DEFINED CMAKE_FIND_ROOT_PATH)
+      add_compile_options(-isystem${CMAKE_FIND_ROOT_PATH}/usr/include/arm-linux-gnueabihf)
+    endif()
+    add_compile_options(--target=arm-linux-gnueabihf)
     add_link_options(--target=arm-linux-gnueabihf)
   elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
     if (NOT APPLE)
-      add_compile_options(-isystem${CMAKE_FIND_ROOT_PATH}/usr/include/aarch64-linux-gnu --target=aarch64-linux-gnu)
+      if (DEFINED CMAKE_FIND_ROOT_PATH)
+        add_compile_options(-isystem${CMAKE_FIND_ROOT_PATH}/usr/include/aarch64-linux-gnu)
+      endif()
+      add_compile_options(--target=aarch64-linux-gnu)
       add_link_options(--target=aarch64-linux-gnu)
     else ()
       add_compile_options(-target aarch64-apple-macos)
@@ -389,13 +398,13 @@ target_include_directories(liblive555helper PRIVATE ${WEBRTCROOT}/src/third_part
 target_link_libraries (${CMAKE_PROJECT_NAME} liblive555helper ${WEBRTCOBJS}/third_party/boringssl/${CMAKE_STATIC_LIBRARY_PREFIX}boringssl${CMAKE_STATIC_LIBRARY_SUFFIX}) 
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE HAVE_LIVE555)
 
-# static link of libatomic on armv6l
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
-  target_link_libraries (${CMAKE_PROJECT_NAME} -Wl,-Bstatic -latomic -Wl,-Bdynamic)
-endif()
-
-# static link of stdc++ if available
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  # static link of libatomic on armv6l
+  if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
+    target_link_libraries (${CMAKE_PROJECT_NAME} -Wl,-Bstatic -latomic -Wl,-Bdynamic)
+  endif()
+
+  # static link of stdc++ if available
   include(CheckCXXCompilerFlag)
   CHECK_CXX_COMPILER_FLAG("-static-libgcc" CXX_SUPPORTS_STATIC_LIBGCC)
   if (CXX_SUPPORTS_STATIC_LIBGCC)
