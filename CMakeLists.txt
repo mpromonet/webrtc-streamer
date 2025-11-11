@@ -269,6 +269,9 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE cxxopts/include)
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE CXXOPTS_NO_RTTI)
 
 # thread
+if (NOT WIN32)
+  set(CMAKE_THREAD_LIBS_INIT "-lpthread")
+endif()
 find_package(Threads REQUIRED)
 target_link_libraries(${CMAKE_PROJECT_NAME} Threads::Threads)
 
