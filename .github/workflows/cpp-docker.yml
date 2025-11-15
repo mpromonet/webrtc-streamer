@@ -44,6 +44,7 @@ jobs:
 
     - name: Free Disk Space
       if: runner.os == 'Windows'
+      shell: cmd
       run: |
         echo "Cleaning up disk..."
         del /f /q /s %TEMP%\*
