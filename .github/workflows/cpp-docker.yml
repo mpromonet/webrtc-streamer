@@ -7,7 +7,7 @@ jobs:
     strategy:
       matrix:
         include:
-        - os: windows-latest
+        - os: windows-2022
           dockerfile: Dockerfile.windows
           arch: windows
 
@@ -48,7 +48,7 @@ jobs:
         Write-Host "Disk before cleanup:"
         Get-PSDrive -PSProvider FileSystem
 
-        $path = 'C:\Android\android-sdk'
+        $path = 'C:\Android'
         if (Test-Path $path) {
           $sizeBytes = (Get-ChildItem -LiteralPath $path -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
           $sizeGB = if ($sizeBytes) { $sizeBytes/1GB } else { 0 }
@@ -68,10 +68,8 @@ jobs:
           Write-Host "Path not found: $path"
         }
 
-        choco list
-
-        Write-Host "Removing C:\Android\android-sdk..."
-        Remove-Item -Path 'C:\Android\android-sdk' -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Host "Removing C:\Android..."
+        Remove-Item -Path 'C:\Android' -Recurse -Force -ErrorAction SilentlyContinue
 
         Write-Host "Disk after cleanup:"
         Get-PSDrive -PSProvider FileSystem
