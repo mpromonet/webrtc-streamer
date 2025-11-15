@@ -1,0 +1,53 @@
+name: C/C++ CI macos
+
+on: [push]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        buildtype: [Debug, Release]
+
+    runs-on: macos-26
+
+    steps:
+    - uses: actions/checkout@v5
+    - run: git fetch --prune --unshallow --tags
+
+    - name: pkg
+      run: brew install p7zip openssl rtmpdump && brew link --force openssl
+
+    - name: depot_tools
+      run: |
+          git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools.git
+          echo "$(pwd)/depot_tools" >> $GITHUB_PATH
+
+    - name: fetch webrtc
+      run: |
+          mkdir webrtc
+          pushd webrtc
+          fetch --nohooks webrtc
+          popd
+
+    - name: build
+      run: |
+          export PATH=$(pwd)/webrtc/src/third_party/llvm-build/Release+Asserts/bin:$PATH
+          cmake -DWEBRTCROOT=$(pwd)/webrtc -DWEBRTCSTREAMERRESSOURCE=../share/webrtc-streamer/html -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DDETECT_OPENSSL=OFF .
+          make VERBOSE=1
+
+    - name: cpack
+      run: |
+          rm -f *.tar.gz
+          cpack
+          echo "artifactPath=$(ls *.tar.gz)" >> $GITHUB_ENV
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.artifactPath }}
+        path: ${{ env.artifactPath }}
+
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: ${{ env.artifactPath }}

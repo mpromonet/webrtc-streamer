@@ -1,0 +1,49 @@
+name: Build dev container
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Remove unnecessary directories to free up space
+      run: |
+        sudo rm -rf /opt/hostedtoolcache/CodeQL
+        sudo rm -rf /usr/local/lib/android/sdk/ndk
+        sudo rm -rf /usr/share/dotnet
+
+    - uses: actions/checkout@v5
+    - run: git fetch --prune --unshallow --tags
+
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ghcr.io/${{ github.repository }}
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push devcontainer
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: Dockerfile.arm64
+        push: true
+        target: builder
+        platforms: linux/amd64
+        tags: ${{ steps.meta.outputs.tags }}-arm64-dev
+
+    - name: Build and push
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: Dockerfile.arm64
+        push: true
+        platforms: linux/amd64
+        tags: ${{ steps.meta.outputs.tags }}-arm64
+

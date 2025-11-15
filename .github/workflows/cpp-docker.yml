@@ -48,7 +48,7 @@ jobs:
         Write-Host "Disk before cleanup:"
         Get-PSDrive -PSProvider FileSystem
 
-        $path = 'C:\Android\android-sdk'
+        $path = 'C:\Android'
         if (Test-Path $path) {
           $sizeBytes = (Get-ChildItem -LiteralPath $path -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
           $sizeGB = if ($sizeBytes) { $sizeBytes/1GB } else { 0 }
@@ -58,28 +58,18 @@ jobs:
           Write-Host "Path not found: $path"
         }
 
+        $path = 'C:\Users'
         if (Test-Path $path) {
-          try {
-            Remove-Item -Path $path -Recurse -Force -ErrorAction Stop
-            Write-Host "Removed $path with Remove-Item"
-          } catch {
-            Write-Host "Remove-Item failed, attempting robocopy mirror trick..."
-            $temp = Join-Path $env:TEMP ('empty_' + [System.Guid]::NewGuid().ToString())
-            New-Item -ItemType Directory -Path $temp | Out-Null
-            try {
-              # Mirror empty directory into target to delete contents, then remove target
-              robocopy $temp $path /MIR | Out-Null
-              Remove-Item -Path $path -Recurse -Force -ErrorAction Stop
-              Write-Host "Removed $path using robocopy mirror fallback"
-            } catch {
-              Write-Host "Robocopy fallback failed: $($_.Exception.Message)"
-            } finally {
-              Remove-Item -Path $temp -Recurse -Force -ErrorAction SilentlyContinue
-            }
-          }
+          $sizeBytes = (Get-ChildItem -LiteralPath $path -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
+          $sizeGB = if ($sizeBytes) { $sizeBytes/1GB } else { 0 }
+          Write-Host "Path: $path"
+          Write-Host ("Size: {0:N2} GB ({1:N0} bytes) / {2:N2} MB" -f $sizeGB, $sizeBytes, ($sizeBytes/1MB))
         } else {
           Write-Host "Path not found: $path"
         }
+
+        Write-Host "Removing C:\Android..."
+        Remove-Item -Path 'C:\Android' -Recurse -Force -ErrorAction SilentlyContinue
 
         Write-Host "Disk after cleanup:"
         Get-PSDrive -PSProvider FileSystem
