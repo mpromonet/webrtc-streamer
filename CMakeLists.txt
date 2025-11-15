@@ -21,9 +21,11 @@ set (CMAKE_CXX_EXTENSIONS OFF)
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
   set (CMAKE_SYSROOT ${WEBRTCROOT}/src/build/linux/debian_bullseye_armhf-sysroot)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
-  set (CMAKE_SYSROOT ${WEBRTCROOT}/src/build/linux/debian_bullseye_arm64-sysroot)
+  if (NOT APPLE)
+    set (CMAKE_SYSROOT ${WEBRTCROOT}/src/build/linux/debian_bullseye_arm64-sysroot)
+  endif()
 endif()
-MESSAGE("CMAKE_SYSROOT = ${CMAKE_SYSROOT}")
+MESSAGE("CMAKE_SYSROOT = ${CMAKE_SYSROOT} CMAKE_FIND_ROOT_PATH=${CMAKE_FIND_ROOT_PATH}")
 
 # alsa ?
 find_package(ALSA QUIET)

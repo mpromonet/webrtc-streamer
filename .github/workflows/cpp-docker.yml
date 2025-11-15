@@ -42,6 +42,13 @@ jobs:
         sudo rm -rf /usr/local/lib/android/sdk/ndk
         sudo rm -rf /usr/share/dotnet
 
+    - name: Free Disk Space
+      if: runner.os == 'Windows'
+      run: |
+        echo "Cleaning up disk..."
+        del /f /q /s %TEMP%\*
+        powershell -Command "Start-Process -Verb runAs cmd.exe '/c cleanmgr /sagerun:1'"
+        docker system prune -af || true
 
     - uses: actions/checkout@v5
     - run: git fetch --prune --unshallow --tags
