@@ -58,19 +58,20 @@ jobs:
           Write-Host "Path not found: $path"
         }
 
+        $path = 'C:\Users'
+        if (Test-Path $path) {
+          $sizeBytes = (Get-ChildItem -LiteralPath $path -Recurse -Force -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum
+          $sizeGB = if ($sizeBytes) { $sizeBytes/1GB } else { 0 }
+          Write-Host "Path: $path"
+          Write-Host ("Size: {0:N2} GB ({1:N0} bytes) / {2:N2} MB" -f $sizeGB, $sizeBytes, ($sizeBytes/1MB))
+        } else {
+          Write-Host "Path not found: $path"
+        }
+
+        choco list
+
         Write-Host "Removing C:\Android\android-sdk..."
         Remove-Item -Path 'C:\Android\android-sdk' -Recurse -Force -ErrorAction SilentlyContinue
-
-        try {
-          Write-Host "Clearing file attributes..."
-          Get-ChildItem -LiteralPath $path -Recurse -Force -ErrorAction SilentlyContinue |
-            ForEach-Object { try { $_.Attributes = 'Normal' } catch {} }
-          Remove-Item -LiteralPath $path -Recurse -Force -ErrorAction Stop
-          Write-Host "Removed successfully after clearing attributes."
-          exit 0
-        } catch {
-          Write-Warning "Attribute-clear attempt failed: $_"
-        }
 
         Write-Host "Disk after cleanup:"
         Get-PSDrive -PSProvider FileSystem
