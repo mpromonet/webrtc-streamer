@@ -39,18 +39,20 @@ jobs:
       if: runner.os != 'Windows'
       run: |
         sudo rm -rf /opt/hostedtoolcache/CodeQL
-        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /usr/local/lib/android/sdk
         sudo rm -rf /usr/share/dotnet
 
     - name: Free Disk Space
       if: runner.os == 'Windows'
-      shell: cmd
       run: |
-        echo "Cleaning up disk..."
-        del /f /q /s %TEMP%\*
-        powershell -Command "Start-Process -Verb runAs cmd.exe '/c del /f /q /s C:\Android'"
-        powershell -Command "Start-Process -Verb runAs cmd.exe '/c cleanmgr /sagerun:1'"
-        docker system prune -af || true
+        Write-Host "Disk before cleanup:"
+        Get-PSDrive -PSProvider FileSystem
+
+        Write-Host "Removing C:\Android\android-sdk (if present)..."
+        Remove-Item -Path 'C:\Android\android-sdk' -Recurse -Force -ErrorAction SilentlyContinue
+
+        Write-Host "Disk after cleanup:"
+        Get-PSDrive -PSProvider FileSystem
 
     - uses: actions/checkout@v5
     - run: git fetch --prune --unshallow --tags
