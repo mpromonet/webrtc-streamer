@@ -19,6 +19,8 @@ set (CMAKE_CXX_EXTENSIONS OFF)
 
 # set CMAKE_SYSROOT to search package in WebRTC sysroot
 if (CMAKE_SYSTEM_PROCESSOR MATCHES "armv6.*")
+  add_compile_options(-isystem${WEBRTCROOT}/src/build/linux/debian_bullseye_armhf-sysroot/usr/include)
+  add_compile_options(-isystem${WEBRTCROOT}/src/build/linux/debian_bullseye_armhf-sysroot/usr/include/arm-linux-gnueabihf)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
   set (CMAKE_SYSROOT ${WEBRTCROOT}/src/build/linux/debian_bullseye_armhf-sysroot)
 elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
