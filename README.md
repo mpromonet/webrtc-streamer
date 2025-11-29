@@ -395,7 +395,9 @@ dependencies above:
 3. Build WebRTC Streamer
 
    ```sh
-   cmake . && make
+   export PATH=$PATH:`realpath ../webrtc/src/third_party/llvm-build/Release+Asserts/bin`
+   cmake -DCMAKE_C_COMPILER=clang . 
+   make
    ```
 
 It is possible to specify cmake parameters `WEBRTCROOT` &
