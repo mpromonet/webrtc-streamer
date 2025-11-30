@@ -110,6 +110,9 @@ public:
         webrtc::ArrayView<const uint8_t> data(buffer, size);
         std::vector<webrtc::H264::NaluIndex> indexes = webrtc::H264::FindNaluIndices(data);
         RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData nbNalu:" << indexes.size();
+        // Support multi-slice IDR: accumulate all IDR slices (and SPS/PPS cfg) into a single access unit
+        std::vector<uint8_t> idrContent; // holds concatenated IDR slices + config
+        int idrSliceCount = 0;
         for (const webrtc::H264::NaluIndex & index : indexes) {
             webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[index.payload_start_offset]);
             RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData NALU type:" << nalu_type << " payload_size:" << index.payload_size << " payload_start_offset:" << index.payload_start_offset << " start_offset:" << index.start_offset;
@@ -137,18 +140,26 @@ public:
                 RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData PPS";
                 m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
             }
-            else if (nalu_type == webrtc::H264::NaluType::kSei) 
+            else if (nalu_type == webrtc::H264::NaluType::kSei)
             {
-            }            
+            }
             else
             {
                 webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameDelta;
                 std::vector<uint8_t> content;
                 if (nalu_type == webrtc::H264::NaluType::kIdr)
                 {
+                    // Multi-slice IDR handling: accumulate and defer posting until all slices processed
                     frameType = webrtc::VideoFrameType::kVideoFrameKey;
-                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData IDR";
-                    content.insert(content.end(), m_cfg.begin(), m_cfg.end());
+                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData IDR slice";
+                    if (idrSliceCount == 0) {
+                        // first IDR slice: prepend SPS/PPS config
+                        idrContent.insert(idrContent.end(), m_cfg.begin(), m_cfg.end());
+                    }
+                    idrContent.insert(idrContent.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
+                    idrSliceCount++;
+                    // do not post yet; continue to gather potential further IDR slices
+                    continue;
                 }
                 else
                 {
@@ -165,11 +176,20 @@ public:
                 }
             }
         }
+        // After processing all NALUs, if we collected IDR slices, post them as a single key frame
+        if (idrSliceCount > 0) {
+            webrtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(idrContent.data(), idrContent.size());
+            PostFrame(frame, ts, webrtc::VideoFrameType::kVideoFrameKey);
+            RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData posted multi-slice IDR frame slices=" << idrSliceCount << " total_size=" << idrContent.size();
+        }
     }
 
     void onH265Data(unsigned char *buffer, ssize_t size, int64_t ts, const std::string & codec) {
         std::vector<webrtc::H265::NaluIndex> indexes = webrtc::H265::FindNaluIndices(buffer,size);
         RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData nbNalu:" << indexes.size();
+        // Support multi-slice IDR: accumulate all IDR slices (and VPS/SPS/PPS cfg) into a single access unit
+        std::vector<uint8_t> idrContentH265;
+        int idrSliceCountH265 = 0;
         for (const webrtc::H265::NaluIndex & index : indexes) {
             webrtc::H265::NaluType nalu_type = webrtc::H265::ParseNaluType(buffer[index.payload_start_offset]);
             RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData NALU type:" << nalu_type << " payload_size:" << index.payload_size << " payload_start_offset:" << index.payload_start_offset << " start_offset:" << index.start_offset;
@@ -207,9 +227,17 @@ public:
                 std::vector<uint8_t> content;
                 if ( (nalu_type == webrtc::H265::NaluType::kIdrWRadl) || (nalu_type == webrtc::H265::NaluType::kIdrNLp) )
                 {
+                    // Multi-slice IDR handling: accumulate and defer posting until all slices processed
                     frameType = webrtc::VideoFrameType::kVideoFrameKey;
-                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData IDR";
-                    content.insert(content.end(), m_cfg.begin(), m_cfg.end());
+                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData IDR slice";
+                    if (idrSliceCountH265 == 0) {
+                        // first IDR slice: prepend VPS/SPS/PPS config
+                        idrContentH265.insert(idrContentH265.end(), m_cfg.begin(), m_cfg.end());
+                    }
+                    idrContentH265.insert(idrContentH265.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
+                    idrSliceCountH265++;
+                    // do not post yet; continue to gather potential further IDR slices
+                    continue;
                 }
                 else
                 {
@@ -225,6 +253,12 @@ public:
                     PostFrame(frame, ts, frameType);
                 }
             }
+        }
+        // After processing all NALUs, if we collected IDR slices, post them as a single key frame
+        if (idrSliceCountH265 > 0) {
+            webrtc::scoped_refptr<webrtc::EncodedImageBuffer> frame = webrtc::EncodedImageBuffer::Create(idrContentH265.data(), idrContentH265.size());
+            PostFrame(frame, ts, webrtc::VideoFrameType::kVideoFrameKey);
+            RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData posted H265 multi-slice IDR frame slices=" << idrSliceCountH265 << " total_size=" << idrContentH265.size();
         }
     }
 

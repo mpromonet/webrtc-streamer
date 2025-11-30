@@ -11,8 +11,6 @@
        
         "Vaison-La-Romaine": {"video":"rtsp://176.139.87.16/axis-media/media.amp", "position":"44.238960,5.074610" },
 
-        "Orlando": {"video":"rtsp://97.68.104.34/axis-media/media.amp", "position":"28.538340,-81.379240"},
-
-	    "H265": {"video":"file://h265.mkv"}        
+        "H265": {"video":"file://h265.mkv"}        
     }
 }
