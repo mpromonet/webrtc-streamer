@@ -25,24 +25,27 @@ elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
     set (CMAKE_SYSROOT ${WEBRTCROOT}/src/build/linux/debian_bullseye_arm64-sysroot)
   endif()
 endif()
-MESSAGE("CMAKE_SYSROOT = ${CMAKE_SYSROOT} CMAKE_FIND_ROOT_PATH=${CMAKE_FIND_ROOT_PATH}")
+# Configure find_package to search in sysroot
+if (DEFINED CMAKE_SYSROOT)
+  # Add architecture-specific lib paths for cross-compilation
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "arm64")
+    set(CMAKE_LIBRARY_ARCHITECTURE "aarch64-linux-gnu")
+  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "armv.*")
+    set(CMAKE_LIBRARY_ARCHITECTURE "arm-linux-gnueabihf")
+  endif()
+endif()
+MESSAGE("CMAKE_SYSROOT = ${CMAKE_SYSROOT} CMAKE_LIBRARY_ARCHITECTURE=${CMAKE_LIBRARY_ARCHITECTURE}")
 
-# alsa ?
-find_package(ALSA QUIET)
-MESSAGE("ALSA_FOUND = ${ALSA_FOUND}")
-
-# pulse ?
-find_package(PulseAudio QUIET)
-MESSAGE("PulseAudio_FOUND = ${PulseAudio_FOUND}")
 
 set(ENV{PATH} "${WEBRTCROOT}/src/third_party/llvm-build/Release+Asserts/bin:$ENV{PATH}")
 MESSAGE("PATH = $ENV{PATH}")
 
 find_package(Git)
 
-# webrtc build
 set (WEBRTCBUILD ${WEBRTCROOT}/src/out/${CMAKE_BUILD_TYPE})
 set (WEBRTCOBJS ${WEBRTCBUILD}/obj)
+
+# install sysroot
 if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX})
   if(GIT_FOUND)
     EXECUTE_PROCESS(WORKING_DIRECTORY ${WEBRTCROOT}/src COMMAND ${GIT_EXECUTABLE} status)
@@ -82,7 +85,19 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
       message("install-sysroot.py succeeded ${SYSROOT_OUTPUT}")
     endif()
   endif()
+endif()
 
+
+# alsa ?
+find_package(ALSA QUIET)
+MESSAGE("ALSA_FOUND = ${ALSA_FOUND}")
+
+# pulse ?
+find_package(PulseAudio QUIET)
+MESSAGE("PulseAudio_FOUND = ${PulseAudio_FOUND}")
+
+# webrtc build
+if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_LIBRARY_SUFFIX})
   set (WEBRTCARGS rtc_include_tests=false\nrtc_enable_protobuf=false\nrtc_build_examples=false\ntreat_warnings_as_errors=false\nenable_js_protobuf=false\nuse_glib=false\n)
   set (WEBRTCARGS libyuv_use_sme=false\n${WEBRTCARGS})
   if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND NOT WIN32)
