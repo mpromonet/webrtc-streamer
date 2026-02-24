@@ -50,7 +50,7 @@ Usage:
   -N, --threads arg     Number of threads for HTTP server
   -A, --passwd arg      Password file for HTTP server access
   -D, --domain arg      Authentication domain for HTTP server access
-                        (default:mydomain.com)
+                        (default:mydomain.com, use '-' to disable)
   -X, --disable-xframe  Disable X-Frame-Options header
   -B, --base-path arg   Base path for HTTP server
 
