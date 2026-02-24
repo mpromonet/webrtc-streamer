@@ -24,3 +24,4 @@ install_manifest.txt
 Makefile
 .ninja*
 build.ninja
+_codeql_detected_source_root
