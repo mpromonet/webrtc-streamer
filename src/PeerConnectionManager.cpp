@@ -894,6 +894,7 @@ const Json::Value PeerConnectionManager::call(const std::string &peerid, const s
 bool PeerConnectionManager::streamStillUsed(const std::string &streamLabel)
 {
 	bool stillUsed = false;
+	std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
 	for (auto it : m_peer_connectionobs_map)
 	{
 		webrtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it.second->getPeerConnection();
@@ -1279,20 +1280,24 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 	// compute stream label removing space because SDP use label
 	std::string streamLabel = this->sanitizeLabel(videourl + "|" + audiourl + "|" + optcapturer);
 
-	bool existingStream = false;
+	bool needToCreate = false;
 	{
 		std::lock_guard<std::mutex> mlock(m_streamMapMutex);
-		existingStream = (m_stream_map.find(streamLabel) != m_stream_map.end());
+		needToCreate = (m_stream_map.find(streamLabel) == m_stream_map.end());
 	}
 
-	if (!existingStream)
+	if (needToCreate)
 	{
-		// need to create the stream
+		// create sources outside the lock (expensive operations)
 		webrtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource(this->CreateVideoSource(video, opts));
 		webrtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource(this->CreateAudioSource(audio, opts));
 		RTC_LOG(LS_INFO) << "Adding Stream to map";
 		std::lock_guard<std::mutex> mlock(m_streamMapMutex);
-		m_stream_map[streamLabel] = std::make_pair(videoSource, audioSource);
+		// double-check: another thread may have created it while we were creating sources
+		if (m_stream_map.find(streamLabel) == m_stream_map.end()) {
+			m_stream_map[streamLabel] = std::make_pair(videoSource, audioSource);
+		}
+		// else: another thread already inserted it; our sources will be released via refcount
 	}
 
 	// create a new webrtc stream
