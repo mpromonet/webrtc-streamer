@@ -127,7 +127,7 @@ private:
                 {
                     m_cfg.clear();
                     RTC_LOG(LS_INFO) << "RtmpVideoSource::onNewSession H264 SPS size:" << spssize;
-		    webrtc::ArrayView<const uint8_t> spsBuffer((const unsigned char*)(&body[start_sps+3]), spssize);
+		            std::span<const uint8_t> spsBuffer((const unsigned char*)(&body[start_sps+3]), spssize);
                     std::optional<webrtc::SpsParser::SpsState> sps = webrtc::SpsParser::ParseSps(spsBuffer);
                     if (!sps)
                     {

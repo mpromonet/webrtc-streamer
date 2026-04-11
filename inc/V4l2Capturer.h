@@ -117,7 +117,7 @@ private:
 
 				bool idr = false;
 				int cfg = 0;
-				webrtc::ArrayView<const uint8_t> data((const uint8_t*)buffer, frameSize);
+				std::span<const uint8_t> data((const uint8_t*)buffer, frameSize);
 				std::vector<webrtc::H264::NaluIndex> naluIndexes = webrtc::H264::FindNaluIndices(data);
 				for (webrtc::H264::NaluIndex  index : naluIndexes) {
 					webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[index.payload_start_offset]);
