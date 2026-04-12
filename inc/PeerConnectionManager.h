@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <string>
 #include <mutex>
 #include <regex>
@@ -116,7 +117,7 @@ class PeerConnectionManager {
 		private:
 			webrtc::scoped_refptr<webrtc::PeerConnectionInterface>        m_pc;
 			std::promise<const webrtc::SessionDescriptionInterface*> & m_promise;	
-			bool                                                       m_cancelled;				
+			std::atomic<bool>                                          m_cancelled;				
 	};
 
 	class CreateSessionDescriptionObserver : public webrtc::CreateSessionDescriptionObserver {
@@ -149,17 +150,18 @@ class PeerConnectionManager {
 		private:
 			webrtc::scoped_refptr<webrtc::PeerConnectionInterface>        m_pc;
 			std::promise<const webrtc::SessionDescriptionInterface*> & m_promise;
-			bool                                                       m_cancelled;
+			std::atomic<bool>                                          m_cancelled;
 	};
 
 	class PeerConnectionStatsCollectorCallback : public webrtc::RTCStatsCollectorCallback {
 		public:
 			PeerConnectionStatsCollectorCallback() {}
-			void clearReport() { m_report.clear(); }
-			Json::Value getReport() { return m_report; }
+			void clearReport() { std::lock_guard<std::mutex> lock(m_reportMutex); m_report.clear(); }
+			Json::Value getReport() { std::lock_guard<std::mutex> lock(m_reportMutex); return m_report; }
 
 		protected:
 			virtual void OnStatsDelivered(const webrtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
+				std::lock_guard<std::mutex> lock(m_reportMutex);
 				for (const webrtc::RTCStats& stats : *report) {
 					Json::Value statsMembers;
 					for (auto & attribute : stats.Attributes()) {
@@ -169,6 +171,7 @@ class PeerConnectionManager {
 				}
 			}
 
+			std::mutex m_reportMutex;
 			Json::Value m_report;
 	};
 
@@ -238,7 +241,7 @@ class PeerConnectionManager {
 				}
 			}
 
-			Json::Value getIceCandidateList() { return m_iceCandidateList; }
+			Json::Value getIceCandidateList() { std::lock_guard<std::mutex> lock(m_iceCandidateMutex); return m_iceCandidateList; }
 			
 			Json::Value getStats() {
 				m_statsCallback->clearReport();
@@ -288,7 +291,10 @@ class PeerConnectionManager {
 				if ( (state == webrtc::PeerConnectionInterface::kIceConnectionFailed)
 				   ||(state == webrtc::PeerConnectionInterface::kIceConnectionClosed) )
 				{ 
-					m_iceCandidateList.clear();
+					{
+						std::lock_guard<std::mutex> lock(m_iceCandidateMutex);
+						m_iceCandidateList.clear();
+					}
 					if (!m_deleting) {
 						std::thread([this]() {
 							m_peerConnectionManager->hangUp(m_peerid);
@@ -312,13 +318,14 @@ class PeerConnectionManager {
 			webrtc::scoped_refptr<webrtc::PeerConnectionInterface>      m_pc;
 			std::unique_ptr<DataChannelObserver>                     m_localChannel;
 			std::unique_ptr<DataChannelObserver>                     m_remoteChannel;
+			mutable std::mutex                                       m_iceCandidateMutex;
 			Json::Value                                              m_iceCandidateList;
 			webrtc::scoped_refptr<PeerConnectionStatsCollectorCallback> m_statsCallback;
 			std::unique_ptr<VideoSink>                               m_videosink;
 			std::unique_ptr<AudioSink>                               m_audiosink;
-			bool                                                     m_deleting;
+			std::atomic<bool>                                        m_deleting;
 			uint64_t                                                 m_creationTime;
-			webrtc::PeerConnectionInterface::IceGatheringState       m_gatheringState;
+			std::atomic<webrtc::PeerConnectionInterface::IceGatheringState> m_gatheringState;
 	};
 
 	public:

@@ -721,8 +721,11 @@ const Json::Value PeerConnectionManager::setAnswer(const std::string &peerid, co
 		{
 			RTC_LOG(LS_ERROR) << "From peerid:" << peerid << " received session description :" << session_description->type();
 
-			std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
-			webrtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = this->getPeerConnection(peerid);
+			webrtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection;
+			{
+				std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
+				peerConnection = this->getPeerConnection(peerid);
+			}
 			if (peerConnection)
 			{
 				std::promise<const webrtc::SessionDescriptionInterface *> remotepromise;
@@ -1368,5 +1371,8 @@ void PeerConnectionManager::PeerConnectionObserver::OnIceCandidate(const webrtc:
 	jmessage[kCandidateSdpMidName] = candidate->sdp_mid();
 	jmessage[kCandidateSdpMlineIndexName] = candidate->sdp_mline_index();
 	jmessage[kCandidateSdpName] = sdp;
-	m_iceCandidateList.append(jmessage);
+	{
+		std::lock_guard<std::mutex> lock(m_iceCandidateMutex);
+		m_iceCandidateList.append(jmessage);
+	}
 }
