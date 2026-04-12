@@ -58,8 +58,8 @@ class VideoDecoder : public webrtc::VideoSourceInterface<webrtc::VideoFrame>, pu
             this->Stop();                    
         }
 
-        int width() { return m_scaler.width();  }
-        int height() { return m_scaler.height();  }
+        int width() const { return m_scaler.width();  }
+        int height() const { return m_scaler.height();  }
 
         static std::vector<uint8_t> extractParameters(const std::string & buffer)
         {

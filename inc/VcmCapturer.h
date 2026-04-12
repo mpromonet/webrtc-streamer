@@ -42,15 +42,15 @@ class VcmCapturer : public webrtc::VideoSinkInterface<webrtc::VideoFrame>,  publ
 	virtual ~VcmCapturer() {
 		Destroy();
 	}
-	int width() { return m_width;  }
-	int height() { return m_height;  }
+	int width() const { return m_width;  }
+	int height() const { return m_height;  }
 
   void OnFrame(const webrtc::VideoFrame& frame) override {
 	  m_broadcaster.OnFrame(frame);
   } 
 
  private:
-  VcmCapturer() : m_vcm(nullptr) {}
+  VcmCapturer() : m_vcm(nullptr), m_width(0), m_height(0) {}
   
   bool Init(size_t width,
             size_t height,

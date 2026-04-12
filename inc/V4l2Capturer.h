@@ -66,11 +66,11 @@ public:
 		Destroy();
 	}
 
-    int width() { return m_width;  }
-    int height() { return m_height;  }        
+    int width() const { return m_width;  }
+    int height() const { return m_height;  }        
 
 private:
-	V4l2Capturer() : m_stop(false) {}
+	V4l2Capturer() : m_stop(false), m_width(0), m_height(0) {}
 
 	bool Init(const std::string &format,
 			  size_t width,
@@ -102,8 +102,6 @@ private:
 
 	void CaptureThread()
 	{
-		fd_set fdset;
-		FD_ZERO(&fdset);
 		timeval tv;
 
 		while (!m_stop)
@@ -173,12 +171,12 @@ private:
 		}
 	}
 
-	bool                                                    m_stop;
-	std::thread                                             m_capturethread;
-	std::unique_ptr<V4l2Capture>                            m_capture;
+	bool                                                       m_stop;
+	std::thread                                                m_capturethread;
+	std::unique_ptr<V4l2Capture>                               m_capture;
 	webrtc::scoped_refptr<webrtc::EncodedImageBufferInterface> m_sps;
 	webrtc::scoped_refptr<webrtc::EncodedImageBufferInterface> m_pps;
-	std::string											    m_format;
-	int                                                     m_width;		
- 	int                                                     m_height;	
+	std::string											       m_format;
+	int                                                        m_width;		
+ 	int                                                       m_height;	
 };

@@ -167,8 +167,8 @@ public:
         }
     }
 
-    int width() { return m_roi_width;  }
-    int height() { return m_roi_height;  }
+    int width() const { return m_roi_width;  }
+    int height() const { return m_roi_height;  }
 
 private:
     int                    m_width;

@@ -52,8 +52,8 @@ class DesktopCapturer : public VideoSource, public webrtc::DesktopCapturer::Call
 		// overide webrtc::DesktopCapturer::Callback
 		virtual void OnCaptureResult(webrtc::DesktopCapturer::Result result, std::unique_ptr<webrtc::DesktopFrame> frame);
 		
-        int width() { return m_width;  }
-        int height() { return m_height;  }        
+        int width() const { return m_width;  }
+        int height() const { return m_height;  }        
 
 	
 	protected:
