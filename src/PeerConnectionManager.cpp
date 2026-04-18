@@ -207,7 +207,7 @@ std::string getParam(const char *queryString, const char *paramName) {
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange, bool useNullCodec, bool usePlanB, int maxpc, webrtc::PeerConnectionInterface::IceTransportsType transportType, const std::string & basePath, const std::string & webrtcTrialsFields)
+PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange, bool useNullCodec, bool usePlanB, int maxpc, webrtc::PeerConnectionInterface::IceTransportsType transportType, const std::string & basePath, const std::string & webrtcTrialsFields, const std::string & extraHost)
 	: m_webrtcenv(webrtc::CreateEnvironment(webrtc::FieldTrials::Create(webrtcTrialsFields))),
 	  m_signalingThread(webrtc::Thread::Create()),
 	  m_workerThread(webrtc::Thread::Create()),
@@ -221,7 +221,8 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 	  m_usePlanB(usePlanB),
 	  m_maxpc(maxpc),
 	  m_transportType(transportType),
-	  m_webrtcTrialsFields(webrtcTrialsFields)
+	  m_webrtcTrialsFields(webrtcTrialsFields),
+	  m_extraHost(extraHost)
 {
 	m_workerThread->SetName("worker", NULL);
 	m_workerThread->Start();
@@ -1374,5 +1375,33 @@ void PeerConnectionManager::PeerConnectionObserver::OnIceCandidate(const webrtc:
 	{
 		std::lock_guard<std::mutex> lock(m_iceCandidateMutex);
 		m_iceCandidateList.append(jmessage);
+
+		// inject extra host candidate with the additional host address
+		const std::string & extraHost = m_peerConnectionManager->m_extraHost;
+		if (!extraHost.empty() && sdp.find("typ host") != std::string::npos)
+		{
+			// candidate format: candidate:<foundation> <component> <protocol> <priority> <address> <port> typ host ...
+			std::istringstream iss(sdp);
+			std::vector<std::string> tokens;
+			std::string token;
+			while (iss >> token) {
+				tokens.push_back(token);
+			}
+			// tokens[4] is the address
+			if (tokens.size() >= 7) {
+				tokens[4] = extraHost;
+				std::string extraSdp;
+				for (size_t i = 0; i < tokens.size(); i++) {
+					if (i > 0) extraSdp += " ";
+					extraSdp += tokens[i];
+				}
+				RTC_LOG(LS_INFO) << "Extra host candidate: " << extraSdp;
+				Json::Value extraMessage;
+				extraMessage[kCandidateSdpMidName] = candidate->sdp_mid();
+				extraMessage[kCandidateSdpMlineIndexName] = candidate->sdp_mline_index();
+				extraMessage[kCandidateSdpName] = extraSdp;
+				m_iceCandidateList.append(extraMessage);
+			}
+		}
 	}
 }

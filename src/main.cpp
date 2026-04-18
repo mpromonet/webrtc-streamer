@@ -113,6 +113,7 @@ int main(int argc, char *argv[])
 	std::string localturnurl;
 	std::string stunurl = "stun.l.google.com:19302";
 	std::string localWebrtcUdpPortRange = "0:65535";
+	std::string extraHost;
 	int logLevel = webrtc::LS_NONE;
 	std::string webroot = GetDefaultRessourceDir(argv[0]);
 	std::string basePath;
@@ -176,6 +177,7 @@ int main(int argc, char *argv[])
 			("S,stun-server", "Start embedded STUN server bind to address", cxxopts::value<std::string>()->implicit_value(defaultlocalstunurl))
 			("s,stun", "Use an external STUN server", cxxopts::value<std::string>()->implicit_value(defaultlocalstunurl))
 			("R,udp-range", "Set the webrtc udp port range", cxxopts::value<std::string>())
+			("e,extra-host", "Add extra ICE candidate address (for Docker/NAT)", cxxopts::value<std::string>())
 			("W,trials", "Set the webrtc trials fields", cxxopts::value<std::string>())
 			("a,audio-layer", "Specify audio capture layer to use (omit value for dummy audio)", cxxopts::value<std::string>()->implicit_value(""))
 			("q,publish-filter", "Specify publish filter", cxxopts::value<std::string>())
@@ -303,6 +305,11 @@ int main(int argc, char *argv[])
 			localWebrtcUdpPortRange = result["udp-range"].as<std::string>();
 		}
 
+		if (result.count("extra-host"))
+		{
+			extraHost = result["extra-host"].as<std::string>();
+		}
+
 		if (result.count("trials"))
 		{
 			webrtcTrialsFields = result["trials"].as<std::string>();
@@ -375,7 +382,7 @@ int main(int argc, char *argv[])
 		iceServerList.push_back(std::string("turn:") + turnurl);
 	}
 
-	webRtcServer = new PeerConnectionManager(iceServerList, config["urls"], audioLayer, publishFilter, localWebrtcUdpPortRange, useNullCodec, usePlanB, maxpc, transportType, basePath, webrtcTrialsFields);
+	webRtcServer = new PeerConnectionManager(iceServerList, config["urls"], audioLayer, publishFilter, localWebrtcUdpPortRange, useNullCodec, usePlanB, maxpc, transportType, basePath, webrtcTrialsFields, extraHost);
 	if (!webRtcServer->InitializePeerConnection())
 	{
 		std::cout << "Cannot Initialize WebRTC server" << std::endl;
