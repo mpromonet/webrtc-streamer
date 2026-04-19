@@ -6,6 +6,7 @@
                 "${workspaceFolder}/inc",
                 "${workspaceFolder}/live555helper/inc",
                 "${workspaceFolder}/live/*/include",
+                "${workspaceFolder}/prometheus-cpp/core/include",                
                 "${workspaceFolder}/../webrtc/src/**"
             ],
             "intelliSenseMode": "linux-gcc-x64",

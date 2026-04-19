@@ -137,46 +137,30 @@ std::string resolveHostnameToIp(const std::string &hostname)
 		return hostname;
 	}
 
-#if defined(__linux__)
-	// Linux: async DNS resolution with timeout
-	struct addrinfo hints = {};
-	hints.ai_family = AF_INET;
-	
-	struct gaicb *reqs[1];
-	struct gaicb req = {};
-	req.ar_name = hostname.c_str();
-	req.ar_service = NULL;
-	req.ar_request = &hints;
-	reqs[0] = &req;
+	// run DNS resolution in a worker thread and wait up to 1 second.
+	std::promise<std::string> resolvedPromise;
+	std::future<std::string> resolvedFuture = resolvedPromise.get_future();
+	std::thread([hostname, p = std::move(resolvedPromise)]() mutable {
+		std::string resolved = hostname;
+		struct addrinfo hints = {};
+		hints.ai_family = AF_INET;
 
-	if (getaddrinfo_a(GAI_NOWAIT, reqs, 1, NULL) == 0)
-	{
-		// Wait for async resolution with 1-second timeout
-		struct timespec ts = {1, 0};
-		int ret = gai_suspend(reqs, 1, &ts);
-		
-		if (ret == 0 && req.ar_result)
+		struct addrinfo *res = NULL;
+		if (getaddrinfo(hostname.c_str(), NULL, &hints, &res) == 0 && res)
 		{
 			char ipstr[INET_ADDRSTRLEN];
-			inet_ntop(AF_INET, &((struct sockaddr_in *)req.ar_result->ai_addr)->sin_addr, ipstr, INET_ADDRSTRLEN);
-			freeaddrinfo(req.ar_result);
-			return ipstr;
+			inet_ntop(AF_INET, &((struct sockaddr_in *)res->ai_addr)->sin_addr, ipstr, INET_ADDRSTRLEN);
+			freeaddrinfo(res);
+			resolved = ipstr;
 		}
-	}
-#else
-	// Windows/macOS/other Unix: synchronous DNS resolution
-	struct addrinfo hints = {};
-	hints.ai_family = AF_INET;
-	
-	struct addrinfo *res = NULL;
-	if (getaddrinfo(hostname.c_str(), NULL, &hints, &res) == 0 && res)
+
+		p.set_value(resolved);
+	}).detach();
+
+	if (resolvedFuture.wait_for(std::chrono::seconds(1)) == std::future_status::ready)
 	{
-		char ipstr[INET_ADDRSTRLEN];
-		inet_ntop(AF_INET, &((struct sockaddr_in *)res->ai_addr)->sin_addr, ipstr, INET_ADDRSTRLEN);
-		freeaddrinfo(res);
-		return ipstr;
+		return resolvedFuture.get();
 	}
-#endif
 
 	return hostname;
 }

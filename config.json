@@ -13,11 +13,9 @@
 
         "H265": {"video":"file://h265.mkv"},
         
-        "Romania": {"video":"rtsp://5.15.64.147/11"},
         "Nagoya": {"video":"rtsp://124.255.28.231/11"},
         "Long Beach": {"video":"rtsp://47.180.53.132/11"},
         "Tramandai": {"video":"rtsp://179.127.151.69/11"},
-        "Thessaloníki": {"video":"rtsp://141.237.109.92/11"},
-        "Cần Giuộc": {"video":"rtsp://171.226.116.18/11"}        
+        "Thessaloníki": {"video":"rtsp://141.237.109.92/11"}
     }
 }
