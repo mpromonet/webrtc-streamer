@@ -65,6 +65,8 @@ Usage:
   -s, --stun [=arg(=0.0.0.0:3478)]
                                 Use an external STUN server
   -R, --udp-range arg           Set the webrtc udp port range
+  -e, --extra-host arg          Add extra ICE candidate address (for 
+                                Docker/NAT)  
   -W, --trials arg              Set the webrtc trials fields
   -a, --audio-layer [=arg(=)]   Specify audio capture layer to use (omit
                                 value for dummy audio)
@@ -149,18 +151,22 @@ The container entry point is the webrtc-streamer application, then you can:
 - run the container registering a RTSP url:
 
   ```sh
-  docker run -p 8000:8000 -it mpromonet/webrtc-streamer -n raspicam -u rtsp://pi2.local:8554/unicast
+  docker run --name webrtc -d -p 8000:8000 -it mpromonet/webrtc-streamer -n raspicam -u rtsp://pi2.local:8554/unicast
   ```
 - run the container giving config.json file:
 
   ```sh
-  docker run -p 8000:8000 -v $PWD/config.json:/usr/local/share/webrtc-streamer/config.json mpromonet/webrtc-streamer
+  docker run --name webrtc -d -p 8000:8000 -v $PWD/config.json:/usr/local/share/webrtc-streamer/config.json mpromonet/webrtc-streamer
   ```
 
 - run the container using network host:
 
   ```sh
-  docker run --net host mpromonet/webrtc-streamer
+  docker run --name webrtc -d --net host mpromonet/webrtc-streamer
+  ```
+- run the container adding extrahost
+  ```sh
+  docker run --name webrtc -d -p 8000:8000 --add-host host.docker.internal:host-gateway mpromonet/webrtc-streamer -e host.docker.internal
   ```
 
 ## Using embedded STUN/TURN server behind a NAT

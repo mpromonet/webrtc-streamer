@@ -7,9 +7,12 @@ volumes:
 services:
   webrtc-streamer:
     image: mpromonet/webrtc-streamer:latest
-    command: ["-C", "config.json"]
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
+    command: ["-C", "config.json", "-R", "50000:50010", "-e", "host.docker.internal"]    
     ports:
       - 8000:8000
+      - 50000-50010:50000-50010/udp
 
   prometheus:
     image: prom/prometheus
