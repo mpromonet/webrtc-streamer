@@ -65,6 +65,8 @@ bool ignoreInLabel(char c)
 #else
 #include <net/if.h>
 #include <ifaddrs.h>
+#include <netdb.h>
+#include <arpa/inet.h>
 #endif
 std::string getServerIpFromClientIp(long clientip)
 {
@@ -125,6 +127,43 @@ std::string getServerIpFromClientIp(long clientip)
 	freeifaddrs(ifaddr);
 #endif
 	return serverAddress;
+}
+
+std::string resolveHostnameToIp(const std::string &hostname)
+{
+	// If already an IP address, return immediately
+	struct in_addr addr;
+	if (inet_pton(AF_INET, hostname.c_str(), &addr) == 1) {
+		return hostname;
+	}
+
+	// Async DNS resolution with timeout
+	struct addrinfo hints = {};
+	hints.ai_family = AF_INET;
+	
+	struct gaicb *reqs[1];
+	struct gaicb req = {};
+	req.ar_name = hostname.c_str();
+	req.ar_service = NULL;
+	req.ar_request = &hints;
+	reqs[0] = &req;
+
+	if (getaddrinfo_a(GAI_NOWAIT, reqs, 1, NULL) == 0)
+	{
+		// Wait for async resolution with 1-second timeout
+		struct timespec ts = {1, 0};
+		int ret = gai_suspend(reqs, 1, &ts);
+		
+		if (ret == 0 && req.ar_result)
+		{
+			char ipstr[INET_ADDRSTRLEN];
+			inet_ntop(AF_INET, &((struct sockaddr_in *)req.ar_result->ai_addr)->sin_addr, ipstr, INET_ADDRSTRLEN);
+			freeaddrinfo(req.ar_result);
+			return ipstr;
+		}
+	}
+
+	return hostname;
 }
 
 webrtc::PeerConnectionInterface::IceServer getIceServerFromUrl(const std::string &url, const std::string &clientIp = "")
@@ -222,7 +261,7 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 	  m_maxpc(maxpc),
 	  m_transportType(transportType),
 	  m_webrtcTrialsFields(webrtcTrialsFields),
-	  m_extraHost(extraHost)
+	  m_extraHost(resolveHostnameToIp(extraHost))
 {
 	m_workerThread->SetName("worker", NULL);
 	m_workerThread->Start();
