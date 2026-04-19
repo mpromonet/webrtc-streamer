@@ -137,7 +137,8 @@ std::string resolveHostnameToIp(const std::string &hostname)
 		return hostname;
 	}
 
-	// Async DNS resolution with timeout
+#if defined(__linux__)
+	// Linux: async DNS resolution with timeout
 	struct addrinfo hints = {};
 	hints.ai_family = AF_INET;
 	
@@ -162,6 +163,20 @@ std::string resolveHostnameToIp(const std::string &hostname)
 			return ipstr;
 		}
 	}
+#else
+	// Windows/macOS/other Unix: synchronous DNS resolution
+	struct addrinfo hints = {};
+	hints.ai_family = AF_INET;
+	
+	struct addrinfo *res = NULL;
+	if (getaddrinfo(hostname.c_str(), NULL, &hints, &res) == 0 && res)
+	{
+		char ipstr[INET_ADDRSTRLEN];
+		inet_ntop(AF_INET, &((struct sockaddr_in *)res->ai_addr)->sin_addr, ipstr, INET_ADDRSTRLEN);
+		freeaddrinfo(res);
+		return ipstr;
+	}
+#endif
 
 	return hostname;
 }
