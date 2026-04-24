@@ -155,24 +155,43 @@ class PeerConnectionManager {
 
 	class PeerConnectionStatsCollectorCallback : public webrtc::RTCStatsCollectorCallback {
 		public:
-			PeerConnectionStatsCollectorCallback() {}
-			void clearReport() { std::lock_guard<std::mutex> lock(m_reportMutex); m_report.clear(); }
+			PeerConnectionStatsCollectorCallback() : m_bytesSent(0), m_bytesReceived(0) {}
+			void clearReport() { std::lock_guard<std::mutex> lock(m_reportMutex); m_report.clear(); m_bytesSent = 0; m_bytesReceived = 0; }
 			Json::Value getReport() { std::lock_guard<std::mutex> lock(m_reportMutex); return m_report; }
+			uint64_t getBytesSent()     { std::lock_guard<std::mutex> lock(m_reportMutex); return m_bytesSent; }
+			uint64_t getBytesReceived() { std::lock_guard<std::mutex> lock(m_reportMutex); return m_bytesReceived; }
 
 		protected:
 			virtual void OnStatsDelivered(const webrtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
 				std::lock_guard<std::mutex> lock(m_reportMutex);
+				uint64_t bytesSent = 0;
+				uint64_t bytesReceived = 0;
 				for (const webrtc::RTCStats& stats : *report) {
 					Json::Value statsMembers;
 					for (auto & attribute : stats.Attributes()) {
 						statsMembers[attribute.name()] = attribute.ToString();
 					}
 					m_report[stats.id()] = statsMembers;
+					if (std::string(stats.type()) == "transport") {
+						for (auto & attribute : stats.Attributes()) {
+								if (attribute.has_value()) {
+								if (attribute.name() == std::string("bytesSent")) {
+									try { bytesSent += std::stoull(attribute.ToString()); } catch (...) {}
+								} else if (attribute.name() == std::string("bytesReceived")) {
+									try { bytesReceived += std::stoull(attribute.ToString()); } catch (...) {}
+								}
+							}
+						}
+					}
 				}
+				m_bytesSent     = bytesSent;
+				m_bytesReceived = bytesReceived;
 			}
 
 			std::mutex m_reportMutex;
 			Json::Value m_report;
+			uint64_t    m_bytesSent;
+			uint64_t    m_bytesReceived;
 	};
 
 	class DataChannelObserver : public webrtc::DataChannelObserver  {
@@ -242,6 +261,14 @@ class PeerConnectionManager {
 			}
 
 			Json::Value getIceCandidateList() { std::lock_guard<std::mutex> lock(m_iceCandidateMutex); return m_iceCandidateList; }
+
+			void triggerStatsUpdate() {
+				if (m_pc.get()) {
+					m_pc->GetStats(m_statsCallback.get());
+				}
+			}
+			uint64_t getBytesSent()     { return m_statsCallback->getBytesSent(); }
+			uint64_t getBytesReceived() { return m_statsCallback->getBytesReceived(); }
 			
 			Json::Value getStats() {
 				m_statsCallback->clearReport();

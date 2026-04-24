@@ -1011,7 +1011,7 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 	{
 		answer = result;
 	}
-	RTC_LOG(LS_INFO) << __FUNCTION__ << " " << peerid << " result:" << result;
+	RTC_LOG(LS_INFO) << __FUNCTION__ << " " << peerid << " answer:" << answer;
 	return answer;
 }
 
@@ -1058,7 +1058,14 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 		{
 			content["pc_state"] =  std::string(webrtc::PeerConnectionInterface::AsString(peerConnection->peer_connection_state()));
 			content["signaling_state"] =  std::string(webrtc::PeerConnectionInterface::AsString(peerConnection->signaling_state()));
-			content["ice_state"] =  std::string(webrtc::PeerConnectionInterface::AsString(peerConnection->ice_connection_state()));			
+			content["ice_state"] =  std::string(webrtc::PeerConnectionInterface::AsString(peerConnection->ice_connection_state()));
+
+			int64_t durationMs = (webrtc::TimeMicros() - it.second->getCreationTime()) / 1000;
+			content["duration_ms"] = (Json::Int64)durationMs;
+
+			it.second->triggerStatsUpdate();
+			content["bytes_sent"]     = (Json::UInt64)it.second->getBytesSent();
+			content["bytes_received"] = (Json::UInt64)it.second->getBytesReceived();			
 
 			std::string sdp;
 			peerConnection->local_description()->ToString(&sdp);
