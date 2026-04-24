@@ -79,25 +79,26 @@ class PeerConnectionManager {
 	
 	class SetSessionDescriptionObserver : public webrtc::SetSessionDescriptionObserver {
 		public:
-			static SetSessionDescriptionObserver* Create(const webrtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise)
+			static SetSessionDescriptionObserver* Create(const webrtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<std::unique_ptr<webrtc::SessionDescriptionInterface>> & promise)
 			{
 				return  new webrtc::RefCountedObject<SetSessionDescriptionObserver>(pc, promise);
 			}
 			virtual void OnSuccess()
 			{
-				std::string sdp;
+				// OnSuccess runs on the WebRTC signaling thread — safe to call Clone() here.
 				if (!m_cancelled) {
+					std::string sdp;
 					if (m_pc->local_description())
 					{
-						m_promise.set_value(m_pc->local_description());
 						m_pc->local_description()->ToString(&sdp);
 						RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " Local SDP:" << sdp;
+						m_promise.set_value(m_pc->local_description()->Clone());
 					}
 					else if (m_pc->remote_description())
 					{
-						m_promise.set_value(m_pc->remote_description());
 						m_pc->remote_description()->ToString(&sdp);
 						RTC_LOG(LS_INFO) << __PRETTY_FUNCTION__ << " Remote SDP:" << sdp;
+						m_promise.set_value(m_pc->remote_description()->Clone());
 					}
 				}
 			}
@@ -105,24 +106,24 @@ class PeerConnectionManager {
 			{
 				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " " << error.message();
 				if (!m_cancelled) {
-					m_promise.set_value(NULL);
+					m_promise.set_value(nullptr);
 				}
 			}
 			void cancel() {
 				m_cancelled = true;
 			}			
 		protected:
-			SetSessionDescriptionObserver(const webrtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise) : m_pc(pc), m_promise(promise), m_cancelled(false) {};
+			SetSessionDescriptionObserver(const webrtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<std::unique_ptr<webrtc::SessionDescriptionInterface>> & promise) : m_pc(pc), m_promise(promise), m_cancelled(false) {};
 
 		private:
-			webrtc::scoped_refptr<webrtc::PeerConnectionInterface>        m_pc;
-			std::promise<const webrtc::SessionDescriptionInterface*> & m_promise;	
-			std::atomic<bool>                                          m_cancelled;				
+			webrtc::scoped_refptr<webrtc::PeerConnectionInterface>                  m_pc;
+			std::promise<std::unique_ptr<webrtc::SessionDescriptionInterface>> & m_promise;
+			std::atomic<bool>                                                       m_cancelled;				
 	};
 
 	class CreateSessionDescriptionObserver : public webrtc::CreateSessionDescriptionObserver {
 		public:
-			static CreateSessionDescriptionObserver* Create(const webrtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise)
+			static CreateSessionDescriptionObserver* Create(const webrtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<std::unique_ptr<webrtc::SessionDescriptionInterface>> & promise)
 			{
 				return new webrtc::RefCountedObject<CreateSessionDescriptionObserver>(pc,promise);
 			}
@@ -138,19 +139,19 @@ class PeerConnectionManager {
 			virtual void OnFailure(webrtc::RTCError error) {
 				RTC_LOG(LS_ERROR) << __PRETTY_FUNCTION__ << " " << error.message();
 				if (!m_cancelled) {
-					m_promise.set_value(NULL);
+					m_promise.set_value(nullptr);
 				}
 			}
 			void cancel() {
 				m_cancelled = true;
 			}
 		protected:
-			CreateSessionDescriptionObserver(const webrtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<const webrtc::SessionDescriptionInterface*> & promise) : m_pc(pc), m_promise(promise), m_cancelled(false) {};
+			CreateSessionDescriptionObserver(const webrtc::scoped_refptr<webrtc::PeerConnectionInterface> & pc, std::promise<std::unique_ptr<webrtc::SessionDescriptionInterface>> & promise) : m_pc(pc), m_promise(promise), m_cancelled(false) {};
 
 		private:
-			webrtc::scoped_refptr<webrtc::PeerConnectionInterface>        m_pc;
-			std::promise<const webrtc::SessionDescriptionInterface*> & m_promise;
-			std::atomic<bool>                                          m_cancelled;
+			webrtc::scoped_refptr<webrtc::PeerConnectionInterface>                  m_pc;
+			std::promise<std::unique_ptr<webrtc::SessionDescriptionInterface>> & m_promise;
+			std::atomic<bool>                                                       m_cancelled;
 	};
 
 	class PeerConnectionStatsCollectorCallback : public webrtc::RTCStatsCollectorCallback {

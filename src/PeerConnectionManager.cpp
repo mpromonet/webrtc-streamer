@@ -701,16 +701,16 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions rtcoptions;
 			rtcoptions.offer_to_receive_video = 0;
 			rtcoptions.offer_to_receive_audio = 0;
-			std::promise<const webrtc::SessionDescriptionInterface *> localpromise;
+			std::promise<std::unique_ptr<webrtc::SessionDescriptionInterface>> localpromise;
 			webrtc::scoped_refptr<CreateSessionDescriptionObserver> localSessionObserver(CreateSessionDescriptionObserver::Create(peerConnection, localpromise));
 			peerConnection->CreateOffer(localSessionObserver.get(), rtcoptions);
 
 			// waiting for offer
-			std::future<const webrtc::SessionDescriptionInterface *> future = localpromise.get_future();
+			std::future<std::unique_ptr<webrtc::SessionDescriptionInterface>> future = localpromise.get_future();
 			if (future.wait_for(std::chrono::milliseconds(5000)) == std::future_status::ready)
 			{
 				// answer with the created offer
-				const webrtc::SessionDescriptionInterface *desc = future.get();
+				std::unique_ptr<webrtc::SessionDescriptionInterface> desc = future.get();
 				if (desc)
 				{
 					std::string sdp;
@@ -767,15 +767,15 @@ const Json::Value PeerConnectionManager::setAnswer(const std::string &peerid, co
 			}
 			if (peerConnection)
 			{
-				std::promise<const webrtc::SessionDescriptionInterface *> remotepromise;
+				std::promise<std::unique_ptr<webrtc::SessionDescriptionInterface>> remotepromise;
 				webrtc::scoped_refptr<SetSessionDescriptionObserver> remoteSessionObserver(SetSessionDescriptionObserver::Create(peerConnection, remotepromise));
 				peerConnection->SetRemoteDescription(remoteSessionObserver.get(), session_description.release());
 				// waiting for remote description
-				std::future<const webrtc::SessionDescriptionInterface *> remotefuture = remotepromise.get_future();
+				std::future<std::unique_ptr<webrtc::SessionDescriptionInterface>> remotefuture = remotepromise.get_future();
 				if (remotefuture.wait_for(std::chrono::milliseconds(5000)) == std::future_status::ready)
 				{
 					RTC_LOG(LS_INFO) << "remote_description is ready";
-					const webrtc::SessionDescriptionInterface *desc = remotefuture.get();
+					std::unique_ptr<webrtc::SessionDescriptionInterface> desc = remotefuture.get();
 					if (desc)
 					{
 						std::string sdp;
@@ -842,11 +842,11 @@ std::unique_ptr<webrtc::SessionDescriptionInterface> PeerConnectionManager::getA
 			RTC_LOG(LS_ERROR) << "Can't add stream";
 		} else {
 			// set remote offer
-			std::promise<const webrtc::SessionDescriptionInterface *> remotepromise;
+			std::promise<std::unique_ptr<webrtc::SessionDescriptionInterface>> remotepromise;
 			webrtc::scoped_refptr<SetSessionDescriptionObserver> remoteSessionObserver(SetSessionDescriptionObserver::Create(peerConnection, remotepromise));
 			peerConnection->SetRemoteDescription(remoteSessionObserver.get(), session_description);
 			// waiting for remote description
-			std::future<const webrtc::SessionDescriptionInterface *> remotefuture = remotepromise.get_future();
+			std::future<std::unique_ptr<webrtc::SessionDescriptionInterface>> remotefuture = remotepromise.get_future();
 			if (remotefuture.wait_for(std::chrono::milliseconds(5000)) == std::future_status::ready)
 			{
 				RTC_LOG(LS_INFO) << "remote_description is ready";
@@ -859,7 +859,7 @@ std::unique_ptr<webrtc::SessionDescriptionInterface> PeerConnectionManager::getA
 
 			// create answer
 			webrtc::PeerConnectionInterface::RTCOfferAnswerOptions rtcoptions;
-			std::promise<const webrtc::SessionDescriptionInterface *> localpromise;
+			std::promise<std::unique_ptr<webrtc::SessionDescriptionInterface>> localpromise;
 			webrtc::scoped_refptr<CreateSessionDescriptionObserver> localSessionObserver(CreateSessionDescriptionObserver::Create(peerConnection, localpromise));
 			peerConnection->CreateAnswer(localSessionObserver.get(), rtcoptions);
 
@@ -874,15 +874,11 @@ std::unique_ptr<webrtc::SessionDescriptionInterface> PeerConnectionManager::getA
 			}
 
 			// waiting for answer
-			std::future<const webrtc::SessionDescriptionInterface *> localfuture = localpromise.get_future();
+			std::future<std::unique_ptr<webrtc::SessionDescriptionInterface>> localfuture = localpromise.get_future();
 			if (localfuture.wait_for(std::chrono::milliseconds(5000)) == std::future_status::ready)
 			{
-				const webrtc::SessionDescriptionInterface *desc = localfuture.get();
-				if (desc)
-				{
-					answer = desc->Clone();
-				}
-				else
+				answer = localfuture.get();
+				if (!answer)
 				{
 					RTC_LOG(LS_ERROR) << "Failed to create answer - no SDP";
 				}
