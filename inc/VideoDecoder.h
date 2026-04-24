@@ -276,7 +276,8 @@ class VideoDecoder : public webrtc::VideoSourceInterface<webrtc::VideoFrame>, pu
                         if (this->hasDecoder()) {
                             int res = m_decoder->Decode(input_image, false, frame.m_timestamp_ms);
                             if (res != WEBRTC_VIDEO_CODEC_OK) {
-                                RTC_LOG(LS_ERROR) << "VideoDecoder::DecoderThread failure:" << res;
+                                RTC_LOG(LS_ERROR) << "VideoDecoder::DecoderThread failure:" << res << " => reset decoder";
+                                m_decoder.reset(NULL);
                             }
                         } else {
                                 RTC_LOG(LS_ERROR) << "VideoDecoder::DecoderThread no decoder";
