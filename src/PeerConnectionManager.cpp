@@ -1064,8 +1064,10 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 			content["duration_ms"] = (Json::Int64)durationMs;
 
 			it.second->triggerStatsUpdate();
-			content["bytes_sent"]     = (Json::UInt64)it.second->getBytesSent();
-			content["bytes_received"] = (Json::UInt64)it.second->getBytesReceived();			
+			content["bytes_sent"]             = (Json::UInt64)it.second->getBytesSent();
+			content["bytes_received"]         = (Json::UInt64)it.second->getBytesReceived();
+			content["bandwidth_sent_bps"]     = (Json::UInt64)it.second->getBandwidthSentBps();
+			content["bandwidth_received_bps"] = (Json::UInt64)it.second->getBandwidthRecvBps();			
 
 			std::string sdp;
 			peerConnection->local_description()->ToString(&sdp);

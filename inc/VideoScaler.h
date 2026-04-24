@@ -160,7 +160,7 @@ public:
                 .set_rotation(m_rotation)
                 .set_timestamp_rtp(frame.rtp_timestamp())
                 .set_timestamp_us(frame.timestamp_us())
-                .set_id(frame.timestamp_us())
+                .set_id(frame.id())
                 .build();
 
             m_broadcaster.OnFrame(scaledFrame);

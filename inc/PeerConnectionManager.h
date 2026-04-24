@@ -155,11 +155,13 @@ class PeerConnectionManager {
 
 	class PeerConnectionStatsCollectorCallback : public webrtc::RTCStatsCollectorCallback {
 		public:
-			PeerConnectionStatsCollectorCallback() : m_bytesSent(0), m_bytesReceived(0) {}
-			void clearReport() { std::lock_guard<std::mutex> lock(m_reportMutex); m_report.clear(); m_bytesSent = 0; m_bytesReceived = 0; }
+			PeerConnectionStatsCollectorCallback() : m_bytesSent(0), m_bytesReceived(0), m_bwSentBps(0), m_bwRecvBps(0), m_prevBytesSent(0), m_prevBytesReceived(0), m_prevTimestampUs(0) {}
+			void clearReport() { std::lock_guard<std::mutex> lock(m_reportMutex); m_report.clear(); m_bytesSent = 0; m_bytesReceived = 0; m_bwSentBps = 0; m_bwRecvBps = 0; m_prevBytesSent = 0; m_prevBytesReceived = 0; m_prevTimestampUs = 0; }
 			Json::Value getReport() { std::lock_guard<std::mutex> lock(m_reportMutex); return m_report; }
-			uint64_t getBytesSent()     { std::lock_guard<std::mutex> lock(m_reportMutex); return m_bytesSent; }
-			uint64_t getBytesReceived() { std::lock_guard<std::mutex> lock(m_reportMutex); return m_bytesReceived; }
+			uint64_t getBytesSent()          { std::lock_guard<std::mutex> lock(m_reportMutex); return m_bytesSent; }
+			uint64_t getBytesReceived()      { std::lock_guard<std::mutex> lock(m_reportMutex); return m_bytesReceived; }
+			uint64_t getBandwidthSentBps()   { std::lock_guard<std::mutex> lock(m_reportMutex); return m_bwSentBps; }
+			uint64_t getBandwidthRecvBps()   { std::lock_guard<std::mutex> lock(m_reportMutex); return m_bwRecvBps; }
 
 		protected:
 			virtual void OnStatsDelivered(const webrtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
@@ -184,6 +186,17 @@ class PeerConnectionManager {
 						}
 					}
 				}
+				int64_t nowUs = webrtc::TimeMicros();
+				if (m_prevTimestampUs > 0) {
+					double dtSec = (nowUs - m_prevTimestampUs) / 1e6;
+					if (dtSec > 0) {
+						m_bwSentBps = static_cast<uint64_t>((bytesSent - m_prevBytesSent) * 8 / dtSec);
+						m_bwRecvBps = static_cast<uint64_t>((bytesReceived - m_prevBytesReceived) * 8 / dtSec);
+					}
+				}
+				m_prevBytesSent     = bytesSent;
+				m_prevBytesReceived = bytesReceived;
+				m_prevTimestampUs   = nowUs;
 				m_bytesSent     = bytesSent;
 				m_bytesReceived = bytesReceived;
 			}
@@ -192,6 +205,11 @@ class PeerConnectionManager {
 			Json::Value m_report;
 			uint64_t    m_bytesSent;
 			uint64_t    m_bytesReceived;
+			uint64_t    m_bwSentBps;
+			uint64_t    m_bwRecvBps;
+			uint64_t    m_prevBytesSent;
+			uint64_t    m_prevBytesReceived;
+			int64_t     m_prevTimestampUs;
 	};
 
 	class DataChannelObserver : public webrtc::DataChannelObserver  {
@@ -267,8 +285,10 @@ class PeerConnectionManager {
 					m_pc->GetStats(m_statsCallback.get());
 				}
 			}
-			uint64_t getBytesSent()     { return m_statsCallback->getBytesSent(); }
-			uint64_t getBytesReceived() { return m_statsCallback->getBytesReceived(); }
+			uint64_t getBytesSent()          { return m_statsCallback->getBytesSent(); }
+			uint64_t getBytesReceived()      { return m_statsCallback->getBytesReceived(); }
+			uint64_t getBandwidthSentBps()   { return m_statsCallback->getBandwidthSentBps(); }
+			uint64_t getBandwidthRecvBps()   { return m_statsCallback->getBandwidthRecvBps(); }
 			
 			Json::Value getStats() {
 				m_statsCallback->clearReport();
