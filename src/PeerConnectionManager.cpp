@@ -636,7 +636,7 @@ const Json::Value PeerConnectionManager::addIceCandidate(const std::string &peer
 	std::string sdp;
 	if (!webrtc::GetStringFromJsonObject(jmessage, kCandidateSdpMidName, &sdp_mid) || !webrtc::GetIntFromJsonObject(jmessage, kCandidateSdpMlineIndexName, &sdp_mlineindex) || !webrtc::GetStringFromJsonObject(jmessage, kCandidateSdpName, &sdp))
 	{
-		RTC_LOG(LS_WARNING) << "Can't parse received message:" << jmessage;
+		RTC_LOG(LS_WARNING) << "Can't parse received message:" << jmessage.toStyledString();
 	}
 	else
 	{
@@ -739,7 +739,7 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 ** -------------------------------------------------------------------------*/
 const Json::Value PeerConnectionManager::setAnswer(const std::string &peerid, const Json::Value &jmessage)
 {
-	RTC_LOG(LS_INFO) << jmessage;
+	RTC_LOG(LS_INFO) << jmessage.toStyledString();
 	Json::Value answer;
 
 	std::string sdp;
@@ -1007,7 +1007,7 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 	{
 		answer = result;
 	}
-	RTC_LOG(LS_INFO) << __FUNCTION__ << " " << peerid << " answer:" << answer;
+	RTC_LOG(LS_INFO) << __FUNCTION__ << " " << peerid << " answer:" << answer.toStyledString();
 	return answer;
 }
 
