@@ -1,4 +1,3 @@
-
 # WebRTC-Streamer
 <a href="https://wiki.friendlyelec.com/wiki/index.php/NanoPi_NEO_Air"><img alt="A picture of a Nano PI NEO Air" src="images/nanopi.jpg" width="500"></a>
 
@@ -286,6 +285,7 @@ A minimal example:
 ## Object detection using tensorflow.js
 
 [![Screenshot](images/tensorflow.jpg)](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/tensorflow.html)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmpromonet%2Fwebrtc-streamer.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fmpromonet%2Fwebrtc-streamer?ref=badge_shield)
 
 [Live Demo](https://webrtcstreamer.agreeabletree-365b9a90.canadacentral.azurecontainerapps.io/tensorflow.html)
 
@@ -432,3 +432,7 @@ following architectures:
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=mpromonet/webrtc-streamer&type=Date)](https://star-history.com/#mpromonet/webrtc-streamer&Date)
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmpromonet%2Fwebrtc-streamer.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fmpromonet%2Fwebrtc-streamer?ref=badge_large)
