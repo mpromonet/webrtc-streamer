@@ -35,7 +35,7 @@ jobs:
     - name: Remove unnecessary directories to free up space
       run: |
         sudo rm -rf /opt/hostedtoolcache/CodeQL
-        sudo rm -rf /usr/local/lib/android/sdk/ndk
+        sudo rm -rf /usr/local/lib/android
         sudo rm -rf /usr/share/dotnet
 
 

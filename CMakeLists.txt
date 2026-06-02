@@ -150,13 +150,6 @@ if (NOT EXISTS ${WEBRTCOBJS}/${CMAKE_STATIC_LIBRARY_PREFIX}webrtc${CMAKE_STATIC_
     file(WRITE ${WEBRTCROOT}/src/third_party/protobuf/src/google/protobuf/port_def.inc "${filecontent}")
   endif()
 
-  file(READ ${WEBRTCROOT}/src/media/base/media_channel.h filecontent)
-  string(REGEX REPLACE "ost << ToStringIfSet[^;]*;" "" filecontent "${filecontent}")
-  file(WRITE ${WEBRTCROOT}/src/media/base/media_channel.h "${filecontent}")
-  file(READ ${WEBRTCROOT}/src/call/rtp_config.cc filecontent)
-  string(REGEX REPLACE "stream_config.rtx.emplace\\(\\)" "stream_config.rtx.emplace(RtpStreamConfig::Rtx())" filecontent "${filecontent}")
-  file(WRITE ${WEBRTCROOT}/src/call/rtp_config.cc "${filecontent}")
-
   # sound support
   if (APPLE)
     set (WEBRTCARGS rtc_include_internal_audio_device=true\n${WEBRTCARGS})
