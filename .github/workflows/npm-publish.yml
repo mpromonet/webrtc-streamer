@@ -2,6 +2,11 @@ name: Node.js Package
 
 on: [push]
 
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
 jobs:
   publish-npm:
     runs-on: ubuntu-latest

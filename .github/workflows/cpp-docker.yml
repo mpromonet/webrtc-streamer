@@ -2,6 +2,11 @@ name: C/C++ CI docker
 
 on: [push]
 
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
 jobs:
   build:
     strategy:
