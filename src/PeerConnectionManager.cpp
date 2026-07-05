@@ -250,7 +250,8 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 	  m_signalingThread(webrtc::Thread::Create()),
 	  m_workerThread(webrtc::Thread::Create()),
 	  m_audioDecoderfactory(webrtc::CreateBuiltinAudioDecoderFactory()), 
-  	  m_video_decoder_factory(CreateDecoderFactory(useNullCodec)),
+	  	m_builtin_video_decoder_factory(CreateDecoderFactory(false)),
+	  	m_null_video_decoder_factory(CreateDecoderFactory(true)),
 	  m_iceServerList(iceServerList), 
 	  m_config(config),
 	  m_publishFilter(publishFilter), 
@@ -272,11 +273,17 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 	m_signalingThread->SetName("signaling", NULL);
 	m_signalingThread->Start();
 
-	std::unique_ptr<webrtc::FieldTrialsView> field_trials = webrtc::FieldTrials::Create(webrtcTrialsFields);
-	m_peer_connection_factory = webrtc::CreatePeerConnectionFactory(NULL,  m_workerThread.get(), m_signalingThread.get(), 
-																	m_audioDeviceModule, webrtc::CreateBuiltinAudioEncoderFactory(), m_audioDecoderfactory,
-																	CreateEncoderFactory(useNullCodec), CreateDecoderFactory(useNullCodec),
-																	NULL, NULL, NULL, std::move(field_trials));
+	std::unique_ptr<webrtc::FieldTrialsView> builtin_field_trials = webrtc::FieldTrials::Create(webrtcTrialsFields);
+	m_builtin_peer_connection_factory = webrtc::CreatePeerConnectionFactory(NULL,  m_workerThread.get(), m_signalingThread.get(), 
+													m_audioDeviceModule, webrtc::CreateBuiltinAudioEncoderFactory(), m_audioDecoderfactory,
+													CreateEncoderFactory(false), CreateDecoderFactory(false),
+													NULL, NULL, NULL, std::move(builtin_field_trials));
+
+	std::unique_ptr<webrtc::FieldTrialsView> null_field_trials = webrtc::FieldTrials::Create(webrtcTrialsFields);
+	m_null_peer_connection_factory = webrtc::CreatePeerConnectionFactory(NULL,  m_workerThread.get(), m_signalingThread.get(), 
+													m_audioDeviceModule, webrtc::CreateBuiltinAudioEncoderFactory(), m_audioDecoderfactory,
+													CreateEncoderFactory(true), CreateDecoderFactory(true),
+													NULL, NULL, NULL, std::move(null_field_trials));
 
 	// build video audio map
 	m_videoaudiomap = getV4l2AlsaMap();
@@ -307,7 +314,9 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 		std::string url      = getParam(req_info->query_string, "url");
 		std::string audiourl = getParam(req_info->query_string, "audiourl");
 		std::string options  = getParam(req_info->query_string, "options");
-		return std::make_tuple(200, std::map<std::string,std::string>(),this->call(peerid, url, audiourl, options, in));
+		std::string nullcodec = getParam(req_info->query_string, "nullcodec");
+		bool useNullCodec = m_useNullCodec || (nullcodec == "1");
+		return std::make_tuple(200, std::map<std::string,std::string>(),this->call(peerid, url, audiourl, options, in, useNullCodec));
 	};
 
 	m_func[basePath + "/api/whep"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
@@ -315,9 +324,11 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 		std::string videourl      = getParam(req_info->query_string, "url");
 		std::string audiourl = getParam(req_info->query_string, "audiourl");
 		std::string options  = getParam(req_info->query_string, "options");
+		std::string nullcodec = getParam(req_info->query_string, "nullcodec");
+		bool useNullCodec = m_useNullCodec || (nullcodec == "1");
 		std::string url(req_info->request_uri);
 		url.append("?").append(req_info->query_string);		
-		return this->whep(req_info->request_method, url, peerid, videourl, audiourl, options, in);	
+		return this->whep(req_info->request_method, url, peerid, videourl, audiourl, options, useNullCodec, in);	
 	};
 
 	m_func[basePath + "/api/hangup"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
@@ -409,6 +420,7 @@ std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionMan
 		const std::string & videourl,
 		const std::string & audiourl,
 		const std::string & options,
+		bool useNullCodec,
 		const Json::Value &in) {
 
 	int httpcode = 501;
@@ -457,7 +469,7 @@ std::tuple<int, std::map<std::string,std::string>,Json::Value> PeerConnectionMan
 	} else {
 		std::string offersdp(in.asString());
 		RTC_LOG(LS_WARNING) << "offer:" << offersdp;
-		std::unique_ptr<webrtc::SessionDescriptionInterface> desc = this->getAnswer(peerid, offersdp, videourl, audiourl, options, true);
+		std::unique_ptr<webrtc::SessionDescriptionInterface> desc = this->getAnswer(peerid, offersdp, videourl, audiourl, options, true, useNullCodec);
 		if (desc.get()) {
 			desc->ToString(&answersdp);
 			headers["Location"] = locationurl;
@@ -677,8 +689,10 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 {
 	RTC_LOG(LS_INFO) << __FUNCTION__ << " video:" << videourl << " audio:" << audiourl << " options:" << options;
 	Json::Value offer;
+	bool useNullCodec = m_useNullCodec;
+	webrtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peerConnectionFactory = useNullCodec ? m_null_peer_connection_factory : m_builtin_peer_connection_factory;
 
-	PeerConnectionObserver *peerConnectionObserver = this->CreatePeerConnection(peerid);
+	PeerConnectionObserver *peerConnectionObserver = this->CreatePeerConnection(peerid, useNullCodec);
 	if (!peerConnectionObserver)
 	{
 		RTC_LOG(LS_ERROR) << "Failed to initialize PeerConnection";
@@ -687,7 +701,7 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 	{
 		webrtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = peerConnectionObserver->getPeerConnection();
 
-		if (!this->AddStreams(peerConnection.get(), videourl, audiourl, options))
+		if (!this->AddStreams(peerConnection.get(), videourl, audiourl, options, peerConnectionFactory, useNullCodec))
 		{
 			RTC_LOG(LS_ERROR) << "Can't add stream";
 		} else {
@@ -800,22 +814,23 @@ const Json::Value PeerConnectionManager::setAnswer(const std::string &peerid, co
 }
 
 
-std::unique_ptr<webrtc::SessionDescriptionInterface> PeerConnectionManager::getAnswer(const std::string & peerid, const std::string& sdpoffer, const std::string & videourl, const std::string & audiourl, const std::string & options, bool waitgatheringcompletion) {
+std::unique_ptr<webrtc::SessionDescriptionInterface> PeerConnectionManager::getAnswer(const std::string & peerid, const std::string& sdpoffer, const std::string & videourl, const std::string & audiourl, const std::string & options, bool waitgatheringcompletion, bool useNullCodec) {
 	std::unique_ptr<webrtc::SessionDescriptionInterface> answer;
 	std::unique_ptr<webrtc::SessionDescriptionInterface> session_description(webrtc::CreateSessionDescription(webrtc::SdpType::kOffer, sdpoffer, NULL));
 	if (!session_description) {
 		RTC_LOG(LS_WARNING) << "Can't parse received session description message.";
 	} else {
-		answer = this->getAnswer(peerid, session_description.release(), videourl, audiourl, options, waitgatheringcompletion);
+		answer = this->getAnswer(peerid, session_description.release(), videourl, audiourl, options, waitgatheringcompletion, useNullCodec);
 	}
 	return answer;
 }
 
 
-std::unique_ptr<webrtc::SessionDescriptionInterface> PeerConnectionManager::getAnswer(const std::string & peerid, webrtc::SessionDescriptionInterface *session_description, const std::string & videourl, const std::string & audiourl, const std::string & options, bool waitgatheringcompletion) {
+std::unique_ptr<webrtc::SessionDescriptionInterface> PeerConnectionManager::getAnswer(const std::string & peerid, webrtc::SessionDescriptionInterface *session_description, const std::string & videourl, const std::string & audiourl, const std::string & options, bool waitgatheringcompletion, bool useNullCodec) {
 	std::unique_ptr<webrtc::SessionDescriptionInterface> answer;
+	webrtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peerConnectionFactory = useNullCodec ? m_null_peer_connection_factory : m_builtin_peer_connection_factory;
 
-	PeerConnectionObserver *peerConnectionObserver = this->CreatePeerConnection(peerid);
+	PeerConnectionObserver *peerConnectionObserver = this->CreatePeerConnection(peerid, useNullCodec);
 	if (!peerConnectionObserver)
 	{
 		RTC_LOG(LS_ERROR) << "Failed to initialize PeerConnectionObserver";
@@ -837,7 +852,7 @@ std::unique_ptr<webrtc::SessionDescriptionInterface> PeerConnectionManager::getA
 		}
 		
 		// add local stream
-		if (!this->AddStreams(peerConnection.get(), videourl, audiourl, options))
+		if (!this->AddStreams(peerConnection.get(), videourl, audiourl, options, peerConnectionFactory, useNullCodec))
 		{
 			RTC_LOG(LS_ERROR) << "Can't add stream";
 		} else {
@@ -898,9 +913,9 @@ std::unique_ptr<webrtc::SessionDescriptionInterface> PeerConnectionManager::getA
 /* ---------------------------------------------------------------------------
 **  auto-answer to a call
 ** -------------------------------------------------------------------------*/
-const Json::Value PeerConnectionManager::call(const std::string &peerid, const std::string &videourl, const std::string &audiourl, const std::string &options, const Json::Value &jmessage)
+const Json::Value PeerConnectionManager::call(const std::string &peerid, const std::string &videourl, const std::string &audiourl, const std::string &options, const Json::Value &jmessage, bool useNullCodec)
 {
-	RTC_LOG(LS_INFO) << __FUNCTION__ << " video:" << videourl << " audio:" << audiourl << " options:" << options;
+	RTC_LOG(LS_INFO) << __FUNCTION__ << " video:" << videourl << " audio:" << audiourl << " options:" << options << " useNullCodec:" << useNullCodec;
 
 	Json::Value answer;
 
@@ -912,7 +927,7 @@ const Json::Value PeerConnectionManager::call(const std::string &peerid, const s
 	}
 	else
 	{
-		std::unique_ptr<webrtc::SessionDescriptionInterface> desc = this->getAnswer(peerid, sdp, videourl, audiourl, options);
+		std::unique_ptr<webrtc::SessionDescriptionInterface> desc = this->getAnswer(peerid, sdp, videourl, audiourl, options, false, useNullCodec);
 		if (desc.get())
 		{
 			std::string sdp;
@@ -1142,7 +1157,7 @@ const Json::Value PeerConnectionManager::getStreamList()
 ** -------------------------------------------------------------------------*/
 bool PeerConnectionManager::InitializePeerConnection()
 {
-	return (m_peer_connection_factory.get() != NULL);
+	return (m_builtin_peer_connection_factory.get() != NULL) && (m_null_peer_connection_factory.get() != NULL);
 }
 
 /* ---------------------------------------------------------------------------
@@ -1168,7 +1183,7 @@ std::string PeerConnectionManager::getOldestPeerCannection()
 /* ---------------------------------------------------------------------------
 **  create a new PeerConnection
 ** -------------------------------------------------------------------------*/
-PeerConnectionManager::PeerConnectionObserver *PeerConnectionManager::CreatePeerConnection(const std::string &peerid)
+PeerConnectionManager::PeerConnectionObserver *PeerConnectionManager::CreatePeerConnection(const std::string &peerid, bool useNullCodec)
 {
 	std::string oldestpeerid = this->getOldestPeerCannection();
 	if (!oldestpeerid.empty()) {
@@ -1204,8 +1219,13 @@ PeerConnectionManager::PeerConnectionObserver *PeerConnectionManager::CreatePeer
 	config.port_allocator_config.max_port = maxPort;
 
 	RTC_LOG(LS_INFO) << __FUNCTION__ << "CreatePeerConnection peerid:" << peerid << " webrtcPortRange:" << minPort << ":" << maxPort;
+	webrtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> peerConnectionFactory = useNullCodec ? m_null_peer_connection_factory : m_builtin_peer_connection_factory;
+	if (!peerConnectionFactory) {
+		RTC_LOG(LS_ERROR) << __FUNCTION__ << "CreatePeerConnection failed factory not initialized useNullCodec:" << useNullCodec;
+		return NULL;
+	}
 
-	PeerConnectionObserver *obs = new PeerConnectionObserver(this, peerid, config);
+	PeerConnectionObserver *obs = new PeerConnectionObserver(this, peerid, config, peerConnectionFactory);
 	if (!obs)
 	{
 		RTC_LOG(LS_ERROR) << __FUNCTION__ << "CreatePeerConnection failed";
@@ -1217,19 +1237,20 @@ PeerConnectionManager::PeerConnectionObserver *PeerConnectionManager::CreatePeer
 **  get the capturer from its URL
 ** -------------------------------------------------------------------------*/
 
-webrtc::scoped_refptr<webrtc::VideoTrackSourceInterface> PeerConnectionManager::CreateVideoSource(const std::string &videourl, const std::map<std::string, std::string> &opts)
+webrtc::scoped_refptr<webrtc::VideoTrackSourceInterface> PeerConnectionManager::CreateVideoSource(const std::string &videourl, const std::map<std::string, std::string> &opts, bool useNullCodec)
 {
 	RTC_LOG(LS_INFO) << "videourl:" << videourl;
+	std::unique_ptr<webrtc::VideoDecoderFactory> &videoDecoderFactory = useNullCodec ? m_null_video_decoder_factory : m_builtin_video_decoder_factory;
 
-	return CapturerFactory::CreateVideoSource(videourl, opts, m_publishFilter, m_peer_connection_factory, m_video_decoder_factory);
+	return CapturerFactory::CreateVideoSource(videourl, opts, m_publishFilter, m_builtin_peer_connection_factory, videoDecoderFactory);
 }
 
-webrtc::scoped_refptr<webrtc::AudioSourceInterface> PeerConnectionManager::CreateAudioSource(const std::string &audiourl, const std::map<std::string, std::string> &opts)
+webrtc::scoped_refptr<webrtc::AudioSourceInterface> PeerConnectionManager::CreateAudioSource(const std::string &audiourl, const std::map<std::string, std::string> &opts, const webrtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> &peerConnectionFactory)
 {
 	RTC_LOG(LS_INFO) << "audiourl:" << audiourl;
 
-	return m_workerThread->BlockingCall([this, audiourl, opts] {
-		return CapturerFactory::CreateAudioSource(audiourl, opts, m_publishFilter, m_peer_connection_factory, m_audioDecoderfactory, m_audioDeviceModule);
+	return m_workerThread->BlockingCall([this, audiourl, opts, peerConnectionFactory] {
+		return CapturerFactory::CreateAudioSource(audiourl, opts, m_publishFilter, peerConnectionFactory, m_audioDecoderfactory, m_audioDeviceModule);
     });
 }
 
@@ -1252,9 +1273,13 @@ const std::string PeerConnectionManager::sanitizeLabel(const std::string &label)
 /* ---------------------------------------------------------------------------
 **  Add a stream to a PeerConnection
 ** -------------------------------------------------------------------------*/
-bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_connection, const std::string &videourl, const std::string &audiourl, const std::string &options)
+bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_connection, const std::string &videourl, const std::string &audiourl, const std::string &options, const webrtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface> &peerConnectionFactory, bool useNullCodec)
 {
 	bool ret = false;
+	if (!peerConnectionFactory) {
+		RTC_LOG(LS_ERROR) << "PeerConnectionFactory is not initialized";
+		return false;
+	}
 
 	// compute options
 	std::string optstring = options;
@@ -1325,7 +1350,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 	}
 
 	// compute stream label removing space because SDP use label
-	std::string streamLabel = this->sanitizeLabel(videourl + "|" + audiourl + "|" + optcapturer);
+	std::string streamLabel = this->sanitizeLabel(videourl + "|" + audiourl + "|" + optcapturer + "|" + (useNullCodec ? "nullcoder" : "builtin"));
 
 	bool needToCreate = false;
 	{
@@ -1336,8 +1361,8 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 	if (needToCreate)
 	{
 		// create sources outside the lock (expensive operations)
-		webrtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource(this->CreateVideoSource(video, opts));
-		webrtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource(this->CreateAudioSource(audio, opts));
+		webrtc::scoped_refptr<webrtc::VideoTrackSourceInterface> videoSource(this->CreateVideoSource(video, opts, useNullCodec));
+		webrtc::scoped_refptr<webrtc::AudioSourceInterface> audioSource(this->CreateAudioSource(audio, opts, peerConnectionFactory));
 		RTC_LOG(LS_INFO) << "Adding Stream to map";
 		std::lock_guard<std::mutex> mlock(m_streamMapMutex);
 		// double-check: another thread may have created it while we were creating sources
@@ -1361,7 +1386,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 				}
 				else
 				{
-					webrtc::scoped_refptr<webrtc::VideoTrackInterface> video_track = m_peer_connection_factory->CreateVideoTrack(videoSource, streamLabel + "_video");
+					webrtc::scoped_refptr<webrtc::VideoTrackInterface> video_track = peerConnectionFactory->CreateVideoTrack(videoSource, streamLabel + "_video");
 					if ((video_track) && (!peer_connection->AddTrack(video_track, {streamLabel}).ok()))
 					{
 						RTC_LOG(LS_ERROR) << "Adding VideoTrack to MediaStream failed";
@@ -1380,7 +1405,7 @@ bool PeerConnectionManager::AddStreams(webrtc::PeerConnectionInterface *peer_con
 				}
 				else
 				{
-					webrtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track = m_peer_connection_factory->CreateAudioTrack(streamLabel + "_audio", audioSource.get());
+					webrtc::scoped_refptr<webrtc::AudioTrackInterface> audio_track = peerConnectionFactory->CreateAudioTrack(streamLabel + "_audio", audioSource.get());
 					if ((audio_track) && (!peer_connection->AddTrack(audio_track, {streamLabel}).ok()))
 					{
 						RTC_LOG(LS_ERROR) << "Adding AudioTrack to MediaStream failed";
