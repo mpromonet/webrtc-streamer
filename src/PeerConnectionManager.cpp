@@ -242,6 +242,16 @@ std::string getParam(const char *queryString, const char *paramName) {
 	return value;
 }
 
+std::string getOptionValue(const std::string &options, const std::string &optionName) {
+	std::istringstream is(options);
+	std::string key, value;
+	while (std::getline(std::getline(is, key, '='), value, '&')) {
+		if (key == optionName) {
+			return value;
+		}
+	}
+	return "";
+}
 /* ---------------------------------------------------------------------------
 **  Constructor
 ** -------------------------------------------------------------------------*/
@@ -314,8 +324,7 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 		std::string url      = getParam(req_info->query_string, "url");
 		std::string audiourl = getParam(req_info->query_string, "audiourl");
 		std::string options  = getParam(req_info->query_string, "options");
-		std::string nullcodec = getParam(req_info->query_string, "nullcodec");
-		bool useNullCodec = m_useNullCodec || (nullcodec == "1");
+		bool useNullCodec = m_useNullCodec || (getOptionValue(options, "nullcodec") == "1");
 		return std::make_tuple(200, std::map<std::string,std::string>(),this->call(peerid, url, audiourl, options, in, useNullCodec));
 	};
 
@@ -324,8 +333,7 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 		std::string videourl      = getParam(req_info->query_string, "url");
 		std::string audiourl = getParam(req_info->query_string, "audiourl");
 		std::string options  = getParam(req_info->query_string, "options");
-		std::string nullcodec = getParam(req_info->query_string, "nullcodec");
-		bool useNullCodec = m_useNullCodec || (nullcodec == "1");
+		bool useNullCodec = m_useNullCodec || (getOptionValue(options, "nullcodec") == "1");
 		std::string url(req_info->request_uri);
 		url.append("?").append(req_info->query_string);		
 		return this->whep(req_info->request_method, url, peerid, videourl, audiourl, options, useNullCodec, in);	
