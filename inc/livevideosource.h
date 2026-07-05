@@ -130,7 +130,7 @@ public:
                 }
                 else
                 {
-                    RTC_LOG(LS_INFO) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height;
+                    RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData SPS set format " << sps->width << "x" << sps->height;
                     postFormat(codec, sps->width, sps->height);
                 }
             }

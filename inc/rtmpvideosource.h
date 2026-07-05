@@ -133,7 +133,6 @@ private:
                     {
                         RTC_LOG(LS_ERROR) << "cannot parse H264 sps";
                     } else {
-                        RTC_LOG(LS_ERROR) << "sps " << sps->width << "x" << sps->height;
                         RTC_LOG(LS_INFO) << "RtmpVideoSource:onData H264 SPS set format " << sps->width << "x" << sps->height;
                         postFormat("H264", sps->width, sps->height);
                         
@@ -198,7 +197,6 @@ private:
                         {
                             RTC_LOG(LS_ERROR) << "cannot parse H265 sps";
                         } else {
-                            RTC_LOG(LS_ERROR) << "sps " << sps->width << "x" << sps->height;
                             RTC_LOG(LS_INFO) << "RtmpVideoSource:onData H265 SPS set format " << sps->width << "x" << sps->height;
                             postFormat("H265", sps->width, sps->height);
                         }                               
