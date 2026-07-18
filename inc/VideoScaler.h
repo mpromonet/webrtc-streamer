@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include "media/base/video_broadcaster.h"
+#include "api/video/video_broadcaster.h"
 #include "api/media_stream_interface.h"
 #include "api/video/i420_buffer.h"
 

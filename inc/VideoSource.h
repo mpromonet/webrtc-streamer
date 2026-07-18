@@ -13,7 +13,7 @@
 #pragma once
 
 #include "modules/video_capture/video_capture_factory.h"
-#include "media/base/video_broadcaster.h"
+#include "api/video/video_broadcaster.h"
 
 class VideoSource : public webrtc::VideoSourceInterface<webrtc::VideoFrame> {
 public:

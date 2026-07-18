@@ -25,8 +25,8 @@
 #include "libyuv/convert.h"
 
 #include "media/base/codec.h"
-#include "media/base/video_common.h"
-#include "media/base/video_broadcaster.h"
+#include "api/video/video_common.h"
+#include "api/video/video_broadcaster.h"
 #include "media/engine/internal_decoder_factory.h"
 
 #include "common_video/h265/h265_common.h"

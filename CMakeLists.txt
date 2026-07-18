@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.5)
+cmake_minimum_required (VERSION 3.10)
 project (webrtc-streamer)
 
 # Set CMAKE_SYSTEM_PROCESSOR if not already set (for native builds)
@@ -9,7 +9,7 @@ endif()
 set (WEBRTCROOT "${CMAKE_CURRENT_SOURCE_DIR}/../webrtc" CACHE STRING "WEBRTC root directory")
 set (WEBRTCDESKTOPCAPTURE "ON" CACHE STRING "WEBRTC Desktop capture")
 set (WEBRTCCHROMEBRANDED "ON" CACHE STRING "WEBRTC Chrome branded")
-set (WEBRTCVERSION "ef40ea6aefab3ad9b453b7daf91970a45b72dd6b" CACHE STRING "WEBRTC version")
+set (WEBRTCVERSION "848836f85d4036def631df0ed6eeb001b5c0c174" CACHE STRING "WEBRTC version")
 set (WEBRTCSTREAMERRESSOURCE "./html" CACHE STRING "WEBRTC ressource directory")
 
 if(NOT CMAKE_BUILD_TYPE)

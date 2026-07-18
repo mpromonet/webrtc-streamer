@@ -362,10 +362,13 @@ int main(int argc, char *argv[])
 
 	std::cout << config;
 
-	webrtc::LogMessage::LogToDebug((webrtc::LoggingSeverity)logLevel);
-	webrtc::LogMessage::LogTimestamps();
-	webrtc::LogMessage::LogThreads();
-	std::cout << "Logger level:" << webrtc::LogMessage::GetLogToDebug() << std::endl;
+	webrtc::LoggingConfig logConfig;
+	logConfig.set_log_thread(true);
+	logConfig.set_log_timestamp(true);
+	logConfig.set_debug_severity((webrtc::LoggingSeverity)logLevel);
+	logConfig.set_log_prefix("webrtc-streamer");
+	std::cout << "Logger level:" << logConfig.debug_severity() << std::endl;
+	webrtc::InitializeLogging(std::move(logConfig));
 
 	webrtc::ThreadManager::Instance()->WrapCurrentThread();
 	webrtc::Thread *thread = webrtc::Thread::Current();
