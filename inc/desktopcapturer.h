@@ -19,7 +19,7 @@
 #include "libyuv/video_common.h"
 #include "libyuv/convert.h"
 
-#include "media/base/video_common.h"
+#include "api/video/video_common.h"
 #include "modules/desktop_capture/desktop_capturer.h"
 #include "modules/desktop_capture/desktop_capture_options.h"
 

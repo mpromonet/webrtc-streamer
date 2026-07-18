@@ -20,8 +20,8 @@
 #include <condition_variable>
 
 #include "media/base/codec.h"
-#include "media/base/video_common.h"
-#include "media/base/video_broadcaster.h"
+#include "api/video/video_common.h"
+#include "api/video/video_broadcaster.h"
 #include "media/engine/internal_decoder_factory.h"
 
 #include "common_video/h264/h264_common.h"
