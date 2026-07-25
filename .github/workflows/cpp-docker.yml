@@ -73,7 +73,7 @@ jobs:
         Write-Host "Disk after cleanup:"
         Get-PSDrive -PSProvider FileSystem
 
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v7
     - run: git fetch --prune --unshallow --tags
 
     - name: Build an image from Dockerfile

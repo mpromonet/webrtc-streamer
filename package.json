@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mpromonet/webrtc-streamer/"
+    "url": "git+https://github.com/mpromonet/webrtc-streamer.git"
   },
   "author": "Michel Promonet",
   "license": "Unlicense"
