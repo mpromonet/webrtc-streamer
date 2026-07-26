@@ -39,6 +39,7 @@ COPY --from=builder /usr/local/bin/webrtc-streamer /usr/local/bin/
 COPY --from=builder /usr/local/share/webrtc-streamer/ /usr/local/share/webrtc-streamer/
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends libssl-dev libasound2-dev libgtk-3-0 libxtst6 libsm6 libpulse0 librtmp1 avahi-utils \
+	&& rm -f /usr/bin/pebble \
 	&& useradd -m user -G video,audio \
 	&& apt-get clean && rm -rf /var/lib/apt/lists/ \
 	&& webrtc-streamer -V
