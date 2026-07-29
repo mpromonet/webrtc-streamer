@@ -413,8 +413,10 @@ int main(int argc, char *argv[])
 		options.push_back("1000");
 		options.push_back("decode_url");
 		options.push_back("no");
+#if defined(__linux__)		
 		options.push_back("allow_sendfile_call");
 		options.push_back("no");
+#endif
 		if (!sslCertificate.empty())
 		{
 			options.push_back("ssl_certificate");
