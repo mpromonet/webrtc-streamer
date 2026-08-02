@@ -3,7 +3,6 @@
 <a href="https://wiki.friendlyelec.com/wiki/index.php/NanoPi_NEO_Air"><img alt="A picture of a Nano PI NEO Air" src="images/nanopi.jpg" width="500"></a>
 
 [![CircleCI](https://img.shields.io/circleci/build/github/mpromonet/webrtc-streamer?label=circleci&logo=circleci)](https://circleci.com/gh/mpromonet/webrtc-streamer)
-[![CirusCI](https://img.shields.io/cirrus/github/mpromonet/webrtc-streamer?label=cirrusci&logo=cirrusci)](https://cirrus-ci.com/github/mpromonet/webrtc-streamer)
 [![Snap Status](https://snapcraft.io//webrtc-streamer/badge.svg)](https://snapcraft.io/webrtc-streamer)
 
 [![GithubCI](https://img.shields.io/github/actions/workflow/status/mpromonet/webrtc-streamer/cpp-linux.yml?label=C%2FC%2B%2B%20ci%20linux&logo=github)](https://github.com/mpromonet/webrtc-streamer/actions/workflows/cpp-linux.yml)
@@ -415,8 +414,7 @@ It is possible to specify cmake parameters `WEBRTCROOT` &
 
 ## Pipelines
 
-There is pipelines on [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer),
-[CirrusCI](https://cirrus-ci.com/github/mpromonet/webrtc-streamer), or
+There is pipelines on [CircleCI](https://circleci.com/gh/mpromonet/webrtc-streamer), or
 [GitHub CI](https://github.com/mpromonet/webrtc-streamer/actions), for the
 following architectures:
 
@@ -428,7 +426,3 @@ following architectures:
 - Windows x64 build with clang
 - MacOS
 
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=mpromonet/webrtc-streamer&type=Date)](https://star-history.com/#mpromonet/webrtc-streamer&Date)
