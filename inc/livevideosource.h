@@ -113,6 +113,11 @@ public:
         // Support multi-slice IDR: accumulate all IDR slices (and SPS/PPS cfg) into a single access unit
         std::vector<uint8_t> idrContent; // holds concatenated IDR slices + config
         for (const webrtc::H264::NaluIndex & index : indexes) {
+            // Consecutive Annex-B start codes can produce an empty NAL unit.
+            // Ignore it before reading the NAL type or updating frame timing.
+            if (index.payload_size == 0) {
+                continue;
+            }
             webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[index.payload_start_offset]);
             RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData NALU type:" << nalu_type << " payload_size:" << index.payload_size << " payload_start_offset:" << index.payload_start_offset << " start_offset:" << index.start_offset;
             if (nalu_type == webrtc::H264::NaluType::kSps)
