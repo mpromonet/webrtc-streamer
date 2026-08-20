@@ -69,6 +69,14 @@ class NullEncoder : public webrtc::VideoEncoder {
 		webrtc::CodecSpecificInfo codec_specific;
 		if (m_format.name == "H264") {
 			codec_specific.codecType = webrtc::VideoCodecType::kVideoCodecH264;
+			// Forward the packetization mode selected during SDP negotiation. Mode 1
+			// lets the RTP packetizer fragment large NAL units (FU-A), while an
+			// absent parameter means mode 0 as required by RFC 6184.
+			auto packetizationMode = m_format.parameters.find("packetization-mode");
+			codec_specific.codecSpecific.H264.packetization_mode =
+				packetizationMode != m_format.parameters.end() && packetizationMode->second == "1"
+					? webrtc::H264PacketizationMode::NonInterleaved
+					: webrtc::H264PacketizationMode::SingleNalUnit;
 		} 
 		else if (m_format.name == "H265") {
 			codec_specific.codecType = webrtc::VideoCodecType::kVideoCodecH265;
