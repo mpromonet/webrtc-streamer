@@ -19,6 +19,12 @@ jobs:
     - uses: actions/checkout@v7
     - run: git fetch --prune --unshallow --tags
 
+    - name: Install Windows SDK
+      shell: powershell
+      run: |
+        Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=2376217" -OutFile "$env:TEMP\winsdksetup.exe"
+        Start-Process "$env:TEMP\winsdksetup.exe" -ArgumentList "/features OptionId.WindowsDesktopDebuggers OptionId.DesktopCPPx64 /quiet /norestart" -Wait
+
     - name: pkg
       shell: cmd
       run: |
