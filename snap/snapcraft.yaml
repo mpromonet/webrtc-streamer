@@ -26,7 +26,8 @@
       override-build: |
         mkdir -p /webrtc
         cd /webrtc
-        update_depot_tools && fetch --nohooks webrtc
+        ensure_bootstrap
+        fetch --nohooks webrtc
       build-environment:
       - PATH: $SNAPCRAFT_PART_SRC:$PATH        
       build-packages:
