@@ -65,6 +65,7 @@ jobs:
 
     - name: fetch webrtc
       run: |
+          update_depot_tools
           mkdir webrtc
           pushd webrtc
           fetch --nohooks webrtc
