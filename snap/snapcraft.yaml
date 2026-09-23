@@ -14,7 +14,7 @@
 
   grade: stable 
   confinement: strict
-  base: core24
+  base: core26
   platforms:
     amd64:
     
