@@ -27,6 +27,9 @@
         mkdir -p /webrtc
         cd /webrtc
         ensure_bootstrap
+        git config --global http.postBuffer 1048576000
+        git config --global http.lowSpeedLimit 0
+        git config --global http.lowSpeedTime 999999
         fetch --nohooks webrtc
       build-environment:
       - PATH: $SNAPCRAFT_PART_SRC:$PATH        
