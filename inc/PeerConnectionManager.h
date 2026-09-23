@@ -427,7 +427,7 @@ class PeerConnectionManager {
 		webrtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>                m_builtin_peer_connection_factory;
 		webrtc::scoped_refptr<webrtc::PeerConnectionFactoryInterface>                m_null_peer_connection_factory;
 		std::mutex                                                                   m_peerMapMutex;
-		std::map<std::string, PeerConnectionObserver* >                              m_peer_connectionobs_map;
+		std::map<std::string, std::unique_ptr<PeerConnectionObserver>>               m_peer_connectionobs_map;
 		std::map<std::string, AudioVideoPair>                                        m_stream_map;
 		std::mutex                                                                   m_streamMapMutex;
 		std::list<std::string>                                                       m_iceServerList;

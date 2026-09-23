@@ -400,6 +400,12 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 **  Destructor
 ** -------------------------------------------------------------------------*/
 PeerConnectionManager::~PeerConnectionManager() {
+	std::map<std::string, std::unique_ptr<PeerConnectionObserver>> peers;
+	{
+		std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
+		peers.swap(m_peer_connectionobs_map);
+	}
+
 	m_workerThread->BlockingCall([this] {
 		m_audioDeviceModule->Release();
     });	
@@ -638,7 +644,7 @@ const Json::Value PeerConnectionManager::getIceServers(const std::string &client
 webrtc::scoped_refptr<webrtc::PeerConnectionInterface> PeerConnectionManager::getPeerConnection(const std::string &peerid)
 {
 	webrtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection;
-	std::map<std::string, PeerConnectionObserver *>::iterator it = m_peer_connectionobs_map.find(peerid);
+	std::map<std::string, std::unique_ptr<PeerConnectionObserver>>::iterator it = m_peer_connectionobs_map.find(peerid);
 	if (it != m_peer_connectionobs_map.end())
 	{
 		peerConnection = it->second->getPeerConnection();
@@ -716,7 +722,13 @@ const Json::Value PeerConnectionManager::createOffer(const std::string &peerid, 
 			// register peerid
 			{
 				std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
-				m_peer_connectionobs_map.insert(std::pair<std::string, PeerConnectionObserver *>(peerid, peerConnectionObserver));
+				auto inserted = m_peer_connectionobs_map.emplace(peerid, std::unique_ptr<PeerConnectionObserver>(peerConnectionObserver));
+				if (!inserted.second)
+				{
+					RTC_LOG(LS_WARNING) << "Peer connection already exists for peerid:" << peerid;
+					delete peerConnectionObserver;
+					return offer;
+				}
 			}
 
 			// ask to create offer
@@ -856,7 +868,13 @@ std::unique_ptr<webrtc::SessionDescriptionInterface> PeerConnectionManager::getA
 		// register peerid
 		{
 			std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
-			m_peer_connectionobs_map.insert(std::pair<std::string, PeerConnectionObserver *>(peerid, peerConnectionObserver));
+			auto inserted = m_peer_connectionobs_map.emplace(peerid, std::unique_ptr<PeerConnectionObserver>(peerConnectionObserver));
+			if (!inserted.second)
+			{
+				RTC_LOG(LS_WARNING) << "Peer connection already exists for peerid:" << peerid;
+				delete peerConnectionObserver;
+				return answer;
+			}
 		}
 		
 		// add local stream
@@ -956,7 +974,7 @@ bool PeerConnectionManager::streamStillUsed(const std::string &streamLabel)
 {
 	bool stillUsed = false;
 	std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
-	for (auto it : m_peer_connectionobs_map)
+	for (const auto &it : m_peer_connectionobs_map)
 	{
 		webrtc::scoped_refptr<webrtc::PeerConnectionInterface> peerConnection = it.second->getPeerConnection();
 		std::vector<webrtc::scoped_refptr<webrtc::RtpSenderInterface>> localstreams = peerConnection->GetSenders();
@@ -983,13 +1001,13 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 	bool result = false;
 	RTC_LOG(LS_INFO) << __FUNCTION__ << " " << peerid;
 
-	PeerConnectionObserver *pcObserver = NULL;
+	std::unique_ptr<PeerConnectionObserver> pcObserver;
 	{
 		std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
-		std::map<std::string, PeerConnectionObserver *>::iterator it = m_peer_connectionobs_map.find(peerid);
+		std::map<std::string, std::unique_ptr<PeerConnectionObserver>>::iterator it = m_peer_connectionobs_map.find(peerid);
 		if (it != m_peer_connectionobs_map.end())
 		{
-			pcObserver = it->second;
+			pcObserver = std::move(it->second);
 			RTC_LOG(LS_ERROR) << "Remove PeerConnection peerid:" << peerid;
 			m_peer_connectionobs_map.erase(it);
 		}
@@ -1022,7 +1040,6 @@ const Json::Value PeerConnectionManager::hangUp(const std::string &peerid)
 			}
 		}
 
-		delete pcObserver;
 		result = true;
 	}
 	Json::Value answer;
@@ -1043,10 +1060,10 @@ const Json::Value PeerConnectionManager::getIceCandidateList(const std::string &
 
 	Json::Value value;
 	std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
-	std::map<std::string, PeerConnectionObserver *>::iterator it = m_peer_connectionobs_map.find(peerid);
+	std::map<std::string, std::unique_ptr<PeerConnectionObserver>>::iterator it = m_peer_connectionobs_map.find(peerid);
 	if (it != m_peer_connectionobs_map.end())
 	{
-		PeerConnectionObserver *obs = it->second;
+		PeerConnectionObserver *obs = it->second.get();
 		if (obs)
 		{
 			value = obs->getIceCandidateList();
@@ -1067,7 +1084,7 @@ const Json::Value PeerConnectionManager::getPeerConnectionList()
 	Json::Value value(Json::arrayValue);
 
 	std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
-	for (auto it : m_peer_connectionobs_map)
+	for (const auto &it : m_peer_connectionobs_map)
 	{
 		Json::Value content;
 
@@ -1177,7 +1194,7 @@ std::string PeerConnectionManager::getOldestPeerCannection()
 	std::string oldestpeerid;
 	std::lock_guard<std::mutex> peerlock(m_peerMapMutex);
 	if ( (m_maxpc > 0) && (m_peer_connectionobs_map.size() >= m_maxpc) ) {
-		for (auto it : m_peer_connectionobs_map) {
+		for (const auto &it : m_peer_connectionobs_map) {
 			uint64_t creationTime = it.second->getCreationTime();
 			if (creationTime < oldestpc) {
 				oldestpc = creationTime;
