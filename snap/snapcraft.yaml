@@ -1,5 +1,5 @@
   name: webrtc-streamer
-  version: git
+  adopt-info: webrtc-streamer
   summary: webrtc streamer
   description: |
      WebRTC-streamer is an experiment to stream video capture devices and RTSP sources through WebRTC using simple mechanism.
@@ -27,6 +27,7 @@
         update_depot_tools
         mkdir -p /webrtc
         cd /webrtc
+        gclient -h
         fetch --nohooks webrtc
       build-environment:
       - PATH: $SNAPCRAFT_PART_SRC:$PATH        
@@ -41,7 +42,10 @@
       cmake-parameters:
       - -DWEBRTCROOT=/webrtc
       build-environment:
-      - PATH: $SNAPCRAFT_PART_SRC/../../webrtc/src:$PATH        
+      - PATH: $SNAPCRAFT_PART_SRC/../../webrtc/src:$PATH
+      override-pull: |
+        craftctl default
+        craftctl set version="$(git describe --tags --always)"      
       build-packages:
       - g++
       - make
