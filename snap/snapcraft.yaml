@@ -20,19 +20,19 @@
     
   parts:
     webrtc:
-      plugin: python
+      plugin: nil
       source: https://chromium.googlesource.com/chromium/tools/depot_tools.git
       source-type: git
       override-build: |
         update_depot_tools
         mkdir -p /webrtc
         cd /webrtc
-        update_depot_tools
         fetch --nohooks webrtc
       build-environment:
       - PATH: $SNAPCRAFT_PART_SRC:$PATH        
       build-packages:
       - curl
+      - python3
 
     webrtc-streamer:
       after: [webrtc]
