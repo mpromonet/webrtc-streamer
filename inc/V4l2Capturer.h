@@ -17,7 +17,10 @@
 #include "api/video/video_broadcaster.h"
 #include "common_video/h264/h264_common.h"
 #include "common_video/h264/sps_parser.h"
-#include "modules/video_coding/h264_sprop_parameter_sets.h"
+
+#include "common_video/h265/h265_common.h"
+#include "common_video/h265/h265_sps_parser.h"
+
 #include "rtc_base/logging.h"
 
 #include "EncodedVideoFrameBuffer.h"
@@ -46,13 +49,9 @@ public:
 		{
 			fps = std::stoi(opts.at("fps"));
 		}
-		if (opts.find("format") != opts.end())
-		{
-			format = opts.at("format");
-		}
 
 		std::unique_ptr<V4l2Capturer> capturer(new V4l2Capturer());
-		if (!capturer->Init(format, width, height, fps, videourl))
+		if (!capturer->Init(width, height, fps, videourl))
 		{
 			RTC_LOG(LS_WARNING) << "Failed to create V4l2Capturer(w = " << width
 								<< ", h = " << height << ", fps = " << fps
@@ -72,13 +71,11 @@ public:
 private:
 	V4l2Capturer() : m_stop(false), m_width(0), m_height(0) {}
 
-	bool Init(const std::string &format,
-			  size_t width,
+	bool Init(size_t width,
 			  size_t height,
 			  size_t fps,
 			  const std::string &videourl)
 	{
-		m_format = format;
 		m_width = width;
 		m_height = height;
 		
@@ -88,8 +85,9 @@ private:
 			device = videourl.substr(strlen("v4l2://"));
 		}		
 
-		V4L2DeviceParameters param(device.c_str(), V4l2Device::fourcc(format.c_str()), width, height, fps);
+		V4L2DeviceParameters param(device.c_str(), std::list<uint32_t>{V4L2_PIX_FMT_HEVC, V4L2_PIX_FMT_H264}, width, height, fps);
 		m_capture.reset(V4l2Capture::create(param));
+		m_format = V4l2Device::fourcc(m_capture->getFormat());
 
 		bool ret = false;
 		if (m_capture) {
@@ -116,21 +114,26 @@ private:
 				bool idr = false;
 				int cfg = 0;
 				std::span<const uint8_t> data((const uint8_t*)buffer, frameSize);
-				std::vector<webrtc::H264::NaluIndex> naluIndexes = webrtc::H264::FindNaluIndices(data);
-				for (webrtc::H264::NaluIndex  index : naluIndexes) {
-					webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[index.payload_start_offset]);
-					RTC_LOG(LS_VERBOSE) << __FUNCTION__ << " nalu:" << nalu_type << " payload_start_offset:" << index.payload_start_offset << " start_offset:" << index.start_offset << " size:" << index.payload_size;
-					if (nalu_type ==  webrtc::H264::NaluType::kSps) {
-						m_sps = webrtc::EncodedImageBuffer::Create((uint8_t*)&buffer[index.start_offset], index.payload_size + index.payload_start_offset - index.start_offset);
-						cfg++;
+
+				if (m_format == "H264") {
+					std::vector<webrtc::H264::NaluIndex> naluIndexes = webrtc::H264::FindNaluIndices(data);
+					for (webrtc::H264::NaluIndex  index : naluIndexes) {
+						webrtc::H264::NaluType nalu_type = webrtc::H264::ParseNaluType(buffer[index.payload_start_offset]);
+						RTC_LOG(LS_VERBOSE) << __FUNCTION__ << " nalu:" << nalu_type << " payload_start_offset:" << index.payload_start_offset << " start_offset:" << index.start_offset << " size:" << index.payload_size;
+						if (nalu_type ==  webrtc::H264::NaluType::kSps) {
+							m_sps = webrtc::EncodedImageBuffer::Create((uint8_t*)&buffer[index.start_offset], index.payload_size + index.payload_start_offset - index.start_offset);
+							cfg++;
+						}
+						else if (nalu_type ==  webrtc::H264::NaluType::kPps) {
+							m_pps = webrtc::EncodedImageBuffer::Create((uint8_t*)&buffer[index.start_offset], index.payload_size + index.payload_start_offset - index.start_offset);
+							cfg++;
+						}
+						else if (nalu_type ==  webrtc::H264::NaluType::kIdr) {
+							idr = true;
+						}
 					}
-					else if (nalu_type ==  webrtc::H264::NaluType::kPps) {
-						m_pps = webrtc::EncodedImageBuffer::Create((uint8_t*)&buffer[index.start_offset], index.payload_size + index.payload_start_offset - index.start_offset);
-						cfg++;
-					}
-					else if (nalu_type ==  webrtc::H264::NaluType::kIdr) {
-						idr = true;
-					}
+				} else if (m_format == "HEVC") {
+					std::vector<webrtc::H265::NaluIndex> indexes = webrtc::H265::FindNaluIndices(data);
 				}
 				RTC_LOG(LS_VERBOSE) << __FUNCTION__ << " idr:" << idr << " cfg:" << cfg << " " << m_sps->size() << " " << m_pps->size() << " " << frameSize;
 				
