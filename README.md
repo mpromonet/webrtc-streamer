@@ -82,7 +82,7 @@ of civetweb, allowing use of the civetweb syntax like `-H8000,9000` or
 Using `-o` allows storing compressed frame data from the backend stream using
 `webrtc::VideoFrameBuffer::Type::kNative`. This hacks the stucture
 `webrtc::VideoFrameBuffer` storing data in a override of the i420 buffer. This
-allows forwarding H264 frames from V4L2 device or RTSP stream to WebRTC stream.
+allows forwarding H264/H265 frames from V4L2 device or RTSP stream to WebRTC stream.
 It uses less CPU, but has less features (resize, codec, and bandwidth are
 disabled).
 

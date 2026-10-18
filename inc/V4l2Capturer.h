@@ -36,7 +36,6 @@ public:
 		size_t width = 0;
 		size_t height = 0;
 		size_t fps = 0;
-		std::string format = "H264";
 		if (opts.find("width") != opts.end())
 		{
 			width = std::stoi(opts.at("width"));
@@ -111,9 +110,9 @@ private:
 				char* buffer = new char[m_capture->getBufferSize()];	
 				int frameSize = m_capture->read(buffer,  m_capture->getBufferSize());
 
-				bool idr = false;
-				int cfg = 0;
 				std::span<const uint8_t> data((const uint8_t*)buffer, frameSize);
+				webrtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encodedData;
+				webrtc::VideoFrameType frameType = webrtc::VideoFrameType::kVideoFrameDelta;
 
 				if (m_format == "H264") {
 					std::vector<webrtc::H264::NaluIndex> naluIndexes = webrtc::H264::FindNaluIndices(data);
@@ -122,44 +121,76 @@ private:
 						RTC_LOG(LS_VERBOSE) << __FUNCTION__ << " nalu:" << nalu_type << " payload_start_offset:" << index.payload_start_offset << " start_offset:" << index.start_offset << " size:" << index.payload_size;
 						if (nalu_type ==  webrtc::H264::NaluType::kSps) {
 							m_sps = webrtc::EncodedImageBuffer::Create((uint8_t*)&buffer[index.start_offset], index.payload_size + index.payload_start_offset - index.start_offset);
-							cfg++;
 						}
 						else if (nalu_type ==  webrtc::H264::NaluType::kPps) {
 							m_pps = webrtc::EncodedImageBuffer::Create((uint8_t*)&buffer[index.start_offset], index.payload_size + index.payload_start_offset - index.start_offset);
-							cfg++;
 						}
 						else if (nalu_type ==  webrtc::H264::NaluType::kIdr) {
-							idr = true;
+							encodedData = webrtc::EncodedImageBuffer::Create((uint8_t*)buffer, frameSize);
+							// add last SPS/PPS if not present before an IDR
+							if ( (m_sps->size() != 0) && (m_pps->size() != 0) ) {
+								char * newBuffer = new char[encodedData->size() + m_sps->size() + m_pps->size()];
+								memcpy(newBuffer, m_sps->data(), m_sps->size());
+								memcpy(newBuffer+m_sps->size(), m_pps->data(), m_pps->size());
+								memcpy(newBuffer+m_sps->size()+m_pps->size(), encodedData->data(), encodedData->size());
+								encodedData = webrtc::EncodedImageBuffer::Create((uint8_t*)newBuffer, encodedData->size() + m_sps->size() + m_pps->size());
+								delete [] newBuffer;
+							}
+							frameType = webrtc::VideoFrameType::kVideoFrameKey;
+						} else if (nalu_type ==  webrtc::H264::NaluType::kSlice) {
+							encodedData = webrtc::EncodedImageBuffer::Create((uint8_t*)buffer, frameSize);
 						}
 					}
-				} else if (m_format == "HEVC") {
+				} else if (m_format == "H265") {
 					std::vector<webrtc::H265::NaluIndex> indexes = webrtc::H265::FindNaluIndices(data);
+					for (webrtc::H265::NaluIndex  index : indexes) {
+						webrtc::H265::NaluType nalu_type = webrtc::H265::ParseNaluType(buffer[index.payload_start_offset]);
+						RTC_LOG(LS_VERBOSE) << __FUNCTION__ << " nalu:" << nalu_type << " payload_start_offset:" << index.payload_start_offset << " start_offset:" << index.start_offset << " size:" << index.payload_size;
+						if (nalu_type ==  webrtc::H265::NaluType::kVps) {
+							m_vps = webrtc::EncodedImageBuffer::Create((uint8_t*)&buffer[index.start_offset], index.payload_size + index.payload_start_offset - index.start_offset);
+						}
+						else if (nalu_type ==  webrtc::H265::NaluType::kSps) {
+							m_sps = webrtc::EncodedImageBuffer::Create((uint8_t*)&buffer[index.start_offset], index.payload_size + index.payload_start_offset - index.start_offset);
+						}
+						else if (nalu_type ==  webrtc::H265::NaluType::kPps) {
+							m_pps = webrtc::EncodedImageBuffer::Create((uint8_t*)&buffer[index.start_offset], index.payload_size + index.payload_start_offset - index.start_offset);
+						}
+						else if ((nalu_type ==  webrtc::H265::NaluType::kIdrWRadl) || (nalu_type == webrtc::H265::NaluType::kIdrNLp)) {
+							encodedData = webrtc::EncodedImageBuffer::Create((uint8_t*)buffer, frameSize);
+							frameType = webrtc::VideoFrameType::kVideoFrameKey;
+							if ( (m_vps->size() != 0) && (m_sps->size() != 0) && (m_pps->size() != 0) ) {
+								char * newBuffer = new char[encodedData->size() + m_vps->size() + m_sps->size() + m_pps->size()];
+								memcpy(newBuffer, m_vps->data(), m_vps->size());
+								memcpy(newBuffer+m_vps->size(), m_sps->data(), m_sps->size());
+								memcpy(newBuffer+m_vps->size()+m_sps->size(), m_pps->data(), m_pps->size());
+								memcpy(newBuffer+m_vps->size()+m_sps->size()+m_pps->size(), encodedData->data(), encodedData->size());
+								encodedData = webrtc::EncodedImageBuffer::Create((uint8_t*)newBuffer, encodedData->size() + m_vps->size() + m_sps->size() + m_pps->size());
+								delete [] newBuffer;
+							}
+						} else if (nalu_type <=  webrtc::H265::NaluType::kRadlR) {
+							encodedData = webrtc::EncodedImageBuffer::Create((uint8_t*)buffer, frameSize);
+						}
+					}
 				}
-				RTC_LOG(LS_VERBOSE) << __FUNCTION__ << " idr:" << idr << " cfg:" << cfg << " " << m_sps->size() << " " << m_pps->size() << " " << frameSize;
+				RTC_LOG(LS_VERBOSE) << __FUNCTION__ << " size:" << encodedData->size() 
+							<< " " << m_vps->size() 
+							<< " " << m_sps->size() 
+							<< " " << m_pps->size() 
+							<< " " << frameSize;
 				
-				webrtc::scoped_refptr<webrtc::EncodedImageBufferInterface> encodedData = webrtc::EncodedImageBuffer::Create((uint8_t*)buffer, frameSize);
-				delete [] buffer;			
-				// add last SPS/PPS if not present before an IDR
-				if (idr && (cfg == 0) && (m_sps->size() != 0) && (m_pps->size() != 0) ) {
-					char * newBuffer = new char[encodedData->size() + m_sps->size() + m_pps->size()];
-					memcpy(newBuffer, m_sps->data(), m_sps->size());
-					memcpy(newBuffer+m_sps->size(), m_pps->data(), m_pps->size());
-					memcpy(newBuffer+m_sps->size()+m_pps->size(), encodedData->data(), encodedData->size());
-					encodedData = webrtc::EncodedImageBuffer::Create((uint8_t*)newBuffer, encodedData->size() + m_sps->size() + m_pps->size());
-					delete [] newBuffer;
+				if (encodedData->size() != 0) {
+					int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
+					webrtc::scoped_refptr<webrtc::VideoFrameBuffer> frameBuffer = webrtc::make_ref_counted<EncodedVideoFrameBuffer>(m_capture->getWidth(), m_capture->getHeight(), encodedData, frameType, webrtc::SdpVideoFormat(m_format));
+					webrtc::VideoFrame frame = webrtc::VideoFrame::Builder()
+						.set_video_frame_buffer(frameBuffer)
+						.set_rotation(webrtc::kVideoRotation_0)
+						.set_timestamp_ms(ts)
+						.set_id(ts)
+						.build();
+
+					m_broadcaster.OnFrame(frame);
 				}
-
-				int64_t ts = std::chrono::high_resolution_clock::now().time_since_epoch().count()/1000/1000;
-				webrtc::VideoFrameType frameType = idr ? webrtc::VideoFrameType::kVideoFrameKey : webrtc::VideoFrameType::kVideoFrameDelta;
-				webrtc::scoped_refptr<webrtc::VideoFrameBuffer> frameBuffer = webrtc::make_ref_counted<EncodedVideoFrameBuffer>(m_capture->getWidth(), m_capture->getHeight(), encodedData, frameType, webrtc::SdpVideoFormat(m_format));
-				webrtc::VideoFrame frame = webrtc::VideoFrame::Builder()
-					.set_video_frame_buffer(frameBuffer)
-					.set_rotation(webrtc::kVideoRotation_0)
-					.set_timestamp_ms(ts)
-					.set_id(ts)
-					.build();
-
-				m_broadcaster.OnFrame(frame);
+				delete [] buffer;			
 			}
 		}
 	}
@@ -177,9 +208,10 @@ private:
 	bool                                                       m_stop;
 	std::thread                                                m_capturethread;
 	std::unique_ptr<V4l2Capture>                               m_capture;
+	webrtc::scoped_refptr<webrtc::EncodedImageBufferInterface> m_vps;
 	webrtc::scoped_refptr<webrtc::EncodedImageBufferInterface> m_sps;
 	webrtc::scoped_refptr<webrtc::EncodedImageBufferInterface> m_pps;
 	std::string											       m_format;
 	int                                                        m_width;		
- 	int                                                       m_height;	
+ 	int                                                        m_height;	
 };
