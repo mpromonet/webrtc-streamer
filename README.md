@@ -420,9 +420,7 @@ following architectures:
 
 - x86_64 on Ubuntu
 - armv7 crosscompiled (this build is running on Raspberry Pi2 and NanoPi NEO)
-- armv6+vfp crosscompiled (this build is running on Raspberry PiB and should run
-  on a Raspberry Zero)
 - arm64 crosscompiled
-- Windows x64 build with clang
+- Windows x64 
 - MacOS
 
