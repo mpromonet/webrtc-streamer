@@ -2,9 +2,7 @@
 # WebRTC-Streamer
 <a href="https://wiki.friendlyelec.com/wiki/index.php/NanoPi_NEO_Air"><img alt="A picture of a Nano PI NEO Air" src="images/nanopi.jpg" width="500"></a>
 
-[![CircleCI](https://img.shields.io/circleci/build/github/mpromonet/webrtc-streamer?label=circleci&logo=circleci)](https://circleci.com/gh/mpromonet/webrtc-streamer)
 [![Snap Status](https://snapcraft.io//webrtc-streamer/badge.svg)](https://snapcraft.io/webrtc-streamer)
-
 [![GithubCI](https://img.shields.io/github/actions/workflow/status/mpromonet/webrtc-streamer/cpp-linux.yml?label=C%2FC%2B%2B%20ci%20linux&logo=github)](https://github.com/mpromonet/webrtc-streamer/actions/workflows/cpp-linux.yml)
 [![GithubCI](https://img.shields.io/github/actions/workflow/status/mpromonet/webrtc-streamer/cpp-windows.yml?label=C%2FC%2B%2B%20ci%20windows&logo=github)](https://github.com/mpromonet/webrtc-streamer/actions/workflows/cpp-windows.yml)
 [![GithubCI](https://img.shields.io/github/actions/workflow/status/mpromonet/webrtc-streamer/cpp-macos.yml?label=C%2FC%2B%2B%20ci%20macos&logo=github)](https://github.com/mpromonet/webrtc-streamer/actions/workflows/cpp-macos.yml)
