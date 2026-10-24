@@ -144,10 +144,7 @@ public:
                 RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData PPS";
                 m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
             }
-            else if (nalu_type == webrtc::H264::NaluType::kSei)
-            {
-            }
-            else
+            else if (nalu_type <= webrtc::H264::NaluType::kIdr)
             {
                 if (nalu_type == webrtc::H264::NaluType::kIdr)
                 {
@@ -220,7 +217,7 @@ public:
                 RTC_LOG(LS_VERBOSE) << "LiveVideoSource:onData PPS";
                 m_cfg.insert(m_cfg.end(), buffer + index.start_offset, buffer + index.payload_size + index.payload_start_offset);
             }
-            else
+            else if (nalu_type <= webrtc::H265::NaluType::kIdrNLp)
             {
                 if ( (nalu_type == webrtc::H265::NaluType::kIdrWRadl) || (nalu_type == webrtc::H265::NaluType::kIdrNLp) )
                 {
