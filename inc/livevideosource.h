@@ -46,7 +46,7 @@ public:
     LiveVideoSource(const std::string &uri, const std::map<std::string, std::string> &opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory, bool wait) :
 	    VideoDecoder(opts, videoDecoderFactory, wait),
         m_env(),
-	    m_liveclient(m_env, this, uri.c_str(), opts, webrtc::LogMessage::GetLogToDebug()<=2) {
+	    m_liveclient(m_env, this, uri.c_str(), opts, webrtc::GetLoggingConfig().debug_severity() <=2) {
             m_liveclient.start();
             this->Start();
     }

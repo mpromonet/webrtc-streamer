@@ -417,8 +417,6 @@ class PeerConnectionManager {
 	protected:
 		const webrtc::Environment                                                    m_webrtcenv;	
 		std::unique_ptr<webrtc::Thread>                                              m_signalingThread;
-		std::unique_ptr<webrtc::Thread>                                              m_workerThread;
-		std::unique_ptr<webrtc::Thread>                                              m_networkThread;
 		typedef std::pair< webrtc::scoped_refptr<webrtc::VideoTrackSourceInterface>, webrtc::scoped_refptr<webrtc::AudioSourceInterface>> AudioVideoPair;
 		webrtc::scoped_refptr<webrtc::AudioDecoderFactory>                           m_audioDecoderfactory;
 		webrtc::scoped_refptr<webrtc::AudioDeviceModule>                             m_audioDeviceModule;

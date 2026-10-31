@@ -258,7 +258,6 @@ std::string getOptionValue(const std::string &options, const std::string &option
 PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceServerList, const Json::Value & config, const webrtc::AudioDeviceModule::AudioLayer audioLayer, const std::string &publishFilter, const std::string & webrtcUdpPortRange, bool useNullCodec, bool usePlanB, int maxpc, webrtc::PeerConnectionInterface::IceTransportsType transportType, const std::string & basePath, const std::string & webrtcTrialsFields, const std::string & extraHost)
 	: m_webrtcenv(webrtc::CreateEnvironment(webrtc::FieldTrials::Create(webrtcTrialsFields))),
 	  m_signalingThread(webrtc::Thread::Create()),
-	  m_workerThread(webrtc::Thread::Create()),
 	  m_audioDecoderfactory(webrtc::CreateBuiltinAudioDecoderFactory()), 
 	  	m_builtin_video_decoder_factory(CreateDecoderFactory(false)),
 	  	m_null_video_decoder_factory(CreateDecoderFactory(true)),
@@ -273,24 +272,20 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 	  m_webrtcTrialsFields(webrtcTrialsFields),
 	  m_extraHost(resolveHostnameToIp(extraHost))
 {
-	m_workerThread->SetName("worker", NULL);
-	m_workerThread->Start();
 
-	m_workerThread->BlockingCall([this, audioLayer] {
-		this->createAudioModule(audioLayer);
-    });
+	this->createAudioModule(audioLayer);
 		
 	m_signalingThread->SetName("signaling", NULL);
 	m_signalingThread->Start();
 
 	std::unique_ptr<webrtc::FieldTrialsView> builtin_field_trials = webrtc::FieldTrials::Create(webrtcTrialsFields);
-	m_builtin_peer_connection_factory = webrtc::CreatePeerConnectionFactory(NULL,  m_workerThread.get(), m_signalingThread.get(), 
+	m_builtin_peer_connection_factory = webrtc::CreatePeerConnectionFactory(NULL, m_signalingThread.get(), 
 													m_audioDeviceModule, webrtc::CreateBuiltinAudioEncoderFactory(), m_audioDecoderfactory,
 													CreateEncoderFactory(false), CreateDecoderFactory(false),
 													NULL, NULL, NULL, std::move(builtin_field_trials));
 
 	std::unique_ptr<webrtc::FieldTrialsView> null_field_trials = webrtc::FieldTrials::Create(webrtcTrialsFields);
-	m_null_peer_connection_factory = webrtc::CreatePeerConnectionFactory(NULL,  m_workerThread.get(), m_signalingThread.get(), 
+	m_null_peer_connection_factory = webrtc::CreatePeerConnectionFactory(NULL, m_signalingThread.get(), 
 													m_audioDeviceModule, webrtc::CreateBuiltinAudioEncoderFactory(), m_audioDecoderfactory,
 													CreateEncoderFactory(true), CreateDecoderFactory(true),
 													NULL, NULL, NULL, std::move(null_field_trials));
@@ -384,7 +379,7 @@ PeerConnectionManager::PeerConnectionManager(const std::list<std::string> &iceSe
 		{
 			webrtc::LogMessage::LogToDebug((webrtc::LoggingSeverity)atoi(loglevel.c_str()));
 		}
-		Json::Value answer(webrtc::LogMessage::GetLogToDebug());
+		Json::Value answer(webrtc::GetLoggingConfig().debug_severity());
 		return std::make_tuple(200, std::map<std::string,std::string>(), answer);
 	};
 	m_func[basePath + "/api/help"] = [this](const struct mg_request_info *req_info, const Json::Value &in) -> HttpServerRequestHandler::httpFunctionReturn {
@@ -406,9 +401,8 @@ PeerConnectionManager::~PeerConnectionManager() {
 		peers.swap(m_peer_connectionobs_map);
 	}
 
-	m_workerThread->BlockingCall([this] {
-		m_audioDeviceModule->Release();
-    });	
+
+	m_audioDeviceModule->Release();
 }
 
 // from https://stackoverflow.com/a/12468109/3102264
@@ -1274,9 +1268,8 @@ webrtc::scoped_refptr<webrtc::AudioSourceInterface> PeerConnectionManager::Creat
 {
 	RTC_LOG(LS_INFO) << "audiourl:" << audiourl;
 
-	return m_workerThread->BlockingCall([this, audiourl, opts, peerConnectionFactory] {
-		return CapturerFactory::CreateAudioSource(audiourl, opts, m_publishFilter, peerConnectionFactory, m_audioDecoderfactory, m_audioDeviceModule);
-    });
+
+	return CapturerFactory::CreateAudioSource(audiourl, opts, m_publishFilter, peerConnectionFactory, m_audioDecoderfactory, m_audioDeviceModule);
 }
 
 const std::string PeerConnectionManager::sanitizeLabel(const std::string &label)
