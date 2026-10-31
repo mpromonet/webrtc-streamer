@@ -160,7 +160,7 @@ public:
 
 protected:
     LiveAudioSource(webrtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string &uri, const std::map<std::string, std::string> &opts, bool wait)
-        : m_env(m_stop)
+        : m_env()
         , m_liveclient(m_env, this, uri.c_str(), opts, webrtc::LogMessage::GetLogToDebug() <= 2)
         , m_webrtcenv(webrtc::CreateEnvironment())
         , m_factory(audioDecoderFactory)
@@ -181,7 +181,6 @@ protected:
     }
 
 private:
-    char m_stop;
     Environment m_env;
 
 private:
