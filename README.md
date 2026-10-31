@@ -402,7 +402,7 @@ dependencies above:
 3. Build WebRTC Streamer
 
    ```sh
-   export PATH=$PATH:`realpath ../webrtc/src/third_party/llvm-build/Release+Asserts/bin`
+   export PATH=`realpath ../webrtc/src/third_party/llvm-build/Release+Asserts/bin`:$PATH
    cmake -DCMAKE_C_COMPILER=clang . 
    make
    ```
