@@ -19,10 +19,14 @@ Experimentation to stream WebRTC media sources like capture devices, screen capt
 
 *** Notice *** Live demo are stopped till I migrate to a european web hosting.
 
+## Mirrors:
+* https://codeberg.org/mpromonet/webrtc-streamer.git
+* https://gitlab.com/mpromonet/webrtc-streamer.git
+
 ## Artefacts
 
 * packages are available from https://github.com/mpromonet/webrtc-streamer/releases/latest
-* container image are available from  https://hub.docker.com/r/mpromonet/webrtc-streamer
+* container image are available from  https://hub.docker.com/r/mpromonet/webrtc-streamer and https://github.com/mpromonet/webrtc-streamer/pkgs/container/webrtc-streamer
 
 
 ## Usage
