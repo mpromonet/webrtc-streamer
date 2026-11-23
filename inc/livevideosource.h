@@ -44,9 +44,10 @@ class LiveVideoSource : public VideoDecoder, public T::Callback
 {
 public:
     LiveVideoSource(const std::string &uri, const std::map<std::string, std::string> &opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory, bool wait) :
-	    VideoDecoder(opts, videoDecoderFactory, wait),
+	    VideoDecoder(opts, videoDecoderFactory),
         m_env(),
-	    m_liveclient(m_env, this, uri.c_str(), opts, webrtc::GetLoggingConfig().debug_severity() <=2) {
+	    m_liveclient(m_env, this, uri.c_str(), opts, webrtc::GetLoggingConfig().debug_severity() <=2),
+	    m_prevTimestamp(0) {
             m_liveclient.start();
             this->Start();
     }
@@ -330,6 +331,12 @@ public:
         return (res == 0);
     }
 
+
+protected:
+    void resetTimestamp()
+    {
+        m_prevTimestamp = 0;
+    }
 
 private:
     Environment m_env;

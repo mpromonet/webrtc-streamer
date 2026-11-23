@@ -43,12 +43,11 @@ class VideoDecoder : public webrtc::VideoSourceInterface<webrtc::VideoFrame>, pu
         };
 
     public:
-        VideoDecoder(const std::map<std::string,std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory, bool wait = false) : 
+        VideoDecoder(const std::map<std::string,std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) : 
                 m_scaler(opts),
                 m_env(webrtc::CreateEnvironment()),
                 m_factory(videoDecoderFactory),
                 m_stop(false),
-                m_wait(wait),
                 m_previmagets(0),
                 m_prevts(0) {
             this->Start();                    
@@ -170,20 +169,6 @@ class VideoDecoder : public webrtc::VideoSourceInterface<webrtc::VideoFrame>, pu
             if (decodedImage.timestamp_us() == 0) {
                 decodedImage.set_timestamp_us(decodedImage.rtp_timestamp()*1000);
             }
-
-            // waiting 
-            if ( (m_wait) && (m_prevts != 0) ) {
-                int64_t periodSource = decodedImage.timestamp_us()/1000 - m_previmagets;
-                int64_t periodDecode = ts-m_prevts;
-                    
-                RTC_LOG(LS_VERBOSE) << "VideoDecoder::Decoded interframe decode:" << periodDecode << " source:" << periodSource;
-                int64_t delayms = periodSource-periodDecode;
-                if ( (delayms > 0) && (delayms < 1000) ) {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(delayms));			
-                }
-            } else {
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
-            }                        
 
             m_scaler.OnFrame(decodedImage);
 
@@ -325,7 +310,6 @@ class VideoDecoder : public webrtc::VideoSourceInterface<webrtc::VideoFrame>, pu
 		std::thread                           m_decoderthread;     
         bool                                  m_stop;   
 
-        bool                                  m_wait;
         int64_t                               m_previmagets;	
         int64_t                               m_prevts;
 

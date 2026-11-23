@@ -12,6 +12,7 @@
         "Vaison-La-Romaine": {"video":"rtsp://176.139.87.16/axis-media/media.amp", "position":"44.238960,5.074610" },
 
         "H265": {"video":"file://h265.mkv"},
+        "H264": {"video":"file://h264.mkv"},
         
         "Nagoya": {"video":"rtsp://124.255.28.231/11"},
         "Long Beach": {"video":"rtsp://47.180.53.132/11"},

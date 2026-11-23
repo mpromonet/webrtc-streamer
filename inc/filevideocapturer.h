@@ -17,10 +17,13 @@ class FileVideoCapturer : public LiveVideoSource<MKVClient>
 	public:
 		FileVideoCapturer(const std::string & uri, const std::map<std::string,std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory);
 		virtual ~FileVideoCapturer();
+
+		void onEndOfFile(MKVClient&) override {
+			resetTimestamp();
+		}
 	
 		static FileVideoCapturer* Create(const std::string & url, const std::map<std::string, std::string> & opts, std::unique_ptr<webrtc::VideoDecoderFactory>& videoDecoderFactory) {
 			return new FileVideoCapturer(url, opts, videoDecoderFactory);
 		}
 };
-
 

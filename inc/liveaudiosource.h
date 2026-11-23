@@ -96,21 +96,6 @@ public:
 
             if (m_decoder.get() != NULL)
             {
-
-                // waiting
-                if ((m_wait) && (m_prevts != 0))
-                {
-                    int64_t periodSource = sourcets - m_previmagets;
-                    int64_t periodDecode = ts - m_prevts;
-
-                    RTC_LOG(LS_VERBOSE) << "LiveAudioSource::onData interframe decode:" << periodDecode << " source:" << periodSource;
-                    int64_t delayms = periodSource - periodDecode;
-                    if ((delayms > 0) && (delayms < 1000))
-                    {
-                        std::this_thread::sleep_for(std::chrono::milliseconds(delayms));
-                    }
-                }
-
                 int maxDecodedBufferSize = m_decoder->PacketDuration(buffer, size) * m_channel * sizeof(int16_t);
                 int16_t *decoded = new int16_t[maxDecodedBufferSize];
                 webrtc::AudioDecoder::SpeechType speech_type;
@@ -159,14 +144,13 @@ public:
     }
 
 protected:
-    LiveAudioSource(webrtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string &uri, const std::map<std::string, std::string> &opts, bool wait)
+    LiveAudioSource(webrtc::scoped_refptr<webrtc::AudioDecoderFactory> audioDecoderFactory, const std::string &uri, const std::map<std::string, std::string> &opts)
         : m_env()
         , m_liveclient(m_env, this, uri.c_str(), opts, webrtc::GetLoggingConfig().debug_severity() <= 2)
         , m_webrtcenv(webrtc::CreateEnvironment())
         , m_factory(audioDecoderFactory)
         , m_freq(8000)
         , m_channel(1)
-        , m_wait(wait)
         , m_previmagets(0)
         , m_prevts(0)
     {
@@ -197,7 +181,6 @@ private:
 
     std::map<std::string, std::string>              m_codec;
 
-    bool                                            m_wait;
     int64_t                                         m_previmagets;
     int64_t                                         m_prevts;
 };
