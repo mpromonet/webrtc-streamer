@@ -282,7 +282,19 @@ class WebsocketHandler: public CivetWebSocketHandler {
 				}
                 std::cout << Json::writeString(m_jsonWriterBuilder,in) << std::endl;
 
-                std::string request = in.get("request","").asString();
+                // Any JSON value can arrive over /ws. Json::Value::get and asString throw
+                // Json::LogicError on a non-object value or a non-string member, and
+                // nothing up the call chain catches it, so accept only an object whose
+                // "request" member is a string.
+                std::string request;
+                if (in.isObject())
+                {
+                    const Json::Value& requestValue = in.get("request", Json::Value());
+                    if (requestValue.isString())
+                    {
+                        request = requestValue.asString();
+                    }
+                }
                 auto it = m_func.find(request);
 
                 std::string answer;
