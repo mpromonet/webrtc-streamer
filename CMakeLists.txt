@@ -290,7 +290,7 @@ find_package(Threads REQUIRED)
 target_link_libraries(${CMAKE_PROJECT_NAME} Threads::Threads)
 
 # webrtc
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/source/include  ${WEBRTCROOT}/src/third_party/jsoncpp/generated ${WEBRTCROOT}/src/third_party/libyuv/include)
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${WEBRTCROOT}/src ${WEBRTCROOT}/src/third_party/abseil-cpp ${WEBRTCROOT}/src/third_party/jsoncpp/src/include ${WEBRTCROOT}/src/third_party/libyuv/include)
 
 set(WEBRTC_LIBS_INFO
     "${WEBRTCOBJS}/api/${CMAKE_STATIC_LIBRARY_PREFIX}field_trials${CMAKE_STATIC_LIBRARY_SUFFIX}"
