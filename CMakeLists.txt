@@ -344,6 +344,10 @@ elseif (APPLE)
 
     target_link_libraries (${CMAKE_PROJECT_NAME} ${CORE_FOUNDATION} ${APPLICATION_SERVICES} ${CORE_SERVICES}
                            ${CORE_AUDIO} ${AUDIO_TOOLBOX} ${IO_SURFACE} ${APP_KIT})
+    if (EXISTS ${WEBRTCOBJS}/buildtools/third_party/libc++/${CMAKE_STATIC_LIBRARY_PREFIX}c++${CMAKE_STATIC_LIBRARY_SUFFIX})
+        # WebRTC's custom libc++ uses the system libc++abi on Apple platforms.
+        target_link_libraries (${CMAKE_PROJECT_NAME} c++abi)
+    endif()
 else()
     # use lld to link
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld -B${WEBRTCROOT}/src/third_party/llvm-build/Release+Asserts/bin")
